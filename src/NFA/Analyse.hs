@@ -1,5 +1,9 @@
 -- | vom Automaten zum regulären Ausdruck
---  $Id$
+
+{-# language TypeSynonymInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
+
 module NFA.Analyse 
 
 ( module NFA.Analyse
@@ -30,6 +34,8 @@ import Data.Typeable
 
 data Analyse = Analyse deriving ( Eq, Ord, Show, Read, Typeable )
 
+instance OrderScore Analyse where
+      scoringOrder _ = Increasing
 
 instance C.Partial  Analyse AI Exp
   where

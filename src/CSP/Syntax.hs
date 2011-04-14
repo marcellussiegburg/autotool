@@ -8,6 +8,7 @@ import Autolib.ToDoc
 import Autolib.Size
 
 import Data.Typeable
+import qualified Data.Set as S
 
 data Process a = Stop 
            | Pre a ( Process a )
@@ -30,6 +31,17 @@ instance Size ( Process a ) where
          Par s p q -> succ $ size p + size q
          Fix p -> succ $ size p
          Point -> 1
+
+alphabet :: Ord a => Process a -> S.Set a
+alphabet p =  case p of
+         Stop -> S.empty
+         Pre x p -> S.insert x $ alphabet p
+         Ext p q -> S.union ( alphabet p ) ( alphabet q )
+         Int p q -> S.union ( alphabet p ) ( alphabet q )
+         Seq p q -> S.union ( alphabet p ) ( alphabet q )
+         Par s p q -> S.union ( alphabet p ) ( alphabet q )
+         Fix p -> alphabet p
+         Point -> S.empty
 
 example1 :: Process Char
 example1 = Int ( Pre 'a' ( Pre 'b' Stop ))
