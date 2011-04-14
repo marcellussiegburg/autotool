@@ -23,6 +23,8 @@ import qualified NFA.Test
 
 import qualified CSP.Syntax
 import qualified CSP.Trace
+import qualified CSP.Property.Guarded
+import qualified CSP.Property.Right_Linear
 
 data Autolib.NFA.NFAC c Int => 
      Input c = NFA ( Autolib.NFA.NFA c Int )
@@ -50,7 +52,8 @@ verify_source (e @ Regular_Expression {}) = do
     Autolib.Exp.Sanity.sanity_alpha 
         ( alphabet e ) ( expression e )
 verify_source (Process p) = do
-    inform $ text "TODO: implement check for guarded recursion in Convert.Input.verify_source for Processes"
+    CSP.Property.Guarded.check p
+    CSP.Property.Right_Linear.check p
 
 lang :: Autolib.NFA.NFAC c Int 
      => Input c -> Doc

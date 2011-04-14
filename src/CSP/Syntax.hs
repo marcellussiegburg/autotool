@@ -23,26 +23,32 @@ data Process a = Stop
 $(derives [ makeReader, makeToDoc ] [ ''Process ] )
 
 instance Size ( Process a ) where
-     size p = case p of
-         Stop -> 1
-         Pre x p -> succ $ size p
-         Ext p q -> succ $ size p + size q
-         Int p q -> succ $ size p + size q
-         Seq p q -> succ $ size p + size q
-         Par s p q -> succ $ size p + size q
-         Fix p -> succ $ size p
-         Point -> 1
+     size p = length $ subs p
 
 alphabet :: Ord a => Process a -> S.Set a
-alphabet p =  case p of
-         Stop -> S.empty
-         Pre x p -> S.insert x $ alphabet p
-         Ext p q -> S.union ( alphabet p ) ( alphabet q )
-         Int p q -> S.union ( alphabet p ) ( alphabet q )
-         Seq p q -> S.union ( alphabet p ) ( alphabet q )
-         Par s p q -> S.union ( alphabet p ) ( alphabet q )
-         Fix p -> alphabet p
-         Point -> S.empty
+alphabet p = S.fromList $ do Pre x _ <- subs p ; return x
+
+subs :: Process a -> [ Process a ]
+subs p = map snd $ splits p
+
+splits :: Process a 
+       -> [ (Process a -> Process a, Process a) ]
+splits p = ( id, p ) : case p of       
+    Stop -> [] 
+    Pre x p -> splits1  ( Pre x ) p
+    Ext p q -> splits2 Ext p q
+    Int p q -> splits2 Int p q
+    Seq p q -> splits2 Seq p q
+    Par s p q -> splits2 ( Par s ) p q
+    Fix p -> splits1 Fix p
+    Point -> []
+
+splits1 c p = 
+    map ( \ (f,a) -> (c . f, a)) $ splits p
+splits2 c p q = 
+       splits1 ( \ p' -> c p' q ) p
+    ++ splits1 ( \ q' -> c p q' ) q
+
 
 instance Hash a => Hash ( Process a ) where
      hash p = case p of
