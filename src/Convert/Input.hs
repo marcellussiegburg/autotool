@@ -1,4 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Convert.Input where
 
@@ -18,12 +21,16 @@ import qualified Exp.Property
 import qualified NFA.Property
 import qualified NFA.Test
 
+import qualified CSP.Syntax
+import qualified CSP.Trace
+
 data Autolib.NFA.NFAC c Int => 
      Input c = NFA ( Autolib.NFA.NFA c Int )
 	     | Exp ( Autolib.Exp.RX c ) -- ^ for backward compatibility
-	   | Regular_Expression { alphabet :: Set c
+             | Regular_Expression { alphabet :: Set c
 		 , expression ::  Autolib.Exp.RX c 
 		 }
+             | Process ( CSP.Syntax.Process c )
      deriving ( Typeable )
 
 $(derives [makeReader, makeToDoc] [''Input])
@@ -40,7 +47,10 @@ verify_source (NFA aut) = do
 verify_source (Exp e ) = do
     return ()
 verify_source (e @ Regular_Expression {}) = do
-    Autolib.Exp.Sanity.sanity_alpha ( alphabet e ) ( expression e )
+    Autolib.Exp.Sanity.sanity_alpha 
+        ( alphabet e ) ( expression e )
+verify_source (Process p) = do
+    inform $ text "TODO: implement check for guarded recursion in Convert.Input.verify_source for Processes"
 
 lang :: Autolib.NFA.NFAC c Int 
      => Input c -> Doc
@@ -57,6 +67,10 @@ lang (e @ Regular_Expression {}) =
 	 , nest 4 $ toDoc $ expression e
 	 , text "über dem Alphabet" <+> toDoc ( alphabet e )
 	 ]
+lang (Process p) =     
+    vcat [ text "die Spursprache des Prozesses"
+         , nest 4 $ toDoc p  
+         ]  
 
 instance Autolib.NFA.NFAC c Int => Nice ( Input c ) where
      nice = lang
@@ -71,7 +85,9 @@ min_det_automaton (e @ Regular_Expression {}) =
               ( expression e )
 min_det_automaton ( Exp e ) = 
     error "Convert.Input.min_det_automaton: use Regulare_Expression instead of Exp"
+min_det_automaton ( Process p ) 
+    = Autolib.NFA.minimize0 
+    $ Autolib.NFA.normalize  
+    $ CSP.Trace.auto p
+    
 
--- local variables:
--- mode: haskell
--- end

@@ -6,6 +6,7 @@ module CSP.Syntax where
 import Autolib.Reader
 import Autolib.ToDoc
 import Autolib.Size
+import Autolib.Hash
 
 import Data.Typeable
 import qualified Data.Set as S
@@ -42,6 +43,17 @@ alphabet p =  case p of
          Par s p q -> S.union ( alphabet p ) ( alphabet q )
          Fix p -> alphabet p
          Point -> S.empty
+
+instance Hash a => Hash ( Process a ) where
+     hash p = case p of
+         Stop -> 17
+         Pre x p -> hash (x, p)
+         Ext p q -> hash (37 :: Int , p, q)
+         Int p q -> hash (47 :: Int , p, q)
+         Seq p q -> hash (57 :: Int , p, q)
+         Par s p q -> hash (s, p, q)
+         Fix p -> hash (67 :: Int, p)
+         Point -> 27
 
 example1 :: Process Char
 example1 = Int ( Pre 'a' ( Pre 'b' Stop ))

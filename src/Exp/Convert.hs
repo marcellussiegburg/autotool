@@ -25,6 +25,9 @@ import Exp.Property
 import Exp.Test
 import Exp.Quiz
 import NFA.Roll
+
+import qualified CSP.Syntax
+
 import Convert.Input
 
 import Autolib.Set
@@ -102,6 +105,15 @@ make = direct Convert_To_Exp
      , Exp.Property.example
      )
 
+make_csp :: Make
+make_csp = 
+  let p = CSP.Syntax.example1
+  in  direct Convert_To_Exp 
+     ( Convert { name = Nothing , input = Process p }
+     , [ Exp.Property.Simple
+       , Exp.Property.Alphabet $ CSP.Syntax.alphabet p 
+       ]
+     )
 
 
 instance Generator Convert_To_Exp ( Quiz Char ) 

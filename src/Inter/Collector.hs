@@ -373,7 +373,8 @@ tmakers =
                     [ item Peano.Make.make
                     ]
                 ]
-         , heading "Petri-Netze"
+         , heading "Prozeßmodelle"       
+             [ heading "Petri-Netze"
                    [ item $ Petri.Reach.make_fixed
                    , item $ Petri.Reach.make_quiz
                    , item $ Petri.Deadlock.make_fixed
@@ -383,6 +384,10 @@ tmakers =
                       ] 
                    , item $ Petri.Remote.make_fixed
                    ]
+             , heading "CSP (Prozeß-Algebra)"      
+                   [ item $ Exp.Convert.make_csp
+                   ]
+             ]  
          , heading "Terme, Ersetzungssysteme"
                 [ heading "Wortersetzung"
                         [ item $ Rewriting.Derive.make_fixed Rewriting.SRS.Apply.For_SRS
