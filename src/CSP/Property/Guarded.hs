@@ -1,3 +1,5 @@
+{-# language NoMonomorphismRestriction #-}
+
 module CSP.Property.Guarded where
 
 import CSP.Syntax
@@ -6,6 +8,9 @@ import Autolib.Reporter
 
 import Autolib.ToDoc
 import Control.Monad ( guard, sequence, void )
+import Data.Maybe ( isJust )
+
+ok = isJust . result . check
 
 check :: ToDoc a
         => Process a 

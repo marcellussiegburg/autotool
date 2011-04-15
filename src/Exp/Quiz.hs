@@ -1,5 +1,7 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Exp.Quiz where
 
@@ -17,7 +19,12 @@ data NFAC c Int =>
      Quiz c = Quiz { generate :: [ A.Property c ]
 		 , solve    :: [ E.Property c ]
 		 }
-    deriving ( Typeable )
+            | CSP { process_alphabet :: [c]
+                  , process_size :: Int
+                  ,  generator_repeats :: Int
+                 , solve ::  [ E.Property c ]
+                 }
+            deriving ( Typeable )
 
 $(derives [makeReader, makeToDoc] [''Quiz])
 
@@ -29,3 +36,15 @@ example = Quiz { generate = [ A.Alphabet $ mkSet "ab"
 			    , E.Simple
 			    ]
 	       }
+
+example_csp :: Quiz Char
+example_csp = CSP 
+   { process_alphabet = "ab"
+   , process_size = 10
+   , generator_repeats = 100 
+   , solve =  [ E.Alphabet $ mkSet "ab"
+			    , E.Simple
+			    ]
+   }           
+   
+   

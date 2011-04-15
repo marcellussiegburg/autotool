@@ -1,3 +1,5 @@
+{-# language NoMonomorphismRestriction #-}
+
 module CSP.Property.Right_Linear where
 
 import CSP.Syntax
@@ -6,6 +8,9 @@ import Autolib.Reporter
 
 import Autolib.ToDoc
 import Control.Monad ( guard, sequence, void )
+import Data.Maybe ( isJust )
+
+ok = isJust . result . check
 
 check :: ToDoc a
         => Process a 
@@ -32,7 +37,11 @@ local r = nested 2 $ do
             when bad $ reject
                  $ text "ist nicht rechtslinear (Rekursion im linken Argument)"
             local q
-        Par s p q -> local2_single p q
+        Par s p q -> do
+            bad <- local2 p q
+            when bad $ reject 
+                $ text "ist nicht rechtslinear (Rekursion unter Par)"
+            return False     
         Fix p -> return False
         Point -> return True
 
@@ -40,8 +49,4 @@ local2 p q = do
     subs <- forM [ p, q ] local
     return $ or subs
 
-local2_single p q = do
-    subs <- forM [ p, q ] local
-    when ( and subs ) $ reject 
-         $ text "ist nicht linear (beide Argumente enthalten Point)"
-    return $ or subs
+

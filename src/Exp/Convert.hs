@@ -1,3 +1,7 @@
+{-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
+
 module Exp.Convert where
 
 
@@ -15,6 +19,9 @@ import Autolib.Reporter
 
 import Autolib.Exp.Example
 import Autolib.NFA.Eq
+import Autolib.NFA.Normalize
+import Autolib.NFA.Minimize
+import Autolib.NFA.Finite
 import Autolib.Exp
 import Autolib.Exp.Inter
 import Autolib.Exp.Sanity
@@ -27,11 +34,17 @@ import Exp.Quiz
 import NFA.Roll
 
 import qualified CSP.Syntax
+import qualified CSP.Roll
+import qualified CSP.Trace
+import qualified CSP.Tree 
 
 import Convert.Input
 
 import Autolib.Set
 import Autolib.Informed
+import Data.List ( maximumBy )
+import Data.Ord ( comparing )
+
 
 data Convert_To_Exp = Convert_To_Exp 
     deriving ( Eq, Ord, Show, Read, Typeable )
@@ -68,6 +81,9 @@ instance C.Partial Convert_To_Exp
 	     ( Nothing , NFA aut ) -> do
                  inform $ text "Das ist der Automat:"
 		 peng aut
+	     ( Nothing , Process p ) -> do
+                 inform $ text "Das ist der Prozeß:"
+		 peng p
              _ -> return ()
 
     initial Convert_To_Exp ( from, props ) = 
@@ -118,10 +134,26 @@ make_csp =
 
 instance Generator Convert_To_Exp ( Quiz Char ) 
            ( Convert, [ Property Char ] ) where
-    generator p quiz key = do
+    generator p ( quiz @ Quiz {} ) key = do
         aut <- roll $ Exp.Quiz.generate quiz
         return ( Convert { name = Nothing
 		   , input = NFA aut 
+		   }
+	       , solve quiz
+	       )
+    generator p ( quiz @ CSP {} ) key = do
+        sps <- 
+          forM [ 1 .. generator_repeats quiz ] $ \ k ->  do
+                   p <- CSP.Roll.roll
+                          ( process_alphabet quiz )
+                          ( process_size quiz )
+                   let a = minimize $ normalize
+                         $ CSP.Trace.auto p
+                   let s = size a
+                   return ( ( not $ finite a, s) , p )      
+        let (s,p) = maximumBy ( comparing fst ) sps
+        return ( Convert { name = Nothing
+		   , input = Process p
 		   }
 	       , solve quiz
 	       )
@@ -134,3 +166,6 @@ instance Project  Convert_To_Exp
 
 qmake :: Make
 qmake = quiz Convert_To_Exp Exp.Quiz.example
+
+qmake_csp :: Make
+qmake_csp = quiz Convert_To_Exp Exp.Quiz.example_csp

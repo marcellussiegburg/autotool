@@ -1,3 +1,5 @@
+{-# language FlexibleContexts #-}
+
 module NFA.Roll where
 
 --  $Id$

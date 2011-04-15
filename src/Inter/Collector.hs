@@ -220,6 +220,8 @@ import qualified Petri.Reach
 import qualified Petri.Deadlock
 import qualified Petri.Remote
 
+import qualified CSP.Derive
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -385,7 +387,10 @@ tmakers =
                    , item $ Petri.Remote.make_fixed
                    ]
              , heading "CSP (Prozeß-Algebra)"      
-                   [ item $ Exp.Convert.make_csp
+                   [ item $ CSP.Derive.make_fixed 
+                   ,  item $ CSP.Derive.make_quiz
+                   , item $ Exp.Convert.make_csp
+                   , item $ Exp.Convert.qmake_csp
                    ]
              ]  
          , heading "Terme, Ersetzungssysteme"

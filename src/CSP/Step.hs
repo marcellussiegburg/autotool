@@ -1,11 +1,22 @@
+{-# language TemplateHaskell #-}
+{-# language DeriveDataTypeable #-}
+
 module CSP.Step where
 
 import CSP.Syntax
 import CSP.STS
 
+import Autolib.Reader
+import Autolib.ToDoc
+
 import qualified Data.Set as S
 import Data.List ( nub )
 import Control.Monad ( guard )
+import Data.Typeable
+
+data Step a = Tau | Real a deriving ( Eq, Ord, Typeable )
+
+$(derives [makeToDoc, makeReader] [''Step])
 
 sts :: Ord a => Process a -> STS ( Process a ) a
 sts p = 
@@ -24,6 +35,13 @@ sts p =
                        (map ( \ r -> (t,r) ) ts ++ hid )
                        (S.difference next done')
     in  handle S.empty [] [] $ S.singleton p
+
+
+
+successors :: Eq a => Process a -> [ ( Step a, Process a ) ]
+successors p = 
+      do ( t, q ) <- real p ; return ( Real t, q )
+   ++ do q <- tau p ; return ( Tau, q )     
 
 real :: Eq a => Process a -> [ (a, Process a) ]
 real p = nub $ case p of
@@ -69,10 +87,11 @@ tau p = nub $ case p of
            ++  do q' <- tau q ; return $ Ext p q' 
     Int p q -> [p, q]
     Seq p q -> case p of
-        Stop -> tau q
+        Stop -> return q
         _    -> do p' <- tau p ; return ( Seq p' q )
+    Par s Stop Stop -> return Stop
     Par s p q -> do p' <- tau p ; return $ Par s p' q
-           ++  do q' <- tau q ; return $ Par s p q' 
+             ++  do q' <- tau q ; return $ Par s p q' 
     Fix p -> tau ( subst p ( Fix p ) )
     Point -> error "tau: Point outside Fix"
 
@@ -86,3 +105,15 @@ subst r s = case r of
     Fix f -> Fix f
     Point -> s
     
+-- testing -------------------------------------------
+    
+p = Fix (Pre 'b' 
+           (Int (Par [ 'a' ] (Pre 'b' Point) (Pre 'a' Stop))
+                (Pre 'a' Point)))
+    
+[('b', q)] = real p    
+
+[ q1, q2 ] = taus q
+
+[ ('b', r) ] = real q2
+
