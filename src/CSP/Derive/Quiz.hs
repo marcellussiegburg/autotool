@@ -63,9 +63,10 @@ target_roller conf = do
         co -> return $ maximumBy ( comparing fst ) co
     
 
-rejects :: Ord a => Int -> Process a -> [[ S.Set a ]]
-rejects width p = do
-    let sigma = alphabet p
+rejects :: Ord a => Int 
+                 -> S.Set a
+                 -> Process a -> [[ S.Set a ]]
+rejects width sigma p = do
     qs <- takeWhile ( \ qs -> length qs < width ) $ levels p
     return $ do
         q <- qs
@@ -73,10 +74,11 @@ rejects width p = do
         let accepts = S.fromList $ map fst $ real q
         return $ S.difference sigma accepts
         
-interesting_rejects p (width, wadth) cut = do
+interesting_rejects sigma p (width, wadth) cut = do
     ( r, dist ) <- M.toList $ 
          M.fromListWith min $ do
-            ( k , rs ) <- zip [ 0 .. cut ] $ rejects wadth p
+            ( k , rs ) <- zip [ 0 .. cut ] 
+                          $ rejects wadth sigma p
             r <- rs
             return ( r, (length rs > width, k ) )
     return ( dist, (p, r ))
@@ -116,12 +118,13 @@ reject_roller conf = do
         p <- CSP.Roll.roll_free
             ( process_alphabet conf )
             ( process_size conf )
+        let sigma = CSP.Syntax.alphabet p    
         let ok = CSP.Property.Guarded.ok    p
         let cut = max_derivation_length conf 
             wid = min_derivation_tree_width conf
             wad = max_derivation_tree_width conf
         return $ if not ok then [] else 
-                 interesting_rejects p (wid, wad)  cut
+                 interesting_rejects sigma p (wid, wad)  cut
     return $ maximumBy ( comparing fst ) $ concat outs
     
 t1 = Fix (Ext (Ext (Pre 'a' (Fix Point))
