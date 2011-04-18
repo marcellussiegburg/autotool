@@ -18,6 +18,7 @@ import qualified Data.Set as S
 import Data.List ( maximumBy )
 import Data.Ord ( comparing )
 import Control.Monad ( forM )
+import Data.Either
 
 roll sigma s tries = do
     its <- forM [ 1 .. tries ] $ \ k -> do
@@ -34,6 +35,15 @@ single sigma s = do
     b <- CSP.STS.Roll.mutate 2 a
     let df = symdiff ( failures a ) ( failures b )
     let ss = some_shortest df
+
+    case ss of
+        s : _ -> let ([r], w) = partitionEithers s in
+             case ( failure_trace a (w,r), failure_trace b (w,r)) of
+                 c @ ( Left msg1, Left msg2 ) -> error $ show c
+                 c @ ( Right msg1, Right msg2 ) -> error $ show c
+                 _ -> return ()
+        _ -> return ()
+
     return ( a, b, ss )    
     
 symdiff a b =     
