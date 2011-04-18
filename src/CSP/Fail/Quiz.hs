@@ -9,6 +9,7 @@ import CSP.STS.Type
 import CSP.STS.Dot
 
 import Autolib.NFA hiding ( symdiff, cross, alphabet )
+import qualified Autolib.NFA
 import Autolib.NFA.Ops ( cross )
 import Autolib.NFA.Det
 import Autolib.NFA.Shortest
@@ -30,14 +31,15 @@ single sigma s = do
     -- a <- fmap sts $ roll_guarded_rightlinear sigma s 
     -- b <- fmap sts $ roll_guarded_rightlinear sigma s
     a <- CSP.STS.Roll.roll [ 1 .. s ] sigma
-    b <- CSP.STS.Roll.roll [ 1 .. s ] sigma
+    b <- CSP.STS.Roll.mutate 2 a
     let df = symdiff ( failures a ) ( failures b )
     let ss = some_shortest df
     return ( a, b, ss )    
     
 symdiff a b =     
-    let da = det0 $ normalize a
-        db = det0 $ normalize b
+    let co = S.union ( Autolib.NFA.alphabet a ) ( Autolib.NFA.alphabet b )
+        da = det0 $ normalize $ a { Autolib.NFA.alphabet = co }
+        db = det0 $ normalize $ b { Autolib.NFA.alphabet = co }
         dd = ( cross da db )
            { finals = 
                 S.filter ( \ (p,q) -> S.member p ( finals da )

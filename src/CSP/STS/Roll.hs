@@ -10,6 +10,18 @@ import qualified Data.Set as S
 import Control.Monad ( forM )
 import Data.List ( nub )
 
+mutate :: ( Ord t, Ord s )
+     => Int
+     -> STS s t
+     -> IO ( STS s t )
+mutate d s = do
+    let ss = S.toList $ states s ; ts = S.toList $ alphabet s
+    vis <- permutation $ visible s
+    vis' <- forM [ 1 .. d ] $ \ k -> do
+        p <- eins ss ; t <- eins ts ; q <- eins ss
+        return ( p, t, q )
+    return $ s { visible = nub $ vis' ++ drop d vis }
+
 roll :: ( Ord t, Eq s )
      => [s] -> [t] 
      -> IO ( STS s t )

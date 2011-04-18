@@ -54,6 +54,9 @@ instance Partial STS_Fail
         ( take 2 $ S.toList $ alphabet a , alphabet a )
     
     total p (a,b) (w,r) = do
+        pa <- compute ( text "A" ) a (w,r)
+        pb <- compute ( text "B" ) b (w,r)
+{-
         let fa = failures a
             fb = failures b 
         let u = map Right w ++ [ Left r ]
@@ -61,8 +64,16 @@ instance Partial STS_Fail
             pb = is_accepted fb u
         inform $ text "Gehört diese Ablehnung zur Semantik von A?" </> toDoc pa    
         inform $ text "Gehört diese Ablehnung zur Semantik von B?" </> toDoc pb
+-}
         when ( pa == pb ) $ reject $ text  "Die Antworten dürfen nicht übereinstimmen."
 
+
+compute name s (w,r) = nested 4 $ do
+    inform $ text "Gehört diese Ablehnung zur Semantik von" 
+           <+> name <+> text "?"
+    nested 4 $ case failure_trace s (w,r) of
+        Left msg -> do inform msg ; return False
+        Right msg -> do inform msg ; return True
 
 make_fixed :: Make
 make_fixed = direct STS_Fail (s1, s2)
