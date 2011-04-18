@@ -45,6 +45,12 @@ roll_guarded sigma s = do
     if    CSP.Property.Guarded.ok p 
        then return p else roll_guarded sigma s
 
+roll_guarded_rightlinear sigma s = do
+    p <- roll_free sigma s
+    if    CSP.Property.Guarded.ok p 
+       && CSP.Property.Right_Linear.ok p 
+       then return p else roll_guarded_rightlinear sigma s
+
 roll_free sigma s = do
    -- putStrLn "roll_free ..."
    p <- nonrec sigma s >>= fixup >>= fixup

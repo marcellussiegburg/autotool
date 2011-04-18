@@ -221,6 +221,7 @@ import qualified Petri.Deadlock
 import qualified Petri.Remote
 
 import qualified CSP.Derive
+import qualified CSP.STS.Fail
 
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
@@ -392,6 +393,10 @@ tmakers =
                    , item $ Exp.Convert.make_csp
                    , item $ Exp.Convert.qmake_csp
                    ]
+             , heading "Ablehnungs-Semantik"      
+                   [ item CSP.STS.Fail.make_fixed
+                   , item CSP.STS.Fail.make_quiz
+                   ]  
              ]  
          , heading "Terme, Ersetzungssysteme"
                 [ heading "Wortersetzung"

@@ -1,0 +1,30 @@
+module CSP.STS.Roll where
+
+import CSP.STS.Type
+import CSP.STS.Dot
+
+import Autolib.Util.Zufall
+import Autolib.Set
+
+import qualified Data.Set as S
+import Control.Monad ( forM )
+import Data.List ( nub )
+
+roll :: ( Ord t, Eq s )
+     => [s] -> [t] 
+     -> IO ( STS s t )
+roll ss ts = do
+    vis <- forM [ 1 .. length ss ] $ \ k -> do
+        p <- eins ss ; t <- eins ts ; q <- eins ss
+        return ( p, t, q )
+    hid <- forM [ 1 .. div (length ss) 2  ] $ \ k -> do
+        p <- eins ss ; q <- eins ss
+        return ( p, q )
+    st <- eins ss
+    return $ STS 
+           { alphabet = S.fromList ts
+           , start = st
+           , visible = nub vis
+           , hidden = nub hid 
+           }
+                  

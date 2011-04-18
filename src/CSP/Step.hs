@@ -22,6 +22,9 @@ sts :: Ord a => Process a -> STS ( Process a ) a
 sts p = 
     let handle done vis hid todo = case S.minView todo of
             Nothing -> STS { start = p
+                           , CSP.STS.alphabet = 
+                               S.fromList $ do 
+                                 (p,t,q) <- vis ; return t
                            , visible = vis, hidden = hid
                            }                          
             Just ( t, odo ) -> 
