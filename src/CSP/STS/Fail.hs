@@ -110,14 +110,14 @@ $(derives [makeReader, makeToDoc] [''Config])
 
 instance Generator STS_Fail Config 
     ( STS Int Char, STS Int Char
-    , [[ Either ( Set Char) Char]]
+    , ( [[ Char]] , [[ Either ( Set Char) Char]] )
     )  where
       generator _ conf key = 
           roll ( letters conf ) ( num_states conf )
                ( generator_repeat conf )
 instance Project STS_Fail 
     ( STS Int Char, STS Int Char
-    , [[ Either ( Set Char) Char]]
+    , ( [[Char]], [[ Either ( Set Char) Char]] )
     )
     ( STS Int Char, STS Int Char ) where
       project _ (a,b,u) = (a,b)

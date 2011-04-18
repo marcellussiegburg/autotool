@@ -45,7 +45,7 @@ failure_trace s ( w, r ) =
     in  if null targets 
         then Left $ text "Nein. Es gibt keine Ablehnung zu dieser Spur."
         else case filter ( \ i -> snd i == r ) targets of
-            [] -> Left $ text "Nein. Eine Realisierung einers anderen Ablehnung mit dieser Spur ist:" 
+            [] -> Left $ text "Nein. Eine Realisierung einer anderen Ablehnung mit dieser Spur ist:" 
                        </> display ( head targets )
             ok -> Right $ text "Ja. Eine Realisierung dieser Ablehnung ist:"
                        </> display ( head ok )

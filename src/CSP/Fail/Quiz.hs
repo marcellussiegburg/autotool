@@ -3,10 +3,12 @@ module CSP.Fail.Quiz where
 import CSP.Roll
 import CSP.Step
 
+
 import qualified  CSP.STS.Roll
 import CSP.Fail.Compute
 import CSP.STS.Type
 import CSP.STS.Dot
+import CSP.STS.Trace
 
 import Autolib.NFA hiding ( symdiff, cross, alphabet )
 import qualified Autolib.NFA
@@ -22,10 +24,10 @@ import Data.Either
 
 roll sigma s tries = do
     its <- forM [ 1 .. tries ] $ \ k -> do
-        out @ ( a, b, ss ) <- single sigma s
-        let quality = if null ss then -1 
-                      else minimum $ map length ss
-        return ( quality, out )
+        out @ ( a, b, (st, sf) ) <- single sigma s
+        let quality = if null sf then -1 
+                      else minimum $ map length sf
+        return ( (null st, quality), out )
     return $ snd $ maximumBy ( comparing fst ) its    
 
 single sigma s = do
@@ -33,10 +35,13 @@ single sigma s = do
     -- b <- fmap sts $ roll_guarded_rightlinear sigma s
     a <- CSP.STS.Roll.roll [ 1 .. s ] sigma
     b <- CSP.STS.Roll.mutate 2 a
-    let df = symdiff ( failures a ) ( failures b )
-    let ss = some_shortest df
+    let dt = symdiff ( traces a ) ( traces b )
+        st = some_shortest dt
 
-    case ss of
+    let df = symdiff ( failures a ) ( failures b )
+        sf = some_shortest df
+
+    case sf of
         s : _ -> let ([r], w) = partitionEithers s in
              case ( failure_trace a (w,r), failure_trace b (w,r)) of
                  c @ ( Left msg1, Left msg2 ) -> error $ show c
@@ -44,7 +49,7 @@ single sigma s = do
                  _ -> return ()
         _ -> return ()
 
-    return ( a, b, ss )    
+    return ( a, b, (st, sf) )    
     
 symdiff a b =     
     let co = S.union ( Autolib.NFA.alphabet a ) ( Autolib.NFA.alphabet b )
