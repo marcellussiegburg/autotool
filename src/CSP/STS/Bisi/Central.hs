@@ -26,14 +26,16 @@ import Autolib.Reader
 import Autolib.Reporter
 import Data.Typeable
 import Control.Monad ( void )
+import Data.List ( maximumBy )
+import Data.Ord ( comparing )
 
-data CSP_STS_Bisi = CSP_STS_Bisi 
+data STS_Bisi = STS_Bisi 
     deriving ( Read, Show, Typeable )
 
-instance OrderScore CSP_STS_Bisi where
+instance OrderScore STS_Bisi where
     scoringOrder _ = Increasing
     
-instance Partial CSP_STS_Bisi     
+instance Partial STS_Bisi     
            ( STS Int Char, STS Int Char )  
            [( Int, Int)] where
     report  p ( s, t ) = do           
@@ -52,7 +54,7 @@ instance Partial CSP_STS_Bisi
     total p (s, t) r = void $ check_bisi (s,t) $ R.make r    
     
 make_fixed :: Make    
-make_fixed = direct CSP_STS_Bisi 
+make_fixed = direct STS_Bisi 
     ( STS { start = 2 :: Int , alphabet = mkSet [ 'a' , 'b' ]
     , visible = [ ( 5 , 'a' , 3 ) , ( 1 , 'b' , 3 ) , ( 5 , 'b' , 3 )
                 , ( 5 , 'b' , 2 ) , ( 5 , 'a' , 5 ) , ( 4 , 'b' , 2 )
@@ -66,3 +68,52 @@ make_fixed = direct CSP_STS_Bisi
     , hidden = [ ]
     } )
     
+data Config = 
+        Config { num_states :: Int
+            , letters :: [Char]
+            , num_visible :: Int
+            , num_hidden :: Int  
+            , generator_repeat :: Int  
+            }  deriving ( Typeable )
+     
+$(derives [makeReader, makeToDoc] [''Config])
+
+example_config :: Config     
+example_config = Config
+    { num_states = 5
+    , num_visible = 7 
+    , num_hidden = 0                
+    , letters = "ab"               
+    , generator_repeat = 1000            
+    }                     
+
+instance Generator STS_Bisi Config 
+    ( STS Int Char, STS Int Char, [(Int,Int)] ) where
+      generator _ conf key = multi conf
+
+instance Project STS_Bisi  
+    ( STS Int Char, STS Int Char, [(Int,Int)] ) 
+        ( STS Int Char, STS Int Char ) where
+      project _ (s,t,r) = (s,t)
+
+multi conf = do        
+    out <- sequence 
+           $ replicate ( generator_repeat conf )
+           $ single conf
+    let (s,t,mr) = snd $ maximumBy (comparing fst) out 
+    case mr of 
+        Nothing -> multi conf 
+        Just r -> return ( s, t, r )
+    
+single conf = do
+    s <- roll [ 1 .. num_states conf ] (letters conf) 
+         (num_visible conf) ( num_hidden conf )
+    t <- roll [ 1 .. num_states conf ] (letters conf) 
+         (num_visible conf) ( num_hidden conf )
+    let r :: Maybe [(Int,Int)]
+        r = fmap R.pairs $ bisi (s,t) 
+    return ( fmap ( negate . length ) r, (s,t,r))
+    
+    
+make_quiz :: Make    
+make_quiz = quiz STS_Bisi example_config

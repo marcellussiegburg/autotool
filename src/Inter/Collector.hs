@@ -400,7 +400,7 @@ tmakers =
                    ]  
              , heading "Bisimulation"      
                    [ item CSP.STS.Bisi.Central.make_fixed
-                   -- , item CSP.STS.Bisi.Central.make_quiz
+                   , item CSP.STS.Bisi.Central.make_quiz
                    ]  
              ]  
          , heading "Terme, Ersetzungssysteme"
