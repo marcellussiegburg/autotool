@@ -95,12 +95,18 @@ make_fixed = direct STS_Fail (s1, s2)
 data Config = 
      Config { num_states :: Int
             , letters :: [Char]
+            , num_visible :: Int
+            , num_mutated :: Int  
+            , num_hidden :: Int  
             , generator_repeat :: Int  
             }  deriving ( Typeable )
      
 example_config :: Config     
 example_config = Config
     { num_states = 4
+    , num_visible = 6 
+    , num_mutated = 2                
+    , num_hidden = 0                
     , letters = "ab"               
     , generator_repeat = 1000            
     }                     
@@ -114,6 +120,8 @@ instance Generator STS_Fail Config
     )  where
       generator _ conf key = 
           roll ( letters conf ) ( num_states conf )
+               ( num_visible conf ) ( num_hidden conf )
+               ( num_mutated conf )
                ( generator_repeat conf )
 instance Project STS_Fail 
     ( STS Int Char, STS Int Char

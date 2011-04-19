@@ -1,0 +1,68 @@
+{-# language TemplateHaskell #-}
+{-# language DeriveDataTypeable #-}
+{-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+
+module CSP.STS.Bisi.Central where
+
+import Challenger.Partial
+import Inter.Types
+import Inter.Quiz
+
+import CSP.STS.Type
+import CSP.STS.Dot
+import Autolib.Dot.Dotty ( peng )
+
+import CSP.STS.Bisi.Report
+import CSP.STS.Bisi.Refine
+import CSP.STS.Roll
+
+import Autolib.Set
+import qualified Data.Set as S
+import qualified Data.Map as M
+import qualified Autolib.Relation as R
+import Autolib.ToDoc
+import Autolib.Reader
+import Autolib.Reporter
+import Data.Typeable
+import Control.Monad ( void )
+
+data CSP_STS_Bisi = CSP_STS_Bisi 
+    deriving ( Read, Show, Typeable )
+
+instance OrderScore CSP_STS_Bisi where
+    scoringOrder _ = Increasing
+    
+instance Partial CSP_STS_Bisi     
+           ( STS Int Char, STS Int Char )  
+           [( Int, Int)] where
+    report  p ( s, t ) = do           
+        inform $ vcat
+          [ text "Gesucht ist eine Bisimulation"
+          , text "zwischen den Zustandsübergangssystemen"
+          ]  
+        inform $ text "S = " <+> toDoc s
+        peng s
+        inform $ text "T = " <+> toDoc t
+        peng t
+            
+    initial p (s, t ) = S.toList 
+        $ cross ( states s ) ( states t )
+        
+    total p (s, t) r = void $ check_bisi (s,t) $ R.make r    
+    
+make_fixed :: Make    
+make_fixed = direct CSP_STS_Bisi 
+    ( STS { start = 2 :: Int , alphabet = mkSet [ 'a' , 'b' ]
+    , visible = [ ( 5 , 'a' , 3 ) , ( 1 , 'b' , 3 ) , ( 5 , 'b' , 3 )
+                , ( 5 , 'b' , 2 ) , ( 5 , 'a' , 5 ) , ( 4 , 'b' , 2 )
+                ]
+    , hidden = [ ]
+    }
+    , STS { start = 1 :: Int , alphabet = mkSet [ 'a' , 'b' ]
+    , visible = [ ( 3 , 'b' , 1 ) , ( 4 , 'b' , 2 ) , ( 4 , 'b' , 5 )
+                , ( 3 , 'a' , 5 ) , ( 3 , 'a' , 3 )
+                ]
+    , hidden = [ ]
+    } )
+    

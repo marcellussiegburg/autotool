@@ -222,6 +222,7 @@ import qualified Petri.Remote
 
 import qualified CSP.Derive
 import qualified CSP.STS.Fail
+import qualified CSP.STS.Bisi.Central
 
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
@@ -396,6 +397,10 @@ tmakers =
              , heading "Ablehnungs-Semantik"      
                    [ item CSP.STS.Fail.make_fixed
                    , item CSP.STS.Fail.make_quiz
+                   ]  
+             , heading "Bisimulation"      
+                   [ item CSP.STS.Bisi.Central.make_fixed
+                   -- , item CSP.STS.Bisi.Central.make_quiz
                    ]  
              ]  
          , heading "Terme, Ersetzungssysteme"

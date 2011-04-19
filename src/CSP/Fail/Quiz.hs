@@ -22,19 +22,20 @@ import Data.Ord ( comparing )
 import Control.Monad ( forM )
 import Data.Either
 
-roll sigma s tries = do
+roll sigma s vis hid mut tries = do
     its <- forM [ 1 .. tries ] $ \ k -> do
-        out @ ( a, b, (st, sf) ) <- single sigma s
+        out @ ( a, b, (st, sf) ) <- 
+            single sigma s vis hid mut
         let quality = if null sf then -1 
                       else minimum $ map length sf
         return ( (null st, quality), out )
     return $ snd $ maximumBy ( comparing fst ) its    
 
-single sigma s = do
+single sigma s vis hid mut = do
     -- a <- fmap sts $ roll_guarded_rightlinear sigma s 
     -- b <- fmap sts $ roll_guarded_rightlinear sigma s
-    a <- CSP.STS.Roll.roll [ 1 .. s ] sigma
-    b <- CSP.STS.Roll.mutate 2 a
+    a <- CSP.STS.Roll.roll [ 1 .. s ] sigma vis hid
+    b <- CSP.STS.Roll.mutate mut a
     let dt = symdiff ( traces a ) ( traces b )
         st = some_shortest dt
 

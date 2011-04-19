@@ -24,12 +24,14 @@ mutate d s = do
 
 roll :: ( Ord t, Eq s )
      => [s] -> [t] 
+     -> Int 
+     -> Int
      -> IO ( STS s t )
-roll ss ts = do
-    vis <- forM [ 1 .. length ss ] $ \ k -> do
+roll ss ts num_visible num_hidden = do
+    vis <- forM [ 1 .. num_visible ] $ \ k -> do
         p <- eins ss ; t <- eins ts ; q <- eins ss
         return ( p, t, q )
-    hid <- forM [ 1 .. div (length ss) 2  ] $ \ k -> do
+    hid <- forM [ 1 .. num_hidden  ] $ \ k -> do
         p <- eins ss ; q <- eins ss
         return ( p, q )
     st <- eins ss
