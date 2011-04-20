@@ -21,6 +21,7 @@ import Autolib.Set
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Autolib.Relation as R
+import Autolib.Size
 import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.Reporter
@@ -43,16 +44,22 @@ instance Partial STS_Bisi
           [ text "Gesucht ist eine Bisimulation"
           , text "zwischen den Zustandsübergangssystemen"
           ]  
-        inform $ text "S = " <+> toDoc s
+        inform $ text "S1 = " <+> toDoc s
         peng s
-        inform $ text "T = " <+> toDoc t
+        inform $ text "S2 = " <+> toDoc t
         peng t
             
-    initial p (s, t ) = S.toList 
+    initial p (s, t ) = pick $ S.toList 
         $ cross ( states s ) ( states t )
         
-    total p (s, t) r = void $ check_bisi (s,t) $ R.make r    
+    total p (s, t) r = 
+        void $ check_bisi (s, text "S1")
+                          (t, text "S2")  
+             $ R.make r 
     
+pick (x:xs) = x : pick ( odds xs ) ; pick _ = []
+odds (x:y:zs) = y : odds zs ; odds _  = []
+
 make_fixed :: Make    
 make_fixed = direct STS_Bisi 
     ( STS { start = 2 :: Int , alphabet = mkSet [ 'a' , 'b' ]
@@ -80,19 +87,19 @@ $(derives [makeReader, makeToDoc] [''Config])
 
 example_config :: Config     
 example_config = Config
-    { num_states = 5
-    , num_visible = 7 
+    { num_states = 4
+    , num_visible = 6 
     , num_hidden = 0                
     , letters = "ab"               
     , generator_repeat = 1000            
     }                     
 
 instance Generator STS_Bisi Config 
-    ( STS Int Char, STS Int Char, [(Int,Int)] ) where
+    ( STS Int Char, STS Int Char, ( R.Type Int Int ) ) where
       generator _ conf key = multi conf
 
 instance Project STS_Bisi  
-    ( STS Int Char, STS Int Char, [(Int,Int)] ) 
+    ( STS Int Char, STS Int Char, ( R.Type Int Int ) ) 
         ( STS Int Char, STS Int Char ) where
       project _ (s,t,r) = (s,t)
 
@@ -106,13 +113,20 @@ multi conf = do
         Just r -> return ( s, t, r )
     
 single conf = do
-    s <- roll [ 1 .. num_states conf ] (letters conf) 
+    let full = num_states conf * num_states conf
+    s <- roll_reachable 
+         [ 1 .. num_states conf ] (letters conf) 
          (num_visible conf) ( num_hidden conf )
-    t <- roll [ 1 .. num_states conf ] (letters conf) 
+    t <- roll_reachable 
+         [ 1 .. num_states conf ] (letters conf) 
          (num_visible conf) ( num_hidden conf )
-    let r :: Maybe [(Int,Int)]
-        r = fmap R.pairs $ bisi (s,t) 
-    return ( fmap ( negate . length ) r, (s,t,r))
+    -- t <- mutate 3 s
+    let mr = bisi (s,t)     
+    let quality = case mr of 
+            Just r  | size r <= div full 2 -> 
+                Just ( negate $ size r )
+            _ -> Nothing
+    return ( quality, (s,t,mr))
     
     
 make_quiz :: Make    

@@ -5,6 +5,7 @@ import CSP.STS.Dot
 
 import Autolib.Util.Zufall
 import Autolib.Set
+import qualified Autolib.Relation as R
 
 import qualified Data.Set as S
 import Control.Monad ( forM )
@@ -42,3 +43,25 @@ roll ss ts num_visible num_hidden = do
            , hidden = nub hid 
            }
                   
+roll_reachable ss ts num_visible num_hidden = do
+    s <- roll ss ts num_visible num_hidden
+    mp <- find_start s    
+    case mp of 
+        Nothing -> 
+            roll_reachable ss ts num_visible num_hidden 
+        Just p -> return $ s { start = p }    
+
+    
+-- | return ( Just p) for some state p     
+-- than can reach all states.    
+-- if there is no such state, return Nothing    
+find_start s = do 
+    let sts = states s
+        reach = R.reflex_trans
+            $ R.make $ do (p,a,q) <- visible s ; return(p,q)
+                    ++ do (p,  q) <- hidden  s ; return(p,q)
+        candidates = 
+            S.filter ( \ p -> R.images reach p == sts ) sts
+    if S.null candidates then return Nothing
+        else fmap Just $ eins $ S.toList candidates
+        

@@ -34,7 +34,7 @@ roll sigma s vis hid mut tries = do
 single sigma s vis hid mut = do
     -- a <- fmap sts $ roll_guarded_rightlinear sigma s 
     -- b <- fmap sts $ roll_guarded_rightlinear sigma s
-    a <- CSP.STS.Roll.roll [ 1 .. s ] sigma vis hid
+    a <- CSP.STS.Roll.roll_reachable [ 1 .. s ] sigma vis hid
     b <- CSP.STS.Roll.mutate mut a
     let dt = symdiff ( traces a ) ( traces b )
         st = some_shortest dt

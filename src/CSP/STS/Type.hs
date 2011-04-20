@@ -11,6 +11,7 @@ import Autolib.Hash
 
 import Autolib.Set
 import qualified Data.Set as S
+import qualified Autolib.Relation as R
 import Data.Typeable
 
 data Ord t => STS s t = STS { start :: s
@@ -29,3 +30,13 @@ states s = S.fromList
      ++ do (p,q)   <- hidden  s ; [p, q]    
 
 $(derives [ makeReader, makeToDoc ] [ ''STS ] )
+
+all_states_are_reachable :: ( Ord s, Ord t ) 
+                            => STS s t -> Bool
+all_states_are_reachable s = 
+    let reach = R.reflex_trans
+            $ R.make $ do (p,a,q) <- visible s ; return(p,q)
+                    ++ do (p,  q) <- hidden  s ; return(p,q)
+    in  flip all ( S.toList $ states s ) $ \ q ->
+            R.holds reach ( start s) q 
+            
