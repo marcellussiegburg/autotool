@@ -93,7 +93,7 @@ my_name = "Trial.cgi"
 
 main :: IO ()
 main = Gateway.CGI.execute ( my_name ) $ do
-   wrap $ do
+   wrap $ do -- FIXME: following code looks ugly
        mtopic <- look "topic"
        case mtopic of
            Just topic -> fixed_topic topic
@@ -101,7 +101,11 @@ main = Gateway.CGI.execute ( my_name ) $ do
 	       mproblem <- look "problem"
 	       case mproblem of
 	           Just problem -> fixed_problem problem
-		   Nothing -> free_choice
+		   Nothing -> do
+                     mlecture <- look "lecture"
+                     case mlecture of
+                       Just lecture -> fixed_lecture lecture
+                       Nothing -> free_choice
 
 free_choice = do
        selektor
@@ -139,6 +143,22 @@ vor tmk pack = do
     vor <- btabled $ click_choice "Vorlesung" $ do
         v <- vors
 	return ( toString $ V.name v , v )
+    lecture tmk vor pack
+    
+fixed_lecture vor = do
+    vs <- io $ V.get_this $ fromCGI vor
+    case vs of
+        [ v ] -> lecture Inter.Collector.tmakers v dummy
+        _ -> fail "keine Vorlesung mit dieser Nummer" 
+
+lecture tmk vor pack = do    
+    h3 $ "Vorlesung: " ++ ( toString $ V.name vor )
+    plain "Link zu dieser Vorlesung:"
+    let lect = "Trial.cgi?lecture=" 
+                    ++ Control.Types.toString ( V.vnr vor )
+    html $ specialize Autolib.Multilingual.DE  
+	     $ ( O.render $ O.Link $ lect :: H.Html )
+
     aufgaben <- io $ A.get ( Just $ V.vnr vor )
     ( conf, auf ) <- mutexed $ btabled $ do
 	rowed $ do plain "Aufgabe" ; plain "Typ"
