@@ -8,6 +8,9 @@ import Autolib.Reader
 import Autolib.Size
 
 import Data.Typeable
+import Data.Data
+import Language.Haskell.Exts.Parser
+import Language.Haskell.Exts.Syntax
 
 import Test.QuickCheck ( Args (..))
 import System.Random ( StdGen )
@@ -16,15 +19,29 @@ import System.Random ( StdGen )
 -- but nicely formatted reader/todoc
 data Code = Code String deriving ( Eq, Ord, Typeable, Read, Show )
 
+
+-- this is highly problematic because it eats all of the input
+-- corollary: it cannot be composed 
+-- (we cannot parser Code as part of a larger structure)
+-- corollary: all properties of the problem statement
+-- must be in the code (e.g., as annotations/pragmas)
 instance Reader Code where 
     reader = do cs <- getInput ; setInput "" ; return $ Code cs
 
 instance ToDoc Code where 
     toDoc ( Code cs ) = vcat $ map text $ lines cs
 
--- FIXME: should use the size of the syntax tree
+-- this is the size of the syntax tree.
 instance Size Code where
-    size ( Code cs ) = length cs
+    -- size ( Code cs ) = length cs
+    size ( Code cs ) = case parseModule cs of
+        ParseOk m -> msize m
+        _ -> 0
+
+msize :: Data a => a -> Int
+msize m = sum $ 1 : gmapQ msize m
+
+
 
 code_example :: Code
 code_example = Code $ unlines 
