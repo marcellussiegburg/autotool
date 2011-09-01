@@ -1,6 +1,7 @@
 {-# language DeriveDataTypeable, TemplateHaskell #-}
 {-# language MultiParamTypeClasses #-}
 {-# language FlexibleInstances #-}
+{-# language UndecidableInstances #-}
 
 module Petri.Remote where
 

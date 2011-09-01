@@ -46,7 +46,9 @@ levels' n =
     let f done [] = []
         f done xs = 
             let done' = S.union done $ S.fromList $ map fst xs
-                next = nubBy ( equalling fst ) $ do 
+                units f xs = M.elems $ M.fromList 
+                           $ map ( \ x ->  (f x, x ) ) xs
+                next = M.toList $ M.fromList $ do
                    (x, p) <- xs
                    ( t, y ) <- successors n x
                    guard $ not $ S.member y done'
