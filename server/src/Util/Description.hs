@@ -15,7 +15,8 @@ import qualified Autolib.Output as AO
 import qualified Autolib.ToDoc as AT
 import qualified Gateway.Help as GH
 
-import Autolib.Reporter
+import Autolib.Reporter.IO.Type
+-- import Autolib.Reporter
 
 import Data.Typeable
 
@@ -29,7 +30,9 @@ fromOutput :: AO.Output -> IO Description
 fromOutput = fmap DString . outputToXmlString
 
 fromReport :: Reporter a -> IO Description
-fromReport rep = fromOutput (kommentar rep)
+fromReport rep = 
+    do k <- kommentar rep ; fromOutput k
+    -- fromOutput ( kommentar rep )
 
 help :: (Data.Typeable.Typeable a) => a -> IO Description
 help = fromOutput . GH.help

@@ -12,7 +12,7 @@ import Service.GetTaskDescription
 import Service.VerifyTaskConfig
 import Service.GetTaskInstance
 import Service.GradeTaskSolution
-import Config
+import Config (timeLimit, secret)
 
 import System.IO
 import System.Timeout

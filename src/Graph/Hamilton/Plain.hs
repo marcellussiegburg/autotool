@@ -68,8 +68,8 @@ nodes_form_cycle g xs = do
     sequence $ do
         (x, y) <- zip xs ( rotate 1 xs )
         let k = kante x y
-        return $ assert ( elementOf k $ kanten g )
-	       $ toDoc k
+        return $ when ( not $ elementOf k $ kanten g ) $ reject
+               $ ( text "Graph enthält nicht:" <+> toDoc k )
     inform $ text "ja."
 
 rotate k xs = 

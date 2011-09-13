@@ -7,7 +7,7 @@ module Util.Hash (
 import qualified Data.Digest.Pure.SHA as S
 import qualified Data.ByteString.Lazy as BL
 
-hashBase :: BL.ByteString -> S.Digest
+-- hashBase :: BL.ByteString -> S.Digest S.SHA1State
 hashBase = S.sha1
 
 type Digest = String

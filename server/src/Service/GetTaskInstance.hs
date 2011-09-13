@@ -16,12 +16,15 @@ import Types.TT
 
 import Inter.Types as IT
 import Control.Types (VNr (..))
-import Autolib.Reporter
+
+-- import Autolib.Reporter
+import Autolib.Reporter.IO.Type
 import Autolib.Reader
 import qualified Autolib.ToDoc as AT
 import Challenger.Partial as CP
 
 import Text.ParserCombinators.Parsec
+import Control.Monad.Error
 
 nocache :: CacheFun
 nocache _ = id
@@ -35,10 +38,12 @@ get_task_instance  (TT sconf) (TT seed) = fmap TT $ do
     let Right config' = parse (parse_complete reader) "<config>" config
         maker = maker0 config'
     ri <- gen maker (VNr 0) Nothing seed nocache
-    i <- maybe (fail "internal error generating instance") return (result ri)
+    res <- liftIO $ result $ Autolib.Reporter.IO.Type.lift ri
+    i <- maybe (fail "internal error generating instance") return res
     let b = CP.initial (problem maker) i
     doc <- help b
-    descr <- fromReport $ report (problem maker) i
+    descr <- fromReport $ Autolib.Reporter.IO.Type.lift 
+                        $ CP.report (problem maker) i
     return ( sign (task,
                    Instance { I.tag = IT.tag maker,
                               I.contents = AT.showDoc . AT.toDoc $ i})

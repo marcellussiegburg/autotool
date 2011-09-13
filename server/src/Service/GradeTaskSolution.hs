@@ -17,7 +17,7 @@ import Types.TT
 
 import Inter.Types
 import Inter.Evaluate
-import Autolib.Reporter
+import Autolib.Reporter.IO.Type
 import Control.Types (is_okay, size)
 
 import Control.Monad.Error
@@ -34,7 +34,8 @@ grade_task_solution (TT sTaskInst) (TT (SString solution))
             assertTypes _ _ = ()
             () = assertTypes maker0 (p, inst')
         let res = evaluate p inst' solution
-        score <- case result res of
+        ( mres, out ) <- liftIO $ run res     
+        score <- case mres of
             Nothing -> throwReport res
             Just score -> return score
         when (not (is_okay score)) $ throwReport res
