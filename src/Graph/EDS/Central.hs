@@ -47,14 +47,13 @@ instance C.Partial EDS (Graph Int) (Set Int) where
     report _ g = do
 
         inform $ vcat
-	       [ text "Geben Sie eine exakte dominierende Menge für den Graphen"
+	       [ text "Geben Sie eine exakte dominierende Menge für diesen Graphen an:"
 	       , nest 4 $ toDoc g
 	       ]
         peng g { layout_program = if isEmptyFM (graph_layout g) 
 		                  then Dot
 		                  else layout_program g
 	       }
-        inform $ text "an!"
 
     initial _ g = knoten g
 
@@ -76,6 +75,7 @@ instance C.Partial EDS (Graph Int) (Set Int) where
                 return ( u, cs )
 
         inform $ text "Ist Ihre Einsendung eine dominierende Menge?"
+        inform $ text "(Bilden die Nachbarschaftsmengen eine Überdeckung?)"
         let missing = do
                 ( u, cs ) <- covered
                 guard $ 1 > length cs
