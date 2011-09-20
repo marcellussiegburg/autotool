@@ -155,6 +155,8 @@ import qualified Graph.VC.Central
 import qualified Graph.VC.VCSAT
 import qualified Partition.Central
 
+import qualified Graph.EDS.Central
+
 import qualified Binpack.Interface
 import qualified Binpack.FFD
 import qualified KnapsackFraction.Central
@@ -595,6 +597,8 @@ tmakers =
                 , item Graph.VC.Central.make_quiz
                 , item Graph.VC.VCSAT.make_fixed
                 , item Graph.VC.VCSAT.make_quiz               
+                , item Graph.EDS.Central.make_fixed
+                , item Graph.EDS.Central.make_quiz
                 ]
 
 	  , heading "experimentell"
