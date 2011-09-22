@@ -44,7 +44,7 @@ make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud var seed = do
     let mat = S.mnr stud
     k <- key var seed
     -- g <- gen var vnr manr k cache
-    let s = crc32 ( fromString ( show var ++ show manr ++ k ) :: ByteString )
+    let s = crc32 ( fromString ( show vnr ++ show manr ++ k ) :: ByteString )
     g <- generate var ( fromIntegral s ) cache
     Just i <- result $ lift g
     o <- kommentar $ lift $ report p i
