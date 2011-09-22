@@ -8,7 +8,7 @@ where
 
 import Control.Types
 import Gateway.CGI
-import Inter.Crypt
+import Operate.Crypt
 import Control.Schule as U
 import Control.Student.Type as T
 import Control.Student.DB

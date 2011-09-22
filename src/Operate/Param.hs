@@ -1,4 +1,4 @@
-module Inter.Param where
+module Operate.Param where
 
 --   $Id$
 
@@ -6,7 +6,7 @@ import qualified Control.Passwort
 import Control.Types ( Wert )
 
 import Inter.Types ( Variant, Make )
-import Inter.Click
+import Operate.Click
 import Control.Types
 
 import qualified Text.XHtml

@@ -1,9 +1,9 @@
 -- |  Statistik
 
-module Inter.Statistik where
+module Operate.Statistik where
 
 import Gateway.CGI
-import Inter.Login
+import Operate.Login
 import Control.Types
 
 import qualified Control.Aufgabe.Typ as A
@@ -32,7 +32,7 @@ import Control.Monad
 import qualified Data.List
 
 -- main :: IO ()
--- main = Inter.CGI.execute "Statistik.cgi" $ iface 
+-- main = Operate.CGI.execute "Statistik.cgi" $ iface 
 
 data Choice = None | All | Mandat deriving ( Eq, Ord, Show )
 

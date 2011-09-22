@@ -1,19 +1,19 @@
 module Control.Time.CGI where
 
 import Control.Time.Typ
-import Inter.DateTime
+import Operate.DateTime
 import Gateway.CGI
 
 import Data.Ix
 
 defaults :: IO (Time,Time)
 defaults = do
-    ( lo, hi ) <- Inter.DateTime.defaults
+    ( lo, hi ) <- Operate.DateTime.defaults
     return ( read lo, read hi ) -- ARGH
 
 edit :: String -> Maybe Time -> Form IO Time
 edit title mt = do
-    jetzt <- fmap read $ io $ Inter.DateTime.now
+    jetzt <- fmap read $ io $ Operate.DateTime.now
     let t = case mt of
          Just t -> t
 	 Nothing -> jetzt

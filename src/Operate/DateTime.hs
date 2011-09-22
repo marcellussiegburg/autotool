@@ -1,9 +1,7 @@
 -- | erzeugt nette default datumseinträge von morgen, 10:00 Uhr bis
 -- morgen in einer Woche, 10:00 Uhr
 
-module Inter.DateTime where
-
---  $Id$
+module Operate.DateTime where
 
 
 import System.Time ( TimeDiff , noTimeDiff , tdDay , getClockTime 

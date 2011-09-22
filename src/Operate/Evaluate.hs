@@ -1,4 +1,4 @@
-module Inter.Evaluate where
+module Operate.Evaluate where
 
 --   $Id$
 

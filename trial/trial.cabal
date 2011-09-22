@@ -18,28 +18,25 @@ Build-Type:     Simple
 Executable Trial.cgi
   Build-Depends:
     autolib-todoc,autolib-data,autolib-reader,
-    autolib-output,autolib-reporter,
-    autolib-util,autolib-fa,autolib-fta,
-    autolib-graph,autolib-relation,autolib-exp,
-    autolib-rewriting,autolib-dot,autolib-algorithm,
+    autolib-output,autolib-reporter, autolib-util,
     autotool-collection,
-    base == 4.*,parsec >=2 && < 4, old-locale,old-time,
+    base == 4.*,parsec, old-locale,old-time,
     xhtml==3000.*,cgi,
-    hsql==1.7.1,hsql-mysql==1.7.1,
+    hsql,hsql-mysql,
     containers,directory,random,mtl,
-    process,unix,
+    process,unix,digest,bytestring,
     autolib-transport,
     obdd,array,pretty
-  GHC-Options:    -Wall
+  GHC-Options:    -Wall -fglasgow-exts
   Extensions:
-     DeriveDataTypeable
-     MultiParamTypeClasses
-     TypeSynonymInstances
-     FlexibleInstances
-     FlexibleContexts
-     UndecidableInstances
-     ScopedTypeVariables
-     FunctionalDependencies
-     TemplateHaskell
+--     DeriveDataTypeable
+--     MultiParamTypeClasses
+--     TypeSynonymInstances
+--     FlexibleInstances
+--     FlexibleContexts
+--     UndecidableInstances
+--     ScopedTypeVariables
+--     FunctionalDependencies
+--     TemplateHaskell
   Hs-source-dirs: src, src/control, common
-  Main-Is: Inter/Trial.hs
+  Main-Is: Operate/Trial.hs

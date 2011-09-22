@@ -1,11 +1,11 @@
-module Inter.Tutor where
+module Operate.Tutor where
 
 
 import Inter.Types
-import Inter.Bank
+import Operate.Bank
 
 import Gateway.CGI
-import qualified Inter.Param as P
+import qualified Operate.Param as P
 import qualified Control.Aufgabe as A
 import qualified Control.Student as S
 import Challenger.Partial

@@ -22,7 +22,7 @@ import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.Size
 
-import Control.Types ( Wert (..), ok )
+import Inter.Wert ( Wert (..), ok )
 import Control.Monad ( when )
 
 class Measure p i b where

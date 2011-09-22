@@ -1,4 +1,4 @@
-module Inter.Language where
+module Operate.Language where
 
 import Autolib.Multilingual
 import Gateway.CGI

@@ -1,26 +1,24 @@
-module Inter.Bank where
-
--- -- $Id$
+module Operate.Bank where
 
 import Control.Punkt
 import Control.Types
 import qualified System.Posix
 
 import System.Time
-import qualified Inter.Param as P
+import qualified Operate.Param as P
 
-import qualified Inter.Store
+import qualified Operate.Store
 import Util.Datei
 
 bank :: P.Type -> IO String
 bank p = do
 
-    ( pid , minfile  ) <- Inter.Store.store Inter.Store.Input p 
-    ( _ , minstfile  ) <- Inter.Store.store Inter.Store.Instant p 
+    ( pid , minfile  ) <- Operate.Store.store Operate.Store.Input p 
+    ( _ , minstfile  ) <- Operate.Store.store Operate.Store.Instant p 
     
     mrepfile <- case P.mresult p of
         Just x | x /= Pending -> do 
-            ( pid , mrepfile ) <- Inter.Store.store Inter.Store.Report p 
+            ( pid , mrepfile ) <- Operate.Store.store Operate.Store.Report p 
 	    return $ mrepfile
         _ -> return Nothing
 

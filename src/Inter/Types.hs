@@ -10,7 +10,8 @@ import Gateway.Help
 import Challenger.Partial
 
 -- sollte man nicht importieren, enthält aber VNr und MNr
-import Control.Types 
+-- import Control.Types 
+
 import Util.Datei
 
 import  Autolib.ToDoc
@@ -24,6 +25,7 @@ import Data.Char
 type Matrikel = String
 
 type Key = String
+type Salt = Int
 
 dashed :: Show p => p -> String
 dashed p = map ( \ c -> if isSpace c then '-' else c ) 
@@ -92,7 +94,7 @@ direct p i = Make p
 	     ( \ i -> Var { problem = p
 		   , tag = dashed p ++ "-Direct"
 		   , key = \ mat -> return mat
-		   , gen = \ _vnr _manr _key _cache -> return $ return i
+		   -- , gen = \ _vnr _manr _key _cache -> return $ return i
                    , generate = \ _salt _cache -> return $ return i
 		   }
 	     )
@@ -107,6 +109,7 @@ data Var p i b =
 	     -- (den der benutzer in auswahlliste sieht)
 	     -- gar nicht mehr wahr!
 	     , tag :: String
+
 	     -- | erzeugt cached version der instanz (o. ä.)
 	     , key :: Matrikel -> IO Key
 
@@ -119,11 +122,11 @@ data Var p i b =
 	     -- FIXME: hier werden VNr und ANr benutzt,
 	     -- das darf aber nicht sein (man soll hier gar nicht wissen,
 	     -- dass es so etwas gibt)
-	     , gen :: VNr -> Maybe ANr -> Key 
-                   -> CacheFun -> IO ( Reporter i )
+	     -- , gen :: VNr -> Maybe ANr -> Key 
+             --      -> CacheFun -> IO ( Reporter i )
 
              -- so soll es sein: Eingabe ist seed für Zufall
-             , generate :: Int
+             , generate :: Salt
                         -> CacheFun -> IO ( Reporter i )
 
 	     }

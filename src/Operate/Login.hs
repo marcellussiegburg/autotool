@@ -1,6 +1,6 @@
 --  $Id$
 
-module Inter.Login where
+module Operate.Login where
 
 import Gateway.CGI
 import Control.Types ( VNr, toString, TimeStatus (..) )

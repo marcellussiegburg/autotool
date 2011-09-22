@@ -7,7 +7,7 @@ module Control.Punkt where
 import Control.SQL
 import Control.Types
 import Control.Passwort
-import Inter.Crypt
+import Operate.Crypt
 
 import Control.Monad
 import Data.Maybe
@@ -37,7 +37,7 @@ loginDB mnr pass =
 
        return $ case inhs of
            [ (s, p) ] -> do
-		 guard $ Inter.Crypt.compare p (toString pass)
+		 guard $ Operate.Crypt.compare p (toString pass)
 		 return s
            _ -> Nothing
 

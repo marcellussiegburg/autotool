@@ -1,19 +1,20 @@
-module Inter.Student where
+module Operate.Student where
 
 import Inter.Types
-import Inter.Bank
-import Inter.Evaluate
-import Inter.Common
-import qualified Inter.Language
-import qualified Inter.Store
+
+import Operate.Bank
+import Operate.Evaluate
+import Operate.Common
+import qualified Operate.Language
+import qualified Operate.Store
 
 import Gateway.CGI
 import Gateway.Help
 
-import qualified Inter.Param as P
+import qualified Operate.Param as P
 import qualified Control.Aufgabe as A
 import qualified Control.Student as S
-import Control.Types (toString)
+import Control.Types (toString, VNr, MNr)
 import Challenger.Partial
 
 import qualified Text.XHtml
@@ -39,10 +40,10 @@ data Method = Textarea | Upload
 -- | eingabe und bewertung der lösung
 -- für tutor zum ausprobieren
 -- für student echt
-solution vnr manr stud 
+solution vnr  manr stud 
         ( Make p0 doc ( fun :: conf -> Var p i b ) verify ex ) auf = do
 
-    lang <- Inter.Language.choose
+    lang <- Operate.Language.choose
 
     ( p, i, icom ) <- make_instant vnr manr stud fun auf
 
@@ -78,7 +79,7 @@ solution vnr manr stud
 
             let b0 = render $ toDoc ini 
 	    def <- io $ if prev 
-	      then Inter.Store.latest Inter.Store.Input past
+	      then Operate.Store.latest Operate.Store.Input past
                       `CE.catch` \ (CE.SomeException _) -> return b0
 	      else return b0
 	    open table

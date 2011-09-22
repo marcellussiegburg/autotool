@@ -1,6 +1,4 @@
-module Inter.Make where
-
---  $Id$
+module Operate.Make where
 
 import Inter.Types
 import Data.Typeable

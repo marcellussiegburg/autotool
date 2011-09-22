@@ -1,20 +1,24 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Inter.Common where
+module Operate.Common where
 
 import Inter.Types
-import Inter.Bank
+import Operate.Bank
 import Gateway.CGI
-import qualified Inter.Param as P
+import qualified Operate.Param as P
 import qualified Control.Aufgabe as A
 import qualified Control.Student as S
 import qualified Autolib.Output as O
-import Control.Types (toString)
+import Control.Types (toString, VNr, ANr)
 import Challenger.Partial
 import Util.Cache (cache)
 import Autolib.Reporter.IO.Type
 import Autolib.ToDoc ( text )
 import Control.Monad ( when )
+
+import Data.String
+import Data.ByteString ( ByteString )
+import Data.Digest.CRC32
 
 -- import qualified Text.XHtml
 import qualified Autolib.Multilingual.Html as Html
@@ -35,11 +39,13 @@ mkpar stud auf = P.empty
 make_instant_common vnr manr stud var = 
     make_instant_common_with vnr manr stud var $ toString $ S.mnr stud 
 
-make_instant_common_with vnr manr stud var seed = do
+make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud var seed = do
     let p = problem var
     let mat = S.mnr stud
     k <- key var seed
-    g <- gen var vnr manr k cache
+    -- g <- gen var vnr manr k cache
+    let s = crc32 ( fromString ( show var ++ show manr ++ k ) :: ByteString )
+    g <- generate var ( fromIntegral s ) cache
     Just i <- result $ lift g
     o <- kommentar $ lift $ report p i
     return ( p, i, O.render o :: Html.Html )

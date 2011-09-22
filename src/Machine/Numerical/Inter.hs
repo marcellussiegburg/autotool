@@ -22,15 +22,15 @@ computer auf ver num = computer_mat auf ver ( const num )
 computer_mat :: ( N.TypeC c m, Machine m dat conf, Numerical dat )
          => String		-- aufgabe (major)
 	 -> String -- version ( minor )
-     -> ( Key -> N.Type c m )
+     -> ( Salt -> N.Type c m )
      -> Var N.Computer ( N.Type c m ) m 
 computer_mat auf ver fnum =
     Var { problem = N.Computer
 	, tag = auf ++ "-" ++ ver
 	, key = \ matrikel -> do
 	      return matrikel
-	, gen = \ _vnr _manr key _cache -> return $ do
-	      return $ fnum key
+	-- , gen = \ _vnr _manr key _cache -> return $ do return $ fnum key
+        , generate = \ salt cachefun -> return $ return $ fnum salt
 	}
 
 instance ( N.TypeC c m, Machine m dat conf, Numerical dat, Reader m )

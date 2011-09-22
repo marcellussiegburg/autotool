@@ -1,4 +1,4 @@
-module Inter.Click where
+module Operate.Click where
 
 --  $Id$
 

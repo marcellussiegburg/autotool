@@ -35,7 +35,8 @@ make ( defcon :: Con.Config c m ) =
 	          { problem = N.Computer
 		  , tag = t
 		  , key = \ matrikel -> return matrikel
-		  , gen = \ _vnr _manr key _cache -> fnum conf key 
+                  -- , gen = \ _vnr _manr key _cache -> fnum conf key 
+                  , generate = \ salt cachefun -> fnum conf salt -- FIXME: cachefun ?
 		  }
 	    )
 	    ( \ _con -> return () ) -- verify
@@ -44,14 +45,14 @@ make ( defcon :: Con.Config c m ) =
 
 fnum ::  ( Show c , Con.Check c m , Con.ConfigC c m , Machine m dat conf )
      => Con.Config c m 
-     -> String
+     -> Int
      -> IO ( Reporter ( N.Type c m ))
 fnum conf key = do
     xss <- testliste 
         ( Con.num_args conf ) ( Con.arity conf ) ( Con.max_arg conf )
     let xs = map M.Var [ 1 .. fromIntegral $ Con.arity conf ]
     return $ return $ N.Make { N.op = Con.op conf
-              , N.key = read key
+              , N.key = fromIntegral key
 	      , N.fun_info = fsep 
 		     [ text "\\" , toDoc xs , text "->", toDoc $ Con.op conf ]
 	      , N.extra_info = vcat $

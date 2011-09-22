@@ -69,12 +69,13 @@ Library
     Hs-source-dirs:
         src
         src/control
-        common
     Exposed-Modules:
         Inter.Collector
-        Inter.Crypt
+        -- Inter.Crypt
+        Inter.Wert
         Inter.Quiz
         Inter.Types
+        Gateway.Help
         Local
         Upload
         Debug
@@ -83,11 +84,18 @@ Library
         Challenger.Partial
         Challenger.Einsendung
         Challenger.Ident
-        Control.SQL
-        Control.Time
-        Control.Time.Typ
-        Control.Types
-        Gateway.Help
+        -- Control.SQL
+        -- Control.Time
+        -- Control.Time.Typ
+        -- Control.Types
+        -- Gateway.Help
+        Codec.Encryption.MD5Aux,
+        Codec.Encryption.Utils,
+        Codec.Encryption.MD5,
+        Mysqlconnect,
+                 Util.Datei.Base,
+                 Util.FailDoc,
+                 Util.Cache
     other-modules: 
                  Haskell.SmallCheck		    
                  Haskell.Data,
@@ -171,7 +179,6 @@ Library
                  Unify.Roll,
                  Unify.Config,
                  Unify.Instance,
-                 Mysqlconnect,
                  Arithmetic.Op,
                  Program.General.Environment,
                  Program.General.Value,
@@ -471,9 +478,6 @@ Library
                  RSA.Param,
                  RSA.Quiz,
                  RSA.Break.Data,
-                 Codec.Encryption.MD5Aux,
-                 Codec.Encryption.Utils,
-                 Codec.Encryption.MD5,
                  Tree,
                  -- Challenger.Ident,
                  -- Challenger.Einsendung,
@@ -584,6 +588,8 @@ Library
                  Graph.VC.ParamSAT,
                  Graph.VC.VCSAT,
                  Graph.VC.SAT,
+                 Graph.EDS.Central,
+                 Graph.EDS.Param,
                  Graph.TSP.Search,
                  Graph.TSP.Tropic,
                  Graph.TSP.Quiz,
@@ -637,9 +643,6 @@ Library
                  Partition.Beispiel,
                  Partition.Central,
                  Partition.Param,
-                 Util.Datei.Base,
-                 Util.FailDoc,
-                 Util.Cache,
                  Convert.Language,
                  Convert.Type,
                  Convert.Input,

@@ -4,7 +4,7 @@
 module Control.Student.Type where
 
 import Control.Types
-import Inter.Crypt
+import Operate.Crypt
 
 import Autolib.Reader
 import Autolib.ToDoc

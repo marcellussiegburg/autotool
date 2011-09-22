@@ -7,11 +7,7 @@ module Control.Types
 
 , Wert ( Reset, Pending, No, Okay)
 , size, is_okay
--- 
--- break abstraction because Inter.Action needs to see details.
--- Eigentlich sollte die instance XmlRpcType Wert hier in Inter.Types stehen,
--- aber das würde import import Network.XmlRpc.Internals erfordern,
--- d. h. jeder müßte erst haskell-XML-rpc installieren
+
 , Wert ( Ok )
 
 , ok, okay, size, punkte
@@ -40,8 +36,10 @@ import Autolib.Hash
 
 import Control.Time
 
+import Inter.Wert
+
 import Control.SQL hiding ( equals )
-import Inter.Crypt
+import Operate.Crypt
 import Data.Char ( toLower )
 import Data.Maybe ( fromMaybe, listToMaybe )
 
@@ -164,6 +162,8 @@ instance ToString Status where
 
 -------------------------------------------------------------
 
+{- moved to Inter.Wert
+
 data Wert = Reset 
 	  | Pending
 	  | No 
@@ -196,6 +196,8 @@ renovate w = case w of
     _    -> w
 
 $(derives [makeReader, makeToDoc] [''Wert])
+
+-}
 
 instance SqlBind Wert where 
     fromSqlValue _ s = Just $ case reads s of

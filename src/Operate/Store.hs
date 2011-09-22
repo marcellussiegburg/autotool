@@ -1,14 +1,14 @@
-module Inter.Store where
+module Operate.Store where
 
 --  $Id$
 
 import Util.Datei
 import qualified System.Posix
-import qualified Inter.Param as P
+import qualified Operate.Param as P
 
 import Control.Types (toString, fromCGI, File, Wert(..))
 import Control.Monad ( when )
-import Inter.Logged
+import Operate.Logged
 
 import Data.Maybe
 import Data.Char
@@ -20,7 +20,7 @@ data Type = Instant | Input | Report deriving ( Eq, Ord, Show )
 -- zur sicherheit auch: von richtigen einsendungen: speicher in "$pid.input"
 -- d. h. eigentlich kein überschreiben
 store :: Type -> P.Type -> IO ( String, Maybe File )
-store ty p = logged "Inter.store" $ do
+store ty p = logged "Operate.store" $ do
     pid <- fmap show $ System.Posix.getProcessID 
     let flag = case P.mresult p of Just (Okay {}) -> True ; _ -> False
         mthing = case ty of 
@@ -28,18 +28,18 @@ store ty p = logged "Inter.store" $ do
                    Instant -> fmap show $ P.minstant p
                    Report -> fmap show $  P.report p
     when flag $ do
-            logged "Inter.store.schreiben" 
+            logged "Operate.store.schreiben" 
                $ mschreiben ( location ty p pid flag ) $ mthing
             return ()
     f <- mschreiben ( location ty p "latest" flag ) $ mthing
     return ( pid , fmap fromCGI f )
 
 latest :: Type -> P.Type -> IO String
-latest ty p = logged "Inter.latest" $ do
+latest ty p = logged "Operate.latest" $ do
     lesen ( location ty p "latest" False ) 
 
 load :: Type -> P.Type -> String -> Bool -> IO String
-load ty p pid flag = logged "Inter.load" $ do
+load ty p pid flag = logged "Operate.load" $ do
     lesen ( location ty p pid flag )
     
 

@@ -1,7 +1,5 @@
-module Inter.Logged where
+module Operate.Logged where
 
-
---  $Id$
 
 import qualified Control.SQL 
 import System.IO

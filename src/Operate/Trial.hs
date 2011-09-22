@@ -4,22 +4,23 @@
 module Main where
 
 import Gateway.CGI
-import Inter.Evaluate
-import Inter.Make 
-import Inter.Motd
-import Inter.Bank
-import Inter.Store 
-import Inter.Login
-import Inter.Logged
+
+import Operate.Evaluate
+import Operate.Make 
+import Operate.Motd
+import Operate.Bank
+import Operate.Store 
+import Operate.Login
+import Operate.Logged
 
 
-import Inter.Tutor
-import Inter.Student
+import Operate.Tutor
+import Operate.Student
 
 
 import qualified Control.Aufgabe.DB
-import qualified Inter.Param as P
-import qualified Inter.Statistik
+import qualified Operate.Param as P
+import qualified Operate.Statistik
 
 import Gateway.Help
 
@@ -46,7 +47,7 @@ import qualified Inter.Collector
 
 import Challenger.Partial
 import Inter.Types
-import Inter.Common
+import Operate.Common
 
 import Control.Student.CGI
 import Control.Vorlesung.DB
@@ -87,7 +88,7 @@ import qualified Text.XHtml
 import qualified Autolib.Multilingual as M
 import qualified Autolib.Multilingual.Html as H
 
-import Inter.DateTime ( defaults )
+import Operate.DateTime ( defaults )
 
 my_name = "Trial.cgi"
 
@@ -109,7 +110,7 @@ main = Gateway.CGI.execute ( my_name ) $ do
 
 free_choice = do
        selektor
-       con <- io $ Inter.Motd.contents
+       con <- io $ Operate.Motd.contents
        html con
        hr
 

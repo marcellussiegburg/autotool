@@ -1,4 +1,4 @@
-module Inter.Motd where
+module Operate.Motd where
 
 --   $Id$
 

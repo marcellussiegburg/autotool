@@ -1,10 +1,10 @@
 {-# language TypeSynonymInstances, MultiParamTypeClasses, DeriveDataTypeable #-}
 
-module Inter.Crypt 
+module Operate.Crypt 
 
 ( Crypt (..)
 , encrypt
-, Inter.Crypt.compare
+, Operate.Crypt.compare
 , is_empty, empty
 )
 

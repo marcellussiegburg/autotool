@@ -5,7 +5,7 @@ module Inter.Quiz where
 
 import Challenger.Partial
 import Inter.Types
-import Control.Types
+-- import Control.Types
 
 import Util.Datei
 import Autolib.Util.Seed
@@ -41,12 +41,13 @@ make ( p :: p ) ( conf :: conf ) = this
 	     -- erzeugt cached version der instanz (o. ä.)
 	     -- key :: Matrikel -> IO Key
 	     , key = \ mat -> return $ mat
+
+{-
 	     -- holt tatsächliche instanz
 	     -- gen :: Key -> IO ( Reporter i )
 	     , gen = \ vnr manr key cache -> do
 
-             --  generate this $ fromIntegral $ hash ( vnr, manr, key )
-
+               -- generate this $ fromIntegral $ hash ( vnr, manr, key )
                    seed $ fromIntegral $ hash $ show ( toDoc conf ) ++ key
                    k <- cache 
 	               (  Datei { pfad = [ "autotool", "cache"
@@ -58,7 +59,7 @@ make ( p :: p ) ( conf :: conf ) = this
   		          }
        	                ) ( generator p conf key )
 	           return $ return $ project p k
-
+-}
              , generate = \ salt cache -> do
                    seed $ salt 
                    k <- cache 

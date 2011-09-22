@@ -4,7 +4,7 @@ module Control.Student.DB where
 
 import Control.SQL
 import Control.Types
-import Inter.Crypt
+import Operate.Crypt
 import qualified Control.Student.Type as CST
 
 import Prelude hiding ( all )
