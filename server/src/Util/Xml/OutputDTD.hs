@@ -5,6 +5,7 @@
 module Util.Xml.OutputDTD where
 
 import Text.XML.HaXml.XmlContent
+import Text.XML.HaXml.Types ( QName (N))
 
 import Text.XML.HaXml.Escape
 import Text.XML.HaXml.Posn
@@ -66,7 +67,7 @@ instance HTypeable Pre where
     toHType x = Defined "Pre" [] []
 instance XmlContent Pre where
     toContents (Pre a) =
-        [CElem (Elem "Pre" [] (toTextEscaped a)) ()]
+        [CElem (elemN "Pre" [] (toTextEscaped a)) ()]
     parseContents = do
         { e@(Elem _ [] _) <- elementEscaped ["Pre"]
         ; interior e $ return (Pre) `apply` (text `onFail` return "")
@@ -76,7 +77,7 @@ instance HTypeable Text where
     toHType x = Defined "Text" [] []
 instance XmlContent Text where
     toContents (Text a) =
-        [CElem (Elem "Text" [] (toTextEscaped a)) ()]
+        [CElem (elemN "Text" [] (toTextEscaped a)) ()]
     parseContents = do
         { e@(Elem _ [] _) <- elementEscaped ["Text"]
         ; interior e $ return (Text) `apply` (text `onFail` return "")
@@ -86,7 +87,7 @@ instance HTypeable Image where
     toHType x = Defined "Image" [] []
 instance XmlContent Image where
     toContents (Image as a) =
-        [CElem (Elem "Image" (toAttrs as) (toText a)) ()]
+        [CElem (elemN "Image" (toAttrs as) (toText a)) ()]
     parseContents = do
         { e@(Elem _ as _) <- element ["Image"]
         ; interior e $ return (Image (fromAttrs as))
@@ -113,7 +114,7 @@ instance HTypeable Link where
     toHType x = Defined "Link" [] []
 instance XmlContent Link where
     toContents (Link as a) =
-        [CElem (Elem "Link" (toAttrs as) (toTextEscaped a)) ()]
+        [CElem (elemN "Link" (toAttrs as) (toTextEscaped a)) ()]
     parseContents = do
         { e@(Elem _ as _) <- elementEscaped ["Link"]
         ; interior e $ return (Link (fromAttrs as))
@@ -132,7 +133,7 @@ instance HTypeable Above where
     toHType x = Defined "Above" [] []
 instance XmlContent Above where
     toContents (Above a) =
-        [CElem (Elem "Above" [] (concatMap toContents a)) ()]
+        [CElem (elemN "Above" [] (concatMap toContents a)) ()]
     parseContents = do
         { e@(Elem _ [] _) <- element ["Above"]
         ; interior e $ return (Above) `apply` many parseContents
@@ -166,7 +167,7 @@ instance HTypeable Beside where
     toHType x = Defined "Beside" [] []
 instance XmlContent Beside where
     toContents (Beside a) =
-        [CElem (Elem "Beside" [] (concatMap toContents a)) ()]
+        [CElem (elemN "Beside" [] (concatMap toContents a)) ()]
     parseContents = do
         { e@(Elem _ [] _) <- element ["Beside"]
         ; interior e $ return (Beside) `apply` many parseContents
@@ -176,7 +177,7 @@ instance HTypeable Itemize where
     toHType x = Defined "Itemize" [] []
 instance XmlContent Itemize where
     toContents (Itemize a) =
-        [CElem (Elem "Itemize" [] (concatMap toContents a)) ()]
+        [CElem (elemN "Itemize" [] (concatMap toContents a)) ()]
     parseContents = do
         { e@(Elem _ [] _) <- element ["Itemize"]
         ; interior e $ return (Itemize) `apply` many parseContents
@@ -186,7 +187,7 @@ instance HTypeable Space where
     toHType x = Defined "Space" [] []
 instance XmlContent Space where
     toContents as =
-        [CElem (Elem "Space" (toAttrs as) []) ()]
+        [CElem (elemN "Space" (toAttrs as) []) ()]
     parseContents = do
         { (Elem _ as []) <- element ["Space"]
         ; return (fromAttrs as)
@@ -208,7 +209,7 @@ instance HTypeable Figure where
     toHType x = Defined "Figure" [] []
 instance XmlContent Figure where
     toContents (Figure a b) =
-        [CElem (Elem "Figure" [] (toContents a ++ toContents b)) ()]
+        [CElem (elemN "Figure" [] (toContents a ++ toContents b)) ()]
     parseContents = do
         { e@(Elem _ [] _) <- element ["Figure"]
         ; interior e $ return (Figure) `apply` parseContents
@@ -216,5 +217,6 @@ instance XmlContent Figure where
         } `adjustErr` ("in <Figure>, "++)
 
 
+elemN s = Elem ( Text.XML.HaXml.Types.N s )
 
 {-Done-}

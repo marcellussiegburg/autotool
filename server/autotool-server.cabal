@@ -30,7 +30,7 @@ Executable autotool.cgi
         parsec,
         dataenc,
         pretty,
-        HaXml,
+        HaXml, 
         filepath,
         binary
     Extensions:
