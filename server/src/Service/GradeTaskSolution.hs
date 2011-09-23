@@ -18,7 +18,8 @@ import Types.TT
 import Inter.Types
 import Inter.Evaluate
 import Autolib.Reporter.IO.Type
-import Control.Types (is_okay, size)
+-- import Control.Types (is_okay, size)
+import Inter.Wert (is_okay, size)
 
 import Control.Monad.Error
 

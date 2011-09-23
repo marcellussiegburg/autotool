@@ -13,6 +13,7 @@ import Operate.Store
 import Operate.Login
 import Operate.Logged
 
+import Operate.Collector
 
 import Operate.Tutor
 import Operate.Student

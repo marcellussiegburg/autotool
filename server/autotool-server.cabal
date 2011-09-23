@@ -32,7 +32,8 @@ Executable autotool.cgi
         pretty,
         HaXml, 
         filepath,
-        binary
+        binary,
+        digest
     Extensions:
         -- FlexibleInstances
         -- UndecidableInstances

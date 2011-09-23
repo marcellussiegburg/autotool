@@ -15,7 +15,7 @@ import Types.Solution
 import Types.TT
 
 import Inter.Types as IT
-import Control.Types (VNr (..))
+-- import Control.Types (VNr (..))
 
 -- import Autolib.Reporter
 import Autolib.Reporter.IO.Type
@@ -25,6 +25,10 @@ import Challenger.Partial as CP
 
 import Text.ParserCombinators.Parsec
 import Control.Monad.Error
+
+import Data.String
+import Data.ByteString ( ByteString )
+import Data.Digest.CRC32
 
 nocache :: CacheFun
 nocache _ = id
@@ -37,7 +41,11 @@ get_task_instance  (TT sconf) (TT seed) = fmap TT $ do
     Make _ _ maker0 _ _ <- lookupTaskM task
     let Right config' = parse (parse_complete reader) "<config>" config
         maker = maker0 config'
-    ri <- gen maker (VNr 0) Nothing seed nocache
+
+    -- ri <- gen maker (VNr 0) Nothing seed nocache
+    let s = crc32 ( fromString seed :: ByteString )
+    ri <- generate maker ( fromIntegral s ) nocache
+ 
     res <- liftIO $ result $ Autolib.Reporter.IO.Type.lift ri
     i <- maybe (fail "internal error generating instance") return res
     let b = CP.initial (problem maker) i
