@@ -1,0 +1,29 @@
+\section{autotool-Aufgaben}
+\begin{frame}[fragile]
+  \frametitle{Konfiguration von autotool-Aufgaben}
+  { \small
+    zwei Möglichkeiten
+  \begin{enumerate}
+  \item Konfiguration derselben Aufgabenstellung für alle Studenten
+    \\ Beispiel: Mengenoperationen
+\begin{verbatim}
+Make { context = mkSet [ 1 , 2 , 3 , 4 , 5 ]
+, target = {(1 , 1) , (2 , 5)} ,  ...
+, operators = Binu { binary = [ * , + , - ] 
+                     , unary = [ ], nullary = [ ]}
+, predefined = listToFM
+  [ ( R , {(1, 4), (1, 5), (2, 3), (3, 1), (4, 5)} )
+  , ( S , {(1, 4), (3, 3), (4, 2), (4, 4), (5, 5)} )                     ]
+, max_size = 15 }
+\end{verbatim}
+\pause
+  \item für jeden Studenten eine eigene Aufgabeninstanz
+    \\ Konfiguration des Aufgabenwürfels
+    \\ Beispiel: Hamiltonkreis
+\begin{verbatim}
+Config
+    { nodes = 10 , edges = 30 }
+\end{verbatim}
+  \end{enumerate}
+}
+\end{frame}

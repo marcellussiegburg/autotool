@@ -1,0 +1,651 @@
+%%\usepackage[all]{xy}
+%%\usepackage{epsf,psfig,pstricks,multicol}
+%% ----------------------------------------------
+\newcommand{\todo}[1]{\par
+  \begin{boxedminipage}{\textwidth}
+    TODO:\\         
+    #1\hfill
+  \end{boxedminipage}
+\par}
+%% ----------------------------------------------
+\newcommand{\amp}{\ensuremath{\operatorname{\amp}}}
+\newcommand{\bigamp}{\ensuremath{\operatorname{\mbox{\Large{\amp}}}}}
+%% ----------------------------------------------
+\newcommand{\lAngle}{\ensuremath{\langle\!\langle}}
+\newcommand{\rAngle}{\ensuremath{\rangle\!\rangle}}
+%% ----------------------------------------------
+\newcommand{\N}{\ensuremath{\mathbbm{N}}}
+\newcommand{\R}{\ensuremath{\mathbbm{R}}}
+\newcommand{\Q}{\ensuremath{\mathbbm{Q}}}
+\newcommand{\Z}{\ensuremath{\mathbbm{Z}}}
+\newcommand{\B}{\ensuremath{\mathbbm{B}}}
+\newcommand{\K}{\ensuremath{\mathbbm{K}}}
+\newcommand{\X}{\ensuremath{\mathbbm{X}}}
+\newcommand{\W}{\ensuremath{\mathbbm{W}}}
+
+%% --ARROWS--------------------------------------------
+\newcommand{\ra}{\ensuremath{\longrightarrow}}
+\newcommand{\Ra}{\ensuremath{\Rightarrow}}
+%% \newcommand{\gdw}{\ensuremath{\Longleftrightarrow}}
+\newcommand{\gdw}{\ensuremath{\mathrm{gdw.}}\hspace{1mm}}
+
+\newcommand{\imp}{\ensuremath{\rightarrow}}
+
+\newcommand{\reduct}{\ensuremath{\upharpoonright}}
+
+%% --Document-------------------------------------------
+  
+\newtheorem{proposition}{Proposition}[section]
+
+\newtheorem{satz}{Satz}[section]
+\newtheorem{folg}{Folgerung}[section]
+
+%% \newtheorem{proposition}{\par\noindent\emph{Proposition:\ }}{\par}
+
+%% \newenvironment{proposition}{\par\noindent\emph{Proposition:\ }}{\par}
+
+% \newcounter{bsp}
+% \newenvironment{bsp}{\refstepcounter{bsp}\par\noindent\emph{Beispiel
+% %%    \thebsp :\ }}{\hspace{.5mm}\hfill $\diamond$ \par}
+%     \thebsp :\ }}{\par}
+
+%% --Konstruktoren----------------------------------------
+
+\newcommand{\dach}{\ensuremath{\mathsf{MT}}}
+\newcommand{\baum}{\ensuremath{\mathsf{vterm}}}
+
+\newcommand{\vars}{\ensuremath{\mathsf{var}}}
+
+\newcommand{\basename}{\mathsf{B}}
+
+\newcommand{\univ}[1]{\ensuremath{\mathsf{univ}\left(#1\right)}}
+\newcommand{\base}[1]{\ensuremath{\basename_{#1}}}
+
+\newcommand{\nbase}[1]{\base{#1}^{-}}
+\newcommand{\exsup}[1]{{#1}^{\mathsf{X}}}
+\newcommand{\ebase}[1]{\base{#1}^{\mathsf{X}}}
+\newcommand{\cbase}[1]{\ensuremath{\mathsf{B}_{\mathcal{C,#1}}}}
+
+%% ----------------------------------------------
+
+%%\newcommand{\up}{\ensuremath{\mathrm{up}}}
+%%\newcommand{\down}{\ensuremath{\mathrm{down}}}
+
+\newcommand{\Min}{\ensuremath{\mathrm{Min}}}
+\newcommand{\Max}{\ensuremath{\mathrm{Max}}}
+
+\newcommand{\nulll}{\ensuremath{\bot}}
+\newcommand{\eins}{\ensuremath{\top}}
+
+%% --LANG------------------------------------------
+
+\newcommand{\arity}{\ensuremath{\mathsf{ar}}}
+\newcommand{\support}[1]{\ensuremath{|#1|}}
+\newcommand{\amap}[2]{\ensuremath{[#2]_{#1}}}
+
+\newcommand{\wmap}[2]{\ensuremath{\llbracket #2 \rrbracket_{#1}}}
+\newcommand{\zmap}[1]{\ensuremath{\llbracket #1 \rrbracket}}
+
+\newcommand{\latt}[1]{\ensuremath{\left\langle #1\right\rangle}}
+
+\newcommand{\rsup}{\ensuremath{R}}
+\newcommand{\fsup}{\ensuremath{F}}
+\newcommand{\jsup}{\ensuremath{J}}
+\newcommand{\clsup}{\ensuremath{cl}}
+
+\newcommand{\sigfc}[1]{\ensuremath{\Sigma^{#1}}}
+\newcommand{\sigf}{\sigfc{\fsup}}
+\newcommand{\sigr}{\sigfc{\rsup}}
+\newcommand{\sigj}{\sigfc{\jsup}}
+%% \newcommand{\sigc}{\sigfc{\C}} 
+\newcommand{\sigcl}{\sigfc{\clsup}}
+% \newcommand{\sigf}{\ensuremath{\Sigma^{\fsup}}}
+% \newcommand{\sigj}{\ensuremath{\Sigma^{\jsup}}}
+% \newcommand{\sigcl}{\ensuremath{\Sigma^{\clsup}}}
+\newcommand{\sigo}{\ensuremath{\mathsf{sig}}}
+
+%%\newcommand{\sterm}{\ensuremath{\mathsf{term}}}
+\newcommand{\sterm}{\ensuremath{\mathsf{Term}}}
+%% \newcommand{\term}[1]{\ensuremath{\sterm\left(#1\right)}}
+\newcommand{\term}{\sterm}
+%%\newcommand{\fterm}{\ensuremath{\term{\sigf}}}
+
+%%\newcommand{\satom}{\ensuremath{\mathsf{atom}}}
+\newcommand{\satom}{\ensuremath{\mathsf{at}}}
+%% \newcommand{\atom}[1]{\ensuremath{\satom\left(#1\right)}}
+\newcommand{\catom}[1]{\ensuremath{\satom_{\C}\left(#1\right)}}
+%%\newcommand{\fratom}{\ensuremath{\atom{\sigr,\sigf}}}
+
+\newcommand{\slang}{\ensuremath{\mathsf{Lg}}}
+%%\newcommand{\slang}{\ensuremath{\mathsf{L}}}
+%%\newcommand{\slang}{\ensuremath{\mathcal{L}}}
+\newcommand{\lang}[1]{\ensuremath{\slang\left(#1\right)}}
+\newcommand{\frlang}[1]{\ensuremath{\lang{#1, \sigr, \sigf}}}
+%% \newcommand{\llang}{\ensuremath{\mathcal{L}}}\newcommand{\llang}{\ensuremath{\mathcal{L}}}
+\newcommand{\llang}{\ensuremath{\mathsf{L}}}
+\newcommand{\lrules}{\ensuremath{\mathcal{R}}}
+\newcommand{\pllang}[1]{\ensuremath{\slang_A\left(#1\right)}}
+\newcommand{\follang}[1]{\ensuremath{\slang_P\left(#1\right)}}
+\newcommand{\clang}[1]{\ensuremath{\slang_{\mathcal{C}}\left(#1\right)}}
+
+\newcommand{\tllang}{\ensuremath{\mathcal{L}_T^L}}
+\newcommand{\tblang}{\ensuremath{\mathcal{L}_T^B}}
+
+\newcommand{\prev}{\ensuremath{\operatorname{\mathsf{P}}}}
+\newcommand{\curr}{\ensuremath{\operatorname{\mathsf{C}}}}
+\newcommand{\nxt}{\ensuremath{\operatorname{\mathsf{X}}}}
+\newcommand{\fut}{\ensuremath{\operatorname{\mathsf{F}}}}
+\newcommand{\gen}{\ensuremath{\operatorname{\mathsf{G}}}}
+\newcommand{\afut}{\ensuremath{\operatorname{\forall\mathsf{F}}}}
+\newcommand{\efut}{\ensuremath{\operatorname{\exists\mathsf{F}}}}
+\newcommand{\agen}{\ensuremath{\operatorname{\forall\mathsf{G}}}}
+\newcommand{\egen}{\ensuremath{\operatorname{\exists\mathsf{G}}}}
+
+\newcommand{\upa}{\ensuremath{\operatorname{\uparrow}}}
+\newcommand{\downa}{\ensuremath{\operatorname{\downarrow}}}
+
+
+\newcommand{\cljunct}{\ensuremath{\sigj_{\cl}}}
+
+\newcommand{\cl}{\ensuremath{\mathsf{cl}}}
+\newcommand{\pl}{\ensuremath{\mathsf{PL}}}
+\newcommand{\fol}{\ensuremath{\mathsf{FOL}}}
+\newcommand{\datalog}{\ensuremath{\mathsf{datalog}}}
+
+\newcommand{\cllang}[1]{\ensuremath{\slang^{\cl}\left(#1\right)}}
+\newcommand{\cplang}[1]{\ensuremath{\slang_{\pl}^{\cl}\left(#1\right)}}
+\newcommand{\cflang}[1]{\ensuremath{\slang_{\fol}^{\cl}\left(#1\right)}}
+
+\newcommand{\mts}[1]{\left(#1\right)}
+\newcommand{\mtsyst}{\ensuremath{\mathcal{M}}}
+%%\newcommand{\plmts}{\ensuremath{\mtsyst_{\pl}}}
+%%\newcommand{\folmts}{\ensuremath{\mtsyst_{\fol}}}
+%%\newcommand{\sframe}{\ensuremath{\mathcal{Sf}}}
+
+\newcommand{\slit}{\ensuremath{\mathsf{Lit}}}
+\newcommand{\lit}[1]{\ensuremath{\slit}\left(#1\right)}
+\newcommand{\frlit}{\ensuremath{\lit{\sigr, \sigf}}}
+\newcommand{\pllit}[1]{\ensuremath{\slit_A}\left(#1\right)}
+
+\newcommand{\qf}{\ensuremath{\mathsf{QF}}}
+\newcommand{\frqf}{\ensuremath{\qf\left(\sigr,\sigf\right)}}
+
+%% -INTER-------------------------------------------
+
+\newcommand{\finter}{\ensuremath{f^{\fsup}}}
+\newcommand{\rinter}{\ensuremath{f^{\rsup}}}
+
+\newcommand{\mbf}[1]{\ensuremath{\mathbf{#1}}}
+
+\newcommand{\boldi}{\ensuremath{\mathbf{I}}}
+%%\newcommand{\bolds}{\ensuremath{\mathbf{S}}}
+\newcommand{\boldm}{\ensuremath{\mathbf{M}}}
+\newcommand{\boldn}{\ensuremath{\mathbf{N}}}
+\newcommand{\chains}{\ensuremath{\mathbf{C}}}
+
+\newcommand{\chn}[1]{\ensuremath{\mathsf{C}^{#1}}}
+\newcommand{\levelm}{\ensuremath{\mathsf{sf}}}
+
+\newcommand{\struct}{\ensuremath{\mathcal{S}}}
+
+%% -WW-------------------------------------------
+
+\newcommand{\ww}{\ensuremath{\mathrm{W}}}
+\newcommand{\wwf}{\ensuremath{\mathrm{w}}}
+\newcommand{\wwfun}{\ensuremath{\mathrm{F}}}
+
+\newcommand{\tleq}{\ensuremath{\leq_{\mathsf{t}}}}
+\newcommand{\ileq}{\ensuremath{\leq_{\mathsf{i}}}}
+\newcommand{\tgeq}{\ensuremath{\geq_{\mathsf{t}}}}
+\newcommand{\igeq}{\ensuremath{\geq_{\mathsf{i}}}}
+\newcommand{\tsup}{\ensuremath{{\sup}_{\mathsf{t}}}}
+\newcommand{\isup}{\ensuremath{{\sup}_{\mathsf{i}}}}
+\newcommand{\tinf}{\ensuremath{{\inf}_{\mathsf{t}}}}
+\newcommand{\iinf}{\ensuremath{{\inf}_{\mathsf{i}}}}
+\newcommand{\tmax}{\ensuremath{{\max}_{\mathsf{t}}}}
+\newcommand{\imax}{\ensuremath{{\max}_{\mathsf{i}}}}
+\newcommand{\tmin}{\ensuremath{{\min}_{\mathsf{t}}}}
+\newcommand{\imin}{\ensuremath{{\min}_{\mathsf{i}}}}
+\newcommand{\tMin}{\ensuremath{{\Min}_{\mathsf{t}}}}
+\newcommand{\iMin}{\ensuremath{{\Min}_{\mathsf{i}}}}
+
+%%\newcommand{\designated}{\ensuremath{\mathsf{D}}}
+\newcommand{\designated}{\operatorname{\mathcal{D}}}
+
+\newcommand{\true}{\ensuremath{\mathbf{t}}}
+\newcommand{\false}{\ensuremath{\mathbf{f}}}
+
+\newcommand{\unknown}{\ensuremath{\mathbf{u}}}
+\newcommand{\odef}{\ensuremath{\mathbf{o}}}
+%%\newcommand{\unknown}{\ensuremath{\mathsf{unknown}}}
+%%\newcommand{\odef}{\ensuremath{\mathsf{odef}}}
+
+\newcommand{\zwei}{\ensuremath{\mathbf{W2}}}
+\newcommand{\drei}{\ensuremath{\mathbf{W3}}}
+\newcommand{\dreio}{\ensuremath{\mathbf{W3o}}}
+\newcommand{\dreiu}{\ensuremath{\mathbf{W3u}}}
+\newcommand{\vier}{\ensuremath{\mathbf{W4}}}
+\newcommand{\nulleins}{\ensuremath{\mathbf{[0,1]}}}
+
+\newcommand{\mtspar}[1]{\mathcal{M}_{#1}}
+\newcommand{\mtsdreiu}{\mtspar{\dreiu}}
+\newcommand{\mtsdreio}{\mtspar{\dreio}}
+\newcommand{\mtsvier}{\mtspar{\vier}}
+\newcommand{\mtszwei}{\mtspar{\zwei}}
+%% ----------------------------------------------
+
+\newcommand{\name}{\ensuremath{\mathsf{name}}}
+
+%% -LL---------------------------------------------
+\renewcommand{\amp}{\ensuremath{\binampersand}}
+\newcommand{\pma}{\ensuremath{\bindnasrepma}}
+\newcommand{\lolli}{\ensuremath{\multimap}}
+\newcommand{\lneg}[1]{\ensuremath{#1^{\bot}}}
+
+%% -LP---------------------------------------------
+\newcommand{\body}{\ensuremath{\mathsf{body}}}
+\newcommand{\head}{\ensuremath{\mathsf{head}}}
+\newcommand{\cnstr}{\ensuremath{\mathsf{constr}}}
+%%\newcommand{\body}{\ensuremath{\mathsf{b}}}
+%%\newcommand{\head}{\ensuremath{\mathsf{h}}}
+
+\newcommand{\cfree}[1]{\ensuremath{\mathsf{cfree}\left(#1\right)}}
+\newcommand{\cprog}[1]{\ensuremath{#1_{\mathsf{cp}}}}
+
+\newcommand{\lp}{\ensuremath{\mathsf{LP}}}
+\newcommand{\nlp}{\ensuremath{\mathsf{NLP}}}
+\newcommand{\halp}{\ensuremath{\mathsf{HALP}}}
+\newcommand{\dlp}{\ensuremath{\mathsf{DLP}}}
+\newcommand{\hdlp}{\ensuremath{\mathsf{HDLP}}}
+\newcommand{\glp}{\ensuremath{\mathsf{GLP}}}
+
+\newcommand{\elp}{\ensuremath{\mathsf{ELP}}}
+\newcommand{\enlp}{\ensuremath{\mathsf{ENLP}}}
+\newcommand{\ehalp}{\ensuremath{\mathsf{EHALP}}}
+\newcommand{\edlp}{\ensuremath{\mathsf{EDLP}}}
+\newcommand{\ehdlp}{\ensuremath{\mathsf{EHLP}}}
+\newcommand{\eglp}{\ensuremath{\mathsf{EGLP}}}
+
+%% -SEL---------------------------------------------
+\newcommand{\ubs}{\ensuremath{\mathsf{UB}}}
+\newcommand{\lbs}{\ensuremath{\mathsf{LB}}}
+\newcommand{\lubs}{\ensuremath{\mathsf{LUB}}}
+
+\newcommand{\leastsub}{\ensuremath{\mathsf{least}}}
+\newcommand{\infsub}{\ensuremath{\mathsf{ifl}}}
+
+\newcommand{\lsub}{\ensuremath{\mathsf{l}}}
+\newcommand{\usub}{\ensuremath{\mathsf{u}}}
+\newcommand{\lusub}{\ensuremath{\mathsf{lu}}}
+\newcommand{\csub}{\ensuremath{\mathsf{c}}}
+\newcommand{\isub}{\ensuremath{\mathsf{i}}}
+
+\newcommand{\sel}{\ensuremath{\mathrm{Sel}}}
+\newcommand{\selsub}[1]{\ensuremath{\sel_{\mathsf{#1}}}}
+\newcommand{\sell}{\selsub{\lsub}}
+\newcommand{\selu}{\selsub{\usub}}
+\newcommand{\sellu}{\selsub{\lusub}}
+\newcommand{\selc}{\selsub{\csub}}
+\newcommand{\seli}{\selsub{\isub}}
+
+\newcommand{\sem}{\ensuremath{\mathrm{Mod}}}
+\newcommand{\semsub}[1]{\ensuremath{\sem_{\mathsf{#1}}}}
+\newcommand{\semleast}{\semsub{\leastsub}}
+\newcommand{\seminf}{\semsub{\infsub}}
+\newcommand{\semmin}{\semsub{\Min}}
+\newcommand{\semsupp}{\semsub{\mathsf{supp}}}
+\newcommand{\semground}{\semsub{\mathsf{f}}}
+\newcommand{\semsg}{\semsub{\mathsf{sg}}}
+\newcommand{\semposs}{\semsub{\mathsf{poss}}}
+\newcommand{\sems}{\semsub{\mathsf{s}}}
+%% \newcommand{\semwf}{\semsub{\mathsf{wf}}}
+\newcommand{\semsel}{\semsub{\sel}}
+\newcommand{\seml}{\semsub{\lsub}}
+\newcommand{\semu}{\semsub{\usub}}
+\newcommand{\semlu}{\semsub{\lusub}}
+\newcommand{\semc}{\semsub{\csub}}
+\newcommand{\semi}{\semsub{\isub}}
+
+\newcommand{\wfs}{\ensuremath{\mathsf{WFS}}}
+\newcommand{\wfsub}[1]{\ensuremath{\wfs_{\mathsf{#1}}}}
+\newcommand{\wfsel}{\wfsub{\sel}}
+\newcommand{\wfi}{\wfsub{\isub}}
+\newcommand{\wfsell}{\wfsub{\lsub}}
+
+\newcommand{\as}{\mathsf{AS}}
+
+%% ----------------------------------------------
+
+\newcommand{\Mod}{\ensuremath{\mathrm{Mod}}}
+\newcommand{\mop}{\ensuremath{\Psi}}
+
+%% \newcommand{\theo}{\ensuremath{\mathsf{Th}}}
+
+%% -TRAFO---------------------------------------------
+
+%%\newcommand{\nheadsplit}{\ensuremath{\mathsf{hsplit}}}
+%%\newcommand{\nbodysplit}{\ensuremath{\mathsf{bsplit}}}
+% \newcommand{\headsplit}{\ensuremath{\mathsf{hsplit}}}
+% \newcommand{\bodysplit}{\ensuremath{\mathsf{bsplit}}}
+% \newcommand{\hbsplit}{\ensuremath{\mathsf{hbsplit}}}
+
+\newcommand{\tempo}{\ensuremath{\mathsf{tempo}}}
+%%\newcommand{\trafo}{\ensuremath{\mathsf{split}}}
+%%\newcommand{\splt}{\ensuremath{\mathsf{split}}}
+\newcommand{\eqtrafo}{\rightarrow_{\mathsf{eq}}}
+%%\newcommand{\weqtrafo}{\rightarrow_{\mathsf{ieq}}}
+\newcommand{\bstrafo}{\rightarrow_{\mathsf{bs}}}
+\newcommand{\hstrafo}{\rightarrow_{\mathsf{hs}}}
+\newcommand{\ehtrafo}{\rightarrow_{\mathsf{eq,hs}}}
+\newcommand{\ebtrafo}{\rightarrow_{\mathsf{eq,bs}}}
+\newcommand{\ebhtrafo}{\rightarrow_{\mathsf{eq,hs,bs}}}
+%% ----------------------------------------------
+
+\newcommand{\atoms}{\ensuremath{\mathsf{atoms}}}
+\newcommand{\lits}{\ensuremath{\mathsf{lits}}}
+\newcommand{\junctors}{\ensuremath{\mathsf{junc}}}
+\newcommand{\sigfs}{\ensuremath{\mathsf{sig}^{\fsup}}}
+\newcommand{\sigrs}{\ensuremath{\mathsf{sig}^{\rsup}}}
+
+
+%% \newcommand{\cerw}[2]{\ensuremath{\mathsf{CE}\left(#1,#2\right)}}
+
+\newcommand{\boldj}{\ensuremath{\mathbf{J}}}
+\newcommand{\cancnf}{\ensuremath{\mathrm{CNF}_{\mathrm{can}}}}
+
+\newcommand{\withrules}[1]{\ensuremath{\stackrel{#1}{\longrightarrow}}}
+
+%%\newcommand{\csucc}{\ensuremath{\mathrm{succ}}}
+\newcommand{\csucc}{\Omega}
+%\newcommand{\up}{\ensuremath{\uparrow}}
+
+% Menge aller Formeln
+%%\newcommand{\form}{\ensuremath{\mathrm{Form}}}
+
+\newcommand{\fire}{\ensuremath{\mathsf{fire}}}
+
+\newcommand{\finaltest}{\ensuremath{\mathsf{finaltest}}}
+
+\newenvironment{meta}{\par\noindent\small }{\normalsize \par}
+%% semantik_intro ----------
+\newcommand{\leastinter}{\ensuremath{I_{\bot}}}
+\newcommand{\largestinter}{\ensuremath{I_{\top}}}
+\newcommand{\impl}{\ensuremath{\rightarrow}}
+
+\newcommand{\nin}{\ensuremath{\not\in}}
+\newcommand{\nequiv}{\ensuremath{\not\equiv}}
+
+\newcommand{\lm}{\ensuremath{\mathsf{lm}}}
+\newcommand{\fp}{\ensuremath{\mathsf{fp}}}
+\newcommand{\pfp}{\ensuremath{\mathsf{pfp}}}
+\newcommand{\lfp}{\ensuremath{\mathsf{lfp}}}
+\newcommand{\gfp}{\ensuremath{\mathsf{gfp}}}
+
+\newcommand{\grounded}{\ensuremath{\mathsf{gr}}}
+\newcommand{\stab}{\ensuremath{\mathsf{st}}}
+
+\newcommand{\pmtree}{\ensuremath{\mathsf{tree}}}
+\newcommand{\pmrules}{\ensuremath{\mathsf{rules}}}
+\newcommand{\pminter}{\ensuremath{\mathsf{inter}}}
+\newcommand{\branches}{\ensuremath{\mathsf{branches}}}
+\newcommand{\branchsups}{\ensuremath{\mathsf{BSup}}}
+
+\newcommand{\gol}{\ensuremath{\mathrm{GOL}}}
+
+\newcommand{\C}{\ensuremath{\mathcal{C}}}
+\newcommand{\lc}{\ensuremath{\llang_{\C}}}
+\newcommand{\clp}{\ensuremath{\mathsf{CLP}}}
+\newcommand{\cform}[2]{\ensuremath{\left(#1\|#2\right)}}
+
+\newcommand{\cN}{\ensuremath{\mathcal{N}}}
+
+\newcommand{\termsub}{\ensuremath{\mathcal{T}}}
+\newcommand{\termalg}{A_{\termsub}}
+\newcommand{\termstr}{A^=_{\termsub}}
+\newcommand{\termc}{\ensuremath{\mathcal{H}}}
+%% \newcommand{\huniv}[1]{\ensuremath{\mathsf{huniv}\left(#1\right)}}
+\newcommand{\hbase}[1]{\ensuremath{\mathsf{hB}_{#1}}}
+
+%%\newcommand{\Hc}{\ensuremath{\mathcal{H}}}
+%%\newcommand{\h}{\ensuremath{\mathsf{H}}}
+
+\newcommand{\htr}{\ensuremath{\mathsf{hc}}}
+\newcommand{\hctrafo}{\ensuremath{\mathsf{pl}}}
+%% \newcommand{\lH}{\ensuremath{\slang_{\h}}}
+\newcommand{\fd}{\ensuremath{\mathcal{F}}}
+\newcommand{\lfd}[1]{\ensuremath{\llang_{\fd\left(#1\right)}}}
+
+\newcommand{\sat}{\ensuremath{\mathsf{Sat}}}
+\newcommand{\gl}{\ensuremath{\mathsf{GL}}}
+
+\newcommand{\dnf}{\ensuremath{\mathsf{DNF}}}
+\newcommand{\cnf}{\ensuremath{\mathsf{CNF}}}
+\newcommand{\fdnf}{\ensuremath{\mathsf{dnf}}}
+\newcommand{\fcnf}{\ensuremath{\mathsf{cnf}}}
+
+% \newcommand{\dnfsplit}{\ensuremath{\mathsf{dnfsplit}}}
+% \newcommand{\cnfsplit}{\ensuremath{\mathsf{cnfsplit}}}
+% \newcommand{\dsplit}{\ensuremath{\mathsf{dsplit}}}
+% \newcommand{\csplit}{\ensuremath{\mathsf{csplit}}}
+
+\newcommand{\Li}{\textbf{(L1)}}
+\newcommand{\Lii}{\textbf{(L2)}}
+\newcommand{\Liii}{\textbf{(L3)}}
+\newcommand{\Liipdis}{\textbf{(L2d)}}
+\newcommand{\Liia}{\textbf{(L2a)}}
+\newcommand{\Liiinf}{\textbf{(L2i)}}
+\newcommand{\Liistab}{\textbf{(L2s)}}
+\newcommand{\Liileast}{\textbf{(L2l)}}
+\newcommand{\Fstab}{\textbf{(Fs)}}
+\newcommand{\Fdef}{\textbf{(Fd)}}
+
+\newcommand{\bik}[1]{\ensuremath{\mathbf{\left(#1\right)}}}
+\newcommand{\cnull}{\bik{C0}}
+\newcommand{\cbeta}{\bik{C\beta}}
+\newcommand{\clambda}{\bik{C\lambda}}
+\newcommand{\cbetaf}{\bik{C\beta_{\mathsf{f}}}}
+\newcommand{\cbetasg}{\bik{C\beta_{\mathsf{sg}}}}
+\newcommand{\cbetasel}{\bik{C\beta_{\sel}}}
+\newcommand{\csup}{\bik{C\sup}}
+%% WW---------------------------------
+\newcommand{\cnullw}{\bik{C0^{\ww}}}
+\newcommand{\cbetaw}{\bik{C\beta^{\ww}}}
+\newcommand{\clambdaw}{\bik{C\lambda^{\ww}}}
+\newcommand{\csupw}{\bik{C\sup^{\ww}}}
+%%
+\newcommand{\cbetau}{\bik{C\beta^{\dreiu}}}
+\newcommand{\cbetaselu}{\bik{C\beta^{\dreiu}_{\sel}}}
+\newcommand{\csupu}{\bik{C\sup^{\dreiu}}}
+%%
+\newcommand{\cbetao}{\bik{C\beta^{\dreio}}}
+\newcommand{\cbetaselo}{\bik{C\beta^{\dreio}_{\sel}}}
+\newcommand{\csupo}{\bik{C\sup^{\dreio}}}
+
+\newcommand{\cnullc}{\bik{C0_{\C}}}
+\newcommand{\cbetac}{\bik{C\beta_{\C}}}
+\newcommand{\clambdac}{\bik{C\lambda_{\C}}}
+\newcommand{\csupc}{\bik{C\sup_{\C}}}
+\newcommand{\cbetaselc}{\bik{C\beta_{(\C,\sel)}}}
+%% -------------------------------------------
+\newcommand{\sop}[1]{\ensuremath{\mathsf{O}_{#1}}}
+\newcommand{\setop}{\ensuremath{\mathbbm{O}}}
+%%\newcommand{\sop}{\ensuremath{\mathsf{O}}}
+\newcommand{\dop}[1]{\ensuremath{\widehat{#1}}}
+
+\newcommand{\states}{\ensuremath{\mathsf{S}}}
+\newcommand{\rad}{\ensuremath{\lim}}
+
+\newcommand{\tempor}[1]{\ensuremath{\mathsf{T}_{#1}}}
+\newcommand{\ltm}{LTM}
+\newcommand{\tmod}{\ensuremath{\operatorname{\mathsf{TMod}}}}
+\newcommand{\ltmod}{\ensuremath{\operatorname{\mathsf{LTMod}}}}
+\newcommand{\mltmod}{\ensuremath{\operatorname{\mathsf{MLTMod}}}}
+\newcommand{\branch}{\ensuremath{\operatorname{\mathsf{branch}}}}
+\newcommand{\tclos}{\ensuremath{\operatorname{\mathsf{cl}}}}
+\newcommand{\jcl}{\ensuremath{\operatorname{\mathsf{jcl}}}}
+\newcommand{\tmark}{\ensuremath{\operatorname{\mathsf{tmark}}}}
+
+
+\newcommand{\fit}{\ensuremath{\operatorname{\Phi}}}
+\newcommand{\erw}{\ensuremath{\operatorname{Ex}}}
+
+\newcommand{\vz}{\ensuremath{\operatorname{vz}}}
+\newcommand{\zv}{\ensuremath{\operatorname{zv}}}
+\newcommand{\unx}{\ensuremath{\operatorname{unX}}}
+%% ----------------------------------------------
+\newcommand{\possplit}{\ensuremath{\mathsf{psplit}}}
+\newcommand{\posstp}{\ensuremath{\mathcal{T}}}
+
+%% ----------------------------------------------
+
+\newcommand{\abi}{\ensuremath{\mathsf{abi}}}
+\newcommand{\reli}{\ensuremath{\mathsf{reli}}}
+
+\newcommand{\mgu}{\ensuremath{\mathsf{mgu}}}
+
+%% ----------------------------------------------
+\newcommand{\smodels}{\textsf{smodels}}
+\newcommand{\dlv}{\textsf{dlv}}
+
+\newcommand{\ems}{\mathsf{Ms}}
+\newcommand{\els}{\mathsf{Ls}}
+%% ----------------------------------------------
+\newcommand{\tpm}{\ensuremath{\mathsf{O}_P^M}}
+
+\newcommand{\punkt}{\hspace{-3mm}.}
+\newcommand{\bzw}{bzw.\ }
+\newcommand{\zb}{z.B.\ }
+\newcommand{\uA}{u.A.\ }
+\newcommand{\usw}{usw.\ }
+\newcommand{\dsh}{d.h.\ }
+
+\newcommand{\consistent}{\mathsf{cons}}
+
+\newcommand{\msyst}{\ensuremath{\mathcal{M}}}
+%% \newcommand{\valin}[2]{\ensuremath{\left\|#1\right\|_{#2}}}
+\newcommand{\valin}[2]{\ensuremath{\left\llbracket#1\right\rrbracket_{#2}}}
+\newcommand{\rvalin}[2]{\ensuremath{\left[#1\right]_{#2}}}
+\newcommand{\evalin}[3]{\ensuremath{\left\llbracket#1\right\rrbracket_{#2} #3}}
+\newcommand{\vin}[1]{\valin{#1}{}}
+
+\newcommand{\semodels}{\ensuremath{\dot{\models}}}
+%% \newcommand{\semequiv}{\ensuremath{\stackrel{\ldot}{\equiv}}}
+\newcommand{\semequiv}{\ensuremath{\dot{\equiv}}}
+%%\newcommand{\semequiv}{\ensuremath{\dot{a}}}
+
+\newcommand{\Th}{\mathsf{Th}}
+\newcommand{\Cl}{\mathsf{Cl}}
+\newcommand{\Clv}{\Cl^{\vdash}}
+\newcommand{\Clm}{\Cl^{\semodels}}
+
+\newcommand{\infrule}[3]{\ensuremath{\frac{#1}{#2}\ \mbox{#3}}}
+\newcommand{\sig}{\mathsf{sig}}
+
+\newcommand{\pr}{\mathsf{pr}}
+
+%% ----------------------------------------------
+\newcommand{\NP}{\ensuremath{\mathsf{NP}}}
+\newcommand{\CF}{\ensuremath{\mathsf{CF}}}
+\newcommand{\REG}{\ensuremath{\mathsf{REG}}}
+
+\newcommand{\nfa}{\ensuremath{\mathsf{NFA}}}
+\newcommand{\dfa}{\ensuremath{\mathsf{DFA}}}
+\newcommand{\wfa}{\ensuremath{\mathsf{WFA}}}
+
+\newcommand{\fo}{\ensuremath{\mathsf{FO}}}
+\newcommand{\mso}{\ensuremath{\mathsf{MSO}}}
+\newcommand{\emso}{\ensuremath{\mathsf{EMSO}}}
+\newcommand{\eso}{\ensuremath{\mathsf{ESO}}}
+\newcommand{\so}{\ensuremath{\mathsf{SO}}}
+
+\newcommand{\ml}{\ensuremath{\mathsf{ML}}}
+\newcommand{\tl}{\ensuremath{\mathsf{TL}}}
+\newcommand{\ltl}{\ensuremath{\mathsf{LTL}}}
+\newcommand{\ctl}{\ensuremath{\mathsf{CTL}}}
+
+\newcommand{\rat}{\ensuremath{\mathsf{RAT}}}
+\newcommand{\reg}{\ensuremath{\mathsf{REG}}}
+\newcommand{\rec}{\ensuremath{\mathsf{REC}}}
+
+\newcommand{\scc}{\ensuremath{\mathsf{succ}}}
+
+\newcommand{\wmodel}[1]{\underline{#1}}
+%%\newcommand{\wmod}{\ensuremath{\mathsf{wmod}}}
+%%\newcommand{\wmodel}[1]{\wmod(#1)}
+
+\newcommand{\fterm}{\mathsf{fterm}}
+\newcommand{\atom}{\mathsf{atom}}
+\newcommand{\form}{\mathsf{form}}
+
+\newcommand{\first}{\mathsf{first}}
+\newcommand{\last}{\mathsf{last}}
+\newcommand{\parts}{\mathsf{part}}
+
+\newcommand{\leftstate}{\mathsf{lstate}}
+\newcommand{\rightstate}{\mathsf{rstate}}
+\newcommand{\letter}{\mathsf{let}}
+
+\newcommand{\start}{\mathsf{start}}
+\newcommand{\fin}{\mathsf{fin}}
+
+\newcommand{\tiles}{\mathsf{T}}
+
+%% \newcommand{\klg}{\mathsf{Lg}}
+%% \newcommand{\krec}{\mathsf{Lg^{Rec}}}
+%% \newcommand{\kdef}{\mathsf{Lg^{Def}}}
+
+\newcommand{\pos}{\mathsf{pos}}
+
+\newcommand{\cval}{\mathsf{V}}
+\newcommand{\lval}{\mathsf{v}}
+
+\newcommand{\slog}{\mathsf{L^{S}}}
+\newcommand{\dglog}{\mathsf{L^{DG}}}
+
+\newcommand{\dgleq}[1]{\mathsf{le}(#1)}
+\newcommand{\ndgleq}[1]{\overline{\mathsf{le}}(#1)}
+
+% \newcommand{\xfo}{\ensuremath{\X_{\fo}}}
+% \newcommand{\xso}{\ensuremath{\X_{\so}}}
+% \newcommand{\xmso}{\ensuremath{\X_{\mso}}}
+\newcommand{\xfo}{\ensuremath{\X_1}}
+\newcommand{\xso}{\ensuremath{\X_2}}
+\newcommand{\xmso}{\ensuremath{\X_2}}
+
+
+\newcommand{\weight}{\mathsf{weight}}
+
+\newcommand{\luk}{\ensuremath{\mbox{\L}}}
+%% \newcommand{\sluk}{\ensuremath{\mbox{\small\L}}}
+\newcommand{\srindalp}[3]{\ensuremath{#1^{#2}\lAngle{#3}\rAngle}}
+\newcommand{\wrec}{\srindalp{\W}{\mathrm{rec}}{A}}
+\newcommand{\wmso}{\srindalp{\W}{\mso(\leq)}{A}}
+\newcommand{\lrec}{\srindalp{\luk}{\mathrm{rec}}{A}}
+%% \newcommand{\lmso}{\srindalp{\luk}{\mso}{A}}
+\newcommand{\lmso}{\mso^{\mbox{\small\luk}}}
+\newcommand{\wlmso}{\mso^{(\mbox{\small\luk},W)}}
+\newcommand{\rwlmso}{\mso^{(\overline{\mbox{\small\luk}},W)}}
+\newcommand{\ka}{\srindalp{\K}{}{A}}
+\newcommand{\krec}{\srindalp{K}{\mathrm{rec}}{A}}
+\newcommand{\kmso}{\srindalp{K}{\mso(\leq)}{A}}
+
+\newcommand{\behav}[1]{\|#1\|}
+
+\newcommand{\lukor}{\operatorname{\underline{\vee}}}
+\newcommand{\lukand}{\operatorname{\amp}}
+\newcommand{\biglukand}{\mathop{\mbox{\Large$\lukand$}}}
+\newcommand{\lukall}{\forall_{\mbox{\tiny\luk}}}
+\newcommand{\lukex}{\exists_{\mbox{\tiny\luk}}}
+%{\forall_{\tiny\lukand}}
+%%{\stackrel{\mbox{\tiny$\lukand$}}{\forall}}}        
+
+
+\newcommand{\atm}{\mathsf{at}}
+\newcommand{\stdmv}{\ensuremath{[0,1]^{\luk}}}
+
+\newcommand{\code}{\ensuremath{\mathsf{code}}}
+
+%%% Local Variables: 
+%%% mode: plain-tex
+%%% TeX-master: "skript"
+%%% End: 

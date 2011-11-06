@@ -1,0 +1,168 @@
+%% =======================================================
+\section{Beispiel Relationen}
+%% ---------------------------------
+\begin{frame}[fragile]
+  \frametitle{Beispiel: Aufgabe zu Relationen}
+  { \small
+\begin{verbatim}
+Die folgende Aufgabe bezieht sich auf Relationen
+über dem Grundbereich mkSet [ 1 , 2 , 3 , 4 , 5 ]
+
+Gesucht ist ein Ausdruck (Term) mit dieser Bedeutung:
+    {(1 , 1) , (2 , 5)}
+Der Ausdruck soll höchstens die Größe 15 haben.
+Sie dürfen diese Symbole benutzen
+    zweistellige : [ * , + , - ]
+    einstellige  : [ ]
+    nullstellige : [ ]
+und diese vordefinierten Konstanten:
+    R = {(1 , 4) , (1 , 5) , (2 , 3) , (3 , 1) , (4 , 5)}
+    S = {(1 , 4) , (3 , 3) , (4 , 2) , (4 , 4) , (5 , 5)}
+\end{verbatim}
+  }  
+\end{frame}
+%% ---------------------------------
+\begin{frame}[fragile]
+  \frametitle{Lösung}
+  {\small
+    eingesendete Lösung: \verb|R * S * R * R|
+\begin{verbatim}
+Der Wert Ihres Terms ist die Relation
+    {(1 , 1) , (2 , 4) , (2 , 5)}
+stimmen die Relationen überein?
+Stimmen die Menge
+Aufgabenstellung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ]
+und die Menge
+Einsendung = mkSet [ ( 1 , 1 ) , ( 2 , 4 ) , ( 2 , 5 ) ]
+überein?
+Ist die Menge
+Aufgabenstellung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ]
+Teilmenge der Menge
+Einsendung = mkSet [ ( 1 , 1 ) , ( 2 , 4 ) , ( 2 , 5 ) ] ?
+  Ja.
+Ist die Menge
+Einsendung = mkSet [ ( 1 , 1 ) , ( 2 , 4 ) , ( 2 , 5 ) ]
+Teilmenge der Menge
+Aufgabenstellung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ] ?
+  Nein, diese Elemente sind in Einsendung, 
+aber nicht in Aufgabenstellung mkSet [ ( 2 , 4 ) ]
+\end{verbatim}
+    % \pause\vfill 
+
+    % korrekte Einsendung \verb|( R * S * R * R ) - ( R * R * S )|
+    % \begin{verbatim}
+    % Der Wert Ihres Terms ist die Relation
+    % {(1 , 1) , (2 , 5)}
+
+    % stimmen die Relationen überein?
+    % Ist die Menge
+    % Aufgabenstellung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ]
+    % Teilmenge der Menge
+    % Einsendung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ]
+    % ?
+
+    % Ja.
+
+    % Ist die Menge
+    % Einsendung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ]
+    % Teilmenge der Menge
+    % Aufgabenstellung = mkSet [ ( 1 , 1 ) , ( 2 , 5 ) ]
+    % ?
+
+    % Ja.
+
+    % Bewertung der Einsendung: Okay
+    % \end{verbatim}
+  }
+\end{frame}
+%% =======================================================
+\section{Beispiel Mengen}
+%% ---------------------------------
+\begin{frame}[fragile]
+  \frametitle{Beispiel: Aufgabe zu Mengen}
+  {\small
+\begin{verbatim}
+Gesucht ist ein Ausdruck (Term) mit dieser Bedeutung:
+    {2, {}, {3, {4}}}
+Der Ausdruck soll höchstens die Größe 40 haben.
+Sie dürfen diese Symbole benutzen
+    zweistellige : [ + , - , & ]
+    einstellige  : [ pow ]
+    nullstellige : [ ]
+und diese vordefinierten Konstanten:
+    A = {1, 2}
+    B = {2, 3}
+    C = {3, 4}
+\end{verbatim}
+  }
+\end{frame}
+%% =======================================================
+\section{Beispiel Zahlensysteme}
+%% ---------------------------------
+\begin{frame}[fragile]
+  \frametitle{Beispiel: Aufgabe zu Zahlensystemen}
+  {\small
+    autotool-Aufgabe: 
+\begin{verbatim}
+Stellen Sie
+    Zahl
+        { basis = 5 , ziffern = [ 3 , 1 , 4 ] }
+in der Basis 7 dar.
+\end{verbatim}
+    \pause\vfill
+
+    % Lösung:
+    % \begin{verbatim}
+    % Zahl
+    % { basis = 7 , ziffern = [ 1 , 5 , 0 ] }
+    % \end{verbatim}
+
+    autotool-Antwort:
+\begin{verbatim}
+gelesen: Zahl
+             { basis = 7 , ziffern = [ 1 , 5 , 0 ] }
+partiell korrekt?
+die Basis soll 7 sein.
+    Ja.
+jede Ziffer soll in [ 0, 1 .. basis - 1 ] liegen.
+total korrekt?
+Stimmen die Bedeutungen der Zahlen überein?
+    Ja.
+Bewertung der Einsendung: Okay
+\end{verbatim}
+  }
+\end{frame}
+%% =======================================================
+\section{Beispiel Multiplikative Inverse}
+%% ---------------------------------
+\begin{frame}[fragile]
+  \frametitle{Beispiel: Rechnen mit Restklassen}
+  {\small
+    autotool-Aufgabe: 
+\begin{verbatim}
+Berechnen Sie das multiplikative Inverse von
+    7
+modulo
+    11
+falls es existiert!
+\end{verbatim}
+    \pause\vfill
+
+    % Lösung:
+    % \begin{verbatim}
+    % Just 8
+    % \end{verbatim}
+
+    autotool-Antwort:
+\begin{verbatim}
+gelesen: Just 8
+partiell korrekt?
+Ja.
+total korrekt?
+Ist 7 * 8 = 56 = 1 mod 11 ?
+Ja, denn 56 = 5 * 11 + 1
+Bewertung der Einsendung: Okay
+\end{verbatim}
+  }
+\end{frame}
+%% =======================================================
