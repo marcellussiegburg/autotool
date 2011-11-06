@@ -42,6 +42,7 @@ import qualified Graph.MinSep
 import qualified Graph.Ramsey
 import qualified Graph.Van_der_Waerden
 import qualified Graph.Col.Greedy.Central
+import qualified Graph.Iso.Central
 
 import qualified Graph.MST.Plain
 import qualified Graph.MST.Quiz
@@ -435,6 +436,7 @@ tmakers =
                         ]
          , heading "Graphen"
                 [ item Graph.Selfcom.make
+                , item Graph.Iso.Central.make
 --                , item Graph.Nachbar.make
 	        , item Graph.Cross.make
 	        , item Graph.Ramsey.make
