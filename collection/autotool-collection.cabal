@@ -68,15 +68,15 @@ Library
     --     OverlappingInstances
     --     GADTs
     Hs-source-dirs:
-        src , common-src
+        src 
     Exposed-Modules:
         Inter.Collector
         -- Inter.Crypt
-        Gateway.Help
-        Local
+        -- Gateway.Help
+        -- Local
         Upload
-        Debug
-        Util.Datei
+        -- Debug
+        -- Util.Datei
         -- Control.SQL
         -- Control.Time
         -- Control.Time.Typ
@@ -86,7 +86,7 @@ Library
         Codec.Encryption.Utils,
         Codec.Encryption.MD5,
         -- Mysqlconnect,
-                 Util.Datei.Base,
+                 -- Util.Datei.Base,
                  Util.FailDoc,
                  Util.Cache
     other-modules: 
