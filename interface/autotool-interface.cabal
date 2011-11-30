@@ -17,7 +17,7 @@ Build-Type:     Simple
 Library
     Build-Depends:
         base, directory, unix, process, old-time,
-        utf8-string,
+        utf8-string, parsec,
         autolib-output,
         autolib-reader,
         autolib-reporter,
@@ -42,10 +42,12 @@ Library
         Inter.Wert
         Inter.Quiz
         Inter.Types
+        Inter.Evaluate
         Challenger
         Challenger.Partial
         Challenger.Ident
         Challenger.Einsendung
         Gateway.Help
+        Gateway.Errmsg
         Util.Datei, Util.Datei.Base
         Debug, Local
