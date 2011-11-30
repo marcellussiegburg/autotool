@@ -1,0 +1,51 @@
+Name:           autotool-interface
+Version:        1.0
+-- License:        GPL
+-- License-File:   LICENSE
+Author:         Johannes Waldmann
+Maintainer:     Johannes Waldmann
+Homepage:       http://dfa.imn.htwk-leipzig.de/auto/
+Category:       E-Testing
+Synopsis:       collection of E-testing tasks
+Description:
+  autotool-interface defines the comon interface 
+  for things in autotool-collection
+Stability:      Experimental
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+
+Library
+    Build-Depends:
+        base, directory, unix, process, old-time,
+        utf8-string,
+        autolib-output,
+        autolib-reader,
+        autolib-reporter,
+        autolib-rewriting,
+        autolib-todoc,
+        autolib-util
+    GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
+    -- Extensions:
+    --     DeriveDataTypeable
+    --     MultiParamTypeClasses
+    --     TypeSynonymInstances
+    --     FlexibleInstances
+    --     FlexibleContexts
+    --     UndecidableInstances
+    --     ScopedTypeVariables
+    --     FunctionalDependencies
+    --     OverlappingInstances
+    --     GADTs
+    Hs-source-dirs:
+        src
+    Exposed-Modules:
+        Inter.Wert
+        Inter.Quiz
+        Inter.Types
+        Challenger
+        Challenger.Partial
+        Challenger.Ident
+        Challenger.Einsendung
+        Gateway.Help
+        Util.Datei, Util.Datei.Base
+        Debug, Local
