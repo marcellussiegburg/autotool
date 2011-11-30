@@ -12,28 +12,21 @@ Build-Type:     Simple
 
 Executable autotool.cgi
     Main-Is:        Main.hs
-    Hs-Source-Dirs: src
+    Hs-Source-Dirs: src common-src
     GHC-Options:    -Wall -fglasgow-exts
     Build-Depends:
+        autotool-interface,
         autotool-collection,
         autolib-transport,
         autolib-todoc,
         autolib-output,
         autolib-reader,
         autolib-reporter,
-        SHA,
-        base,
-        bytestring,
-        containers,
-        haxr,
-        mtl,
-        parsec,
-        dataenc,
-        pretty,
-        HaXml, 
-        filepath,
-        binary,
-        digest
+        autolib-util,
+        SHA,   base, random, bytestring, containers,
+        haxr, mtl, parsec,  dataenc, directory, unix,
+        process, old-time, utf8-string,
+        pretty, HaXml,  filepath,  binary,  digest
     Extensions:
         -- FlexibleInstances
         -- UndecidableInstances

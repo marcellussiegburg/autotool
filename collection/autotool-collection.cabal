@@ -31,6 +31,7 @@ Library
         autolib-todoc,
         autolib-util,
         autolib-transport,
+        autotool-interface,
         base,
         hsql,
         hsql-mysql,
@@ -67,23 +68,15 @@ Library
     --     OverlappingInstances
     --     GADTs
     Hs-source-dirs:
-        src
-        src/control
+        src , common-src
     Exposed-Modules:
         Inter.Collector
         -- Inter.Crypt
-        Inter.Wert
-        Inter.Quiz
-        Inter.Types
         Gateway.Help
         Local
         Upload
         Debug
         Util.Datei
-        Challenger
-        Challenger.Partial
-        Challenger.Einsendung
-        Challenger.Ident
         -- Control.SQL
         -- Control.Time
         -- Control.Time.Typ
@@ -92,7 +85,7 @@ Library
         Codec.Encryption.MD5Aux,
         Codec.Encryption.Utils,
         Codec.Encryption.MD5,
-        Mysqlconnect,
+        -- Mysqlconnect,
                  Util.Datei.Base,
                  Util.FailDoc,
                  Util.Cache
