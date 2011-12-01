@@ -1,0 +1,92 @@
+Name:           autotool-db
+Version:        1.0
+-- License:        GPL
+-- License-File:   LICENSE
+Author:         Johannes Waldmann
+Maintainer:     Johannes Waldmann
+Homepage:       http://dfa.imn.htwk-leipzig.de/auto/
+Category:       E-Testing
+Synopsis:       autotool trial CGI
+Description: library for DB connections 
+        for classical autotool
+Stability:      Experimental
+Cabal-Version:  >=1.2
+Build-Type:     Simple
+
+Library
+  Build-Depends:
+    autotool-interface,
+    autolib-reader, autolib-todoc, autolib-output,
+    autolib-reporter, autolib-util, autolib-data,
+    base , haxr, random, containers, xhtml, cgi, mtl,
+    hsql,hsql-mysql, old-locale, old-time, parsec
+  GHC-Options:    -Wall -fglasgow-exts
+  Extensions:
+--     DeriveDataTypeable
+--     MultiParamTypeClasses
+--     TypeSynonymInstances
+--     FlexibleInstances
+--     FlexibleContexts
+--     UndecidableInstances
+--     ScopedTypeVariables
+--     FunctionalDependencies
+--     TemplateHaskell
+  Hs-source-dirs: src
+  Exposed-Modules:
+    Codec.Encryption.MD5Aux
+    Codec.Encryption.Utils
+    Codec.Encryption.MD5
+    Control.Semester
+    -- Control.TH
+    -- Control.Wert
+    Control.Semester.Typ
+    Control.Semester.DB
+    Control.Semester.CGI
+    Control.Time.Typ
+    Control.Time.CGI
+    Control.Punkt
+    -- Control.Queries
+    Control.Gruppe.Typ
+    Control.Gruppe.DB
+    Control.Gruppe.CGI
+    -- Control.Student.TH
+    Control.Student.Type
+    Control.Student.DB
+    Control.Student.CGI
+    Control.XmlTime
+    -- Control.HTMLshortcuts
+    Control.Gruppe
+    Control.Tutor.DB
+    Control.Vorlesung
+    Control.Tutor
+    Control.Stud_Grp.Typ
+    Control.Stud_Grp.DB
+    Control.Student
+    Control.Admin.DB
+    Control.Admin.CGI
+    -- Control.Score
+    Control.Stud_Aufg.Typ
+    Control.Stud_Aufg.DB
+    Control.Stud_Aufg
+    Control.Types
+    -- Control.Vorlesung.TH
+    Control.Vorlesung.Typ
+    -- Control.Vorlesung.Type
+    Control.Vorlesung.DB
+    Control.Vorlesung.CGI
+    Control.Schule.Typ
+    Control.Schule.DB
+    Control.Schule.CGI
+    Control.Aufgabe
+    Control.Direktor.DB
+    Control.Direktor.CGI
+    Control.Time
+    Control.Stud_Grp
+    -- Control.Aufgabe.TH
+    Control.Aufgabe.Typ
+    Control.Aufgabe.DB
+    -- Control.Aufgabe.CGI
+    Control.Passwort
+    Control.SQL
+    Control.Schule
+

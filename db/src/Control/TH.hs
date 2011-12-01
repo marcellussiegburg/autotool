@@ -1,7 +1,7 @@
 module Control.TH where
 
 -- import Inter.TH
-import Inter.Crypt
+import Operate.Crypt
 import Control.Types
 import Network.XmlRpc.Internals
 import Network.XmlRpc.THDeriveXmlRpcType

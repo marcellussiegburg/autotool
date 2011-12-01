@@ -19,9 +19,9 @@ Executable Trial.cgi
   Build-Depends:
     autolib-todoc,autolib-data,autolib-reader,
     autolib-output,autolib-reporter, autolib-util,
-    autotool-collection,
+    autotool-interface, autotool-collection,
     base == 4.*,parsec, old-locale,old-time,
-    xhtml==3000.*,cgi,
+    xhtml,cgi,
     hsql,hsql-mysql,
     containers,directory,random,mtl,
     process,unix,digest,bytestring,
@@ -38,5 +38,5 @@ Executable Trial.cgi
 --     ScopedTypeVariables
 --     FunctionalDependencies
 --     TemplateHaskell
-  Hs-source-dirs: src, src/control, common
+  Hs-source-dirs: src, src/control
   Main-Is: Operate/Trial.hs

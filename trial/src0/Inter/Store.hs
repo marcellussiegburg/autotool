@@ -1,1 +1,0 @@
-../../../src/Inter/Store.hs

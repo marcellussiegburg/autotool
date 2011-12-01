@@ -82,9 +82,6 @@ Library
         -- Control.Time.Typ
         -- Control.Types
         -- Gateway.Help
-        Codec.Encryption.MD5Aux,
-        Codec.Encryption.Utils,
-        Codec.Encryption.MD5,
         -- Mysqlconnect,
                  -- Util.Datei.Base,
                  Util.FailDoc,

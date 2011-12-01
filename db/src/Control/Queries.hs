@@ -1,7 +1,5 @@
 module Control.Queries where
 
---  $Id$
-
 import Control.SQL
 import Control.Types
 
@@ -13,13 +11,7 @@ import Data.Maybe ( maybeToList )
 import Data.List ( intersperse )
 import Data.Typeable
 
-#ifdef HSQL16
-import Database.HSQL.MySQL ( SqlBind )
-#elif HSQL14
-import Database.HSQL.MySQL ( SqlBind )
-#elif HSQL12
 import Database.MySQL.HSQL ( SqlBind )
-#endif
 
 import Helper
 import Mysqlconnect 
