@@ -1,11 +1,16 @@
 -- | standalone aufgabenconfig,
 -- damit jeder mal tutor spielen kann
 
+{-# language PatternSignatures #-}
+
 module Main where
 
 import Gateway.CGI
 
-import Operate.Evaluate
+import Inter.Evaluate
+import Inter.Collector
+
+
 import Operate.Make 
 import Operate.Motd
 import Operate.Bank
@@ -13,7 +18,6 @@ import Operate.Store
 import Operate.Login
 import Operate.Logged
 
-import Operate.Collector
 
 import Operate.Tutor
 import Operate.Student

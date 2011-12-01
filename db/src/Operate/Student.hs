@@ -1,9 +1,9 @@
 module Operate.Student where
 
 import Inter.Types
+import Inter.Evaluate
 
 import Operate.Bank
-import Operate.Evaluate
 import Operate.Common
 import qualified Operate.Language
 import qualified Operate.Store

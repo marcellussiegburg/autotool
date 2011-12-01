@@ -84,8 +84,6 @@ Library
         -- Gateway.Help
         -- Mysqlconnect,
                  -- Util.Datei.Base,
-                 Util.FailDoc,
-                 Util.Cache
     other-modules: 
                  Haskell.SmallCheck		    
                  Haskell.Data,

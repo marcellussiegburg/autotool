@@ -10,8 +10,17 @@ Synopsis:       autotool trial CGI
 Description: library for DB connections 
         for classical autotool
 Stability:      Experimental
-Cabal-Version:  >=1.2
+Cabal-Version:  >=1.8
 Build-Type:     Simple
+
+Executable autotool-trial
+  Main-is: src/Operate/Trial.hs
+  Build-Depends: base, autotool-db, autotool-collection,
+    autotool-interface,
+    autolib-reader, autolib-todoc, autolib-output,
+    autolib-reporter, autolib-util, autolib-data,
+    base , haxr, random, containers, xhtml, cgi, mtl,
+    directory
 
 Library
   Build-Depends:
@@ -19,7 +28,8 @@ Library
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
-    hsql,hsql-mysql, old-locale, old-time, parsec
+    hsql,hsql-mysql, old-locale, old-time, parsec,
+    directory, digest, bytestring, unix
   GHC-Options:    -Wall -fglasgow-exts
   Extensions:
 --     DeriveDataTypeable
@@ -33,6 +43,23 @@ Library
 --     TemplateHaskell
   Hs-source-dirs: src
   Exposed-Modules:
+    Mysqlconnect
+    Gateway.CGI, Gateway.My_CGI2
+    Operate.DateTime
+    Operate.Common
+    Operate.Crypt
+    Operate.Click
+    Operate.Bank
+    Operate.Store
+    Operate.Param
+    Operate.Statistik
+    Operate.Student
+    Operate.Tutor
+    Operate.Language
+    Operate.Make
+    Operate.Motd
+    Operate.Login
+    Operate.Logged
     Codec.Encryption.MD5Aux
     Codec.Encryption.Utils
     Codec.Encryption.MD5
