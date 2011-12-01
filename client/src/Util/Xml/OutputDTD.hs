@@ -1,1 +1,0 @@
-../../../../server/src/Util/Xml/OutputDTD.hs

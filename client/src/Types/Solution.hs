@@ -1,1 +1,0 @@
-../../../server/src/Types/Solution.hs
