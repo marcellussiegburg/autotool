@@ -36,7 +36,9 @@ min_version = Version 0 1 0
 max_version = Version 0 2 0
 
 main :: IO ()
-main = simpleHTTP nullConf { port = 8000 } $ msum [s1, s2]
+main = simpleHTTP nullConf { port = 8000 } $ do
+    decodeBody ( defaultBodyPolicy "/tmp/" 4096 4096 4096 )
+    msum [s1, s2]
 
 s2 = dir "style" $ return $ toResponse $ style
 
