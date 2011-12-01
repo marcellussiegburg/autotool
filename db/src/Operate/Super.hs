@@ -3,6 +3,8 @@
 
 -- TODO: hack this module into pieces
 
+{-# language PatternSignatures, DeriveDataTypeable #-}
+
 module Main where
 
 import Prelude hiding ( readFile, writeFile, appendFile )
@@ -11,14 +13,14 @@ import System.IO.UTF8 ( readFile, writeFile, appendFile )
 import Gateway.CGI
 
 import Inter.Evaluate
-import Inter.Make 
-import Inter.Motd
-import Inter.Bank
-import Inter.Store 
-import Inter.Login
-import Inter.Logged
-import qualified Inter.Param as P
-import qualified Inter.Statistik
+import Operate.Make 
+import Operate.Motd
+import Operate.Bank
+import Operate.Store 
+import Operate.Login
+import Operate.Logged
+import qualified Operate.Param as P
+import qualified Operate.Statistik
 
 import Gateway.Help
 
@@ -39,7 +41,7 @@ import qualified Inter.Collector
 
 import Challenger.Partial
 import Inter.Types
-import Inter.Common
+import Operate.Common
 
 import Control.Student.CGI
 import Control.Vorlesung.DB
@@ -81,9 +83,9 @@ import qualified Control.Exception as CE
 
 import qualified Text.XHtml
 
-import Inter.DateTime ( defaults )
-import Inter.Tutor
-import Inter.Student
+import Operate.DateTime ( defaults )
+import Operate.Tutor
+import Operate.Student
 
 import qualified Debug 
 
@@ -119,7 +121,7 @@ use_account tmk = do
     h3 "Login"
     -- für Student und Tutor gleicher Start
 
-    svt @ ( stud, vor, status0, attends0 ) <- Inter.Login.form
+    svt @ ( stud, vor, status0, attends0 ) <- Operate.Login.form
 
     ( status, attends ) <- 
         if status0 == Tutor
@@ -140,7 +142,7 @@ use_account tmk = do
            [ ("Aufgaben",  aufgaben tmk ( stud, V.vnr vor, tutor )  ) 
                  | attends || tutor ]
 	++ [ ("Einschreibung", veranstaltungen ( stud, vor, tutor )  ) ]
-        ++ [ ("Statistiken",   Inter.Statistik.main svt  ) | tutor ]
+        ++ [ ("Statistiken",   Operate.Statistik.main svt  ) | tutor ]
         ++ [ ("Waisenkinder", waisenkinder $ S.unr stud ) | tutor ]
     close -- btable 
     aktion
@@ -152,7 +154,7 @@ waisenkinder u = do
     plain $  "Studenten Ihrer Schule, die keine Übungsgruppe gewählt haben"
     studs <- io $ S.orphans $ u
     open btable
-    Inter.Statistik.edit_studenten studs
+    Operate.Statistik.edit_studenten studs
 
 -- | alle Übungen,
 -- markiere besuchte Übungen
@@ -311,7 +313,7 @@ aufgaben tmk ( stud, vnr, tutor ) = do
 		  sequence_ $ do
 		      ( w, sauf, stud ) <- rsc
 		      return $ do
-		          Inter.Common.punkte tutor stud auf
+		          Operate.Common.punkte tutor stud auf
 			      ( Nothing, Nothing, Just w
 			      , Just $ Text.XHtml.primHtml 
 					    "Bewertung durch Tutor"  
@@ -337,7 +339,7 @@ aufgaben tmk ( stud, vnr, tutor ) = do
                            [ stud ] <- io $ S.get_snr $ SA.snr sauf
 			   -- das muß auch nach Einsendeschluß gehen,
 			   -- weil es der Tutor ausführt
-			   Inter.Common.punkte tutor stud auf ( inst, inp, res, com )
+			   Operate.Common.punkte tutor stud auf ( inst, inp, res, com )
 	 mzero
 
     let manr = fmap A.anr mauf
@@ -378,7 +380,7 @@ aufgaben tmk ( stud, vnr, tutor ) = do
             ( minst, cs, res, com ) 
                 <- solution vnr manr stud' mk auf'
             let deutsch = M.specialize M.DE 
-	    Inter.Common.punkte False stud' auf' 
+	    Operate.Common.punkte False stud' auf' 
                      ( fmap deutsch minst, cs, Just res, fmap deutsch com )
 	Edit | tutor -> do
 	    find_previous True  vnr mks stud' auf'
@@ -388,7 +390,7 @@ aufgaben tmk ( stud, vnr, tutor ) = do
             return ()
 
     hr
-    con <- io $ Inter.Motd.contents
+    con <- io $ Operate.Motd.contents
     html con
 
     return ()
@@ -411,7 +413,7 @@ fix_input vnr mks stud auf sa = case  SA.input sa of
    Nothing -> io $ do
        -- fix location of previous einsendung
        let p = mkpar stud auf
-           d = Inter.Store.location Inter.Store.Input 
+           d = Operate.Store.location Operate.Store.Input 
                     p "latest" False
        file <- D.home d
        ex <- System.Directory.doesFileExist file
@@ -443,7 +445,7 @@ fix_instant vnr mks stud auf sa = case SA.instant sa of
                 ( _, _, com ) <- make_instant 
 		    vnr ( Just $ A.anr auf ) stud fun auf
                 let p = mkpar stud auf
-                    d = Inter.Store.location Inter.Store.Instant
+                    d = Operate.Store.location Operate.Store.Instant
                            p "latest" False
                 file <- io $ D.schreiben d 
                         $ show $ M.specialize M.DE com
