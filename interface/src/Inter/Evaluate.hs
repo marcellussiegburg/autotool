@@ -1,5 +1,7 @@
 module Inter.Evaluate where
 
+--   $Id$
+
 import Inter.Types
 import Gateway.Errmsg
 
@@ -44,8 +46,8 @@ parse_or_complain cs =
 
 evaluate' p i b = do
        inform $ text "partiell korrekt?"
-       Challenger.partial     p i b
-       Challenger.demonstrate p i b
+       lift $ Challenger.partial     p i b
+       lift $ Challenger.demonstrate p i b
        inform $ text "total korrekt?"
        code <- Challenger.total_neu       p i b
        inform $ text "Bewertung der Einsendung:" <+> toDoc code

@@ -22,7 +22,8 @@ import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.Size
 
-import Inter.Wert ( Wert (..), ok )
+-- import Control.Types ( Wert (..), ok )
+import Inter.Wert
 import Control.Monad ( when )
 
 class Measure p i b where
@@ -42,6 +43,7 @@ class Verify p i where
       verifyIO :: p -> i -> IO.Reporter ()
       verifyIO p i = IO.lift $ verify p i
 
+      {-# deprecate verify "use verifyIO instead" #-}
       verify :: p -> i -> Reporter ()
 
 instance Verify p i where
@@ -118,6 +120,8 @@ total_neu p i b = do
 	  return $ case mres of
 	       Nothing -> No
 	       Just () -> ok $ measure p i b
+
+
 
 ---------------------------------------------------------------------
 
