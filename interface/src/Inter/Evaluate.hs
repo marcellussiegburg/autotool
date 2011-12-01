@@ -7,7 +7,7 @@ import Inter.Wert
 
 import qualified  Challenger 
 
-import Autolib.Reporter
+import Autolib.Reporter.IO.Type
 import Autolib.Reader
 import Autolib.ToDoc
 

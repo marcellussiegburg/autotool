@@ -111,23 +111,13 @@ class ( Show p, Read p
 
 
 -- | liefert (in jedem Fall) einen Wert
-total_neuIO :: Partial p i b 
+total_neu :: Partial p i b 
           => p -> i -> b -> IO.Reporter Wert
-total_neuIO p i b = do
+total_neu p i b = do
           mres <- IO.wrap $ totalIO p i b
 	  return $ case mres of
 	       Nothing -> No
 	       Just () -> ok $ measure p i b
-
-total_neu :: Partial p i b 
-          => p -> i -> b -> Reporter Wert
-total_neu p i b = do
-          mres <- wrap $ total p i b
-	  return $ case mres of
-	       Nothing -> No
-	       Just () -> ok $ measure p i b
-
-
 
 ---------------------------------------------------------------------
 
