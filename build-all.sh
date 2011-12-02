@@ -2,23 +2,29 @@
 
 REPO=git://autolat.imn.htwk-leipzig.de/git
 
-# latest stable build
-TAG=december-2011
+# latest stable 
+AUTOLIBTAG=december-2011
+TOOLTAG=c9e220d48c21fd38c21ed4bc058470eb5b9e2446
 
 # ghc-7.2.* not working
 GHC=ghc-7.0.4
 
-CABIFLAGS="--with-ghc=$GHC --enable-documentation"
+function cabi {
+    cabal configure --with-ghc=$GHC
+    cabal build
+    cabal haddock --hyperlink-source
+    cabal install
+}
 
 git clone $REPO/autolib
 pushd autolib
-git checkout $TAG
-./forauto cabal install $CABIFLAGS
+git checkout $AUTOLIBTAG
+./forauto cabi .
 popd
 
 git clone $REPO/tool
 pushd tool
-git checkout $TAG
+git checkout $TOOLTAG
 
 cp db/src/Mysqlconnect.hs.example db/src/Mysqlconnect.hs
 cp server/src/Config.hs.sample server/src/Config.hs
@@ -26,7 +32,7 @@ cp server/src/Config.hs.sample server/src/Config.hs
 for dir in interface collection server client db
 do
     pushd $dir
-    cabal install $CABIFLAGS
+    cabi .
     popd
 done
 popd
