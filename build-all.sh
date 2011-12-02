@@ -19,8 +19,11 @@ popd
 git clone $REPO/tool
 pushd tool
 git checkout $TAG
+
 cp db/src/Mysqlconnect.hs.example db/src/Mysqlconnect.hs
-for dir in interface collection server client trial super
+cp server/src/Config.hs.sample server/src/Config.hs
+
+for dir in interface collection server client db
 do
     pushd $dir
     cabal install $CABIFLAGS
