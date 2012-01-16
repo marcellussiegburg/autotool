@@ -51,7 +51,7 @@ single cs u0 t = do
 
 rename :: Int -> P.Clause -> P.Clause
 rename u c = 
-    let f = varmap ( \ n -> "_" ++ n ++ show u ) 
+    let f = varmap ( \ n -> Identifier $ "_" ++ name n ++ show u ) 
     in  P.Clause { P.head = f $ P.head c
                  , P.body = map f $ P.body c 
                  }

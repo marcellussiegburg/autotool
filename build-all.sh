@@ -7,9 +7,9 @@ GHC=ghc-7.0.4
 
 function work () {
     $* configure --with-ghc=$GHC
-    $* build
-    $* haddock-$GHC --hyperlink-source
-    $* install
+    $* build 
+    $* haddock --with-haddock=haddock-$GHC --hyperlink-source --internal
+    $* register 
 }
 
 git clone $REPO/autolib
