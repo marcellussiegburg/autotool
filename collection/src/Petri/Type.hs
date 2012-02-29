@@ -77,6 +77,8 @@ instance Reader Place where
 instance ToDoc Place where
     toDoc ( Place n ) = text "S" <> toDoc n
 
+instance Show Place where show = render . toDoc
+
 newtype Transition = Transition Int 
                 deriving ( Eq, Ord, Typeable, Enum, Hash )
 
@@ -87,6 +89,8 @@ instance Reader Transition where
 instance ToDoc Transition where
     toDoc ( Transition n ) = text "T" <> toDoc n
 
+instance Show Transition where show = render . toDoc
+                          
 instance Size Transition where size _ = 1
 
 

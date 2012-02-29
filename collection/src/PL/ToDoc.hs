@@ -45,6 +45,8 @@ instance ToDoc Compare where
 	Greater_Equal -> ">="
 	Greater -> ">"
 
+instance Show Compare where show = render . toDoc
+
 instance ToDoc Term where
     toDoc ( Variable v ) = toDoc v
     toDoc ( Apply f xs ) = 

@@ -40,7 +40,7 @@ bb_list (s : ss) b cont =
 
 
 -- | all possible one-step extensions
-forwards :: ( ToDoc w, Num w ) 
+forwards :: ( ToDoc w, Num w, Eq w ) 
         => State w 
         -> [ State w ]
 forwards s = do

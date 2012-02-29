@@ -73,7 +73,7 @@ instance Reader Formel where
         klaus <- reader `R.sepBy` my_symbol "&&"
 	return $ And klaus
 
-
+instance Show Formel where show = render . toDoc
 
 type Belegung = FiniteMap Variable Bool
 

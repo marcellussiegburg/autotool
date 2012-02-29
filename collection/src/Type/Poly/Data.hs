@@ -66,6 +66,8 @@ instance ToDoc Type where
         TyCon f [] -> toDoc f 
         TyCon f args -> toDoc f <> anglist (  map toDoc args ) 
 
+instance Show Type where show = render . toDoc
+
 instance Reader Type where 
     reader = do 
          t <- reader

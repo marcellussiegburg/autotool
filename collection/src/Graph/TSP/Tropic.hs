@@ -23,6 +23,8 @@ instance ToDoc a => ToDoc ( Tropic a ) where
         Finite f -> toDoc f
         Infinite -> text "+"
 
+instance ToDoc a => Show ( Tropic a ) where show = render . toDoc
+
 instance Reader a => Reader ( Tropic a ) where
     reader = do my_reserved "+" ; return Infinite
          <|> do x <- reader ; return $ Finite x
