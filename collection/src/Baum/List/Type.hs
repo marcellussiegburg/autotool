@@ -30,6 +30,7 @@ instance Functor ListTree where
 
 $(derives [makeReader, makeToDoc] [''ListTree])
 
+instance ToDoc a => Show (ListTree a) where show = render . toDoc
 
 
 

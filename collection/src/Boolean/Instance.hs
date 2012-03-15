@@ -29,6 +29,8 @@ instance OrderScore Boolean where
 
 $(derives [makeReader, makeToDoc] [''Boolean])
 
+instance Show Boolean where show = render . toDoc
+
 data BI =
      BI { formula :: Exp Bool
 	, operators :: Set ( Op Bool )

@@ -18,6 +18,8 @@ data RedBlackTree a = Empty
 $(derives [makeReader, makeToDoc] [''RedBlackTree])
 $(derives [makeReader, makeToDoc] [''RedBlackColor])
 
+instance ToDoc a => Show (RedBlackTree a) where show = render . toDoc
+
 instance Functor RedBlackTree where
   fmap f = foldt ( \ color left key right -> RedBlackTree color left ( f key ) right ) Empty
 

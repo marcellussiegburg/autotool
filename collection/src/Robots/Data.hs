@@ -15,6 +15,9 @@ data Robots_Inverse = Robots_Inverse deriving ( Typeable )
 $(derives [makeReader, makeToDoc] [''Robots])
 $(derives [makeReader, makeToDoc] [''Robots_Inverse])
 
+instance Show Robots where show = render . toDoc
+instance Show Robots_Inverse where show = render . toDoc
+                         
 type Position = ( Integer, Integer )
 
 data Robot = Robot { name :: String

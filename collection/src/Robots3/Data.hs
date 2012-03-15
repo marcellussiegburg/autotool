@@ -16,6 +16,9 @@ data Robots3_Inverse = Robots3_Inverse deriving ( Typeable )
 $(derives [makeReader, makeToDoc] [''Robots3])
 $(derives [makeReader, makeToDoc] [''Robots3_Inverse])
 
+instance Show Robots3 where show = render . toDoc
+instance Show Robots3_Inverse where show = render . toDoc
+
 data Position = Position { x :: Int, y :: Int }
      deriving ( Eq, Ord, Typeable )
 

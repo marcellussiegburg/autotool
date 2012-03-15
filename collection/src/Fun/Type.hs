@@ -26,6 +26,8 @@ data Property = Builtins [ RAM.Builtin.Builtin ]
 
 $(derives [makeReader, makeToDoc] [''Property])
 
+instance Show Property where show = render . toDoc
+
 data Fun = 
 	 -- | Grundfunktionen
 	   Zero Int

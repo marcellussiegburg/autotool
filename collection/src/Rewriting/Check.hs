@@ -1,3 +1,5 @@
+{-# language TemplateHaskell #-}
+
 module Rewriting.Check where
 
 import Rewriting.TRS
@@ -100,50 +102,6 @@ linear name t = do
  
 terms trs = do rule <- regeln trs ; [ lhs rule, rhs rule ]
 
-instance Reader Check where
-    atomic_readerPrec d = readerParenPrec d $ \ d -> do
-                      ((do my_reserved "Left_Linear"
-                           return (Left_Linear))
-                       <|>
-                       (do my_reserved "Linear"
-                           return (Linear))
-                       <|>
-                       (do my_reserved "Non_Overlapping"
-                           return (Non_Overlapping))
-                       <|>
-                       (do my_reserved "Constructor"
-                           return (Constructor))
-                       <|>
-                       (do guard (d < 9)
-                           my_reserved "Max_Rules"
-                           aa <- readerPrec 9
-                           return (Max_Rules aa))
-                       <|>
-                       (do guard (d < 9)
-                           my_reserved "Max_Size"
-                           aa <- readerPrec 9
-                           return (Max_Size aa))
-                       <|>
-                       (do guard (d < 9)
-                           my_reserved "Max_Symbols"
-                           aa <- readerPrec 9
-                           return (Max_Symbols aa))
-                       <|>
-                       (do guard (d < 9)
-                           my_reserved "Max_Variables"
-                           aa <- readerPrec 9
-                           return (Max_Variables aa)))
+derives [makeReader,makeToDoc] [''Check]
 
-instance ToDoc Check where
-    toDocPrec d (Left_Linear) = text "Left_Linear"
-    toDocPrec d (Linear) = text "Linear"
-    toDocPrec d (Non_Overlapping) = text "Non_Overlapping"
-    toDocPrec d (Constructor) = text "Constructor"
-    toDocPrec d (Max_Rules aa) = docParen (d >= 10)
-              (text "Max_Rules" </> fsep [toDocPrec 10 aa])
-    toDocPrec d (Max_Size aa) = docParen (d >= 10)
-              (text "Max_Size" </> fsep [toDocPrec 10 aa])
-    toDocPrec d (Max_Symbols aa) = docParen (d >= 10)
-              (text "Max_Symbols" </> fsep [toDocPrec 10 aa])
-    toDocPrec d (Max_Variables aa) = docParen (d >= 10)
-              (text "Max_Variables" </> fsep [toDocPrec 10 aa])
+instance Show Check where show = render . toDoc

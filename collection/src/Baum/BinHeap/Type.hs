@@ -67,4 +67,6 @@ heapIsCorrect h = and
 $(derives [makeReader, makeToDoc] [''BinTree])
 $(derives [makeReader, makeToDoc] [''BinHeap])
 
+instance ToDoc a => Show (BinTree a) where show = render . toDoc
+instance ToDoc a => Show (BinHeap a) where show = render . toDoc                                           
 

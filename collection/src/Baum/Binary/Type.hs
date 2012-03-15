@@ -28,6 +28,8 @@ isNull _ = False
 
 $(derives [makeReader, makeToDoc] [''Baum])
 
+instance ToDoc a => Show (Baum a) where show = render . toDoc
+                                           
 -- local variables:
 -- mode: haskell
 -- end;

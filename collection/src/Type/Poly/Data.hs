@@ -111,6 +111,8 @@ instance ToDoc Expression where
             , parens $ fsep $ punctuate comma $ map toDoc args
             ]
 
+instance Show Expression where show = render . toDoc
+
 instance Reader Expression where
     reader = do
         vs <- option [] $ do

@@ -21,6 +21,8 @@ instance ToDoc Formel where
     toDocPrec p ( Equals l r ) = docParen ( p > 8 )
 	$ sep [ toDoc l , text "==", toDoc r ]
 
+instance Show Formel where show = render . toDoc
+
 
 instance ToDoc Operator where
     toDoc op = case op of
@@ -29,6 +31,8 @@ instance ToDoc Operator where
 	Or -> text "||"
 	Iff -> text "<=>"
 	Implies -> text "=>"
+
+instance Show Operator where show = render . toDoc
 
 instance ToDoc Quantor where
     toDoc q = case q of
@@ -52,5 +56,6 @@ instance ToDoc Term where
     toDoc ( Apply f xs ) = 
         toDoc f <+> parens ( sepBy comma $ map toDoc xs )
 
+instance Show Term where show = render . toDoc
 
 

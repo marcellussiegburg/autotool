@@ -15,6 +15,8 @@ data Property = Builtins [ Builtin ]
 
 $(derives [makeReader, makeToDoc] [''Property])
 
+instance Show Property where show = render . toDoc
+
 example :: [ Property ]
 example = [ Builtins [ ]
           , No_While

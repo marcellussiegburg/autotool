@@ -110,7 +110,7 @@ instance Size ( AVLTree a ) where
 
 $(derives [makeReader, makeToDoc] [''AVLTree])
 
-
+instance ToDoc a => Show (AVLTree a) where show = render . toDoc
 
 
 

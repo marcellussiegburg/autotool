@@ -30,6 +30,8 @@ instance OrderScore Boolean2 where
 
 $(derives [makeReader, makeToDoc] [''Boolean2])
 
+instance Show Boolean2 where show = render . toDoc
+
 data Constraint 
     = Operators [ Op Bool ] 
     | Normalform Form

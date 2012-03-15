@@ -23,6 +23,8 @@ instance ToDoc Lambda where
                    <+> text "->"
                    <+> toDocPrec 0 body
 
+instance Show Lambda where show = render . toDoc
+                           
 instance Reader Lambda where
     reader = application
 

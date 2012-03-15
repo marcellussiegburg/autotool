@@ -11,6 +11,6 @@ data DFA_Compress = DFA_Compress deriving Typeable
 
 $(derives [makeReader, makeToDoc] [''DFA_Compress])
 
--- local variables:
--- mode: haskell
--- end:
+instance Show DFA_Compress where show = render . toDoc
+                                
+

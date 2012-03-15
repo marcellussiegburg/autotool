@@ -18,6 +18,8 @@ data Step a = Tau | Real a deriving ( Eq, Ord, Typeable )
 
 $(derives [makeToDoc, makeReader] [''Step])
 
+instance ToDoc a => Show (Step a) where show = render . toDoc
+
 sts :: Ord a => Process a -> STS ( Process a ) a
 sts p = 
     let handle done vis hid todo = case S.minView todo of

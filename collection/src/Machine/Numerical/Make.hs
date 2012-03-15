@@ -23,8 +23,10 @@ testliste len ari hei = sequence $ replicate len $ do
     return xs
 
 make :: forall c m dat conf b
-     . ( Show c, Con.Check c m , Con.ConfigC c m , Machine m dat conf 
-       , Partial N.Computer ( N.Type c m ) b, Typeable b
+     . ( Show c, Con.Check c m , Con.ConfigC c m 
+       , Machine m dat conf 
+       , Partial N.Computer ( N.Type c m ) b
+       , Typeable b
        )
      => Con.Config c m
       ->  Make

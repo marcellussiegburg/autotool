@@ -24,6 +24,8 @@ data Haskell = Haskell deriving Typeable
 
 $(derives [makeReader, makeToDoc] [''Haskell])
 
+instance Show Haskell where show = render . toDoc
+
 instance OrderScore Haskell where
     scoringOrder h = Increasing
 

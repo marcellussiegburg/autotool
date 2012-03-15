@@ -22,6 +22,9 @@ data Rushhour_Inverse = Rushhour_Inverse deriving ( Typeable )
 $(derives [makeReader, makeToDoc] [''Rushhour])
 $(derives [makeReader, makeToDoc] [''Rushhour_Inverse])
 
+instance Show Rushhour where show = render . toDoc
+instance Show Rushhour_Inverse where show = render . toDoc
+
 type Position = ( Int, Int )
 
 data Orientation = Vertical | Horizontal 

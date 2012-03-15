@@ -11,6 +11,8 @@ data Binpack = Binpack
 
 $(derives [makeReader, makeToDoc] [''Binpack])
 
+instance Show Binpack where show = render . toDoc
+                            
 data Instance =
      Instance { weights :: [ Integer ]
               , capacity :: Integer

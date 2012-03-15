@@ -43,6 +43,8 @@ data Haskell_Blueprint = Haskell_Blueprint deriving Typeable
 
 $(derives [makeReader, makeToDoc] [''Haskell_Blueprint])
 
+instance Show Haskell_Blueprint where show = render . toDoc
+
 instance OrderScore Haskell_Blueprint where
     scoringOrder h = Increasing
 

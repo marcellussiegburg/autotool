@@ -16,5 +16,6 @@ instance Hash Color where hash = hash . fromEnum
 
 $(derives [makeReader, makeToDoc, makeToTransport] [''Color])
 
+instance Show Color where show = render . toDoc
 
 

@@ -20,6 +20,8 @@ data Checker = MaxReg Register
 
 $(derives [makeReader, makeToDoc] [''Checker])
 
+instance Show Checker where show = render . toDoc
+
 instance Check Checker Program where
     check (MaxReg r) p = do
         assert ( max_reg p <= r ) $ 

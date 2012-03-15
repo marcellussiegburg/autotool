@@ -36,6 +36,8 @@ example = Config
 
 $(derives [makeReader, makeToDoc] [''Primrec_2D])
 
+instance Show Primrec_2D where show = render . toDoc
+
 $(derives [makeReader, makeToDoc] [''Config])
 
 -- local variables:

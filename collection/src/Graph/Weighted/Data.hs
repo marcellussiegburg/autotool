@@ -40,3 +40,5 @@ instance (Ord v, Hash v, Hash w) => Hash ( Graph v w ) where
 
 
 $(derives [makeReader, makeToDoc] [''Kante, ''Graph])
+
+instance  (Ord v, ToDoc v, ToDoc w) => Show (Graph v w) where show = render . toDoc 

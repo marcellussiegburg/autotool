@@ -40,6 +40,8 @@ instance OrderScore PUMP where
 instance ToDoc PUMP where
     toDoc ( PUMP kind ) = text $ "PUMP-" ++ kind
 
+instance Show PUMP where show = render . toDoc
+                            
 instance Reader PUMP where
     reader = do
         my_reserved "PUMP"

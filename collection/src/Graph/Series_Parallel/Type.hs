@@ -34,6 +34,8 @@ data Threeway a b = This a | That b | Both Int
 
 $(derives [makeReader, makeToDoc, makeToTransport] [''Threeway])
 
+instance (ToDoc a, ToDoc b) => Show (Threeway a b) where show = render . toDoc
+                           
 instance ( Hash a, Hash b ) => Hash ( Threeway a b ) where
     hash ( This x ) = hash ( 15 :: Int , x )
     hash ( That y ) = hash ( 11 :: Int , y )

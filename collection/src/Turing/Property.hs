@@ -28,6 +28,8 @@ data Property = Det
 
 $(derives [makeReader, makeToDoc] [''Property])
 
+instance Show Property where show = render . toDoc
+
 instance Condition  Property ( Turing Char Int ) where
     condition p a = C.run ( Turing.Property.check p ) a
 

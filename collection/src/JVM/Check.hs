@@ -61,3 +61,5 @@ instance ToDoc Checker where
               (text "Builtins" </> fsep [toDocPrec 10 aa])
     toDocPrec d (Smallnums aa) = docParen (d >= 10)
               (text "Smallnums" </> fsep [toDocPrec 10 aa])
+
+instance Show Checker where show = render . toDoc
