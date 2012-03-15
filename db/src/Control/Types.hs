@@ -113,6 +113,8 @@ data TimeStatus = Early | Current | Late deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''TimeStatus])
 
+instance Show TimeStatus where show = render . toDoc
+                           
 timer :: Int -> Int -> TimeStatus
 timer 1 _ = Early
 timer _ 1 = Late
@@ -125,6 +127,8 @@ data HiLo = Keine | High | Low
 
 $(derives [makeReader, makeToDoc] [''HiLo])
 
+instance Show HiLo where show = render . toDoc
+                               
 instance SqlBind HiLo where 
     fromSqlValue _ s = Just 
         $ fromMaybe Keine 
@@ -146,6 +150,8 @@ data Status = Demo | Mandatory | Optional
 
 $(derives [makeReader, makeToDoc] [''Status])
 
+instance Show Status where show = render . toDoc
+                               
 instance SqlBind Status where 
     fromSqlValue _ s = Just 
         $ fromMaybe Demo
@@ -218,6 +224,8 @@ data MNr = MNr String deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''MNr])
 
+instance Show MNr where show = render . toDoc
+                               
 instance SqlBind MNr where 
     fromSqlValue _ s = Just $ MNr $ s
     toSqlValue (MNr i) = toSqlValue i
@@ -235,6 +243,8 @@ data Typ = Typ String deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Typ])
 
+instance Show Typ where show = render . toDoc
+                        
 instance SqlBind Typ where 
     fromSqlValue ty s = Just $ Typ s
     toSqlValue (Typ cs) = toSqlValue cs
@@ -252,6 +262,8 @@ data Email = Email String deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Email])
 
+instance Show Email where show = render . toDoc
+                        
 instance SqlBind Email where 
     fromSqlValue ty s = Just $ Email s
     toSqlValue (Email cs) = toSqlValue cs
@@ -283,6 +295,8 @@ data Remark = Remark String deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Remark])
 
+instance Show Remark where show = render . toDoc
+                        
 instance SqlBind Remark where 
     fromSqlValue ty s = Just $ Remark s
     toSqlValue (Remark cs) = toSqlValue cs
@@ -298,6 +312,8 @@ data Name = Name String deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Name])
 
+instance Show Name where show = render . toDoc
+                        
 instance SqlBind Name where 
     fromSqlValue ty s = Just $ Name s
     toSqlValue (Name cs) = toSqlValue cs
@@ -313,6 +329,8 @@ data File = File String deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''File])
 
+instance Show File where show = render . toDoc
+                        
 instance SqlBind File where 
     fromSqlValue ty s = Just $ File s
     toSqlValue (File cs) = toSqlValue cs
@@ -330,6 +348,8 @@ data SNr = SNr Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''SNr])
 
+instance Show SNr where show = render . toDoc
+                        
 instance SqlBind SNr where 
     fromSqlValue _ s = Just $ SNr $ read s -- FIXME: check SqlType
     toSqlValue (SNr i) = toSqlValue i
@@ -345,6 +365,8 @@ data ANr = ANr Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''ANr])
 
+instance Show ANr where show = render . toDoc
+                        
 instance SqlBind ANr where 
     fromSqlValue _ s = Just $ ANr $ read s -- FIXME: check SqlType
     toSqlValue (ANr i) = toSqlValue i
@@ -363,6 +385,8 @@ data UNr = UNr Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''UNr])
 
+instance Show UNr where show = render . toDoc
+                        
 instance SqlBind UNr where 
     fromSqlValue _ s = Just $ UNr $ read s -- FIXME: check SqlType
     toSqlValue (UNr i) = toSqlValue i
@@ -380,6 +404,8 @@ data ENr = ENr Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''ENr])
 
+instance Show ENr where show = render . toDoc
+                        
 instance SqlBind ENr where 
     fromSqlValue _ s = Just $ ENr $ read s -- FIXME: check SqlType
     toSqlValue (ENr i) = toSqlValue i
@@ -397,6 +423,8 @@ data GNr = GNr Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''GNr])
 
+instance Show GNr where show = render . toDoc
+                        
 instance SqlBind GNr where 
     fromSqlValue _ s = Just $ GNr $ read s -- FIXME: check SqlType
     toSqlValue (GNr i) = toSqlValue i
@@ -410,6 +438,8 @@ instance FromCGI GNr where
 data VNr = VNr Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''VNr])
+
+instance Show VNr where show = render . toDoc
 
 instance SqlBind VNr where 
     fromSqlValue _ s = Just $ VNr $ read s -- FIXME: check SqlType
@@ -429,6 +459,8 @@ data Oks = Oks Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Oks])
 
+instance Show Oks where show = render . toDoc
+                        
 instance SqlBind Oks where 
     fromSqlValue ty s = Just $ Oks $ read s
     toSqlValue (Oks i) = toSqlValue i
@@ -443,6 +475,8 @@ data Nos = Nos Int deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Nos])
 
+instance Show Nos where show = render . toDoc
+                        
 instance SqlBind Nos where 
     fromSqlValue ty s = Just $ Nos $ read s
     toSqlValue (Nos i) = toSqlValue i

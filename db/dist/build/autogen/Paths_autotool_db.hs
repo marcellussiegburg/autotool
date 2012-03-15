@@ -13,7 +13,7 @@ version = Version {versionBranch = [1,0], versionTags = []}
 bindir, libdir, datadir, libexecdir :: FilePath
 
 bindir     = "/usr/local/bin"
-libdir     = "/usr/local/lib/autotool-db-1.0/ghc-7.0.4"
+libdir     = "/usr/local/lib/autotool-db-1.0/ghc-7.4.1"
 datadir    = "/usr/local/share/autotool-db-1.0"
 libexecdir = "/usr/local/libexec"
 

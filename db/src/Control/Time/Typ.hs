@@ -26,6 +26,8 @@ instance ToDoc Time where
 	       $ map toDoc [ hour t, minute t, second t ]
 	]
 
+instance Show Time where show = render . toDoc
+                           
 instance Reader Time where
     reader = do
         let natural = do

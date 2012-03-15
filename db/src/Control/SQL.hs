@@ -93,6 +93,9 @@ instance T.ToDoc Query where
     toDoc (Query a ms) = T.vcat [ T.toDoc a
 		     , ( T.nest 4 $ T.vcat $ map T.toDoc ms ) T.<+> T.char ';'
 		     ]
+
+instance Show Query where show = render . toDoc
+
 instance R.Reader Query where
     atomic_reader = do
         a <- reader

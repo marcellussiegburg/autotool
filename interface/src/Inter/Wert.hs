@@ -40,3 +40,4 @@ renovate w = case w of
 
 $(derives [makeReader, makeToDoc] [''Wert])
 
+instance Show Wert where show = render . toDoc

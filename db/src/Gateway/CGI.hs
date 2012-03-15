@@ -114,10 +114,11 @@ data Etml = forall a . ETML a => Etml a
 instance HTML Etml where
     toHtml (Etml x) = toHtml x
 instance Show Etml where
-    show ( Etml x ) = show x
+    show ( Etml x ) = render $ toDoc x
 instance ToDoc Etml where 
     toDoc ( Etml x ) 
-        = text $ show x
+        = toDoc x
+        -- = text $ show x
         -- = error $ unlines [ "toDoc Etml" , show ( typeOf x ) , show x ]
 
 -- | stack of list of html elements.

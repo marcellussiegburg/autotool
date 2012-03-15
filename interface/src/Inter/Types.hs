@@ -77,6 +77,8 @@ instance Typeable Make where
 instance ToDoc Make 
     where toDoc ( Make p doc fun veri ex ) = text doc
 
+instance Show Make where show = render . toDoc
+
 -- | build maker just from Challenger.Partial instance
 -- (suitable for simple problems that don't need generation of instances)
 direct :: ( V p i b 
