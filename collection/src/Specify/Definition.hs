@@ -1,3 +1,5 @@
+{-# language DeriveDataTypeable #-}
+
 module Specify.Definition where
 
 import Specify.Expression

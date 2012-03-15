@@ -21,6 +21,9 @@ instance OrderScore Cexp where
 
 $(derives [makeToDoc,makeReader] [''Cexp])
 
+instance Show Cexp where show = render . toDoc
+                          
+
 -- Note: Order of components (first Integer, then T.Exp)
 -- is important for parsing. T.Exp first would not work
 -- since the final "," will be parsed as part of the T.Exp.

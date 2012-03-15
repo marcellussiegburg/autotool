@@ -21,6 +21,9 @@ data GraphC a => STGraph a = STGraph
 
 $(derives [makeReader, makeToDoc] [''STGraph])
 
+instance GraphC a => Show (STGraph a) where 
+    show = render . toDoc
+                           
 example :: GraphC Int => STGraph Int
 example = STGraph { source = 1, target = 3
                   , contents = circle [ 1 .. 5 ]

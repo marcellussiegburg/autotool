@@ -39,3 +39,4 @@ instance ToDoc State where
 		-- text "cache" <+> equals <+> toDocPrec 0 ae
 	       ])
 
+instance Show State where show = render . toDoc

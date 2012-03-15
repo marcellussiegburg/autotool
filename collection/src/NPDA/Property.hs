@@ -26,5 +26,8 @@ data Acceptance_Mode = Empty_Stack
 
 $(derives [makeReader, makeToDoc] [''Property])
 
+instance Show Property where show = render . toDoc
+                          
 $(derives [makeReader, makeToDoc] [''Acceptance_Mode])
 
+instance Show Acceptance_Mode where show = render . toDoc

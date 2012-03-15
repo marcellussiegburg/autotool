@@ -18,6 +18,8 @@ data Computer = Computer
 
 $(derives [makeReader, makeToDoc] [''Computer])
 
+instance Show Computer where show = render . toDoc
+                          
 class    (ToDoc c, Reader c, Con.Check c m) => TypeC c m
 instance (ToDoc c, Reader c, Con.Check c m) => TypeC c m
 

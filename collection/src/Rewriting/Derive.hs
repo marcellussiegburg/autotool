@@ -35,6 +35,10 @@ instance OrderScore ( Derive tag ) where
 instance ToDoc tag => ToDoc ( Derive tag ) where
     toDoc ( Derive t ) = text "Derive-" <> toDoc t
 
+instance ToDoc tag => Show (Derive tag) where show = render . toDoc
+                          
+
+
 instance Reader tag => Reader ( Derive tag ) where
     reader = do 
         my_symbol "Derive-"

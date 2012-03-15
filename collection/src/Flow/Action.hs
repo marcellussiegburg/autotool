@@ -20,6 +20,8 @@ data Action
 
 $(derives [makeToDoc,makeReader] [''Action])
 
+instance Show Action where show = render . toDoc
+
 instance Symbol Action -- ?
 instance Size Action where size = const 1
 instance Hash Action where 

@@ -38,12 +38,16 @@ instance OrderScore Petri_Deadlock where
 
 $(derives [makeReader, makeToDoc] [''Petri_Deadlock]) 
 
+instance Show Petri_Deadlock where show = render . toDoc
+                          
+
 instance Verify Petri_Deadlock
          ( Net Place Transition ) where
     verify Petri_Deadlock n = do
         validate Default $ n
                                         
 instance ( Ord s, Ord t, Hash s, Hash t, Size t
+         , Show s, Show t 
          , ToDoc s, ToDoc t , Reader s, Reader t
          ) =>
        Partial Petri_Deadlock ( Net s t ) [ t ] where
@@ -91,6 +95,8 @@ example = Config
     }
                           
 $(derives [makeReader, makeToDoc] [''Config]) 
+instance Show Config where show = render . toDoc
+                          
 
 
 make_quiz :: Make

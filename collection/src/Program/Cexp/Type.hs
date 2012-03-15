@@ -81,6 +81,8 @@ instance ToDoc Exp where
                      , text ":", toDocPrec ( prec op  ) c
                      ]
 
+instance Show Exp where show = render . toDoc
+                           
 -----------------------------------------------------
 
 tp = makeTokenParser emptyDef

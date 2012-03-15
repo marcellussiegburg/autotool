@@ -123,6 +123,8 @@ instance Ops a => Autolib.Symbol.Symbol (Op a) where
 instance Ops a => ToDoc (Op a) where 
     toDoc = text . name
 
+instance Ops a => Show (Op a) where show = render . toDoc
+                          
 instance Ops a => Reader (Op a) where
     readerPrec p = choice $
        let ( nulls, sonst ) =  

@@ -19,11 +19,11 @@ import Autolib.Prime (prime)
 import Data.Char ( isDigit )
 import Control.Monad ( guard )
 
-instance (Enum a, Num a, Integral a ) => Ops a where
+instance (Show a, Enum a, Num a, Integral a ) => Ops a where
     ops = nullary ++ unary ++ binary
 
 
-nullary :: ( Enum a, Num a ) => [ Op a ]
+nullary :: (Show a,  Enum a, Num a ) => [ Op a ]
 nullary = do
     guard $ False -- das machen wir anders
     i <- [ 0 .. 9 ]
@@ -32,7 +32,7 @@ nullary = do
 		, inter = lift $ \ [] -> i
 		}
 
-unary :: ( Num a , Integral a ) =>  [ Op a ]
+unary :: ( Show a, Num a , Integral a ) =>  [ Op a ]
 unary = [ Op { name = "negate" , arity = 1
 	     , precedence = Just 10 , assoc = AssocNone
 	     , inter = lift $ \ [x] -> negate x

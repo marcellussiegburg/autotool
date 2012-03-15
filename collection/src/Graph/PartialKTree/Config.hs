@@ -16,6 +16,8 @@ data Config =
 
 $(derives [makeReader, makeToDoc] [''Config])
 
+instance Show Config where show = render . toDoc
+                           
 example :: Config
 example = Config 
 	{ nodes = 10

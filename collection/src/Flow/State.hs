@@ -42,6 +42,8 @@ instance ToDoc State where
     toDoc s = text "state" 
             <+> text ( show $ M.toList $ contents s )
 
+instance Show State where show = render . toDoc
+                           
 instance Reader State where
     reader = do
         my_reserved "state"

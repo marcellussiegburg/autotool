@@ -36,6 +36,10 @@ instance Size Transition where size _ = 1
 
 $(derives [makeReader, makeToDoc] [''Stelle, ''Transition ])
 
+instance Show Stelle where show = render . toDoc
+instance Show Transition where show = render . toDoc
+                          
+
 make :: ( Ord s, Ord t )
      => [s ]
      -> [ Connection s t ] -> Net s t

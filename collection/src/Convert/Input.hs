@@ -37,6 +37,8 @@ data Autolib.NFA.NFAC c Int =>
 
 $(derives [makeReader, makeToDoc] [''Input])
 
+instance Autolib.NFA.NFAC c Int => Show (Input c) where show = render . toDoc
+                          
 example :: Input Char
 example = Regular_Expression { alphabet = mkSet "ab"
 	      , expression = read "(a + b^2)^*"

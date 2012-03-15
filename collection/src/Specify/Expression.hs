@@ -1,4 +1,6 @@
 {-# LANGUAGE GADTs, NoMonomorphismRestriction #-}
+{-# language FlexibleInstances #-}
+{-# language DeriveDataTypeable #-}
 
 module Specify.Expression where
 
@@ -82,6 +84,10 @@ instance ToDoc a => ToDoc ( Expression a ) where
         Equiv     x y -> docParen ( p > 2 ) $ hsep [ toDocPrec 2 x, text "<==>", toDocPrec 3 y ]
         Not       x   -> docParen ( p > 4 ) $ hsep [ text "!", toDocPrec 8 x ]
 
+instance ToDoc a => Show (Expression a) where 
+    show = render . toDoc
+                              
+                              
 instance Size ( Expression a ) where
     size x = case x of
         Constant a -> 1

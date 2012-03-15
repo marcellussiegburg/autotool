@@ -48,6 +48,8 @@ instance RTO z => Hash ( Modus z ) where
 
 $(derives [makeReader, makeToDoc] [''Modus])
 
+instance RTO z => Show (Modus z) where show = render . toDoc
+                           
 class ( RTO x, RTO y, RTO z )
     => NPDAC x y z
 instance ( RTO x, RTO y, RTO z )
@@ -77,6 +79,9 @@ instance Container (x, z, y) (x, (z, y)) where
 
 $(derives [makeReader, makeToDoc] [''NPDA])
 
+instance (NPDAC x y z) => Show (NPDA x y z) where 
+    show = render . toDoc
+                          
 instance NPDAC x y z => Size (NPDA x y z) where
     size a = length $ unCollect' $ transitionen a
 

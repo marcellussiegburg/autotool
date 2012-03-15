@@ -13,3 +13,4 @@ data Order = Pre | In | Post | Level
 
 $(derives [makeReader, makeToDoc] [''Order])
 
+instance Show Order where show = render . toDoc

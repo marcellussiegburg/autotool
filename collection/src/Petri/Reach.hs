@@ -33,6 +33,9 @@ instance OrderScore Petri_Reach where
 
 $(derives [makeReader, makeToDoc] [''Petri_Reach]) 
 
+instance Show Petri_Reach where show = render . toDoc
+                          
+
 instance Verify Petri_Reach 
          ( Net Place Transition, State Place ) where
     verify Petri_Reach ( n, s ) = do
@@ -85,6 +88,8 @@ example = Config
                           
 $(derives [makeReader, makeToDoc] [''Config]) 
 
+instance Show Config where show = render . toDoc
+                          
 
 make_quiz :: Make
 make_quiz = quiz Petri_Reach Petri.Reach.example

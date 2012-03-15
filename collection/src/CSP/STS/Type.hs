@@ -31,6 +31,8 @@ states s = S.fromList
 
 $(derives [ makeReader, makeToDoc ] [ ''STS ] )
 
+instance ( Ord t, ToDoc s, ToDoc t ) => Show (STS s t) where show = render . toDoc
+                          
 all_states_are_reachable :: ( Ord s, Ord t ) 
                             => STS s t -> Bool
 all_states_are_reachable s = 

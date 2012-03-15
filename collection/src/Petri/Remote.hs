@@ -35,6 +35,9 @@ instance OrderScore Petri_Deadlock_Remote where
 
 $(derives [makeReader, makeToDoc] [''Petri_Deadlock_Remote]) 
                                         
+instance Show Petri_Deadlock_Remote where show = render . toDoc
+                          
+
 instance ( Ord s, Ord t, Hash s, Hash t, Size t
          , ToDoc s, ToDoc t , Reader s, Reader t
          ) =>

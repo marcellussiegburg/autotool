@@ -113,6 +113,9 @@ example_config = Config
      
 $(derives [makeReader, makeToDoc] [''Config])
 
+instance Show Config where show = render . toDoc
+                          
+
 
 instance Generator STS_Fail Config 
     ( STS Int Char, STS Int Char

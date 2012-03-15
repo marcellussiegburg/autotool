@@ -1,3 +1,5 @@
+{-# language TemplateHaskell #-}
+
 module Graph.PartialKTree.Central where
 
 --  $Id$
@@ -16,12 +18,16 @@ import Inter.Types
 import Inter.Quiz
 import Autolib.Size
 import Autolib.Set
+import Autolib.Reader
+import Autolib.ToDoc
 import qualified Challenger as C
 
 import Data.Typeable
 import Data.Maybe 
 
 data PartialKTree = PartialKTree deriving ( Eq, Ord, Show, Read, Typeable )
+
+derives [makeReader,makeToDoc] [''PartialKTree]
 
 instance OrderScore PartialKTree where
     scoringOrder _ = Increasing

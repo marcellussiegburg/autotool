@@ -85,6 +85,8 @@ data Config =
      
 $(derives [makeReader, makeToDoc] [''Config])
 
+instance Show Config where show = render . toDoc
+                          
 example_config :: Config     
 example_config = Config
     { num_states = 4

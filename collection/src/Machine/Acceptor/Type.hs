@@ -24,6 +24,8 @@ instance OrderScore Acceptor where
 instance ToDoc Acceptor where
     toDoc ( Acceptor kind ) = text $ "Acceptor-" ++ kind
 
+instance Show Acceptor where show = render . toDoc
+                           
 instance Reader Acceptor where
     reader = do
         my_reserved "Acceptor"

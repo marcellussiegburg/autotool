@@ -52,6 +52,9 @@ instance Verify p i where
                  [ text "Vorsicht: Methode Challenger.Partial.verify nicht implementiert"
                  ]
 
+-- does not work for Show instances
+-- defined in [safe] modules:          
+-- instance ToDoc a => Show a where show = render . toDoc
 
 -- | Klasse: Partial
 class ( Show p, Read p
@@ -68,7 +71,7 @@ class ( Show p, Read p
       -- und kann trotzdem schon was ausgeben)
       describe :: p -> i -> Doc
       describe p i = vcat
-          [ text "Problem" <+> text ( show p )
+          [ text "Problem" <+> text (show p)
 	  , text "Instanz" <+> toDoc i
 	  ]
 

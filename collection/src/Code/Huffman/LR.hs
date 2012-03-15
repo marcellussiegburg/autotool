@@ -16,6 +16,8 @@ data LR = L | R
      deriving ( Eq, Ord, Enum, Bounded, Typeable )
 
 $(derives [makeReader, makeToDoc] [''LR])
+instance Show LR where show = render . toDoc
+                          
 
 instance Symbol LR 
 instance Size LR where size _ = 1

@@ -2,7 +2,7 @@ module Fun.Step where
 
 --   $Id$ 
 
--- auswertung durch (top-)rewriting (mit cache)
+-- | auswertung durch (top-)rewriting (mit cache)
 
 -- status besteht aus:
 -- input-stack = Liste von auszuwertenden ausdrücken

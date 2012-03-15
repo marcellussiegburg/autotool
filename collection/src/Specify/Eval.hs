@@ -1,5 +1,6 @@
 {-# language GADTs #-}
 
+
 module Specify.Eval where
 
 
@@ -74,6 +75,12 @@ bin op p x y = do
         ( Just a, Just b ) -> return $ Just $ op a b
         _                  -> return $ Nothing
 
+bin_nonzero :: ( ToDoc a,  ToDoc c )
+    => ( a -> Integer -> c ) 
+    -> Program 
+    -> Expression a 
+    -> Expression Integer
+    -> Reporter ( Maybe c )
 bin_nonzero op p x y = do
     ma <- eval p x
     mb <- eval p y

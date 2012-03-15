@@ -22,6 +22,8 @@ data Process a = Stop
              
 $(derives [ makeReader, makeToDoc ] [ ''Process ] )
 
+instance ToDoc a => Show (Process a) where show = render . toDoc
+                          
 instance Size ( Process a ) where
      size p = length $ subs p
 

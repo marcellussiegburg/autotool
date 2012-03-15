@@ -77,7 +77,7 @@ quiz :: ( Generator p conf k , Project p k i
 	, V p i b
 	, Verify p conf
 	, Typeable conf, Reader conf, ToDoc conf
-	, Show conf, Read conf
+	-- , Show conf, Read conf
 	)
      => p -- ^ problem type
      -> conf -- ^ default configuration

@@ -5,7 +5,7 @@ import Haskell.Data
 import Autolib.ToDoc
 
 import qualified Test.SmallCheck as SC
-import Test.SmallCheck ( Serial (..), Series (..) )
+import Test.SmallCheck.Series
 
 import Control.Monad ( guard )
 

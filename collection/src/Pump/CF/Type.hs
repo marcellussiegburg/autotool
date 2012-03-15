@@ -18,6 +18,8 @@ data Zerlegung = Zerlegung
 
 $(derives [makeReader, makeToDoc] [''Zerlegung])
 
+instance Show Zerlegung where show = render . toDoc
+                              
 instance Hash Zerlegung where
     hash e = hash ( hash ( u e, v e ), x e , hash ( y e, z e ) )
 

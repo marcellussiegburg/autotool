@@ -49,6 +49,10 @@ data ( Ord s, Ord t ) => Net s t = Net
 $(derives [makeReader, makeToDoc] [''Capacity])    
 $(derives [makeReader, makeToDoc] [''Net])    
 
+instance ( Ord s, Ord t, ToDoc s, ToDoc t ) => Show (Net s t) where show = render . toDoc
+                          
+
+
 instance ( Ord s, Ord t, Hash s, Hash t ) => Hash ( Net s t ) where
     hash n = hash ( ( places n, transitions n )
                   , (connections n , start n )
