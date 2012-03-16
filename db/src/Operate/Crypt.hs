@@ -32,6 +32,7 @@ empty = Crypt ""
 
 -- brauchen kein quote Quots?
 instance ToDoc Crypt where toDoc = text . unCrypt
+instance Show Crypt where show = render . toDoc
 instance Read Crypt where readsPrec p cs = [(Crypt cs, [])]
 
 

@@ -27,5 +27,6 @@ data Stud_Aufg  =
 
 $(derives [makeReader, makeToDoc] [''Stud_Aufg])
 
+instance Show Stud_Aufg where show = render . toDoc
 
 

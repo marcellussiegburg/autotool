@@ -52,7 +52,7 @@ collectRows fun stat = do
             `catchSql` \ e -> do  
                    logged $ "collectRows: " ++ (show e) 
 		   error $ "SQLqueries.error in collectRows: " ++ (show e) 
-    logged ( show i )
+    logged ( render $ toDoc i )
     return i
 
 logfile = "/tmp/HSQL.log"
@@ -70,7 +70,7 @@ reed cs = case ( readsPrec 0 cs )  of
 	error $ unlines [ "kein parse."
 			, "für eingabe:", cs 
 			, "für typ:" , show (typeOf (fst $ head sonst ) ) 
-			, "readsPrec:" , show sonst
+			, "readsPrec:" , render $ toDoc sonst
 			]
 
 --------------------------------------------------------------------------------

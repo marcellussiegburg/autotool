@@ -280,6 +280,8 @@ instance ToString Email where
 data Config = Config String deriving ( Eq, Ord, Typeable )
 $(derives [makeReader, makeToDoc] [''Config])
 
+instance Show Config where show = render . toDoc
+                          
 instance SqlBind Config where 
     fromSqlValue ty s = Just $ Config s
     toSqlValue (Config cs) = toSqlValue cs

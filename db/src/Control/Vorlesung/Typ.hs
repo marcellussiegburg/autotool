@@ -27,5 +27,6 @@ data Vorlesung =
 
 $(derives [makeReader, makeToDoc] [''Vorlesung])
 
+instance Show Vorlesung where show = render . toDoc
 
 

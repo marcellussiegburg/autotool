@@ -168,6 +168,8 @@ instance ToDoc Variant where
     toDoc ( Variant v ) = -- text "Variant" -- <+> parens ( toDoc v )
         text $ tag v
 
+instance Show Variant where show = render . toDoc
+
 ------------------------------------------------------------------------------
 -- sorting order for toplists
 

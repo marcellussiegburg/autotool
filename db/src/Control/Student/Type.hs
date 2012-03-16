@@ -25,4 +25,4 @@ data Student =
 
 $(derives [makeReader, makeToDoc] [''Student])
 
-
+instance Show Student where show = render . toDoc

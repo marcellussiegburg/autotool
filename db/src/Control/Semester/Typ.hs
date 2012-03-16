@@ -24,6 +24,8 @@ data Semester =
 
 $(derives [makeReader, makeToDoc] [''Semester])
 
+instance Show Semester where show = render . toDoc
+                              
 -- local variables:
 -- mode: haskell
 -- end
