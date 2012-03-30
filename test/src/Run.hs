@@ -17,7 +17,10 @@ import qualified Control.Types as T
 import Inter.Collector
 import Inter.Types
 import Challenger.Partial
-import qualified Autolib.Reporter as R
+
+-- import qualified Autolib.Reporter as R
+import qualified Autolib.Reporter.IO.Type as R
+import qualified Autolib.Reporter.Classic.Type as RC
 
 import qualified Autolib.Reader as P
 import qualified Text.ParserCombinators.Parsec as P
@@ -96,7 +99,7 @@ forTest _prefix mk@(Make _ _ fun _ conf') auf stud = do
     result <- readFile $ dir </> "result"
 
     let var = fun conf'
-        un :: IO (R.Reporter i) -> i
+        un :: IO (RC.Reporter i) -> i
         un = undefined
         i' = readM instant `asTypeOf` Right (un (generate var 42 undefined))
         b' = readM input
@@ -104,7 +107,8 @@ forTest _prefix mk@(Make _ _ fun _ conf') auf stud = do
     case (i', b', w') of
         (Right i, Right b, Right w) -> do
              let r = total_neu (problem var) i b
-                 msg = compareMsg w (R.result r)
+             m <- R.result r
+             let msg = compareMsg w m
              E.evaluate msg
              return msg
         (Left err, _, _) -> error $ "error parsing instance: " ++ err

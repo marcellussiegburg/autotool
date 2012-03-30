@@ -59,6 +59,7 @@ Executable autotool-test-extract
         old-time,
         autotool-interface,
         autotool-collection,
+        autotool-db,
         autolib-util,
         autolib-data,
         autolib-output,
@@ -92,4 +93,5 @@ Executable autotool-test-report
         filepath,
         xhtml,
         autotool-interface,
+        autotool-db,
         autotool-collection

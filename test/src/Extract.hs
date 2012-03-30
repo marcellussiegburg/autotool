@@ -20,7 +20,7 @@ import Control.Types
 
 import Autolib.ToDoc (toDoc)
 import Inter.Types
-import Inter.Common
+import Operate.Common
 
 import qualified Autolib.Reader as P
 import qualified Text.ParserCombinators.Parsec as P
