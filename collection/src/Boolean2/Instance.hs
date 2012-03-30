@@ -1,4 +1,3 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
 
 module Boolean2.Instance where
@@ -40,6 +39,7 @@ data Form
     = Negationstechnisch
     | Konjunktiv
     | Disjunktiv
+    | Ite_Atomar
     --  | Kanonisch
 
 $(derives [makeReader, makeToDoc] [''Constraint])
@@ -128,11 +128,23 @@ check b c = case c of
             subcheck "||" [ "||", "&&", "!" ] b 
             subcheck "&&" [ "&&", "!" ] b
             subcheck "!"  [] b
+        Ite_Atomar -> do
+            inform $ text "prüfe erstes Argument für ite"
+            subcheck_for First "ite" [] b
+            
+subcheck = subcheck_for All            
+            
+data Positions = First | All
 
-subcheck parent children b = forM_ ( subterms b ) $ \ s -> case s of
-    Node f ts | name f == parent -> forM_ ts $ \ t ->  case t of
+select pos = case pos of
+    First -> take 1 
+    All   -> id
+
+subcheck_for pos parent children b = forM_ ( subterms b ) $ \ s -> case s of
+    Node f ts | name f == parent -> forM_ ( select pos ts ) $ \ t ->  case t of
         Node g _ -> when ( not ( name g `elem` children )) $ reject $ vcat 
-                         [ text "Kind von" <+> toDoc parent <+> text "darf nur" 
+                         [ text (case pos of First -> "erstes" ; All -> "jedes" )
+                           <+> text "Argument von" <+> toDoc parent <+> text "darf nur" 
                           <+> ( if null children then empty
                                else toDoc children <+> text "oder"
                               )
