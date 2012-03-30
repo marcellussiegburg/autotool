@@ -35,6 +35,7 @@ functions = do
         , ( "carry", 3, \ xs -> 1 <= sum (map fromEnum xs) )
         , ( "nand" , 2, \ xs -> not $ and xs )
         , ( "nor"  , 2, \ xs -> not $ or  xs )
+        , ( "ite"  , 3, \ [i,t,e] -> if i then t else e )  
         ]
     return $ Op { name = cs, arity = ar
 		, precedence = Nothing , assoc = AssocNone
