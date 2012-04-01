@@ -42,7 +42,7 @@ Library
         Types.Version
         Types.ScoringOrder
         Types.Description
-
+        Service.Interface
 
 Executable autotool.cgi
     Main-Is:        Main.hs

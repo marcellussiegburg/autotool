@@ -10,6 +10,17 @@ import Gateway.CGI
 import Inter.Evaluate
 import Inter.Collector
 
+import Types.Basic
+import Types.TaskTree
+import Types.Version
+import Types.ServerInfo
+import Types.TaskDescription
+import qualified Types.Documented as D
+import qualified Types.Signed as S
+import Types.Solution
+import Types.Config
+
+import Service.Interface
 
 import Operate.Make 
 import Operate.Motd
@@ -95,6 +106,11 @@ import qualified Autolib.Multilingual.Html as H
 
 import Operate.DateTime ( defaults )
 
+
+server :: Server
+server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
+
+
 my_name = "Trial.cgi"
 
 main :: IO ()
@@ -132,6 +148,7 @@ selektor = do
     h2 "(Tutor) Aufgabe auswählen und konfigurieren"
     hr
     let tmk = Inter.Collector.tmakers
+    tasks <- io $ get_task_types server
     action <- btabled $ click_choice "Auswahl..." 
         [ ( "nach Vorlesungen", vor tmk )
 	, ( "nach Themen" , aufgaben tmk )
