@@ -28,8 +28,8 @@ import qualified Text.XHtml as X
 import qualified Data.String.UTF8 as U
 import qualified Data.ByteString.Char8 as B
 
-server :: Server
-server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
+default_server :: Server
+default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
 
 min_version, max_version :: Version
 min_version = Version 0 1 0
@@ -46,6 +46,7 @@ s1 = dir "tool" $ fmap toResponse $ fmap complete $ render $ do
     h1 $ "autOlat test frontend."
     hr -----------------------------------------------------------------
     h2 $ "Service provider"
+    server <- textfield default_server
     p $ text $ "Using server at " ++ server ++ " ."
     hr -----------------------------------------------------------------
     h2 $ "Server information (get_server_info)"

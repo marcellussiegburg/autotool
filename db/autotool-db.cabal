@@ -16,7 +16,7 @@ Build-Type:     Simple
 Executable autotool-trial
   Main-is: src/Operate/Trial.hs
   Build-Depends: base, autotool-db, autotool-collection,
-    autotool-interface,
+    autotool-interface, autotool-server,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,

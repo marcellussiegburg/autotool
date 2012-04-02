@@ -22,6 +22,7 @@ import qualified Mueval.Context
 import Challenger.Partial
 import Autolib.ToDoc
 import Autolib.Reader
+import Autolib.Size
 import Autolib.Reporter.IO.Type
 import qualified Autolib.Reporter as R
 import Inter.Types
@@ -53,11 +54,17 @@ instance Verify Haskell_Blueprint Code where
         Haskell.Blueprint.Central.parse i
         return ()
 
+-- we measure the difference in size
+instance Measure Haskell_Blueprint Code Code where
+    measure p i b = fromIntegral $ size b - size i
+
+
+
 instance Partial Haskell_Blueprint Code Code where
     describe p i = vcat
         [ text "Vervollständigen Sie das Haskell-Programm."
         , text "Ersetzen Sie jedes 'undefined',"
-        , text "so daß die Tests erfolgreich sind."
+        , text "so daß der Ausdruck \'test\' den Wert True hat."
         , nest 4 $ toDoc i
         ]
     initial p i = i
@@ -71,9 +78,14 @@ instance Partial Haskell_Blueprint Code Code where
             Haskell.Blueprint.Match.Ok _ -> R.inform $ text "Ja."
 
     totalIO p (Code i) (Code b) = do
-        r <- liftIO $ withTempDirectory "/tmp" "Blue" $ \ d -> do
-            let f = d ++ "/" ++ "Blueprint.hs"
-            System.IO.UTF8.writeFile f b
+        r <- liftIO $ Control.Exception.bracket 
+          ( System.IO.openTempFile "/tmp" "Blue.hs" )
+          ( \ ( f, h ) -> do System.Directory.removeFile f ) 
+          ( \ ( f, h ) -> do
+            debug $ unwords [ "Blueprint tmpfile is", f ]
+            System.IO.UTF8.writeFile f b 
+            debug $ unwords [ "Blueprint tmpfile contents is", b ]
+            -- hPutStrLn h b ; System.IO.hClose h 
             ( I.runInterpreter $ Mueval.Interpreter.interpreter $ M.Options
                     { M.timeLimit = 1
                     , M.modules = Just [ "Prelude" ]
@@ -89,7 +101,9 @@ instance Partial Haskell_Blueprint Code Code where
 -- are the RLimitCPU and RLimitMEM directives. 
 -- You may get the message if the CGI script was killed due to a resource limit.
                     , M.rLimits = False
-                    } ) 
+                    } 
+              )
+          )     
               `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
                         debug $ "interpreter got exception " ++ show e
                         return $ Left $ I.UnknownError ( show e )

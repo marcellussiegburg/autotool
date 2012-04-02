@@ -22,7 +22,7 @@ data Code = Code String deriving ( Eq, Ord, Typeable, Read, Show )
 
 -- this is highly problematic because it eats all of the input
 -- corollary: it cannot be composed 
--- (we cannot parser Code as part of a larger structure)
+-- (we cannot parse Code as part of a larger structure)
 -- corollary: all properties of the problem statement
 -- must be in the code (e.g., as annotations/pragmas)
 instance Reader Code where 
@@ -32,8 +32,9 @@ instance ToDoc Code where
     toDoc ( Code cs ) = vcat $ map text $ lines cs
 
 -- this is the size of the syntax tree.
+-- TODO: count just the nodes that are visible.
+-- otherwise, it's not understandable for the student.
 instance Size Code where
-    -- size ( Code cs ) = length cs
     size ( Code cs ) = case parseModule cs of
         ParseOk m -> msize m
         _ -> 0
