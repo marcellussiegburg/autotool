@@ -54,7 +54,9 @@ get_task_instance  (TT sconf) (TT seed) = fmap TT $ do
                         $ CP.report (problem maker) i
     return ( sign (task,
                    Instance { I.tag = IT.tag maker,
-                              I.contents = AT.showDoc . AT.toDoc $ i})
+                              I.contents = -- AT.showDoc . AT.toDoc $ i
+                                AT.render $ AT.toDoc i
+                            })
            , descr
            , Documented { D.contents = SString . AT.render . AT.toDoc $ b,
                           D.documentation = doc }

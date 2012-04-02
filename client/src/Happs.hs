@@ -28,6 +28,8 @@ import qualified Text.XHtml as X
 import qualified Data.String.UTF8 as U
 import qualified Data.ByteString.Char8 as B
 
+import Codec.Binary.UTF8.String as CBUS
+
 default_server :: Server
 default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
 
@@ -74,7 +76,7 @@ s1 = dir "tool" $ fmap toResponse $ fmap complete $ render $ do
     p $ menu "" [("Submit", ())]
     hr -----------------------------------------------------------------
     h2 $ "Verify task configuration (verify_task_config)"
-    vrfy <- liftIO $ verify_task_config server task (CString configuration)
+    vrfy <- liftIO $ verify_task_config server task (CString $ configuration)
     config <- case vrfy of
         Left d -> do
             p $ text $ "Error validating configuration:"
@@ -88,6 +90,9 @@ s1 = dir "tool" $ fmap toResponse $ fmap complete $ render $ do
     seed <- textfield "123"
     p $ submit "Submit"
     (inst, desc, dsample) <- liftIO $ get_task_instance server config seed
+    
+    -- liftIO $ print inst
+
     descr desc
     doc dsample
     let SString sample = D.contents dsample
@@ -156,7 +161,10 @@ instance ToMessage CSSString where
     toMessage (CSSString s) = toMessage s
 
 du :: String -> String
-du = U.toString . U.fromRep . map (fromIntegral :: Int -> Word8) . map fromEnum
+-- du = U.toString . U.fromRep . map (fromIntegral :: Int -> Word8) . map fromEnum
+du = id
 
 eu :: String -> String
-eu = map toEnum . map (fromIntegral :: Word8 -> Int) . U.toRep . U.fromString
+-- eu = map toEnum . map (fromIntegral :: Word8 -> Int) . U.toRep . U.fromString
+eu = id
+
