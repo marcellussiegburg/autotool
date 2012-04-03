@@ -83,7 +83,7 @@ instance Partial Haskell_Blueprint Code Code where
             debug $ unwords [ "Blueprint tmpfile is", f ]
             System.IO.UTF8.writeFile f b 
             
-            I.runInterpreter $ Mueval.Interpreter.interpreter $ M.Options
+            keepCurrentDir $ I.runInterpreter $ Mueval.Interpreter.interpreter $ M.Options
                     { M.timeLimit = 1
                     , M.modules = Just [ "Prelude" ]
                     , M.expression = "test"
@@ -125,6 +125,12 @@ instance Partial Haskell_Blueprint Code Code where
                      Right val -> assert ( val == "True" ) $ text "richtiger Wert?"
                      Left ex -> reject $ text "Exception" </> text ex
 
+-- | this is necessary because mueval 
+-- changes currentDir without resetting
+keepCurrentDir action = Control.Exception.bracket
+    System.Directory.getCurrentDirectory
+    System.Directory.setCurrentDirectory
+    $ \ d -> action
 
 make_fixed = direct Haskell_Blueprint code_example
 
