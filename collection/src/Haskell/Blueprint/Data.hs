@@ -9,6 +9,7 @@ import Autolib.Size
 
 import Data.Typeable
 import Data.Data
+import Data.Generics.Schemes (gtypecount)
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 
@@ -36,11 +37,9 @@ instance ToDoc Code where
 -- otherwise, it's not understandable for the student.
 instance Size Code where
     size ( Code cs ) = case parseModule cs of
-        ParseOk m -> msize m
+        ParseOk m -> gtypecount ( undefined :: Exp ) m
         _ -> 0
 
-msize :: Data a => a -> Int
-msize m = sum $ 1 : gmapQ msize m
 
 
 
