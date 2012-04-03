@@ -78,15 +78,12 @@ instance Partial Haskell_Blueprint Code Code where
             Haskell.Blueprint.Match.Ok _ -> R.inform $ text "Ja."
 
     totalIO p (Code i) (Code b) = do
-        r <- liftIO $ Control.Exception.bracket 
-          ( System.IO.openTempFile "/tmp" "Blue.hs" )
-          ( \ ( f, h ) -> do System.Directory.removeFile f ) 
-          ( \ ( f, h ) -> do
+        r <- liftIO ( withTempDirectory "/tmp" "Blue" ( \ d -> do
+            let f = d ++ "/" ++ "Blueprint.hs"
             debug $ unwords [ "Blueprint tmpfile is", f ]
             System.IO.UTF8.writeFile f b 
-            debug $ unwords [ "Blueprint tmpfile contents is", b ]
-            -- hPutStrLn h b ; System.IO.hClose h 
-            ( I.runInterpreter $ Mueval.Interpreter.interpreter $ M.Options
+            
+            I.runInterpreter $ Mueval.Interpreter.interpreter $ M.Options
                     { M.timeLimit = 1
                     , M.modules = Just [ "Prelude" ]
                     , M.expression = "test"
@@ -102,11 +99,9 @@ instance Partial Haskell_Blueprint Code Code where
 -- You may get the message if the CGI script was killed due to a resource limit.
                     , M.rLimits = False
                     } 
-              )
-          )     
-              `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
+          ) `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
                         debug $ "interpreter got exception " ++ show e
-                        return $ Left $ I.UnknownError ( show e )
+                        return $ Left $ I.UnknownError ( show e ) )
             -- debug $ "after runInterpreter"
             -- length ( show r ) `seq` 
             -- return r
