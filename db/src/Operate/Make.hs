@@ -1,3 +1,5 @@
+{-# language PatternSignatures #-}
+
 module Operate.Make where
 
 import Inter.Types

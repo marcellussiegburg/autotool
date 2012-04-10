@@ -1,7 +1,10 @@
+{-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Operate.Student where
 
-import Inter.Types
-import Inter.Evaluate
+import Operate.Types
+-- import Inter.Evaluate
 
 import Operate.Bank
 import Operate.Common
@@ -40,16 +43,15 @@ data Method = Textarea | Upload
 -- | eingabe und bewertung der lösung
 -- für tutor zum ausprobieren
 -- für student echt
-solution vnr  manr stud 
-        ( Make p0 doc ( fun :: conf -> Var p i b ) verify ex ) auf = do
+solution vnr  manr stud auf = do
 
     lang <- Operate.Language.choose
 
-    ( p, i, icom ) <- make_instant vnr manr stud fun auf
+    ( sti, ini, icom ) <- make_instant vnr manr stud auf
 
     let past = mkpar stud auf
 
-    let ini  = initial p i
+    -- let ini  = initial p i
     br
     parameter_table auf
 
@@ -88,6 +90,7 @@ solution vnr  manr stud
 	    esub  <- submit "Textfeld absenden"
 	    close -- row
 	    open row
+{-            
             let helper :: Text.XHtml.Html
                 helper = specialize lang
                     $ Autolib.Output.render 
@@ -97,7 +100,8 @@ solution vnr  manr stud
 				  , (UK, "an expression of type")
 				  ] )
                       ( help ini )
-            html helper
+            html helper -- FIXME
+-}
 	    close -- row
 	    close -- table
             return sol
@@ -111,7 +115,9 @@ solution vnr  manr stud
 
     Just cs <- return mcs
     hr ; h3 "Neue Bewertung"
-    (res, o ) <- io $ run $ evaluate p i cs
+    -- (res, o ) <- io $ run $ evaluate p i cs
+    (res, o ) <- io $ evaluate auf sti cs
+    
     let com = Autolib.Output.render o :: H.Html
     html $ specialize lang com
     return ( Just icom, Just cs, fromMaybe No res, Just com )
@@ -122,8 +128,9 @@ parameter_table auf = do
 	            ( pre $ toString $ A.remark auf )
 
 
-make_instant vnr manr stud fun auf = do
+make_instant vnr manr stud auf = do
     -- let conf = read $ toString $ A.config auf
+{-    
     conf <- 
         case parse ( parsec_wrapper 0 ) "input" $ toString $ A.config auf of
 	     Right ( x, rest ) -> return x
@@ -133,5 +140,7 @@ make_instant vnr manr stud fun auf = do
 		  pre $ show $ A.config auf
 		  mzero
     io $ make_instant_common vnr manr stud $ fun conf
+-}
+    io $ make_instant_common vnr manr stud auf
 
 

@@ -107,8 +107,9 @@ import qualified Autolib.Multilingual.Html as H
 import Operate.DateTime ( defaults )
 
 
-server :: Server
-server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
+default_server :: Server
+-- server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
+default_server = "http://localhost/cgi-bin/autotool.cgi"
 
 
 my_name = "Trial.cgi"
@@ -118,7 +119,7 @@ main = Gateway.CGI.execute ( my_name ) $ do
    wrap $ do -- FIXME: following code looks ugly
        mtopic <- look "topic"
        case mtopic of
-           Just topic -> fixed_topic topic
+           Just topic -> fixed_topic default_server topic
 	   Nothing -> do
 	       mproblem <- look "problem"
 	       case mproblem of
@@ -126,11 +127,11 @@ main = Gateway.CGI.execute ( my_name ) $ do
 		   Nothing -> do
                      mlecture <- look "lecture"
                      case mlecture of
-                       Just lecture -> fixed_lecture lecture
-                       Nothing -> free_choice
+                       Just lecture -> fixed_lecture default_server lecture
+                       Nothing -> free_choice default_server
 
-free_choice = do
-       selektor
+free_choice server = do
+       selektor server
        con <- io $ Operate.Motd.contents
        html con
        hr
@@ -143,21 +144,21 @@ mutexed :: ( Typeable a, Monad m ) => Form m () -> Form m a
 mutexed action = do begin ; action ; end
 bracketed b action = do open b; x <- action ; close ; return x
 
-selektor = do
+selektor server = do
     hr
     h2 "(Tutor) Aufgabe auswählen und konfigurieren"
     hr
     let tmk = Inter.Collector.tmakers
-    tasks <- io $ get_task_types server
+    -- tasks <- io $ get_task_types server
     action <- btabled $ click_choice "Auswahl..." 
-        [ ( "nach Vorlesungen", vor tmk )
-	, ( "nach Themen" , aufgaben tmk )
+        [ ( "nach Vorlesungen", vor server )
+	, ( "nach Themen" , aufgaben server)
 	]
     action dummy
 
 dummy = ( S.Student { }, VNr 42, True )   
 
-vor tmk pack = do
+vor server pack = do
     schulen <- io $ U.get
     schule <- btabled $ click_choice "Hochschule" $ do
         u <- schulen
@@ -166,15 +167,15 @@ vor tmk pack = do
     vor <- btabled $ click_choice "Vorlesung" $ do
         v <- vors
 	return ( toString $ V.name v , v )
-    lecture tmk vor pack
+    lecture server vor pack
     
-fixed_lecture vor = do
+fixed_lecture server vor = do
     vs <- io $ V.get_this $ fromCGI vor
     case vs of
-        [ v ] -> lecture Inter.Collector.tmakers v dummy
+        [ v ] -> lecture server v dummy
         _ -> fail "keine Vorlesung mit dieser Nummer" 
 
-lecture tmk vor pack = do    
+lecture server vor pack = do    
     h3 $ "Vorlesung: " ++ ( toString $ V.name vor )
     plain "Link zu dieser Vorlesung:"
     let lect = "Trial.cgi?lecture=" 
@@ -192,35 +193,38 @@ lecture tmk vor pack = do
 		plain $ toString $ A.typ  auf
 		click ( "solve" , ( False, auf ) )
 		click ( "config and solve", ( True, auf ) )
-    common_aufgaben tmk pack ( Just auf ) conf   
+    common_aufgaben server pack ( Just auf ) conf   
 
 fixed_problem problem = do
     [ auf ] <- io $ Control.Aufgabe.DB.get_this $ fromCGI problem
     open btable -- ?
-    common_aufgaben Inter.Collector.tmakers dummy ( Just auf ) False
+    common_aufgaben default_server dummy ( Just auf ) False
 
-fixed_topic topic = do
+fixed_topic server topic = do
+  {-
     let mks =  do Right mk <- flatten Inter.Collector.tmakers ; return mk
     mk : _ <- return $ do 
 	 mk @ ( Make _ doc _ _ _ ) <- mks
 	 guard $ doc == topic
 	 return mk
+-}
     open btable -- ?
-    common_aufgaben_trailer dummy Nothing True mks mk False
+    -- FIXME: undefined
+    common_aufgaben_trailer dummy Nothing True undefined undefined False
 
 -----------------------------------------------------------------------------
 
-aufgaben tmk pack = do
-    common_aufgaben tmk pack Nothing True
+aufgaben server pack = do
+    common_aufgaben server pack Nothing True
 
-common_aufgaben tmk svt @ ( stud, vnr, tutor ) mauf conf = do
+common_aufgaben server svt @ ( stud, vnr, tutor ) mauf conf = do
     -- plain $ "common_aufgaben.conf: " ++ show conf
-    let mks = do Right mk <- flatten tmk ; return mk
-    ( mk, type_click ) <- find_mk tmk conf mauf
+    -- let mks = do Right mk <- flatten tmk ; return mk
+    ( mk, type_click ) <- find_mk server conf mauf
     -- if the user chose a new type, ignore any predetermined configuration
     let conf' = conf || type_click
         mauf' = if type_click then Nothing else mauf
-    common_aufgaben_trailer svt mauf' conf' mks mk type_click
+    common_aufgaben_trailer svt mauf' conf' server mk type_click
 
 common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf mks mk type_click = do
     -- plain $ "common_aufgaben_trailer.conf: " ++ show conf
@@ -234,14 +238,13 @@ common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf mks mk type_click = do
     h2 "(Student) Aufgabe lösen"
     hr
     ( minst :: Maybe H.Html, cs, res, com :: Maybe H.Html ) 
-        <- solution vnr Nothing stud' mk auf' 
+        <- solution vnr Nothing stud'  auf' 
     scores <- scores_link
     hr
 
     plain "Link zu diesem Aufgabentyp:"
-    let target = case mk of 
-           Make _ doc _ _ _ -> 
-               "Trial.cgi?topic=" ++ Network.CGI.urlEncode doc 
+    let target = 
+          "Trial.cgi?topic=" ++ Network.CGI.urlEncode (show mk)
     html $ specialize Autolib.Multilingual.DE  
 	 $ ( O.render $ O.Link $ target :: H.Html )
     hr

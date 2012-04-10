@@ -1,4 +1,4 @@
---  $Id$
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Operate.Login where
 

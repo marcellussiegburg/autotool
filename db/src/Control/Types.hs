@@ -23,6 +23,8 @@ module Control.Types
 , Typ, Config, Remark, Name(..), File, Email(..)
 , Oks (..), Nos (..)
 , Time
+, Signature , Server
+
 , TimeStatus (..), timer
 , FromCGI (..)
 , ToString (..)
@@ -254,6 +256,44 @@ instance FromCGI Typ where
     fromCGI cs = Typ cs
 instance ToString Typ where 
     toString (Typ cs) = cs
+
+-------------------------------------------------------------
+
+newtype Signature = Signature { unSignature :: String  }
+  deriving ( Eq, Ord, Typeable )
+
+$(derives [makeReader, makeToDoc] [''Signature])
+
+instance ToEx Signature where 
+    toEx s = EString ( unSignature s )
+instance SqlBind Signature where 
+    fromSqlValue _ s = Just $ Signature s
+    toSqlValue s = unSignature s
+instance FromCGI Signature where
+    fromCGI cs = Signature cs
+instance ToString Signature where 
+    toString s = unSignature s
+
+
+
+------------------------------------------------------------
+
+newtype Server = Server { unServer :: String  }
+  deriving ( Eq, Ord, Typeable )
+
+$(derives [makeReader, makeToDoc] [''Server])
+
+instance ToEx Server where 
+    toEx s = EString ( unServer s )
+instance SqlBind Server where 
+    fromSqlValue _ s = Just $ Server s
+    toSqlValue s = unServer s
+instance FromCGI Server where
+    fromCGI cs = Server cs
+instance ToString Server where 
+    toString s = unServer s
+
+
 
 ------------------------------------------------------------
 

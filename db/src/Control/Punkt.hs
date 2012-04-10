@@ -1,8 +1,8 @@
 -- | werden von Face.cgi benutzt: login zum aufgabenlösen und scoring
 
-module Control.Punkt where
+{-# LANGUAGE PatternSignatures #-}
 
---  $Id$
+module Control.Punkt where
 
 import Control.SQL
 import Control.Types

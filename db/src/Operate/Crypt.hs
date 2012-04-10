@@ -1,4 +1,5 @@
 {-# language TypeSynonymInstances, MultiParamTypeClasses, DeriveDataTypeable #-}
+{-# language FlexibleInstances #-}
 
 module Operate.Crypt 
 

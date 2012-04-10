@@ -35,7 +35,8 @@ select_where wh = do
     conn <- myconnect
     stat <- squery conn $ Query
         ( Select $ map reed [ "ANr", "VNr", "Name"
-			    , "Typ", "Config", "Remark"
+                    , "Server", "Typ", "Config", "Signature"
+                            , "Remark"
 			    , "Highscore", "Status", "Von" , "Bis"
 			    , "NOW() < Von as Early"
 			    , "NOW() > Bis as Late"
@@ -52,8 +53,10 @@ common = collectRows $ \ state -> do
         g_anr <- getFieldValue state "ANr"
     	g_vnr <- getFieldValue state "VNr"
         g_name <- getFieldValue state "Name"
+        g_server <- getFieldValue state "Server"
         g_typ <- getFieldValue state "Typ"
         g_config <- getFieldValue state "Config"
+        g_signature <- getFieldValue state "Signature"
         g_remark <- getFieldValue state "Remark"
         g_highscore <- getFieldValue state "Highscore"
         g_status <- getFieldValue state "Status"
@@ -70,8 +73,10 @@ common = collectRows $ \ state -> do
     			   , von = g_von
     			   , bis = g_bis
 			  , timeStatus = timer g_early g_late  
+                          , server = g_server
     			   , typ = g_typ
     			   , config = g_config
+                           , signature = g_signature
     			   , remark = g_remark
     			   }
 

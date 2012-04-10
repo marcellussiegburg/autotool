@@ -1,7 +1,12 @@
+{-# LANGUAGE PatternSignatures #-}
+
 module Operate.Tutor where
 
 
-import Inter.Types
+import Operate.Types
+import Types.Signed
+import Types.Config 
+
 import Operate.Bank
 
 import Gateway.CGI
@@ -31,11 +36,12 @@ import Data.Tree ( flatten )
 import qualified Control.Exception as CE
 
 -- | ändere aufgaben-konfiguration (nur für tutor)
-edit_aufgabe mks mk mauf vnr manr type_click = 
-    edit_aufgabe_extra mks mk mauf vnr manr type_click ( \ a -> True )
+edit_aufgabe server mk mauf vnr manr type_click = 
+    edit_aufgabe_extra server mk mauf vnr manr type_click ( \ a -> True )
 
-edit_aufgabe_extra mks mk mauf vnr manr type_click prop = case mk of 
-        Make p doc ( fun :: conf -> Var p i b ) verify ex -> do
+edit_aufgabe_extra server mk mauf vnr manr type_click prop = case mk of 
+        -- Make p doc ( fun :: conf -> Var p i b ) verify ex -> do
+        mk -> do
 
             let t = fromCGI $ show mk
 
@@ -93,32 +99,25 @@ edit_aufgabe_extra mks mk mauf vnr manr type_click prop = case mk of
 
             -- nimm default-config, falls type change 
             -- FIXME: ist das sinnvoll bei import?
-            conf <- editor_submit "Konfiguration" 
-		    $ case mproto of 
-			  Just auf | not type_changed   -> 
-			       case parse ( parsec_wrapper 0 ) "input"
-				          ( toString $ A.config auf ) of
-				        Right ( x, rest ) -> x
-					Left err -> ex
-			  _ -> ex
 
-	    close -- table
-
-	    -- check configuration
+            Just signed_conf <- 
+                task_config_editor "Konfiguration" mk
+	    -- check configuration (is implied)
+            close -- table
 
 	    br
 	    
-	    Just _ <- embed $ do
-		 inform $ text "verifiziere die Konfiguration:"
-	         verifyIO p conf
-		 inform $ text "OK"
-            br
+            let sig = signature signed_conf
+                ( task, CString conf ) = contents signed_conf
+
             return $ A.Aufgabe 
 		               { A.anr = error "Super.anr" -- intentionally
 			       , A.vnr = vnr
 			       , A.name = name
-			       , A.typ = fromCGI $ show mk
-			       , A.config = fromCGI $ render $ toDoc conf
+                               , A.server = fromCGI server
+			       , A.typ = fromCGI task
+			       , A.config = fromCGI conf
+                               , A.signature = fromCGI sig
 			       , A.remark = remark
 			       , A.highscore = fromMaybe Keine mhilo
 			       , A.status = fromMaybe Demo mstatus
@@ -149,7 +148,7 @@ get_stud tutor stud =
 -- | bestimme aufgaben-typ (maker)
 -- für tutor: wählbar
 -- für student: fixiert (ohne dialog)
-find_mk tmk tutor mauf = do
+find_mk server tutor mauf = do
     let pre_mk = fmap (toString . A.typ) mauf
     if tutor 
             then do
@@ -157,16 +156,10 @@ find_mk tmk tutor mauf = do
 		 h3 "Parameter dieser Aufgabe:"
 		 open btable -- will be closed in edit_aufgabe (tutor branch)
 		 -- selector_submit_click "Typ" pre_mk opts
-                 it <- tree_choice pre_mk $ fmap ( \ n -> case n of
-                                 Right mk -> Right ( show mk, mk )
-                                 Left heading -> Left $ heading ++ " .."
-                                    ) tmk
+                 tmk <- io $ get_task_tree server
+                 it <- tree_choice pre_mk $ tt_to_tree server tmk
                  return ( it, True ) -- FIXME
             else do
 		 Just pre <- return $ pre_mk
-                 let mks = do 
-                        Right mk <- flatten tmk
-                        return ( show mk, mk )
-		 Just it  <- return $ lookup pre mks
-		 return ( it, False )
+		 return ( make server pre , False )
 

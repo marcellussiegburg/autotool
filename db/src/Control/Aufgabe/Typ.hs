@@ -1,5 +1,5 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Control.Aufgabe.Typ where
 
@@ -16,8 +16,10 @@ data Aufgabe  =
      Aufgabe { anr :: ANr
 	     , vnr :: VNr
 	     , name :: Name
-             , typ :: Typ
+             , server :: Server
+             , typ :: Typ               
 	     , config :: Config
+             , signature :: Signature  
 	     , remark :: Remark
 	     , highscore :: HiLo
 	     , status :: Status

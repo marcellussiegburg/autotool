@@ -2,7 +2,9 @@
 
 module Operate.Common where
 
-import Inter.Types
+-- import Inter.Types
+import Operate.Types
+
 import Operate.Bank
 import Gateway.CGI
 import qualified Operate.Param as P
@@ -36,19 +38,20 @@ mkpar stud auf = P.empty
 	    , P.ident = S.snr stud
             }
 
-make_instant_common vnr manr stud var = 
-    make_instant_common_with vnr manr stud var $ toString $ S.mnr stud 
+make_instant_common vnr manr stud auf = 
+    make_instant_common_with vnr manr stud auf $ toString $ S.mnr stud 
 
-make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud var seed = do
-    let p = problem var
+make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud auf seed = do
+    -- let p = problem var
     let mat = S.mnr stud
-    k <- key var seed
+    -- k <- key var seed
+    let k = seed    
     -- g <- gen var vnr manr k cache
     let s = crc32 ( fromString ( show vnr ++ show manr ++ k ) :: ByteString )
-    g <- generate var ( fromIntegral s ) cache
-    Just i <- result $ lift g
-    o <- kommentar $ lift $ report p i
-    return ( p, i, O.render o :: Html.Html )
+    (sti, sol, doc ) <- generate auf ( fromIntegral s ) cache
+    -- Just i <- result $ lift g
+    -- o <- kommentar $ lift $ report p i
+    return ( sti, sol, O.render doc :: Html.Html )
 
 
 -- | erreichte punkte in datenbank schreiben 
