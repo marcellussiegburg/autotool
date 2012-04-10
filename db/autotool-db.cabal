@@ -22,18 +22,18 @@ Executable autotool-trial
     base , haxr, random, containers, xhtml, cgi, mtl,
     directory
 
-Executable autotool-super
-  Main-is: src/Operate/Super.hs
-  Build-Depends: base, autotool-db, autotool-collection,
-    autotool-interface,
-    autolib-reader, autolib-todoc, autolib-output,
-    autolib-reporter, autolib-util, autolib-data,
-    base , haxr, random, containers, xhtml, cgi, mtl,
-    directory, utf8-string
+-- Executable autotool-super
+--  Main-is: src/Operate/Super.hs
+--  Build-Depends: base, autotool-db, autotool-collection,
+--    autotool-interface,
+--    autolib-reader, autolib-todoc, autolib-output,
+--    autolib-reporter, autolib-util, autolib-data,
+--    base , haxr, random, containers, xhtml, cgi, mtl,
+--    directory, utf8-string
 
 Library
   Build-Depends:
-    autotool-interface,
+    autotool-interface, autotool-server,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
@@ -56,6 +56,7 @@ Library
     Gateway.CGI, Gateway.My_CGI2
     Operate.DateTime
     Operate.Common
+    Operate.Types
     Operate.Crypt
     Operate.Click
     Operate.Bank

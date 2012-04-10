@@ -99,11 +99,14 @@ edit_aufgabe_extra server mk mauf vnr manr type_click prop = case mk of
 
             -- nimm default-config, falls type change 
             -- FIXME: ist das sinnvoll bei import?
-
-            Just signed_conf <- 
+            
+            signed_conf <- 
                 task_config_editor "Konfiguration" mk
 	    -- check configuration (is implied)
+            
             close -- table
+            
+
 
 	    br
 	    

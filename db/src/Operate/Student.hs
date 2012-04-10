@@ -56,7 +56,7 @@ solution vnr  manr stud auf = do
     parameter_table auf
 
     h3 "Aufgabenstellung"
-    html $ specialize lang icom
+    html $ specialize lang ( Autolib.Output.render icom :: H.Html)
 
     when ( not $ A.current auf ) vorbei
 
@@ -79,7 +79,7 @@ solution vnr  manr stud auf = do
 	    br
 	    when ( ex || prev ) blank
 
-            let b0 = render $ toDoc ini 
+            let b0 = render $ ini 
 	    def <- io $ if prev 
 	      then Operate.Store.latest Operate.Store.Input past
                       `CE.catch` \ (CE.SomeException _) -> return b0

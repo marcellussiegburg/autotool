@@ -51,7 +51,7 @@ make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud auf seed = do
     (sti, sol, doc ) <- generate auf ( fromIntegral s ) cache
     -- Just i <- result $ lift g
     -- o <- kommentar $ lift $ report p i
-    return ( sti, sol, O.render doc :: Html.Html )
+    return ( sti, sol, doc )
 
 
 -- | erreichte punkte in datenbank schreiben 

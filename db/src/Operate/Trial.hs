@@ -237,7 +237,7 @@ common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf mks mk type_click = do
     hr
     h2 "(Student) Aufgabe lösen"
     hr
-    ( minst :: Maybe H.Html, cs, res, com :: Maybe H.Html ) 
+    ( minst :: Maybe O.Output, cs, res, com :: Maybe H.Html ) 
         <- solution vnr Nothing stud'  auf' 
     scores <- scores_link
     hr
