@@ -1,0 +1,34 @@
+Name:           autotool-server
+Version:        0.3.0
+Author:         Bertram Felgenhauer
+Maintainer:     Bertram Felgenhauer
+Stability:      Experimental
+Synopsis:       autotool Xml-RPC server
+Description:
+  This package provides a binary, autotool.cgi, that makes autotool tasks
+  available as an Xml-RPC service.
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
+
+Executable autotool.cgi
+    Main-Is:        Main.hs
+    Hs-Source-Dirs: src 
+    GHC-Options:    -Wall -fglasgow-exts
+    Build-Depends:
+        autotool-interface,
+        autotool-collection,
+        autotool-server-interface,
+        autolib-transport,
+        autolib-todoc,
+        autolib-output,
+        autolib-reader,
+        autolib-reporter,
+        autolib-util,
+        SHA,   base, random, bytestring, containers,
+        haxr, mtl, parsec,  dataenc, directory, unix,
+        process, old-time, utf8-string,
+        pretty, HaXml,  filepath,  binary,  digest
+    Extensions:
+        -- FlexibleInstances
+        -- UndecidableInstances
+        -- GeneralizedNewtypeDeriving
