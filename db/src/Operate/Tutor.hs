@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE DoAndIfThenElse #-}
 
 module Operate.Tutor where
 
@@ -35,15 +36,18 @@ import Data.Tree ( flatten )
 
 import qualified Control.Exception as CE
 
--- | ändere aufgaben-konfiguration (nur für tutor)
+-- | ändere aufgaben-konfiguration (nur für tutor).
+-- NOTE: do not use "server" argument,
+-- since the server URL is contained in "mk"
 edit_aufgabe server mk mauf vnr manr type_click = 
     edit_aufgabe_extra server mk mauf vnr manr type_click ( \ a -> True )
 
-edit_aufgabe_extra server mk mauf vnr manr type_click prop = case mk of 
+edit_aufgabe_extra _ mk mauf vnr manr type_click prop = case mk of 
         -- Make p doc ( fun :: conf -> Var p i b ) verify ex -> do
         mk -> do
 
-            let t = fromCGI $ show mk
+            let t = fromCGI $ Operate.Types.task mk
+                server = Operate.Types.server mk
 
             candidates <- io $ A.get_typed t
                `CE.catch` \ (CE.SomeException any) -> return []
@@ -151,19 +155,37 @@ get_stud tutor stud =
 -- | bestimme aufgaben-typ (maker)
 -- für tutor: wählbar
 -- für student: fixiert (ohne dialog)
-find_mk server tutor mauf = do
+find_mk fallback_server tutor mauf = do
     let pre_mk = fmap (toString . A.typ) mauf
+        server = case mauf of
+          Nothing -> fallback_server
+          Just auf -> toString $ A.server auf
     if tutor 
             then do
 		 hr
 		 h3 "Parameter dieser Aufgabe:"
 		 open btable -- will be closed in edit_aufgabe (tutor branch)
-		 -- selector_submit_click "Typ" pre_mk opts
-                 server <- defaulted_textfield "server" server
-                 
-                 tmk <- io $ get_task_tree server
-                 it <- tree_choice pre_mk $ tt_to_tree server tmk
-                 return ( it, True ) -- FIXME
+                 open row ; plain "Server"
+                 mserver <- textfield server
+                 mod <- submit "reload"
+                 close -- row
+                 if isNothing mauf || mod then do
+                    -- blank
+                    let serv = case mserver of 
+                            Just s -> s
+                            Nothing -> server
+                    tmk <- io $ get_task_tree serv 
+                    it <- tree_choice pre_mk 
+                          $ tt_to_tree serv tmk
+                    return ( it, True ) -- FIXME
+                 else do 
+                    open row
+                    plain "Task Type"
+  		    Just pre <- return $ pre_mk
+                    plain pre
+                    close -- row
+		    return ( make server pre , False )
+
             else do
 		 Just pre <- return $ pre_mk
 		 return ( make server pre , False )
