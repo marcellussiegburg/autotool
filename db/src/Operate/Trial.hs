@@ -8,7 +8,6 @@ module Main where
 import Gateway.CGI
 
 import Inter.Evaluate
-import Inter.Collector
 
 import Types.Basic
 import Types.TaskTree
@@ -32,7 +31,7 @@ import Operate.Logged
 
 import Operate.Tutor
 import Operate.Student
-
+import Operate.Types ( make )
 
 import qualified Control.Aufgabe.DB
 import qualified Operate.Param as P
@@ -56,9 +55,6 @@ import Control.Types
     )
 
 import qualified Control.Types   
-
-
-import qualified Inter.Collector
 
 
 import Challenger.Partial
@@ -148,7 +144,7 @@ selektor server = do
     hr
     h2 "(Tutor) Aufgabe auswählen und konfigurieren"
     hr
-    let tmk = Inter.Collector.tmakers
+    -- let tmk = Inter.Collector.tmakers
     -- tasks <- io $ get_task_types server
     action <- btabled $ click_choice "Auswahl..." 
         [ ( "nach Vorlesungen", vor server )
@@ -208,9 +204,10 @@ fixed_topic server topic = do
 	 guard $ doc == topic
 	 return mk
 -}
+  
     open btable -- ?
-    -- FIXME: undefined
-    common_aufgaben_trailer dummy Nothing True undefined undefined False
+    let mk = make server topic
+    common_aufgaben_trailer dummy Nothing True server mk False
 
 -----------------------------------------------------------------------------
 
@@ -226,12 +223,12 @@ common_aufgaben server svt @ ( stud, vnr, tutor ) mauf conf = do
         mauf' = if type_click then Nothing else mauf
     common_aufgaben_trailer svt mauf' conf' server mk type_click
 
-common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf mks mk type_click = do
+common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf server mk type_click = do
     -- plain $ "common_aufgaben_trailer.conf: " ++ show conf
     -- plain $ "common_aufgaben_trailer.type_click: " ++ show type_click
     auf' <- case ( mauf, conf ) of
 	 ( Just auf, False ) -> return auf
-	 _ -> edit_aufgabe_extra mks mk Nothing vnr Nothing type_click
+	 _ -> edit_aufgabe_extra server mk Nothing vnr Nothing type_click
                                  ( \ a -> Early /= A.timeStatus a )
     stud' <- get_stud tutor stud
     hr

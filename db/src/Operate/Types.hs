@@ -18,14 +18,15 @@ import Types.Solution
 import qualified Service.Interface as SI
 
 import qualified Control.Aufgabe.Typ as A
+import qualified Control.Aufgabe.DB as A
 
-import Control.Types ( toString, ok )
+import Control.Types ( toString, fromCGI, ok )
 
 import Control.Applicative
 import Data.Tree
 import Data.Typeable
 
-import Gateway.CGI ( embed, io, open, close, row, plain, textarea, submit, html  )
+import Gateway.CGI ( embed, io, open, close, row, plain, textarea, submit, html, Form  )
 import Autolib.ToDoc ( ToDoc, toDoc, text, Doc )
 import Autolib.Reporter.IO.Type ( inform, reject )
 import Autolib.Output as O
@@ -53,9 +54,9 @@ make = Make
 get_task_tree server = do
     tts <- SI.get_task_types server
     return $ Category 
-                               { category_name = server
-                               , sub_trees = tts 
-                               }              
+           { category_name = "all"
+           , sub_trees = tts 
+           }              
 
 tt_to_tree server tt = case tt of 
   Task {} -> Data.Tree.Node ( Right ( task_name tt
@@ -72,7 +73,7 @@ get_task_config mk = do
   
 
 verify_task_config mk conf = do
-  SI.verify_task_config ( server mk ) ( task mk ) conf
+    SI.verify_task_config ( server mk ) ( task mk ) conf
 
 instance ToDoc Description where  
     toDoc (DString s) = text s
@@ -102,15 +103,34 @@ signed_task_config auf =
            , S.signature = toString $ A.signature auf     
            }              
 
--- | FIXME: where's the cache?
--- FIXME:  desc is ignored?
+update_signature_if_missing auf = 
+    if toString (A.signature auf) == "missing"
+    then do   
+        ver <- io $ SI.verify_task_config 
+           ( toString $ A.server auf ) 
+           ( toString $ A.typ auf ) 
+           ( CString $ toString $ A.config auf )
+        case ver of       
+            Left err -> do
+                html $ M.specialize M.DE 
+                      $ ( O.render  ( descr err) :: H.Html )
+                mzero
+            Right stc -> do
+                plain $ "warning: update_signature_if_missing"
+                let auf' = auf { A.signature = fromCGI $ signature stc }
+                io $ A.put_signature (Just $ A.anr auf) auf'
+                return auf'
+    else return auf            
+
+-- FIXME: where's the cache used?
 generate :: A.Aufgabe 
          -> Integer
          -> CacheFun
-         -> IO ( Signed (Task,Instance), Doc, Output )
+         -> Form IO ( Signed (Task,Instance), Doc, Output )
 generate auf seed cache = do
+    auf <- update_signature_if_missing auf
     ( sti, desc, docsol ) <- 
-        SI.get_task_instance (toString $ A.server auf) 
+        io $ SI.get_task_instance (toString $ A.server auf) 
              ( signed_task_config auf )
              ( show seed ) -- ?
     let 

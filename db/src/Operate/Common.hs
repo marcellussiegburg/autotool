@@ -48,7 +48,8 @@ make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud auf seed = do
     let k = seed    
     -- g <- gen var vnr manr k cache
     let s = crc32 ( fromString ( show vnr ++ show manr ++ k ) :: ByteString )
-    (sti, sol, doc ) <- generate auf ( fromIntegral s ) cache
+    (sti, sol, doc ) <- 
+        generate auf ( fromIntegral s ) Util.Cache.cache
     -- Just i <- result $ lift g
     -- o <- kommentar $ lift $ report p i
     return ( sti, sol, doc )

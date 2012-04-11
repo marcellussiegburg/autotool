@@ -1,7 +1,5 @@
 module Control.Aufgabe.DB where
 
---  $Id$
-
 import Control.SQL
 import Control.Types
 import Control.Aufgabe.Typ
@@ -91,7 +89,9 @@ put manr auf = do
     conn <- myconnect 
     let common = [ ( reed "VNr", toEx $ vnr auf )
 		 , ( reed "Name", toEx $ name auf )
-		 , ( reed "Typ", toEx $ typ auf )
+		 , ( reed "Server", toEx $ server auf )
+                 , ( reed "Typ", toEx $ typ auf )
+                 , ( reed "Signature", toEx $ signature auf )
 		 , ( reed "Config", toEx $ config auf )
 		 , ( reed "Remark", toEx $ remark auf )
 		 , ( reed "Highscore", toEx $ highscore auf )
@@ -99,6 +99,20 @@ put manr auf = do
 		 , ( reed "Status", toEx $ status auf )
 		 , ( reed "Von", toEx $ von auf )
 		 , ( reed "Bis", toEx $ bis auf )
+		 ]
+    case manr of
+	 Nothing -> squery conn $ Query
+            ( Insert (reed "aufgabe") common ) 
+	    [ ]
+         Just anr -> squery conn $ Query
+            ( Update (reed "aufgabe") common ) 
+	    [ Where $ equals ( reed "aufgabe.ANr" ) ( toEx anr ) ]
+    disconnect conn
+
+-- | write only the signature
+put_signature manr auf = do
+    conn <- myconnect 
+    let common = [ ( reed "Signature", toEx $ signature auf )
 		 ]
     case manr of
 	 Nothing -> squery conn $ Query

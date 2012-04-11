@@ -141,6 +141,6 @@ make_instant vnr manr stud auf = do
 		  mzero
     io $ make_instant_common vnr manr stud $ fun conf
 -}
-    io $ make_instant_common vnr manr stud auf
+    make_instant_common vnr manr stud auf
 
 

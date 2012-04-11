@@ -36,12 +36,12 @@ import Control.Types
 import qualified Control.Types   
 
 
-import qualified Inter.Collector
-
 
 import Challenger.Partial
-import Inter.Types
+-- import Inter.Types
+import Operate.Types
 import Operate.Common
+
 
 import Control.Student.CGI
 import Control.Vorlesung.DB
@@ -89,19 +89,23 @@ import Operate.Student
 
 import qualified Debug 
 
+default_server :: Server
+-- server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
+default_server = "http://localhost/cgi-bin/autotool.cgi"
+
 main :: IO ()
 main = do
    Debug.debug "Super_Debug:main"
    ( Gateway.CGI.execute ( Local.cgi_name ++ "#hotspot" ) $ do
-       wrap $ iface $ Inter.Collector.tmakers
+       wrap $ iface default_server
        scores <- scores_link
        footer scores ) `CE.catch` \ ( e :: CE.SomeException ) -> do
          debug $ "caught: " ++ show e
          print e
 
 
-iface :: Tree ( Either String Make ) -> Form IO ()
-iface tmk = do
+-- iface :: Tree ( Either String Make ) -> Form IO ()
+iface server = do
 
     new <- click_choice_with_default 0 "Aktion" 
         [ ( "Account benutzen", False ) 
@@ -110,13 +114,13 @@ iface tmk = do
 
     if new 
        then edit_create Nothing
-       else use_account tmk
+       else use_account server
 
 data Code = Stat | Auf | Einsch
    deriving ( Show, Eq, Typeable )
 
 
-use_account tmk = do
+use_account server = do
 
     h3 "Login"
     -- für Student und Tutor gleicher Start
@@ -139,7 +143,7 @@ use_account tmk = do
 
     open btable
     aktion <- click_choice_with_default 0 "Aktion" $
-           [ ("Aufgaben",  aufgaben tmk ( stud, V.vnr vor, tutor )  ) 
+           [ ("Aufgaben",  aufgaben server ( stud, V.vnr vor, tutor )  ) 
                  | attends || tutor ]
 	++ [ ("Einschreibung", veranstaltungen ( stud, vor, tutor )  ) ]
         ++ [ ("Statistiken",   Operate.Statistik.main svt  ) | tutor ]
@@ -275,10 +279,10 @@ show_gruppen header gs = do
 
 ----------------------------------------------------------------------------
 
-aufgaben tmk ( stud, vnr, tutor ) = do
+aufgaben server ( stud, vnr, tutor ) = do
     h3 "Aufgaben"
 
-    let mks = do Right mk <- flatten tmk ; return mk
+    -- let mks = do Right mk <- flatten tmk ; return mk
 
     let snr = S.snr stud
 
@@ -332,7 +336,7 @@ aufgaben tmk ( stud, vnr, tutor ) = do
 
              _ -> do
                   mtriple <- show_previous ( Edit == act ) 
-                                 vnr mks stud auf sauf
+                                 vnr server stud auf sauf
 		  case mtriple of
 		      Nothing -> return ()
 		      Just ( inst, inp, res, com ) -> do
@@ -352,11 +356,11 @@ aufgaben tmk ( stud, vnr, tutor ) = do
             plain $ unwords [ "Aufgabe", show anr, "gelöscht." ]
 	mzero
 
-    ( mk, type_click ) <- find_mk tmk tutor mauf
+    ( mk, type_click ) <- find_mk server tutor mauf
 
     auf' <- if tutor 
             then do
-		 auf' <- edit_aufgabe mks mk mauf vnr manr type_click
+		 auf' <- edit_aufgabe server mk mauf vnr manr type_click
 	         up <- submit "update data base: aufgabe"
                  when up $ io $ A.put manr auf'
                  return auf'
@@ -373,20 +377,24 @@ aufgaben tmk ( stud, vnr, tutor ) = do
 
     case action of
         Config -> do
-            ( minst :: Maybe H.Html, cs, res, com :: Maybe H.Html ) 
-	        <- solution vnr manr stud' mk auf' 
+            ( minst :: Maybe O.Output, cs, res, com :: Maybe H.Html ) 
+	        <- solution vnr manr stud' auf' 
 	    return ()
         Solve -> do
             ( minst, cs, res, com ) 
-                <- solution vnr manr stud' mk auf'
-            let deutsch = M.specialize M.DE 
+                <- solution vnr manr stud' auf'
 	    Operate.Common.punkte False stud' auf' 
-                     ( fmap deutsch minst, cs, Just res, fmap deutsch com )
+                     ( fmap ( M.specialize M.DE .
+                         O.render ) minst 
+                     , cs
+                     , Just res
+                     , fmap (M.specialize M.DE)  com 
+                     )
 	Edit | tutor -> do
-	    find_previous True  vnr mks stud' auf'
+	    find_previous True  vnr server stud' auf'
             return ()
 	View -> do
-	    find_previous False vnr mks stud' auf'
+	    find_previous False vnr server stud' auf'
             return ()
 
     hr
@@ -432,23 +440,17 @@ fix_input vnr mks stud auf sa = case  SA.input sa of
 
 fix_instant vnr mks stud auf sa = case SA.instant sa of
    Just file -> return $ Just file
-   Nothing -> 
+   Nothing -> do
        -- transitional:
        -- (try to) re-generate previous instance
-       let mmk = lookup ( toString $ A.typ auf ) 
-                $ do mk <- mks ; return ( show mk, mk )
-       in case mmk of
-            Nothing -> do
-                plain "Aufgabenstellung nicht auffindbar"
-                return Nothing
-            Just ( Make p0 doc fun veri ex ) -> do
                 ( _, _, com ) <- make_instant 
-		    vnr ( Just $ A.anr auf ) stud fun auf
+		    vnr ( Just $ A.anr auf ) stud auf
                 let p = mkpar stud auf
                     d = Operate.Store.location Operate.Store.Instant
                            p "latest" False
                 file <- io $ D.schreiben d 
-                        $ show $ M.specialize M.DE com
+                        $ show $ M.specialize M.DE 
+                        $ ( O.render com :: Doc )
                 let inst = fromCGI file
                 io $ Control.Punkt.bepunkteStudentDB 
                          (P.ident p) (P.anr p) 
