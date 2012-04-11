@@ -53,7 +53,8 @@ outputToXOutput o = case o of
         
     O.HRef uri o1 -> do
         -- FIXME
-        outputToXOutput $ O.Above ( O.Link uri ) o1
+        -- outputToXOutput $ O.Above ( O.Link uri ) o1
+        outputToXOutput o1
         
     O.Above o1 o2 ->
         X.OAbove . X.Above <$> mapM outputToXOutput (aboves o1 ++ aboves o2)
