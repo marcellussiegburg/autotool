@@ -159,6 +159,8 @@ find_mk server tutor mauf = do
 		 h3 "Parameter dieser Aufgabe:"
 		 open btable -- will be closed in edit_aufgabe (tutor branch)
 		 -- selector_submit_click "Typ" pre_mk opts
+                 server <- defaulted_textfield "server" server
+                 
                  tmk <- io $ get_task_tree server
                  it <- tree_choice pre_mk $ tt_to_tree server tmk
                  return ( it, True ) -- FIXME

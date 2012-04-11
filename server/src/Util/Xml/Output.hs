@@ -50,6 +50,11 @@ outputToXOutput o = case o of
         outputToXOutput (O.Named_Link uri uri)
     O.Named_Link txt uri ->
         return $ X.OLink $ X.Link (X.Link_Attrs { X.linkHref = uri }) txt
+        
+    O.HRef uri o1 -> do
+        -- FIXME
+        outputToXOutput $ O.Above ( O.Link uri ) o1
+        
     O.Above o1 o2 ->
         X.OAbove . X.Above <$> mapM outputToXOutput (aboves o1 ++ aboves o2)
     O.Beside o1 o2 ->
@@ -60,6 +65,7 @@ outputToXOutput o = case o of
         X.OBeside . X.Beside <$> sequence [return nestSpacing, outputToXOutput o']
     O.Figure a b ->
         X.OFigure <$> (X.Figure <$> outputToXOutput a <*> outputToXOutput b)
+
 
 xoutputToOutput :: X.Output -> O.Output
 xoutputToOutput o = case o of
