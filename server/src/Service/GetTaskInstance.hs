@@ -6,6 +6,8 @@ import Util.Sign
 import Util.Task
 import Util.Description
 
+import Util.Cache
+
 import Types.Basic
 import Types.Signed as S
 import Types.Documented as D
@@ -44,7 +46,8 @@ get_task_instance  (TT sconf) (TT seed) = fmap TT $ do
 
     -- ri <- gen maker (VNr 0) Nothing seed nocache
     let s = crc32 ( fromString seed :: ByteString )
-    ri <- generate maker ( fromIntegral s ) nocache
+    ri <- generate maker ( fromIntegral s ) 
+          $ Util.Cache.cache
  
     res <- liftIO $ result $ Autolib.Reporter.IO.Type.lift ri
     i <- maybe (fail "internal error generating instance") return res
