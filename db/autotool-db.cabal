@@ -1,5 +1,5 @@
 Name:           autotool-db
-Version:        1.0
+Version:        2.0
 -- License:        GPL
 -- License-File:   LICENSE
 Author:         Johannes Waldmann
@@ -16,7 +16,7 @@ Build-Type:     Simple
 Executable autotool-trial
   Main-is: src/Operate/Trial.hs
   Build-Depends: base, autotool-db, 
-    autotool-interface, autotool-server,
+    autotool-interface, autotool-server-interface,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
@@ -25,7 +25,7 @@ Executable autotool-trial
 Executable autotool-super
   Main-is: src/Operate/Super.hs
   Build-Depends: base, autotool-db, 
-    autotool-interface,
+    autotool-interface, autotool-server-interface,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
@@ -33,7 +33,7 @@ Executable autotool-super
 
 Library
   Build-Depends:
-    autotool-interface, autotool-server,
+    autotool-interface, autotool-server-interface,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
