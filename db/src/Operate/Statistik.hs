@@ -128,7 +128,7 @@ resultate vor choice = do
 			 $ toString name
 	    Nothing   -> show anr
 
-    let headings = [ "Matr.-Nr.", "Vorname", "Name", "Gruppe" ] ++ anames ++ [ "total" ]
+    let headings = [ "Matr.-Nr.", "Vorname", "Name", "Gruppe", "total" ] ++ anames 
     open_btable_with_sorter headings
 
     sequence_ $ do
@@ -143,20 +143,22 @@ resultate vor choice = do
             plain $ toString vorname
             plain $ toString name
             plain $ show gnr
-	    nums <- sequence $ do
-	        anr <- setToList $ anrs
-                let result = lookupFM stud_aufg (S.snr stud, anr) 
-		return $ do
-		     plain $ case result of
+	    let shownums = do
+	          anr <- setToList $ anrs
+                  let result = lookupFM stud_aufg (S.snr stud, anr) 
+		  return (
+		       case result of
 		         Just ( Oks o, Nos n ) -> 
 			     if choice == Mandat
 			     then show o else show (o, n)
 		         Nothing -> "-"
-		     return $ case result of
+		     , case result of
 			 Just ( Oks o, _ ) | o > 0 -> 1
 			 _                         -> 0
+                     )    
+            plain $ show $ sum $ map snd shownums
+            forM ( map fst shownums ) $ plain
 
-            plain $ show $ sum nums
             close -- row
 
     close -- btable
