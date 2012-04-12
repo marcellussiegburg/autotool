@@ -104,8 +104,7 @@ import Operate.DateTime ( defaults )
 
 
 default_server :: Server
--- server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
-default_server = "http://localhost/cgi-bin/autotool.cgi"
+default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.3.0.cgi"
 
 
 my_name = "Trial.cgi"
