@@ -16,7 +16,8 @@ Build-Type:     Simple
 
 Library
     Build-Depends:
-        base, directory, unix, process, old-time,
+        base, directory, unix, process, 
+        old-time, time,
         utf8-string, parsec,
         autolib-output,
         autolib-reader,

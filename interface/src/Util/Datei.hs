@@ -23,7 +23,9 @@ import System.IO.UTF8 ( writeFile, readFile, appendFile )
 import Debug
 import Data.List (inits, intersperse)
 import System.Directory
-import System.Time
+-- import System.Time
+import Data.Time.Clock
+
 import Control.Monad (guard, when)
 import System.Cmd ( system)
 
@@ -179,7 +181,7 @@ dirlesen d  = do
     h <- home d
     getDirectoryContents h
 
-getModificationTime :: Datei -> IO ClockTime
+getModificationTime :: Datei -> IO UTCTime
 getModificationTime d = do
     h <- home d
     System.Directory.getModificationTime h
