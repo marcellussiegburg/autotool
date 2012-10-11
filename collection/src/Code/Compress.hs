@@ -61,7 +61,7 @@ make_fixed :: ( ToDoc c,  Reader c, Reader b, Coder c Char b ) => c -> Make
 make_fixed c = direct ( Compress c ) "01001010010010100101001001010010"
 
 
-instance ( Reader a , Read a, Reader [a]
+instance ( Reader a , Read a, Reader [a], ToDoc a
 	 , ToDoc c, Reader c, Coder c a b, Size b ) 
      => Generator (Compress c) (Config a) [a] where
     generator (Compress c) conf key = do

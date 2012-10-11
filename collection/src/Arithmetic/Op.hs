@@ -1,3 +1,5 @@
+{-# language OverlappingInstances #-}
+
 module Arithmetic.Op 
 
 ( Exp, eval, bind

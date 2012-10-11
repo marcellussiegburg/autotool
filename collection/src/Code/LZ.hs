@@ -128,7 +128,7 @@ header fm c = do
 	   , text "bearbeite:" <+> toDoc c
 	   ]
 
-dec :: ( Ord a, ToDoc a, ToDoc [a], Reader [a] )
+dec :: ( Ord a, ToDoc a, Reader a, ToDoc [a], Reader [a] )
     => ( Book a , [a] )
     -> [ Code_Letter a ]
     -> Reporter [ a ]

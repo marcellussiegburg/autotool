@@ -1,3 +1,5 @@
+{-# language OverlappingInstances #-}
+
 module Inter.Collector where
 
 import Inter.Types
