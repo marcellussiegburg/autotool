@@ -90,8 +90,8 @@ import Operate.Student
 import qualified Debug 
 
 default_server :: Server
--- server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.2.0.cgi"
-default_server = "http://localhost/cgi-bin/autotool.cgi"
+-- default_server = "http://localhost/cgi-bin/autotool.cgi"
+default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.0.cgi"
 
 main :: IO ()
 main = do
@@ -355,6 +355,10 @@ aufgaben server ( stud, vnr, tutor ) = do
             io $ A.delete anr
             plain $ unwords [ "Aufgabe", show anr, "gelöscht." ]
 	mzero
+
+    -- here, action == Config (since other options ended with mzero)
+
+    io $ debug $ unwords [ "Config" ,  server ]
 
     ( mk, type_click ) <- find_mk server tutor mauf
 
