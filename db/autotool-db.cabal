@@ -37,7 +37,7 @@ Library
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
-    hsql,hsql-mysql, old-locale, old-time, parsec,
+    hsql, hsql-mysql, old-locale, old-time, parsec,
     directory, digest, bytestring, unix
   GHC-Options:    -Wall -fglasgow-exts
   Extensions:

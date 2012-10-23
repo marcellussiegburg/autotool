@@ -1,9 +1,9 @@
 # must override to get it relativ to this dir
 
-RELATIV_TO_MAIN_DIR=..
-DIRS = $(RELATIV_TO_MAIN_DIR)/wash
+# RELATIV_TO_MAIN_DIR=..
+# DIRS = $(RELATIV_TO_MAIN_DIR)/wash
 
-include ../Makefile-defs
+# include ../Makefile-defs
 
 all: autoan.cgi autoadmin.cgi showgruppen.cgi
 

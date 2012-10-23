@@ -47,14 +47,17 @@ select_where wh = do
     disconnect conn
     return res
 
+default_server = fromCGI "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.0.cgi"
+default_signature = fromCGI "missing"
+
 common = collectRows $ \ state -> do
         g_anr <- getFieldValue state "ANr"
     	g_vnr <- getFieldValue state "VNr"
         g_name <- getFieldValue state "Name"
-        g_server <- getFieldValue state "Server"
+        g_server <- getFieldValue' state "Server" default_server
         g_typ <- getFieldValue state "Typ"
         g_config <- getFieldValue state "Config"
-        g_signature <- getFieldValue state "Signature"
+        g_signature <- getFieldValue' state "Signature" default_signature
         g_remark <- getFieldValue state "Remark"
         g_highscore <- getFieldValue state "Highscore"
         g_status <- getFieldValue state "Status"

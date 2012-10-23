@@ -48,7 +48,6 @@ import Data.Maybe ( fromMaybe, listToMaybe )
 import Database.HSQL.MySQL
 import Database.HSQL.Types
 
-
 import qualified Control.Exception
 import Data.Typeable
 
@@ -340,7 +339,8 @@ $(derives [makeReader, makeToDoc] [''Remark])
 instance Show Remark where show = render . toDoc
                         
 instance SqlBind Remark where 
-    fromSqlValue ty s = Just $ Remark s
+    fromSqlValue ty s = do 
+       return $ Remark s
     toSqlValue (Remark cs) = toSqlValue cs
 instance ToEx Remark where
     toEx (Remark x) = EString x

@@ -37,6 +37,8 @@ import Data.Typeable
 import Data.Maybe
 import Control.Monad ( when, mzero )
 
+import Control.SQL (logged)
+
 data Method = Textarea | Upload
     deriving ( Eq, Show, Typeable )
 
@@ -124,6 +126,13 @@ solution vnr  manr stud auf = do
 
 parameter_table auf = do
     h3 $ unwords [ "Aufgabe", toString $ A.name auf ]
+    
+    io $ logged $ unlines
+      [ unwords [ "plain", toString $ A.remark auf ]
+      -- , unwords [ "enc"  , CBUS.encodeString $   toString $ A.remark auf ]
+      -- , unwords [ "dec"  , CBUS.decodeString $   toString $ A.remark auf ]        
+      ]
+        
     above ( plain "Hinweise" )
 	            ( pre $ toString $ A.remark auf )
 
