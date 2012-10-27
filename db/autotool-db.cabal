@@ -20,7 +20,7 @@ Executable autotool-trial
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
-    directory
+    directory, utf8-string
 
 Executable autotool-super
   Main-is: src/Operate/Super.hs
@@ -38,7 +38,7 @@ Library
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
     hsql, hsql-mysql, old-locale, old-time, parsec,
-    directory, digest, bytestring, unix
+    directory, digest, bytestring, unix, utf8-string
   GHC-Options:    -Wall -fglasgow-exts
   Extensions:
 --     DeriveDataTypeable

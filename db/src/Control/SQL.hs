@@ -26,6 +26,8 @@ import Text.ParserCombinators.Parsec.Expr
 
 import qualified Mysqlconnect
 
+import Prelude hiding ( appendFile )
+import System.IO.UTF8
 
 import Database.HSQL.MySQL hiding ( query, collectRows )
 import qualified Database.HSQL.MySQL
