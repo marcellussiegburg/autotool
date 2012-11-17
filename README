@@ -2,6 +2,31 @@ This is the program 'autotool' for automatic grading
 of student homework in (theoretical) computer science.
 
 
+source code package structure (on branch classic-via-rpc)
+(cf. http://dfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=305 )
 
+tool/interface: 
+defines the programmatic API (Challenger.Partial) for task types.
 
+tool/collection: (depends on interface)
+contains implementation of task types, so that is where the "semantics" sits,
+and it is a huge package (> 700 modules).
 
+tool/db: (depends on interface and collection)
+the "classical" autotool: database of student and task data, and a web
+frontend.
+Everything in one big executable (autotool-super.cgi)
+
+tool/test: (depends on interface, collection, db)
+extract test cases (task instances, student solutions, autotool answers) from
+the data base and file system, recomputes the results, and generates reports.
+
+tool/server-interface: (depends on interface)
+
+tool/server-implementation: (depends on collection)
+XML-RPC server built during the autolat project. this is a stateless server
+(just the semantics, no database)
+
+tool/client: (no dependencies)
+client that accesses a remote XML-RPC-server. the client is stateless as well,
+not database, no user data. It just exemplifies how to call the server methods.
