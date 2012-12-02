@@ -107,7 +107,7 @@ default_server :: Server
 default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.3.0.cgi"
 
 
-my_name = "Trial.cgi"
+my_name = "Trial_Debug.cgi"
 
 main :: IO ()
 main = Gateway.CGI.execute ( my_name ) $ do

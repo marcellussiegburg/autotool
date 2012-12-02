@@ -5,7 +5,7 @@ module Control.SQL
 
 ( squery, query, logged, reed
 , myconnect, collectRows, disconnect
-, Statement, getFieldValue, getFieldValueMB, getFieldsTypes 
+, Statement, getFieldValue, getFieldValueMB, getFieldValue', getFieldsTypes 
 , Query (..), Action (..), Modifier (..)
 , Id (..), Bind (..)
 , Expression (..), ToEx (..), Control.SQL.equals, ands
@@ -24,8 +24,10 @@ import Data.List
 import Data.Typeable
 import Text.ParserCombinators.Parsec.Expr
 
-import Mysqlconnect
+import qualified Mysqlconnect
 
+import Prelude hiding ( appendFile )
+import System.IO.UTF8
 
 import Database.HSQL.MySQL hiding ( query, collectRows )
 import qualified Database.HSQL.MySQL
@@ -33,6 +35,11 @@ import qualified Database.HSQL.MySQL
 import Control.Monad ( when )
 
 -------------------------------------------------------------------------------
+
+myconnect = do
+    con <- Mysqlconnect.myconnect
+    query con "SET NAMES 'utf8';"
+    return con
 
 -- | structured query
 squery :: Connection -> Query -> IO Statement

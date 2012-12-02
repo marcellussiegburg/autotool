@@ -529,8 +529,5 @@ instance ToString Nos where
 
 -------------------------------------------------------------
 
--- Local Variables:
--- mode: haskell
--- End:
 
 

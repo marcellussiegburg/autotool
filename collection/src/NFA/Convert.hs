@@ -71,11 +71,11 @@ instance C.Partial Convert_To_NFA
 
     partial Convert_To_NFA ( from, props ) aut = do
         let [ alpha ] = do Alphabet a <- props ; return a
+        silent $ nested 4 $ flip test aut NFA.Property.Sane
         inform $ text "Das ist Ihr Automat:"
 	peng $ aut
         inform $ text "Sind alle Eigenschaften erfüllt?"
-        nested 4 $ mapM_ ( flip test aut ) 
-		 $ nub $ NFA.Property.Sane : props
+        nested 4 $ mapM_ ( flip test aut ) props
 
     total Convert_To_NFA ( from, props ) aut = do
         inform $ text "Akzeptiert der Automat die richtige Sprache?"
