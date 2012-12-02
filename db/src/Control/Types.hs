@@ -48,21 +48,20 @@ import Data.Maybe ( fromMaybe, listToMaybe )
 import Database.HSQL.MySQL
 import Database.HSQL.Types
 
-
 import qualified Control.Exception
 import Data.Typeable
 
--------------------------------------------------------------
+-------------------------------------------------
 
 class FromCGI a where fromCGI :: String -> a
 class ToString a where toString :: a -> String
 
--------------------------------------------------------------
+-------------------------------------------------
 
 instance FromCGI Integer where fromCGI = read
 instance ToString Integer where toString = show
 
--------------------------------------------------------------
+-------------------------------------------------
 
 instance ToEx Crypt where 
     toEx c = EString ( unCrypt c )
@@ -70,7 +69,7 @@ instance SqlBind Crypt where
     fromSqlValue _ s = Just $ Crypt s
     toSqlValue c = unCrypt c
 
---------------------------------------------------------------
+-------------------------------------------------
 
 {-
 data Time = Time String deriving ( Eq, Ord, Typeable )
@@ -102,7 +101,7 @@ instance ToString Time where
     toString x = show x
 
 
--------------------------------------------------------------
+-------------------------------------------------
 
 -- | bezeichnet eigenschaft der aktuellen zeit
 -- mit dem in der DB angegebenen bereich
@@ -122,7 +121,7 @@ timer 1 _ = Early
 timer _ 1 = Late
 timer 0 0 = Current
 
--------------------------------------------------------------
+-------------------------------------------------
 
 data HiLo = Keine | High | Low 
     deriving ( Eq, Ord, Typeable, Bounded, Enum )
@@ -340,7 +339,8 @@ $(derives [makeReader, makeToDoc] [''Remark])
 instance Show Remark where show = render . toDoc
                         
 instance SqlBind Remark where 
-    fromSqlValue ty s = Just $ Remark s
+    fromSqlValue ty s = 
+        Just $ Remark s
     toSqlValue (Remark cs) = toSqlValue cs
 instance ToEx Remark where
     toEx (Remark x) = EString x
