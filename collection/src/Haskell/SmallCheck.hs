@@ -1,11 +1,13 @@
+{-# language UndecidableInstances #-}
+
 module Haskell.SmallCheck where
 
 
 import Haskell.Data
 import Autolib.ToDoc
 
-import qualified Test.SmallCheck as SC
-import Test.SmallCheck.Series
+-- import qualified Test.SmallCheck as SC
+-- import Test.SmallCheck.Series
 
 import Control.Monad ( guard )
 
@@ -30,32 +32,41 @@ run i f a =
 -- but they don't export it
 
 newtype PR = Prop [Result]
-data Result = Result {ok :: Maybe Bool, arguments :: [String]}
+data Result = Result 
+            { ok :: Maybe Bool
+            , arguments :: [String]
+            }
     deriving Show
 
 
 newtype Property = Property (Int -> PR)
 
 
+type Series a = Int -> [a]
+class Serial a where series :: Series a
+
+
 class Testable a where
-  property :: a -> Int -> PR
+    property :: a -> Int -> PR
 
 instance Testable Bool where
-  property b _ = Prop [Result (Just b) []]
+    property b _ = Prop [Result (Just b) []]
 
 instance Testable PR where
-  property prop _ = prop
+    property prop _ = prop
 
-instance (Serial a, Show a, Testable b) => Testable (a->b) where
-  property f = f' where Property f' = forAll series f
+instance (Serial a, Show a, Testable b) 
+         => Testable (a->b) where
+    property f = f' where Property f' = forAll series f
 
 instance Testable Property where
-  property (Property f) d = f d
+    property (Property f) d = f d
 
 evaluate :: Testable a => a -> Series Result
 evaluate x d = rs where Prop rs = property x d
 
-forAll :: (Show a, Testable b) => Series a -> (a->b) -> Property
+forAll :: (Show a, Testable b) 
+       => Series a -> (a->b) -> Property
 forAll xs f = Property $ \d -> Prop $
   [ r{arguments = show x : arguments r}
   | x <- xs d, r <- evaluate (f x) d ]
