@@ -104,13 +104,10 @@ import Operate.DateTime ( defaults )
 
 
 default_server :: Server
-default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.3.0.cgi"
-
-
-my_name = "Trial_Debug.cgi"
+default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.2.cgi"
 
 main :: IO ()
-main = Gateway.CGI.execute ( my_name ) $ do
+main = Gateway.CGI.execute ( Local.trial_cgi_name ) $ do
    wrap $ do -- FIXME: following code looks ugly
        mtopic <- look "topic"
        case mtopic of

@@ -90,13 +90,12 @@ import Operate.Student
 import qualified Debug 
 
 default_server :: Server
--- default_server = "http://localhost/cgi-bin/autotool.cgi"
-default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.0.cgi"
+default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.2.cgi"
 
 main :: IO ()
 main = do
    Debug.debug "Super_Debug:main"
-   ( Gateway.CGI.execute ( Local.cgi_name ++ "#hotspot" ) $ do
+   ( Gateway.CGI.execute ( Local.super_cgi_name ++ "#hotspot" ) $ do
        wrap $ iface default_server
        scores <- scores_link
        footer scores ) `CE.catch` \ ( e :: CE.SomeException ) -> do
