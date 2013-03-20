@@ -13,7 +13,7 @@ Stability:      Experimental
 Cabal-Version:  >=1.8
 Build-Type:     Simple
 
-Executable autotool-trial
+Executable autotool-Trial
   Main-is: src/Operate/Trial.hs
   Build-Depends: base, autotool-db, 
     autotool-interface, autotool-server-interface,
@@ -22,7 +22,7 @@ Executable autotool-trial
     base , haxr, random, containers, xhtml, cgi, mtl,
     directory, utf8-string
 
-Executable autotool-super
+Executable autotool-Super
   Main-is: src/Operate/Super.hs
   Build-Depends: base, autotool-db, 
     autotool-interface, autotool-server-interface,

@@ -307,11 +307,14 @@ pwmail stud = do
 
     let echo = texter
             [ "Sie haben ein neues Passwort"
-            , "für das E-Learning-System autotool angefordert."
+            -- , "für das E-Learning-System autotool angefordert."
+            , "fuer das E-Learning-System autotool angefordert."
             , unwords [ "Es lautet:", "Matrikelnummer:", m, "Passwort:", p ]
             , "Es wird durch seine erste Benutzung aktiviert,"
-            , "Sie können es danach ändern."
-            , "Sie können aber auch Ihr bisheriges Passwort weiter benutzen"
+            -- , "Sie können es danach ändern."
+            , "Sie koennen es danach aendern."
+            -- , "Sie können aber auch Ihr bisheriges Passwort weiter benutzen"
+            , "Sie koennen aber auch Ihr bisheriges Passwort weiter benutzen"
             , "und diese Mail ignorieren."
             ]
 
