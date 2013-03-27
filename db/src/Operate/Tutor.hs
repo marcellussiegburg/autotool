@@ -33,6 +33,7 @@ import System.Random
 import Data.Maybe
 import Data.Tree ( flatten )
 
+import qualified Debug
 
 import qualified Control.Exception as CE
 
