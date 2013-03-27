@@ -87,7 +87,7 @@ instance Partial Haskell_Blueprint Code Code where
                     { M.timeLimit = 10 -- seconds?
                     , M.modules = Just [ "Prelude", "Blueprint" ]
                     , M.expression = "test"
-                    , M.loadFile = "" -- f
+                    , M.loadFile = f -- "" -- f
                     , M.user = "" -- WHAT?
                     , M.printType = False -- printed to where?
                     , M.extensions = False
