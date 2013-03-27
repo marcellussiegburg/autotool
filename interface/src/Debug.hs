@@ -12,7 +12,7 @@ jetzt = do
     cal <- toCalendarTime clock
     return $ calendarTimeToString cal
 
-debug traced msg = do
+debug msg = do
     s <- System.IO.UTF8.readFile "/tmp/tool.debug"
     case words s of
       [ "YES" ] -> do
