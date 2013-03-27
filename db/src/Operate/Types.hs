@@ -78,10 +78,13 @@ verify_task_config mk conf = do
 instance ToDoc Description where  
     toDoc (DString s) = text s
 
-task_config_editor title mk = do
+task_config_editor title mk mauf = do
     open row
     plain title
-    CString conf <- get_task_config mk
+    CString conf <- case mauf of
+        Nothing  -> get_task_config mk
+        Just auf -> 
+            return $ CString $ toString $ A.config auf
     ms <- textarea $ conf
     sconf <- submit "submit"
     close -- row

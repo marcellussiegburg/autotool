@@ -98,6 +98,7 @@ edit_aufgabe_extra _ mk mauf vnr manr type_click prop = case mk of
                      $  ("(default)", mauf) : do
                            oth <- others
                            return ( toString $ A.name oth , Just oth )
+
             let ( mproto, type_changed ) = case moth of
                    Just oth -> ( moth, False )
                    Nothing  -> ( mauf, type_click )
@@ -106,7 +107,8 @@ edit_aufgabe_extra _ mk mauf vnr manr type_click prop = case mk of
             -- FIXME: ist das sinnvoll bei import?
             
             signed_conf <- 
-                task_config_editor "Konfiguration" mk
+                task_config_editor "Konfiguration" 
+                    mk mproto
 	    -- check configuration (is implied)
             
             close -- table
