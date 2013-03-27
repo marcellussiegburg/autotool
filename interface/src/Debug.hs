@@ -12,11 +12,15 @@ jetzt = do
     cal <- toCalendarTime clock
     return $ calendarTimeToString cal
 
-debug msg = when Local.debug $ do
-    now <- jetzt
-    System.IO.UTF8.appendFile "/tmp/tool.log" $ unlines [ now, msg ]
-    -- hPutStrLn stderr cs
-    -- hFlush stderr
+debug traced msg = do
+    s <- System.IO.UTF8.readFile "/tmp/tool.debug"
+    case words s of
+      [ "YES" ] -> do
+        now <- jetzt
+        System.IO.UTF8.appendFile "/tmp/tool.log" $ unlines [ now, msg ]
+        -- hPutStrLn stderr cs
+        -- hFlush stderr
+      _ -> return ()  
 
 system argv = do
     debug $ "start system: " ++ show argv

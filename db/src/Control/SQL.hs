@@ -18,7 +18,7 @@ where
 import Autolib.Reader as R
 import Autolib.ToDoc  as T
 
-import qualified Local
+import qualified Debug
 
 import Data.List
 import Data.Typeable
@@ -62,13 +62,7 @@ collectRows fun stat = do
     logged ( render $ toDoc i )
     return i
 
-logfile = "/tmp/HSQL.log"
-logged cs = when ( Local.debug ) $ do 
-    appendFile logfile "logged:"
-    appendFile logfile cs
-    appendFile logfile strich 
-
-strich = "\n--------------------------------\n"
+logged cs = Debug.debug cs 
 
 -- reed :: ( Read a, Show a, Typeable a ) => String -> a
 reed cs = case ( readsPrec 0 cs )  of

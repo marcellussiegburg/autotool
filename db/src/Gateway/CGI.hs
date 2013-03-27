@@ -249,7 +249,7 @@ execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
 		 $ f s0
 	-- need to unwind because computation might have been interrupted
 	let h = toHtml $ unwind $ stack s'
-        return $ page cgi $ if Local.debug then info +++ h else h
+        return $ page cgi h -- $ if Local.debug then info +++ h else h
            -- ( Text.XHtml.font h ! [ Text.XHtml.face "Helvetica" ] )
       )
     `CE.catch` \ (err :: CE.SomeException) -> 
