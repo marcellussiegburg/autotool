@@ -38,7 +38,8 @@ Library
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, xhtml, cgi, mtl,
     hsql, hsql-mysql, old-locale, old-time, parsec,
-    directory, digest, bytestring, unix, utf8-string
+    directory, digest, bytestring, unix, utf8-string,
+    process
   GHC-Options:    -Wall -fglasgow-exts
   Extensions:
 --     DeriveDataTypeable
