@@ -86,10 +86,11 @@ instance Partial Haskell_Blueprint Code Code where
             let Right opts = M.interpreterOpts []
 
             keepCurrentDir $ do
-                System.Directory.setCurrentDirectory d
+                -- System.Directory.setCurrentDirectory d
                 I.runInterpreter $ Mueval.Interpreter.interpreter $ opts
                     { M.timeLimit = 10 -- seconds?
-                    , M.modules = Just [ "Prelude", "Blueprint" ]
+                    , M.modules = Just [ "Prelude" ] -- , "Blueprint" ]
+		    , M.loadFile = f -- ?
                     , M.expression = "test"
 
 -- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
