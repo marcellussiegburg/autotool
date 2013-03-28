@@ -83,16 +83,15 @@ instance Partial Haskell_Blueprint Code Code where
             debug $ unwords [ "Blueprint tmpfile is", f ]
             System.IO.UTF8.writeFile f b 
             
-            keepCurrentDir $ I.runInterpreter $ Mueval.Interpreter.interpreter $ M.Options
+            let Right opts = M.interpreterOpts []
+
+            keepCurrentDir $ do
+                System.Directory.setCurrentDirectory d
+                I.runInterpreter $ Mueval.Interpreter.interpreter $ opts
                     { M.timeLimit = 10 -- seconds?
                     , M.modules = Just [ "Prelude", "Blueprint" ]
                     , M.expression = "test"
-                    , M.loadFile = f -- "" -- f
-                    , M.user = "" -- WHAT?
-                    , M.printType = False -- printed to where?
-                    , M.extensions = False
-                    , M.namedExtensions = []
-                    , M.noImports = False
+
 -- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
 -- Another cause for the "premature end of script headers" message 
 -- are the RLimitCPU and RLimitMEM directives. 
