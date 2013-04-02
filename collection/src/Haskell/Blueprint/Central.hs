@@ -89,9 +89,13 @@ instance Partial Haskell_Blueprint Code Code where
                 System.Directory.setCurrentDirectory d
                 I.runInterpreter $ Mueval.Interpreter.interpreter $ opts
                     { M.timeLimit = 10 -- seconds?
-                    , M.modules = Just [ "Prelude" ]
+                    , M.modules = Just [ "Prelude"
+		        , "Test.SmallCheck.Drivers", "Test.SmallCheck.Series"
+			, "GHC.Generics" ]
+	            , M.namedExtensions = [ "MultiParamTypeClasses"
+		          , "FlexibleInstances", "DeriveGeneric" ]
 		    , M.loadFile = f 
-                    , M.expression = "test"
+                    , M.expression = "Blueprint.test"
 
 -- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
 -- Another cause for the "premature end of script headers" message 
