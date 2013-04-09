@@ -83,7 +83,8 @@ instance Partial Haskell_Blueprint Code Code where
             debug $ unwords [ "Blueprint tmpfile is", f ]
             System.IO.UTF8.writeFile f b 
             
-            let Right opts = M.interpreterOpts []
+            let Right opts = M.interpreterOpts 
+                      [ "-XMultiParamTypeClasses", "-XFlexibleInstances", "-XDeriveGeneric" ]
 
             keepCurrentDir $ do
                 System.Directory.setCurrentDirectory d
@@ -92,8 +93,7 @@ instance Partial Haskell_Blueprint Code Code where
                     , M.modules = Just [ "Prelude"
 		        , "Test.SmallCheck.Drivers", "Test.SmallCheck.Series"
 			, "GHC.Generics" ]
-	            , M.namedExtensions = [ "MultiParamTypeClasses"
-		          , "FlexibleInstances", "DeriveGeneric" ]
+	            -- , M.namedExtensions = [ "MultiParamTypeClasses" , "FlexibleInstances", "DeriveGeneric" ]
 		    , M.loadFile = f 
                     , M.expression = "Blueprint.test"
 

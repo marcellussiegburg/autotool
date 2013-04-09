@@ -1,5 +1,5 @@
 Name:           autotool-collection
-Version:        1.0
+Version:        1.1
 -- License:        GPL
 -- License-File:   LICENSE
 Author:         Johannes Waldmann
@@ -21,6 +21,7 @@ Library
         autolib-dot,
         autolib-exp,
         autolib-fa,
+        autolib-foa>=1.1,
         autolib-fta,
         autolib-graph,
         autolib-output,
@@ -859,3 +860,4 @@ Library
                  CSP.STS.Type
                  CSP.STS.Fail
                  CSP.Trace
+                 LTL.Find_Model

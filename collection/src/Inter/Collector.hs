@@ -230,6 +230,8 @@ import qualified CSP.Derive
 import qualified CSP.STS.Fail
 import qualified CSP.STS.Bisi.Central
 
+import qualified LTL.Find_Model
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -408,6 +410,9 @@ tmakers =
                    [ item CSP.STS.Bisi.Central.make_fixed
                    , item CSP.STS.Bisi.Central.make_quiz
                    ]  
+             , heading "PLTL"
+                   [ item LTL.Find_Model.make_fixed
+                   ]
              ]  
          , heading "Terme, Ersetzungssysteme"
                 [ heading "Wortersetzung"

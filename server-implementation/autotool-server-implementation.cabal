@@ -1,5 +1,5 @@
 Name:           autotool-server-implementation
-Version:        0.3.0
+Version:        0.3.1
 Author:         Bertram Felgenhauer
 Maintainer:     Bertram Felgenhauer
 Stability:      Experimental
@@ -16,7 +16,7 @@ Executable autotool.cgi
     GHC-Options:    -Wall -fglasgow-exts
     Build-Depends:
         autotool-interface,
-        autotool-collection,
+        autotool-collection>=1.1,
         autotool-server-interface,
         autolib-transport,
         autolib-todoc,
