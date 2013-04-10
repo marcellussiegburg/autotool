@@ -861,3 +861,5 @@ Library
                  CSP.STS.Fail
                  CSP.Trace
                  LTL.Find_Model
+                 LTL.Separate
+
