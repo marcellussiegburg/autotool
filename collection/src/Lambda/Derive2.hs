@@ -31,6 +31,12 @@ data Action = Rename { from :: Identifier, to :: Identifier }
             | Reduce { formal :: Identifier, body :: Lambda, argument :: Lambda }
     deriving ( Typeable )
 
+isRename :: Action -> Bool
+isRename a = case a of Rename {} -> True ; _ -> False
+
+isReduce :: Action -> Bool
+isReduce a = case a of Reduce {} -> True ; _ -> False
+
 exampleA0 :: Action
 exampleA0 = Rename { from = read "x", to = read "y" }
 
@@ -46,15 +52,18 @@ data Step = Step { position :: Position
     deriving ( Typeable )
 
 exampleS0 :: Step
-exampleS0 = Step { position = [0] , action = exampleA0 }
+exampleS0 = Step 
+          { position = [0] , action = exampleA0 }
 
 exampleS1 :: Step
-exampleS1 = Step { position = [ ] , action = exampleA1 }
+exampleS1 = Step 
+          { position = [ ] , action = exampleA1 }
 
-data Instance = Instance { start :: Lambda, goal :: Lambda
-                         , steps :: Maybe Int
-                         , draw_trees :: Bool
-                         }
+data Instance = Instance 
+       { start :: Lambda, goal :: Lambda
+       , steps :: Maybe Int
+       , draw_trees :: Bool
+       }
     deriving ( Typeable )
 
 exampleI :: Instance
@@ -72,7 +81,8 @@ instance Show   Action where show = render . toDoc
 instance Show Instance where show = render . toDoc
 
 instance Measure Lambda_Derive2 Instance [ Step ] where
-    measure p inst xs = fromIntegral $ length xs
+    measure p inst xs = fromIntegral 
+       $ length $ filter ( isReduce . action ) xs
 
 instance OrderScore Lambda_Derive2 where
     scoringOrder _ = Increasing
@@ -81,14 +91,15 @@ instance Partial Lambda_Derive2 Instance [ Step ] where
     report p inst = do
         let step_info = case steps inst of
                Nothing -> empty
-               Just s  -> text "der Länge" <+> toDoc s
+               Just s  -> text "mit genau" <+> toDoc s
+                  <+> text "Reduce-Schritten"
         inform $ vcat
             [ fsep [ text "Gesucht ist eine Ableitung"
                    , step_info, text ", die"
                    ]
             , nest 4 $ toDoc $ start inst
             ]
-        when (draw_trees inst) $ peng $ start inst        
+        when (draw_trees inst) $ peng $ start inst 
         inform $ vcat 
             [ text "überführt in"
             , nest 4 $ toDoc $ goal inst
@@ -198,7 +209,10 @@ substep t act = do
                 substitute f a b
             _ -> reject $ text "Dieser Term ist kein Redex."
 
-    inform $ vcat [ text "Resultat der Anwendung ist" <+> toDoc t' ]
+    inform $ vcat 
+       [ text "Resultat der Anwendung auf den Teilterm ist" 
+       , nest 4 $ toDoc t' 
+       ]
     return t'
 
 -- | substitute  x  by  a  in  b

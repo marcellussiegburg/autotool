@@ -40,7 +40,10 @@ nontrivial inst = isNothing $ result $ do
     
 derivations :: C.Type -> Lambda -> [ I.Type ]
 derivations conf t =
-    bfs  ( next conf ) ( I.initial t )
+    let i = ( I.initial t )
+          { I.steps = case C.require_exact_length conf of
+            False -> Nothing ; True -> Just 0 }
+    in  bfs  ( next conf ) ( I.initial t )
 
 -- | all ways to extend given derivation by one step (at the end)
 -- derivation must fulfil restrictions 
