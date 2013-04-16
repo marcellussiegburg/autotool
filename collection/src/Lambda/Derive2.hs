@@ -95,7 +95,7 @@ instance Partial Lambda_Derive2 Instance [ Step ] where
             ]
         when (draw_trees inst) $ peng $ goal inst
 
-    initial p inst = [ exampleS0, exampleS1 ]
+    initial p inst = [  exampleS1, exampleS0 ]
 
     partial p inst steps = do
         return ()
@@ -170,16 +170,23 @@ substep t act = do
     --               ]
     t' <- case act of
       Rename {} -> do
-        inform $ text "Umbenennung eines formalen Parameters einer Abstraktion"
+        -- inform $ text "Umbenennung eines formalen Parameters einer Abstraktion"
         case t of
             Abstract f b -> do
                 when ( f /= from act ) $ reject $ text
                     "der formale Parameter ist nicht" <+> toDoc (from act)
+                when ( S.member (to act) $ Lambda.Type.free_variables b ) $ reject
+                    $ text "Fehler:" <+> vcat
+                         [ text "bei Umbenennung von" <+> toDoc f 
+                         , text "nach" <+> toDoc (to act)
+                         , text "in" <+> toDoc t
+                         , text "wird ein freies Vorkommen einer Variablen gebunden."
+                         ]
                 liftM (Abstract $ to act) $ substitute f (Variable $ to act) b
             _ -> reject $ text "Dieser Term ist keine Abstraktion."
        
       Reduce {} -> do
-        inform $ text "Reduktion eines Redexes"
+        -- inform $ text "Reduktion eines Redexes"
         case t of
             Apply (Abstract f b) a -> do
                 when ( f /= formal act ) $ reject $ text
@@ -194,15 +201,18 @@ substep t act = do
     inform $ vcat [ text "Resultat der Anwendung ist" <+> toDoc t' ]
     return t'
 
-substitute v a b = case b of
-    Variable w -> return $ if v == w then a else b
-    Apply l r -> liftM2 Apply (substitute v a l)(substitute v a r)
-    Abstract u c -> do
-        when ( S.member u ( Lambda.Type.free_variables a ) ) $ reject $ vcat
-            [ text "Fehler: bei Ersetzung von" <+> toDoc v 
+-- | substitute  x  by  a  in  b
+substitute x a b = case b of
+    Variable y -> return $ if y == x then a else b
+    Apply l r -> liftM2 Apply (substitute x a l) (substitute x a r)
+    Abstract y c -> 
+      if y == x then return b else do
+        when ( S.member y ( Lambda.Type.free_variables a ) ) $ reject 
+            $ text "Fehler:" <+> vcat
+            [ text "bei Ersetzung von" <+> toDoc x
             , text "durch" <+> toDoc a 
             , text "in" <+> toDoc b
-            , text "wird eine freie Variable gebunden."
+            , text "wird eine freies Vorkommen einer Variablen gebunden."
             ]
-        liftM (Abstract u) (substitute v a c)
+        liftM (Abstract y) (substitute x a c)
 

@@ -276,8 +276,11 @@ unwind ( st : sts ) =
 	   []         -> p
 	   st' : rest -> unwind ( push p st' : rest)
 
+sty = ( Text.XHtml.style << "pre { margin-top: 0em; margin-bottom: 0em; }" )
+    ! [ Text.XHtml.thetype "text/css" ]
+
 page :: String -> Html -> Html
-page cgi h = Text.XHtml.header << Text.XHtml.thetitle << cgi
+page cgi h = Text.XHtml.header << ( sty +++ Text.XHtml.thetitle << cgi )
       +++ Text.XHtml.body ( Text.XHtml.form h 
 			 ! [ Text.XHtml.action cgi 
 			   , Text.XHtml.method "POST" 
