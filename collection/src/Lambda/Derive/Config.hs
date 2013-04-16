@@ -25,9 +25,9 @@ $(derives [makeReader, makeToDoc] [''Type])
 
 example :: Type
 example = Make
-          { start_size_range = (10, 20)
+          { start_size_range = (12, 15)
           , free_variables = mkSet $ read "[ x , y ]"
-	  , overall_size_range = (5, 40)
+	  , overall_size_range = (8, 25)
           , derivation_length = 5
           , require_exact_length = True
           , draw_trees = False

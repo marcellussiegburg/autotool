@@ -15,14 +15,14 @@ convertible _ _ = False
 
 -- | replace each free occurence of v by a,
 -- rename bound variables in b when necessary.
--- implementation is not efficient (will compute FV(t) repeatedly)
+-- implementation is not efficient (will compute FV(a) repeatedly)
 free_sub :: Identifier -> Lambda -> Lambda -> Lambda
 free_sub v a t = case t of
     Variable w -> if v == w then a else t
     Apply fun arg -> Apply ( free_sub v a fun ) ( free_sub v a arg )
     Abstract w b -> 
-        let ( w', b' ) = if w `elementOf` free_variables t
-                         then let w' = next_free ( free_variables t )
+        let ( w', b' ) = if w `elementOf` free_variables a
+                         then let w' = next_free ( free_variables a )
                               in  ( w', free_rename w w' b )
                          else ( w, b )
         in  Abstract w' $ free_sub v a b'
