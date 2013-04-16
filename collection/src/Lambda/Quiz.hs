@@ -1,3 +1,5 @@
+{-# LANGUAGE PatternSignatures #-}
+
 module Lambda.Quiz (generator) where
 
 import Lambda.Type

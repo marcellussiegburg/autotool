@@ -195,6 +195,7 @@ import qualified Rewriting.SRS.Apply
 import qualified Lambda.Apply
 
 import qualified Lambda.Derive
+import qualified Lambda.Derive2
 import qualified Lambda.Backward_Join
 
 import qualified CL.Find
@@ -437,6 +438,10 @@ tmakers =
                         ]
                 ]
          , heading "Lambda-Kalkül"
+                [ item Lambda.Derive2.make_fixed
+                , item Lambda.Derive2.make_quiz
+                ]
+         , heading "Lambda-Kalkül (veraltet)"
                 [ item Lambda.Derive.make_fixed
                 , item Lambda.Derive.make_quiz
                 , item Lambda.Backward_Join.make_fixed

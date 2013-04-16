@@ -1,3 +1,8 @@
+{-# language DeriveDataTypeable #-}
+{-# language TemplateHaskell #-}
+{-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+
 module Lambda.Derive where
 
 import Lambda.Type

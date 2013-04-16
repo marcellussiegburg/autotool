@@ -1,3 +1,5 @@
+{-# language PatternSignatures #-}
+
 module Lambda.IO where
 
 
@@ -19,7 +21,8 @@ instance ToDoc Lambda where
         Abstract {} -> 
             let ( vars, body ) = abstractions t
             in docParen ( p > 0 ) 
-                   $ fsep ( map toDoc vars )
+                   $ text "\\"
+                   <+> fsep ( map toDoc vars )
                    <+> text "->"
                    <+> toDocPrec 0 body
 
@@ -35,6 +38,7 @@ atomic = my_parens ( reader :: Parser Lambda )
 
 abstraction :: Parser Lambda
 abstraction = do
+    option "\\" $ my_symbol "\\"
     vars <- many ( reader :: Parser Identifier )
     my_reserved "->"
     body <- reader

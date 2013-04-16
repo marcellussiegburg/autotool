@@ -53,7 +53,9 @@ Library
         utf8-string,
         strict-io, 
         temporary,
-        smallcheck, QuickCheck,
+        smallcheck, 
+        -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
+        QuickCheck < 2.6,
         mueval>=0.8.1.1, hint, haskell-src-exts, syb,
         transformers
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
@@ -694,6 +696,7 @@ Library
                  Lambda.Roll,
                  Lambda.Type,
                  Lambda.Derive,
+                 Lambda.Derive2,
                  Lambda.Step,
                  Lambda.IO,
                  Lambda.Backward_Join.Solution,
