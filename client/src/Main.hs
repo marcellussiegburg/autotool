@@ -5,6 +5,9 @@ import Types.Solution
 import Types.TaskDescription
 import Util.Xml.Output
 
+import qualified Autolib.Output as O
+import Autolib.Multilingual.Doc
+
 import System.Environment
 import System.Exit
 
@@ -28,7 +31,7 @@ main = do
     print =<< get_task_description server task
 
     putStrLn "\n=== Configure task ===\n"
-    let config = "Quiz { generate = [ Alphabet (mkSet \"ab\"), Max_Size 5 ]\n\
+    let config = "-- com\nQuiz { generate = [ Alphabet (mkSet \"ab\"), Max_Size 5 ]\n\
                  \     , solve    = [ Alphabet (mkSet \"ab\"), Simple ] }"
     res <- verify_task_config server task (CString config)
     print res
@@ -41,7 +44,7 @@ main = do
                 get_task_instance server signedTaskConfig seed
             print res2
 
-            print (xmlStringToOutput desc)
+            print ( O.render ( xmlStringToOutput desc) :: Doc )
 
             do  putStrLn "\n=== Send an invalid solution ===\n"
                 let solution = ""

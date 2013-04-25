@@ -146,15 +146,18 @@ make_fixed = direct Haskell_Blueprint code_example
 parse m = case E.readExtensions m of
     Nothing -> R.reject $ text "cannot parse LANGUAGE pragmas at top of file"
     Just exts -> 
-        let pamo = P.defaultParseMode { P.extensions = exts }
-        in    case P.parseModuleWithMode pamo m of
+        let pamo = P.defaultParseMode 
+                   { P.extensions = exts }
+        in  case P.parseModuleWithMode pamo m of
             P.ParseOk a -> return a
-            P.ParseFailed loc msg -> reject_parse m loc msg
+            P.ParseFailed loc msg -> 
+                reject_parse m loc msg
 
 reject_parse m loc msg =
-    let ( lpre, lpost ) = splitAt ( S.srcLine loc  ) $ lines m
+    let ( lpre, lpost ) = 
+            splitAt ( S.srcLine loc  ) $ lines m
         lpre' = reverse $ take 3 $ reverse lpre
-        tag = replicate ( S.srcColumn loc ) '.' ++ "^"
+        tag = replicate ( S.srcColumn loc - 1 ) '.' ++ "^"
     in  R.reject $ vcat ( map text lpre' ++ [ text tag, text msg ] )
 
 -- this is the size of the syntax tree.
