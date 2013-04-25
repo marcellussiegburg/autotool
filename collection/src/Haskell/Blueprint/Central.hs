@@ -10,9 +10,11 @@ import Debug ( debug )
 import Haskell.Blueprint.Data
 import Haskell.Blueprint.Match 
 
+import qualified Language.Haskell.Exts as E
 import qualified Language.Haskell.Exts.Parser as P
 -- import qualified Language.Haskell.Syntax as S
 import qualified Language.Haskell.Exts.SrcLoc as S
+import Data.Generics.Schemes (gtypecount)
 
 import qualified Mueval.ArgsParse as M
 import qualified Mueval.Interpreter
@@ -141,13 +143,25 @@ keepCurrentDir action = Control.Exception.bracket
 
 make_fixed = direct Haskell_Blueprint code_example
 
-parse m = 
-    case P.parseModule m of
-        P.ParseOk a -> return a
-        P.ParseFailed loc msg -> reject_parse m loc msg
+parse m = case E.readExtensions m of
+    Nothing -> R.reject $ text "cannot parse LANGUAGE pragmas at top of file"
+    Just exts -> 
+        let pamo = P.defaultParseMode { P.extensions = exts }
+        in    case P.parseModuleWithMode pamo m of
+            P.ParseOk a -> return a
+            P.ParseFailed loc msg -> reject_parse m loc msg
 
 reject_parse m loc msg =
     let ( lpre, lpost ) = splitAt ( S.srcLine loc  ) $ lines m
         lpre' = reverse $ take 3 $ reverse lpre
         tag = replicate ( S.srcColumn loc ) '.' ++ "^"
     in  R.reject $ vcat ( map text lpre' ++ [ text tag, text msg ] )
+
+-- this is the size of the syntax tree.
+-- TODO: count just the nodes that are visible.
+-- otherwise, it's not understandable for the student.
+instance Size Code where
+    size ( Code cs ) = case R.result $ Haskell.Blueprint.Central.parse cs of
+        Just m -> gtypecount ( undefined :: E.Exp ) m
+        _ -> 0
+
