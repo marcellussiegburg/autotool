@@ -83,26 +83,23 @@ instance Partial Haskell_Blueprint Code Code where
             debug $ unwords [ "Blueprint tmpfile is", f ]
             System.IO.UTF8.writeFile f b 
             
-            let Right opts = M.interpreterOpts 
-                      [ "-XMultiParamTypeClasses", "-XFlexibleInstances", "-XDeriveGeneric" ]
-
-            keepCurrentDir $ do
-                System.Directory.setCurrentDirectory d
-                I.runInterpreter $ Mueval.Interpreter.interpreter $ opts
+            let Right opts0 = M.interpreterOpts []
+	    	opts = opts0
                     { M.timeLimit = 10 -- seconds?
-                    , M.modules = Just [ "Prelude"
-		        , "Test.SmallCheck.Drivers", "Test.SmallCheck.Series"
-			, "GHC.Generics" ]
-	            -- , M.namedExtensions = [ "MultiParamTypeClasses" , "FlexibleInstances", "DeriveGeneric" ]
+                    , M.modules = Just [ "Prelude" ]
+	            , M.namedExtensions = [ "MultiParamTypeClasses" , "FlexibleInstances", "PatternSignatures" ]
 		    , M.loadFile = f 
                     , M.expression = "Blueprint.test"
-
 -- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
 -- Another cause for the "premature end of script headers" message 
 -- are the RLimitCPU and RLimitMEM directives. 
 -- You may get the message if the CGI script was killed due to a resource limit.
                     , M.rLimits = False
                     } 
+
+            keepCurrentDir $ do
+                System.Directory.setCurrentDirectory d
+                I.runInterpreter $ Mueval.Interpreter.interpreter opts
           ) `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
                         debug $ "interpreter got exception " ++ show e
                         return $ Left $ I.UnknownError ( show e ) )
