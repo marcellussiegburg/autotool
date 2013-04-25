@@ -42,7 +42,7 @@ import qualified System.Posix.Directory as SPD
 
 data Haskell_Blueprint = Haskell_Blueprint deriving Typeable
 
-$(derives [makeReader, makeToDoc] [''Haskell_Blueprint])
+derives [makeReader, makeToDoc] [''Haskell_Blueprint]
 
 instance Show Haskell_Blueprint where show = render . toDoc
 
@@ -78,36 +78,7 @@ instance Partial Haskell_Blueprint Code Code where
             Haskell.Blueprint.Match.Ok _ -> R.inform $ text "Ja."
 
     totalIO p (Code i) (Code b) = do
-        r <- liftIO ( withTempDirectory "/tmp" "Blue" ( \ d -> do
-            let f = d ++ "/" ++ "Blueprint.hs"
-            debug $ unwords [ "Blueprint tmpfile is", f ]
-            System.IO.UTF8.writeFile f b 
-            
-            let Right opts0 = M.interpreterOpts []
-	    	opts = opts0
-                    { M.timeLimit = 10 -- seconds?
-                    , M.modules = Just [ "Prelude" ]
-	            , M.namedExtensions = [ "MultiParamTypeClasses" , "FlexibleInstances", "PatternSignatures" ]
-		    , M.loadFile = f 
-                    , M.expression = "Blueprint.test"
--- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
--- Another cause for the "premature end of script headers" message 
--- are the RLimitCPU and RLimitMEM directives. 
--- You may get the message if the CGI script was killed due to a resource limit.
-                    , M.rLimits = False
-                    } 
-
-            keepCurrentDir $ do
-                System.Directory.setCurrentDirectory d
-                I.runInterpreter $ Mueval.Interpreter.interpreter opts
-          ) `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
-                        debug $ "interpreter got exception " ++ show e
-                        return $ Left $ I.UnknownError ( show e ) )
-            -- debug $ "after runInterpreter"
-            -- length ( show r ) `seq` 
-            -- return r
-            -- System.Directory.removeFile f
-            -- return r
+        r <- liftIO $ run_total i b
         -- liftIO $ debug "outside runInterpreter"
         case r of
             Left err -> reject $ text $ show err
@@ -125,6 +96,41 @@ instance Partial Haskell_Blueprint Code Code where
                 case v of
                      Right val -> assert ( val == "True" ) $ text "richtiger Wert?"
                      Left ex -> reject $ text "Exception" </> text ex
+
+run_total_opts f = 
+            let Right opts0 = M.interpreterOpts []
+            in  opts0
+                    { M.timeLimit = 10 -- seconds?
+                    , M.modules = Just [ ]
+		    , M.loadFile = f 
+                    , M.expression = "Blueprint.test"
+-- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
+-- Another cause for the "premature end of script headers" message 
+-- are the RLimitCPU and RLimitMEM directives. 
+-- You may get the message if the CGI script was killed due to a resource limit.
+                    , M.rLimits = False
+                    } 
+
+run_total i b = 
+  withTempDirectory "/tmp" "Blue" $ \ d -> 
+      ( do
+            let f = d ++ "/" ++ "Blueprint.hs"
+            debug $ unwords 
+                  [ "Blueprint tmpfile is", f ]
+            System.IO.UTF8.writeFile f b 
+
+            keepCurrentDir $ do
+                System.Directory.setCurrentDirectory d
+                I.runInterpreter $ Mueval.Interpreter.interpreter ( run_total_opts f )
+      ) `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
+                        debug $ "interpreter got exception " ++ show e
+                        return $ Left $ I.UnknownError ( show e ) 
+            -- debug $ "after runInterpreter"
+            -- length ( show r ) `seq` 
+            -- return r
+            -- System.Directory.removeFile f
+            -- return r
+
 
 -- | this is necessary because mueval 
 -- changes currentDir without resetting

@@ -1,6 +1,6 @@
 -- | (c) Bertram Felgenhauer, 2011
 
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Haskell.Blueprint.Match where
 
