@@ -10,9 +10,11 @@ import Debug ( debug )
 import Haskell.Blueprint.Data
 import Haskell.Blueprint.Match 
 
+import qualified Language.Haskell.Exts as E
 import qualified Language.Haskell.Exts.Parser as P
 -- import qualified Language.Haskell.Syntax as S
 import qualified Language.Haskell.Exts.SrcLoc as S
+import Data.Generics.Schemes (gtypecount)
 
 import qualified Mueval.ArgsParse as M
 import qualified Mueval.Interpreter
@@ -42,7 +44,7 @@ import qualified System.Posix.Directory as SPD
 
 data Haskell_Blueprint = Haskell_Blueprint deriving Typeable
 
-$(derives [makeReader, makeToDoc] [''Haskell_Blueprint])
+derives [makeReader, makeToDoc] [''Haskell_Blueprint]
 
 instance Show Haskell_Blueprint where show = render . toDoc
 
@@ -78,39 +80,7 @@ instance Partial Haskell_Blueprint Code Code where
             Haskell.Blueprint.Match.Ok _ -> R.inform $ text "Ja."
 
     totalIO p (Code i) (Code b) = do
-        r <- liftIO ( withTempDirectory "/tmp" "Blue" ( \ d -> do
-            let f = d ++ "/" ++ "Blueprint.hs"
-            debug $ unwords [ "Blueprint tmpfile is", f ]
-            System.IO.UTF8.writeFile f b 
-            
-            let Right opts = M.interpreterOpts 
-                      [ "-XMultiParamTypeClasses", "-XFlexibleInstances", "-XDeriveGeneric" ]
-
-            keepCurrentDir $ do
-                System.Directory.setCurrentDirectory d
-                I.runInterpreter $ Mueval.Interpreter.interpreter $ opts
-                    { M.timeLimit = 10 -- seconds?
-                    , M.modules = Just [ "Prelude"
-		        , "Test.SmallCheck.Drivers", "Test.SmallCheck.Series"
-			, "GHC.Generics" ]
-	            -- , M.namedExtensions = [ "MultiParamTypeClasses" , "FlexibleInstances", "DeriveGeneric" ]
-		    , M.loadFile = f 
-                    , M.expression = "Blueprint.test"
-
--- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
--- Another cause for the "premature end of script headers" message 
--- are the RLimitCPU and RLimitMEM directives. 
--- You may get the message if the CGI script was killed due to a resource limit.
-                    , M.rLimits = False
-                    } 
-          ) `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
-                        debug $ "interpreter got exception " ++ show e
-                        return $ Left $ I.UnknownError ( show e ) )
-            -- debug $ "after runInterpreter"
-            -- length ( show r ) `seq` 
-            -- return r
-            -- System.Directory.removeFile f
-            -- return r
+        r <- liftIO $ run_total i b
         -- liftIO $ debug "outside runInterpreter"
         case r of
             Left err -> reject $ text $ show err
@@ -129,6 +99,41 @@ instance Partial Haskell_Blueprint Code Code where
                      Right val -> assert ( val == "True" ) $ text "richtiger Wert?"
                      Left ex -> reject $ text "Exception" </> text ex
 
+run_total_opts f = 
+            let Right opts0 = M.interpreterOpts []
+            in  opts0
+                    { M.timeLimit = 10 -- seconds?
+                    , M.modules = Just [ ]
+		    , M.loadFile = f 
+                    , M.expression = "Blueprint.test"
+-- http://httpd.apache.org/docs/1.3/misc/FAQ-F.html#premature-script-headers 
+-- Another cause for the "premature end of script headers" message 
+-- are the RLimitCPU and RLimitMEM directives. 
+-- You may get the message if the CGI script was killed due to a resource limit.
+                    , M.rLimits = False
+                    } 
+
+run_total i b = 
+  withTempDirectory "/tmp" "Blue" $ \ d -> 
+      ( do
+            let f = d ++ "/" ++ "Blueprint.hs"
+            debug $ unwords 
+                  [ "Blueprint tmpfile is", f ]
+            System.IO.UTF8.writeFile f b 
+
+            keepCurrentDir $ do
+                System.Directory.setCurrentDirectory d
+                I.runInterpreter $ Mueval.Interpreter.interpreter ( run_total_opts f )
+      ) `Control.Exception.catch` \ ( e :: Control.Exception.SomeException ) -> do
+                        debug $ "interpreter got exception " ++ show e
+                        return $ Left $ I.UnknownError ( show e ) 
+            -- debug $ "after runInterpreter"
+            -- length ( show r ) `seq` 
+            -- return r
+            -- System.Directory.removeFile f
+            -- return r
+
+
 -- | this is necessary because mueval 
 -- changes currentDir without resetting
 keepCurrentDir action = Control.Exception.bracket
@@ -138,13 +143,28 @@ keepCurrentDir action = Control.Exception.bracket
 
 make_fixed = direct Haskell_Blueprint code_example
 
-parse m = 
-    case P.parseModule m of
-        P.ParseOk a -> return a
-        P.ParseFailed loc msg -> reject_parse m loc msg
+parse m = case E.readExtensions m of
+    Nothing -> R.reject $ text "cannot parse LANGUAGE pragmas at top of file"
+    Just exts -> 
+        let pamo = P.defaultParseMode 
+                   { P.extensions = exts }
+        in  case P.parseModuleWithMode pamo m of
+            P.ParseOk a -> return a
+            P.ParseFailed loc msg -> 
+                reject_parse m loc msg
 
 reject_parse m loc msg =
-    let ( lpre, lpost ) = splitAt ( S.srcLine loc  ) $ lines m
+    let ( lpre, lpost ) = 
+            splitAt ( S.srcLine loc  ) $ lines m
         lpre' = reverse $ take 3 $ reverse lpre
-        tag = replicate ( S.srcColumn loc ) '.' ++ "^"
+        tag = replicate ( S.srcColumn loc - 1 ) '.' ++ "^"
     in  R.reject $ vcat ( map text lpre' ++ [ text tag, text msg ] )
+
+-- this is the size of the syntax tree.
+-- TODO: count just the nodes that are visible.
+-- otherwise, it's not understandable for the student.
+instance Size Code where
+    size ( Code cs ) = case R.result $ Haskell.Blueprint.Central.parse cs of
+        Just m -> gtypecount ( undefined :: E.Exp ) m
+        _ -> 0
+

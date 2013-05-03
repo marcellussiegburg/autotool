@@ -1,12 +1,12 @@
 Name:           autotool-collection
-Version:        1.1
+Version:        1.2
 -- License:        GPL
 -- License-File:   LICENSE
 Author:         Johannes Waldmann
 Maintainer:     Johannes Waldmann
 Homepage:       http://dfa.imn.htwk-leipzig.de/auto/
-Category:       E-Testing
-Synopsis:       collection of E-testing tasks
+Category:       E-Assessment
+Synopsis:       collection of E-assessment tasks
 Description:
   autotool-collection defines the core of autotool: its task types and 
   their semantics.
@@ -34,13 +34,13 @@ Library
         autolib-transport,
         autotool-interface,
         base,
-        hsql,
-        hsql-mysql,
+        -- hsql,
+        -- hsql-mysql,
         random,
         parsec,
         containers,
-        xhtml,
-        cgi,
+        -- xhtml,
+        -- cgi,
         mtl,
         old-locale,
         old-time,

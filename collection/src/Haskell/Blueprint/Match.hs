@@ -1,10 +1,10 @@
 -- | (c) Bertram Felgenhauer, 2011
 
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Haskell.Blueprint.Match where
 
-import Language.Haskell.Exts.Parser
+-- import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
 import Data.Generics
 import Control.Applicative
@@ -94,10 +94,13 @@ test m1' m2' = let
         msum [
             -- 1. locations (see above)
             void $ matchLoc (cast f1) (cast f2),
+
             -- 2. declarations (see above)
-            matchDecl (cast f1) (cast f2),
+            -- matchDecl (cast f1) (cast f2),
+
             -- 3. undefined  may be replaced by any expression
             when (not $ matchUndef (cast f1)) continue,
+
             -- otherwise, compare constructors and match arguments
             do  when (toConstr f1 /= toConstr f2) failLoc
                 void (gzipWithM' match f1 f2)
