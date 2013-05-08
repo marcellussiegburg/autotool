@@ -16,11 +16,15 @@ import Data.Typeable
 
 data Config = Config { width :: Int
                      , max_balancers :: Int
+                     , num_tests :: Int
                      }
     deriving ( Typeable )
 
 example_config = 
-    Config { width = 4, max_balancers = 6 }
+    Config { width = 4
+           , max_balancers = 6 
+           , num_tests = 1000
+           }
 
 data Counting_Network = Counting_Network
     deriving ( Typeable )
@@ -50,5 +54,18 @@ instance C.Partial Counting_Network Config Network where
             ws = map Wire [ 1 .. width i ]
         in  Network $ pairs ws ++ pairs (tail ws )
 
-    partial p i n @ (Network bs) = 
-        return ()
+    partial p i n = do
+        when ( size n > max_balancers i ) $ reject
+           $ text "Das Netzwerk enthält zu viele Verteiler."
+
+    total p i n = do
+        let bnd = (1, fromIntegral $ width i)
+        let handle c = do 
+                let h = div c 2
+                when (h > 0) $ do
+                    handle h
+                    test h (max 1 (div h $ width i)) bnd n
+        handle $ num_tests i
+
+make :: Make
+make = direct Counting_Network example_config

@@ -18,29 +18,41 @@ import Control.Monad.State.Strict
 import Data.Ix (range )
 
 test :: Int -> Int 
+     -> (Wire, Wire)
       -> Network 
       -> Reporter ()
-test num top ( net @ (Network bs) ) = do
-    let  ws = wires net
-         bnd = ( minimum $ 1 : ws , maximum $ 1 : ws )
+test num top bnd @ (lo,hi) ( net @ (Network bs) ) = do
     let ms = evalState 
                ( replicateM num $ roll bnd top )
-          $ mkStdGen $ fromIntegral $ hash net
-    let handle [] = return ()
+          $ mkStdGen $ fromIntegral 
+          $ hash (num, top, net)
+    let handle [] = inform $ vcat 
+            [ toDoc num <+> text "Tests mit Histogramm-Elementen"
+            , text "bis zur Größe" <+> toDoc top 
+              <+> text "erfolgreich absolviert."
+            ]
         handle (m:ms) = do
             let m' = bulk net m
                 s = map ( \ w -> M.findWithDefault 0 w m' ) ( range bnd)
-            when ( not $ step_property s ) $ reject
-               $ vcat [ text "zu dem Eingabe-Histogramm"
+            when ( not $ step_property s ) $ do
+               inform $ vcat 
+                      [ text "zu dem Eingabe-Histogramm"
                       , nest 4 $ toDoc m
                       , text "gehört das Ausgabe-Histogramm"
                       , nest 4 $ toDoc m'
                       , text "Das ist keine Schrittfolge."
                       ]
+               inform $ vcat 
+                      [ text "Die folgende Rechnung des Netzes zeigt eine falsche Ausgabe:"
+                      ]
+               singles bnd net $ tokens m
+               reject empty
             handle ms
     handle ms
 
-wires (Network bs) = do (top,bot) <- bs ; [ top, bot ]
+tokens m = do
+    (k,v) <- M.toList m
+    replicate v k
 
 step_property :: [ Int ] -> Bool
 step_property xs = null xs ||

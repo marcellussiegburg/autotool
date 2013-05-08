@@ -1,11 +1,34 @@
 module Network.Counting.Semantics where
 
 import Network.Counting.Data
+import Network.Counting.Picture
 
 import Autolib.Reporter
 import Autolib.ToDoc
 
 import qualified Data.Map as M
+
+singles :: (Wire, Wire)   
+        -> Network 
+        -> [Wire] 
+        -> Reporter ()
+singles (lo, hi) net ws = do
+    let handle net ws expect = case ws of 
+            [] -> return ()
+            w : ws -> do
+                let (net', w') = single net w
+                inform $ besides [ picture net 
+                         , toDoc w <+> text "=>" 
+                                   <+> toDoc w'
+                         , picture net'
+                         ]
+                when (w' /= expect) $ reject
+                    $ text "erwartete Ausgabe:"
+                       <+> toDoc expect
+                let expect' = if expect == hi then lo
+                              else succ expect
+                handle net' ws expect'
+    handle net ws lo
 
 -- | one token is routed through the network.
 -- the resulting network has some gates flipped.

@@ -865,4 +865,9 @@ Library
                  CSP.Trace
                  LTL.Find_Model
                  LTL.Separate
+                 Network.Counting.Data
+                 Network.Counting.Semantics
+                 Network.Counting.Test
+                 Network.Counting.Picture
+                 Network.Counting.Top
 

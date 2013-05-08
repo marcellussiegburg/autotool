@@ -11,7 +11,7 @@ import Data.Typeable
 import Data.Ix
 
 newtype Wire = Wire Int 
-    deriving (Eq, Ord, Ix, Typeable, Num)
+    deriving (Eq, Ord, Ix, Typeable, Enum, Num)
 
 instance ToDoc Wire where toDoc (Wire i) = toDoc i
 instance Reader Wire where reader = fmap Wire reader
@@ -21,6 +21,8 @@ type Balancer = (Wire, Wire)
 
 data Network = Network [ Balancer ] 
      deriving (Eq, Typeable)
+
+wires (Network bs) = do (top,bot) <- bs ; [ top, bot ]
 
 $(derives [makeToDoc,makeReader] [''Network])
 
