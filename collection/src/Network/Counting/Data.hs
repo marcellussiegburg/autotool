@@ -5,30 +5,33 @@ module Network.Counting.Data where
 
 import Autolib.ToDoc
 import Autolib.Reader
+import Autolib.Hash
 import Autolib.Size
 import Data.Typeable
+import Data.Ix
 
-newtype Wire = Wire Int deriving (Eq, Typeable, Num)
+newtype Wire = Wire Int 
+    deriving (Eq, Ord, Ix, Typeable, Num)
 
 instance ToDoc Wire where toDoc (Wire i) = toDoc i
 instance Reader Wire where reader = fmap Wire reader
+instance Hash Wire where hash (Wire i) = hash i
 
-data Balancer = B Wire Wire deriving Typeable
+type Balancer = (Wire, Wire)
 
-data Network = Network [ Balancer ] deriving Typeable
+data Network = Network [ Balancer ] 
+     deriving (Eq, Typeable)
 
-data Direction = Up | Down deriving Typeable
-
-data State = State [(Balancer, Direction)]
-
-$(derives [makeToDoc,makeReader] 
-         [''Balancer,''Network,''Direction,''State])
+$(derives [makeToDoc,makeReader] [''Network])
 
 instance Show Wire where show = render . toDoc
 instance Show Network where show = render . toDoc
-instance Show Direction where show = render . toDoc
-instance Show State where show = render . toDoc
+instance Size Network where
+    size (Network bs) = length bs
+instance Hash Network where hash (Network bs) = hash bs
 
 ex :: Network
 ex = Network 
-   [ B 1 2, B 3 4, B 1 4, B 2 3, B 1 2, B 3 4]
+   [ (1, 2 ), (3, 4 ), (1, 4 )
+   , (2, 3 ), (1, 2 ), (3, 4 )
+   ]
