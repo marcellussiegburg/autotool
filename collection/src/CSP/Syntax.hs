@@ -18,6 +18,8 @@ data Process a = Stop
            | Seq ( Process a ) ( Process a )
            | Par [a] ( Process a ) ( Process a )
            | Fix ( Process a ) | Point
+           | Star ( Process a )
+           | Undefined
     deriving ( Eq, Ord )             
              
 $(derives [ makeReader, makeToDoc ] [ ''Process ] )
@@ -44,9 +46,12 @@ splits p = ( id, p ) : case p of
     Par s p q -> splits2 ( Par s ) p q
     Fix p -> splits1 Fix p
     Point -> []
+    Star p -> splits1 Star p
+    Undefined -> []
 
 splits1 c p = 
     map ( \ (f,a) -> (c . f, a)) $ splits p
+
 splits2 c p q = 
        splits1 ( \ p' -> c p' q ) p
     ++ splits1 ( \ q' -> c p q' ) q
@@ -61,7 +66,9 @@ instance Hash a => Hash ( Process a ) where
          Seq p q -> hash (57 :: Int , p, q)
          Par s p q -> hash (s, p, q)
          Fix p -> hash (67 :: Int, p)
+         Star p -> hash (77 :: Int, p)
          Point -> 27
+         Undefined -> 87
 
 example1 :: Process Char
 example1 = Int ( Pre 'a' ( Pre 'b' Stop ))

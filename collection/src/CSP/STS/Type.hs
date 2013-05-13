@@ -2,6 +2,7 @@
 
 {-# language DeriveDataTypeable #-}
 {-# language TemplateHaskell #-}
+{-# language DatatypeContexts #-}
 
 module CSP.STS.Type where
 

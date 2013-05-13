@@ -54,6 +54,7 @@ real p = nub $ case p of
     Pre x p -> [ (x, p) ]
     Ext p q -> real p ++ real q
     Int p q -> [] -- man muß erst den tau-Schritt machen
+    Star p -> []  -- man muß erst den tau-Schritt machen
     Seq p q -> case p of
         Stop -> real q
         _    -> do (a,p') <- real p ; return ( a, Seq p' q )
@@ -97,6 +98,7 @@ tau p = nub $ case p of
     Par s Stop Stop -> return Stop
     Par s p q -> do p' <- tau p ; return $ Par s p' q
              ++  do q' <- tau q ; return $ Par s p q' 
+    Star p -> [ Stop, Seq p (Star p) ]
     Fix p -> tau ( subst p ( Fix p ) )
     Point -> error "tau: Point outside Fix"
 
