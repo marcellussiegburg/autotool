@@ -234,6 +234,8 @@ import qualified CSP.STS.Bisi.Central
 import qualified LTL.Find_Model
 import qualified LTL.Separate
 
+import qualified Network.Counting.Top
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -508,6 +510,9 @@ tmakers =
 		  , item Sortier.Merge.Check.make
 		  , item Sortier.Median.Check.make
 		  ] 
+                , heading "Zählnetze"
+                  [ item Network.Counting.Top.make
+                  ]
                 , heading "Sortierprogramme"
 		  [ item Sortier.Programm.Check.make
 		  ] 
