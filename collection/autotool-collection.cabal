@@ -859,7 +859,7 @@ Library
                  CSP.STS.Bisi.Central
                  CSP.STS.Bisi.Report
                  CSP.STS.Dot
-                 CSP.STS.Trace
+                 CSP.STS.Semantics.Trace
                  CSP.STS.Type
                  CSP.STS.Fail
                  CSP.Trace

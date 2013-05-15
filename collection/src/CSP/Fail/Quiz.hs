@@ -8,7 +8,7 @@ import qualified  CSP.STS.Roll
 import CSP.Fail.Compute
 import CSP.STS.Type
 import CSP.STS.Dot
-import CSP.STS.Trace
+import CSP.STS.Semantics.Trace
 
 import Autolib.NFA hiding ( symdiff, cross, alphabet )
 import qualified Autolib.NFA
@@ -36,7 +36,8 @@ single sigma s vis hid mut = do
     -- b <- fmap sts $ roll_guarded_rightlinear sigma s
     a <- CSP.STS.Roll.roll_reachable [ 1 .. s ] sigma vis hid
     b <- CSP.STS.Roll.mutate mut a
-    let dt = symdiff ( traces a ) ( traces b )
+    let dt = symdiff ( partial_traces a ) 
+                     ( partial_traces b )
         st = some_shortest dt
 
     let df = symdiff ( failures a ) ( failures b )
