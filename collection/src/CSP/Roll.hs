@@ -1,6 +1,7 @@
 module CSP.Roll where
 
 import CSP.Syntax
+import CSP.Property
 import CSP.Property.Guarded
 import CSP.Property.Right_Linear
 import CSP.Trace
@@ -14,7 +15,7 @@ import Autolib.Util.Zufall
 import Data.List ( sort )
 
 expa sigma s = do
-    p <- roll sigma s
+    p <- roll Iteration_Fixpoint sigma s
     let a = auto p
         m = minimize0 $ normalize a
     print ( p, size a, size m )    
@@ -22,13 +23,15 @@ expa sigma s = do
 
 -- | roll a guarded, right-linear process
 -- that contains a Par with non-empty synch set    
-roll sigma s = do
-    p <- roll_free sigma s
-    if    CSP.Property.Guarded.ok p 
-       && CSP.Property.Right_Linear.ok p 
+roll how_to_iterate sigma s = do
+    p <- roll_free how_to_iterate sigma s
+    if (case how_to_iterate of
+           Iteration_Fixpoint -> CSP.Property.Guarded.ok p 
+                              && CSP.Property.Right_Linear.ok p 
+           Iteration_Star -> True )
        && root_looks_interesting p
        && contains_non_trivial_synch p
-       then return p else roll sigma s
+       then return p else roll how_to_iterate sigma s
 
 root_looks_interesting p = case p of
     -- Par {} -> True
@@ -41,24 +44,24 @@ contains_non_trivial_synch p = or $ do
     return $ not ( null s ) -- && not ( null fs )
 
 roll_guarded sigma s = do
-    p <- roll_free sigma s
+    p <- roll_free Iteration_Fixpoint sigma s
     if    CSP.Property.Guarded.ok p 
        then return p else roll_guarded sigma s
 
 roll_guarded_rightlinear sigma s = do
-    p <- roll_free sigma s
+    p <- roll_free Iteration_Fixpoint sigma s
     if    CSP.Property.Guarded.ok p 
        && CSP.Property.Right_Linear.ok p 
        then return p else roll_guarded_rightlinear sigma s
 
-roll_free sigma s = do
+roll_free how_to_iterate sigma s = do
    -- putStrLn "roll_free ..."
-   p <- nonrec sigma s >>= fixup >>= fixup
+   p <- nonrec sigma s >>= fixup how_to_iterate >>= fixup how_to_iterate
    -- putStrLn "   ... roll_free"
    return p
     
-fixups p = do              
-    action <- eins [ \ q -> fixup q >>= fixups, return ]
+fixups hti p = do              
+    action <- eins [ \ q -> fixup hti q >>= fixups hti, return ]
     action p
               
 topfix p = do
@@ -66,11 +69,15 @@ topfix p = do
     return $ Fix b
 
 -- | add one fixpoint operator (anywhere)
-fixup :: Process a -> IO ( Process a )
-fixup p = do
-    ( f, a ) <- eins $ splits p
-    b <- unstops a
-    return $ f $ Fix b    
+fixup :: Iteration -> Process a -> IO ( Process a )
+fixup hti p = case hti of
+    Iteration_Fixpoint -> do
+        ( f, a ) <- eins $ splits p
+        b <- unstops a
+        return $ f $ Fix b    
+    Iteration_Star -> do
+        ( f, a ) <- eins $ splits p
+        return $ f $ Star a
     
 -- | replace at least one Stop by Point    
 unstops a = do    

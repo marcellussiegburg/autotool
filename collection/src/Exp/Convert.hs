@@ -145,6 +145,7 @@ instance Generator Convert_To_Exp ( Quiz Char )
         sps <- 
           forM [ 1 .. generator_repeats quiz ] $ \ k ->  do
                    p <- CSP.Roll.roll
+                          ( how_to_iterate quiz )
                           ( process_alphabet quiz )
                           ( process_size quiz )
                    let a = minimize $ normalize

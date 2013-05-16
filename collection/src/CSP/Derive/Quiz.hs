@@ -7,6 +7,7 @@ module CSP.Derive.Quiz where
 
 import CSP.Syntax
 import CSP.Step
+import CSP.Property
 import qualified CSP.Roll
 import qualified CSP.Property.Guarded
 
@@ -50,6 +51,7 @@ target_roller     :: ( ToDoc a, Ord a  )
 target_roller conf = do
     outs <- forM [ 1 .. generator_repeats conf ] $ \ k -> do
         p <- CSP.Roll.roll_free
+            ( how_to_iterate conf )
             ( process_alphabet conf )
             ( process_size conf )
         let ok = CSP.Property.Guarded.ok    p
@@ -89,6 +91,7 @@ data Config a = Config
     { goal_type :: Goal_Type
     ,  process_alphabet :: [ a ]  
     , process_size :: Int
+    , how_to_iterate :: Iteration
     , max_derivation_length :: Int  
     , max_derivation_tree_width :: Int  
     , min_derivation_tree_width :: Int  
@@ -102,6 +105,7 @@ config = Config
     { goal_type = Rejects
     , process_alphabet = "abc"
     , process_size = 6
+    , how_to_iterate = Iteration_Star
     , max_derivation_length = 10                 
     , min_derivation_tree_width = 2
     , max_derivation_tree_width = 100
@@ -116,6 +120,7 @@ reject_roller :: ( ToDoc a, Ord a  )
 reject_roller conf = do
     outs <- forM [ 1 .. generator_repeats conf ] $ \ k -> do
         p <- CSP.Roll.roll_free
+            ( how_to_iterate conf )
             ( process_alphabet conf )
             ( process_size conf )
         let sigma = CSP.Syntax.alphabet p    

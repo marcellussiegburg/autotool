@@ -14,6 +14,7 @@ import Autolib.Reader
 import Autolib.ToDoc
 import Data.Typeable
 
+import CSP.Property (Iteration(..))
 
 data NFAC c Int => 
      Quiz c = Quiz { generate :: [ A.Property c ]
@@ -21,6 +22,7 @@ data NFAC c Int =>
 		 }
             | CSP { process_alphabet :: [c]
                   , process_size :: Int
+                  , how_to_iterate :: Iteration
                   ,  generator_repeats :: Int
                  , solve ::  [ E.Property c ]
                  }
@@ -42,6 +44,7 @@ example_csp = CSP
    { process_alphabet = "ab"
    , process_size = 10
    , generator_repeats = 100 
+   , how_to_iterate = Iteration_Star
    , solve =  [ E.Alphabet $ mkSet "ab"
 			    , E.Simple
 			    ]

@@ -9,6 +9,7 @@ import CSP.Syntax
 import CSP.Step
 import qualified CSP.Roll
 import qualified CSP.Property.Guarded
+import CSP.Property
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -50,8 +51,9 @@ target_roller     :: ( ToDoc a, Ord a  )
 target_roller conf = do
     outs <- forM [ 1 .. generator_repeats conf ] $ \ k -> do
         p <- CSP.Roll.roll_free
+            ( how_to_iterate conf )
             ( process_alphabet conf )
-            ( process_size conf )
+            ( process_size conf )   
         let ok = CSP.Property.Guarded.ok    p
         let cut = max_derivation_length conf 
             wid = max_derivation_tree_width conf
@@ -81,6 +83,7 @@ interesting_rejects p width cut = do
 data Config a = Config
     { process_alphabet :: [ a ]  
     , process_size :: Int
+    , how_to_iterate :: Iteration
     , max_derivation_length :: Int  
     , max_derivation_tree_width :: Int  
     , generator_repeats :: Int  
@@ -92,6 +95,7 @@ $(derives [makeReader, makeToDoc] [''Config])
 config = Config    
     { process_alphabet = "abcd"
     , process_size = 5
+    , how_to_iterate = Iteration_Star
     , max_derivation_length = 10                 
     , max_derivation_tree_width = 100
     , generator_repeats = 100
@@ -105,6 +109,7 @@ reject_roller :: ( ToDoc a, Ord a  )
 reject_roller conf = do
     outs <- forM [ 1 .. generator_repeats conf ] $ \ k -> do
         p <- CSP.Roll.roll_free
+            ( how_to_iterate conf )
             ( process_alphabet conf )
             ( process_size conf )
         let ok = CSP.Property.Guarded.ok    p

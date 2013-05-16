@@ -846,6 +846,7 @@ Library
                  CSP.Roll
                  CSP.Property.Right_Linear
                  CSP.Property.Guarded
+                 CSP.Property
                  CSP.Syntax
                  CSP.STS
                  CSP.Tree
