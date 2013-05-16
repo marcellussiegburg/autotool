@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE  DatatypeContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module NFA.Property where

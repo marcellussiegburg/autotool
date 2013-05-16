@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DatatypeContexts #-}
 
 module Exp.Quiz where
 
@@ -42,7 +43,7 @@ example = Quiz { generate = [ A.Alphabet $ mkSet "ab"
 example_csp :: Quiz Char
 example_csp = CSP 
    { process_alphabet = "ab"
-   , process_size = 10
+   , process_size = 5
    , generator_repeats = 100 
    , how_to_iterate = Iteration_Star
    , solve =  [ E.Alphabet $ mkSet "ab"

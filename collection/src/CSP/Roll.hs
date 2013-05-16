@@ -34,8 +34,9 @@ roll how_to_iterate sigma s = do
        then return p else roll how_to_iterate sigma s
 
 root_looks_interesting p = case p of
-    -- Par {} -> True
+    Par {} -> True
     Fix {} -> True
+    Star {} -> True
     _ -> False
 
 contains_non_trivial_synch p = or $ do

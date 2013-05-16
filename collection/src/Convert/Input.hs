@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DatatypeContexts #-}
 
 module Convert.Input where
 
