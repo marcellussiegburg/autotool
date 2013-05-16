@@ -13,6 +13,7 @@ instance Show a => ToTree ( Process a ) where
         Seq p q -> Node "Seq" $ map toTree [ p, q ]
         Par s p q -> 
             Node ( "Par " ++ show s ) $ map toTree [ p, q ]
+        Star p -> Node "Star" $ map toTree [ p ]
         Fix p -> Node "Fix" [ toTree p ]
         Point -> Node "Point" [] 
         
