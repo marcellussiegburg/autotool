@@ -54,7 +54,7 @@ roll_with_target :: Config -> IO ( [Clause], Clause)
 roll_with_target conf = do
     cls0 <- roll_unsat conf
     cls <- selektion (div (length cls0) 2) cls0
-    let levels = enumerate 70 cls
+    let levels = enumerate cls
     target <- eins $ S.toList $ last levels
     return ( cls, target )
 
@@ -71,7 +71,7 @@ issubset ( Clause xs ) ( Clause ys ) =
 
 medium :: Config -> IO ( [ Clause ], Clause )
 medium conf = do
-    let n = 7
+    let n = 5
     candidates  <- sequence $ replicate n $ rset conf
     return $ sortBy ( \ (cs, t) -> length cs ) candidates !! (n `div` 2)
 

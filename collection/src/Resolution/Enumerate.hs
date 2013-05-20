@@ -10,10 +10,10 @@ import Data.List (inits, tails)
 
 import Debug.Trace
 
-enumerate :: Int -> [Clause] -> [ S.Set Clause ]
-enumerate w cls = 
+enumerate :: [Clause] -> [ S.Set Clause ]
+enumerate cls = 
     levels ( S.fromList cls ) 
-        $ \ s -> S.union s $ S.fromList $ take w $ do
+        $ \ s -> S.union s $ S.fromList $ do
              x : ys <- tails $ S.toList s
              y <- ys
              filter non_true $ resolves x y
