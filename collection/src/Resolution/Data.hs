@@ -8,15 +8,25 @@ import Autolib.Set
 import Autolib.TES.Identifier
 
 import Data.Typeable
+import qualified Data.Set as S
 
-data Literal = Literal { parity :: Bool , name :: Identifier }
+data Literal = Literal 
+             { name :: Identifier 
+             , parity :: Bool 
+             }
     deriving ( Eq, Ord, Typeable )
+
+instance Show Literal where show = render . toDoc
 
 turn :: Literal -> Literal
 turn l = l { parity = not $ parity l }
 
 data Clause = Clause ( Set Literal )
     deriving ( Eq, Ord, Typeable )
+
+instance Show Clause where show = render . toDoc
+
+literals (Clause s) = S.toList s
 
 instance ToDoc Literal where
     toDoc l = ( case parity l of True -> empty ; False -> text "!" )

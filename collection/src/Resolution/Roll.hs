@@ -2,11 +2,15 @@ module Resolution.Roll where
 
 import Resolution.Data
 import Resolution.Config
+import Resolution.Enumerate (enumerate)
 
 import Autolib.Util.Zufall
 import Autolib.Util.Sort
 import Autolib.TES.Identifier
 import Autolib.Set
+import Autolib.ToDoc
+
+import qualified Data.Set as S
 
 import OBDD ( OBDD )
 import qualified OBDD as O
@@ -31,30 +35,43 @@ semantics ( Clause xs ) =
         x <- setToList xs
         return $ O.unit ( name x ) ( parity x )
 
-rset :: Config -> IO ( [ Clause ], Clause )
-rset conf = do
-    t <- case target conf of
-           Empty -> return $ Clause emptySet
-           Random -> rclause conf
+roll_unsat :: Config -> IO [Clause]
+roll_unsat conf = 
     let extend current cs = do
             c <- rclause conf
-            if or $ do c' <- cs ; return $ issubset c c'
+            if or $ do c' <- cs 
+                       return $ issubset c c'
                 then extend current cs
                 else do
-                    let next = current O.&&  semantics c
+                    let next = current O.&& semantics c
                         cs' = c : cs
                     if O.null next 
                        then return cs' 
                        else extend next cs'
-    cs <- extend ( O.not $ semantics t ) []
-    return ( cs, t )
+    in  extend ( O.constant True ) []
+
+roll_with_target :: Config -> IO ( [Clause], Clause)
+roll_with_target conf = do
+    cls0 <- roll_unsat conf
+    cls <- selektion (div (length cls0) 2) cls0
+    let levels = enumerate 70 cls
+    target <- eins $ S.toList $ last levels
+    return ( cls, target )
+
+rset :: Config -> IO ( [ Clause ], Clause )
+rset conf = case target conf of
+    Empty -> do
+        cs <- roll_unsat conf
+        return ( cs, Clause emptySet )
+    Random -> do
+        roll_with_target conf
 
 issubset ( Clause xs ) ( Clause ys ) = 
     subseteq xs ys
 
 medium :: Config -> IO ( [ Clause ], Clause )
 medium conf = do
-    let n = 5
+    let n = 7
     candidates  <- sequence $ replicate n $ rset conf
     return $ sortBy ( \ (cs, t) -> length cs ) candidates !! (n `div` 2)
 

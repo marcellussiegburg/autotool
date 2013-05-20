@@ -119,6 +119,7 @@ Library
                  Algebraic.Nested.Restriction,
                  Algebraic.Quiz,
                  Resolution.Roll,
+                 Resolution.Enumerate,
                  Resolution.Central,
                  Resolution.Execute,
                  Resolution.Config,

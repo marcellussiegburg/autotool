@@ -11,6 +11,7 @@ import Autolib.Set
 import Autolib.Size
 
 import Data.Typeable
+import Data.Maybe (maybeToList)
 
 data State = State [ Clause ]
     deriving Typeable
@@ -31,12 +32,23 @@ execute st act = do
     inform $ text "nächster Befehl" </> toDoc act
     l <- pick st $ left act 
     r <- pick st $ right act 
-    ll <- remove l $ literal act 
-    rr <- remove r $ turn $ literal act 
-    let c = merge ll rr
+
+    c <- resolve (literal act) l r 
     inform $ nest 4 $ text "neue Klausel" </> 
            ( toDoc ( size st ) <+> text ":" <+> toDoc c )
     return $ extend st c
+
+resolves :: Clause -> Clause -> [ Clause ]
+resolves l r = do
+    p <- literals l
+    maybeToList $ result $ resolve p l r
+
+resolve :: Literal -> Clause -> Clause 
+        -> Reporter Clause
+resolve p l r = do
+    ll <- remove l p
+    rr <- remove r $ turn p
+    return $ merge ll rr
 
 merge :: Clause -> Clause -> Clause
 merge ( Clause xs ) ( Clause ys ) = Clause ( union xs ys )
