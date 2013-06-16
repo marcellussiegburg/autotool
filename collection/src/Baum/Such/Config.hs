@@ -22,11 +22,11 @@ $(derives [makeReader, makeToDoc] [''Config])
 
 example :: Config Int
 example = Config 
-	{  start_size   = 10
+	{  start_size   = 5
 	, min_key = 0
 	, max_key = 1000	
-	, fixed_insert_ops = 5
+	, fixed_insert_ops = 2
 	, fixed_delete_ops = 0 
-	, guess_insert_ops = 5
+	, guess_insert_ops = 2
 	, guess_delete_ops = 0
 	}
