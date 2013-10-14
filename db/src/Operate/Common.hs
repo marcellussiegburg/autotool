@@ -98,10 +98,10 @@ footer scores = do
           $ foldr1 O.Beside
 	      [ O.Text "autotool", O.Text ":"
 	      , entry "home" 
-		      "http://dfa.imn.htwk-leipzig.de/auto/"
+		      "http://www.imn.htwk-leipzig.de/~waldmann/autotool/"
               , O.Text  " / "
 	      , entry " bugs " 
-		      "http://dfa.imn.htwk-leipzig.de/bugzilla/buglist.cgi?component=autotool&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED"
+		      "http://nfa.imn.htwk-leipzig.de/bugzilla/buglist.cgi?component=autotool&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED"
               , O.Text " / "
 	      , entry " highscores" scores
 	      ]
