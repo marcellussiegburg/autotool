@@ -46,15 +46,20 @@ get_task_instance  (TT sconf) (TT seed) = fmap TT $ do
 
     -- ri <- gen maker (VNr 0) Nothing seed nocache
     let s = crc32 ( fromString seed :: ByteString )
+
     ri <- generate maker ( fromIntegral s ) 
           $ Util.Cache.cache
- 
+
     res <- liftIO $ result $ Autolib.Reporter.IO.Type.lift ri
+
     i <- maybe (fail "internal error generating instance") return res
     let b = CP.initial (problem maker) i
     doc <- help b
+
+    -- FIXME: this seems critical if it involves drawing (peng/graphviz):
     descr <- fromReport $ Autolib.Reporter.IO.Type.lift 
                         $ CP.report (problem maker) i
+
     return ( sign (task,
                    Instance { I.tag = IT.tag maker,
                               I.contents = -- AT.showDoc . AT.toDoc $ i
