@@ -1,7 +1,3 @@
-module Fun.Step where
-
---   $Id$ 
-
 -- | auswertung durch (top-)rewriting (mit cache)
 
 -- status besteht aus:
@@ -11,6 +7,9 @@ module Fun.Step where
 -- eine rechnung verläuft
 -- von todo = App fun args : rest , stack = accu
 -- zu  todo = rest                , stack = fun args : rest
+
+
+module Fun.Step where
 
 import Fun.Type
 import Fun.State
