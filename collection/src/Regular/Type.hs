@@ -25,9 +25,10 @@ import Autolib.Reader
 import Autolib.Size
 import Inter.Types
 
+import Data.Typeable
 import qualified Data.Set as S
 
-class ( ToDoc a, Reader a, Size a 
+class ( ToDoc a, Reader a, Size a , Typeable a
       , ToDoc ( Property a ), Reader (Property a)
       ) => RegularC a where
     type Property a

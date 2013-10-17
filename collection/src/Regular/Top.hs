@@ -78,17 +78,42 @@ instance ( RegularC from, RegularC to ) => C.Partial ( Regular from to ) ( Confi
 instance ( RegularC from, RegularC to, Size to ) => C.Measure ( Regular from to ) ( Config from to ) to where
     measure p (Config from props ) to = fromIntegral $ size to
 
+
+make :: (  RegularC to, RegularC from)
+     => String 
+     -> Config from to  
+     -> Make
+make tag (conf :: Config from to) = 
+    let t = "Regular" ++ "." ++ tag
+    in  Make (Regular :: Regular from to) t
+        ( \ inst -> Var
+            { problem = Regular 
+            , tag = t
+            , key = \ matrikel -> return matrikel
+            , generate = \ salt cachefun -> 
+                  return $ return inst
+            } :: Var (Regular from to)
+                     (Config from to)
+                     to
+        ) ( \ _con -> return () ) -- verify
+        conf
+
 make_exp2nfa :: Make
-make_exp2nfa = direct 
-    ( Regular :: Regular (RX Char) (NFA Char Int) )
+make_exp2nfa = make "exp2nfa"
     ( Config (read  "a (a+b)^* b" )
              NFA.Property.example 
        :: Config (RX Char) (NFA Char Int) )
 
 make_nfa2exp :: Make
+make_nfa2exp = make "nfa2exp"
+    ( Config (E.inter E.std $ read  "a (a+b)^* b" )
+             Exp.Property.example 
+       :: Config (NFA Char Int) (RX Char) )
+
+{-
 make_nfa2exp = direct 
     ( Regular :: Regular (NFA Char Int)(RX Char) )
     ( Config (E.inter E.std $ read  "a (a+b)^* b" )
              Exp.Property.example 
        :: Config (NFA Char Int) (RX Char)  )
-
+-}
