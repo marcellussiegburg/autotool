@@ -236,6 +236,8 @@ import qualified LTL.Separate
 
 import qualified Network.Counting.Top
 
+import qualified Regular.Top 
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -264,6 +266,10 @@ tmakers =
 	             , item Exp.Convert.qmake
 	             , item Exp.Smaller.make
 	             , item Exp.Shortest_Missing.make
+                     ]
+                , heading "Spezifikationen reg. Spr."
+                     [ item Regular.Top.make_nfa2exp
+                     , item Regular.Top.make_exp2nfa
                      ]
                 , heading "Grammatiken (neu)"
                      [ item Grammatik.CF.Interface2.make

@@ -29,6 +29,7 @@ Library
         autolib-relation,
         autolib-reporter,
         autolib-rewriting,
+        autolib-logic,
         autolib-todoc,
         autolib-util,
         autolib-transport,
@@ -872,4 +873,6 @@ Library
                  Network.Counting.Test
                  Network.Counting.Picture
                  Network.Counting.Top
+                 Regular.Type
+                 Regular.Top
 
