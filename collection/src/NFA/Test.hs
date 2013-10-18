@@ -16,6 +16,10 @@ import Autolib.Reporter.Set
 import Autolib.ToDoc
 import Autolib.Size
 
+import Control.Monad ( forM_ )
+
+tests ps a = forM_ ps $ \ p -> test p a
+
 test :: NFAC c s
      => Property c 
      -> NFA c s

@@ -21,6 +21,8 @@ import Autolib.Exp ( RX )
 import qualified Exp.Property
 import qualified Autolib.Exp.Inter as E
 
+import qualified Autolib.Logic.Formula.FO as L
+import qualified Regular.Logic as L
 
 import Inter.Types
 
@@ -50,11 +52,11 @@ instance ( RegularC from, RegularC to ) => C.Verify ( Regular from to ) (Config 
 
 instance ( RegularC from, RegularC to ) => C.Partial ( Regular from to ) ( Config from to) to where
 
-    report p  ( Config given spec)  = do
+    report p  ( Config given spec :: Config from to )  = do
         inform $ vcat
             [ text "Gegeben ist" <+> bestimmt given , nest 4 $ toDoc given ]
         inform $ vcat 
-            [ text "Gesucht ist" <+> unbestimmt given
+            [ text "Gesucht ist" <+> unbestimmt ( undefined :: to )
             , text "mit folgenden Eigenschaften"
             , nest 4 $ vcat (map toDoc spec)
             ]
@@ -110,10 +112,14 @@ make_nfa2exp = make "nfa2exp"
              Exp.Property.example 
        :: Config (NFA Char Int) (RX Char) )
 
-{-
-make_nfa2exp = direct 
-    ( Regular :: Regular (NFA Char Int)(RX Char) )
-    ( Config (E.inter E.std $ read  "a (a+b)^* b" )
+make_exp2fo :: Make
+make_exp2fo = make "exp2fo"
+    ( Config (read  "a (a+b)^* b" )
+             L.example 
+       :: Config (RX Char) (L.Formula) )
+
+make_fo2exp :: Make
+make_fo2exp = make "nfa2exp"
+    ( Config ( read "exists p : exists q : p < q && a(p) && b(q)" )
              Exp.Property.example 
-       :: Config (NFA Char Int) (RX Char)  )
--}
+       :: Config (L.Formula) (RX Char) )

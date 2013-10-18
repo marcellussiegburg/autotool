@@ -15,7 +15,10 @@ import Autolib.Reader
 import Autolib.Size
 import Autolib.Symbol
 
-tests ps exp = sequence_ $ do p <- ps ; return $ test p exp
+import Control.Monad ( forM_ )
+
+tests ps a = forM_ ps $ \ p -> test p a
+
 
 {-
 test :: ( Symbol c, Reader [c], ToDoc [c] )

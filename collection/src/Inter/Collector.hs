@@ -270,6 +270,8 @@ tmakers =
                 , heading "Spezifikationen reg. Spr."
                      [ item Regular.Top.make_nfa2exp
                      , item Regular.Top.make_exp2nfa
+                     , item Regular.Top.make_fo2exp
+                     , item Regular.Top.make_exp2fo
                      ]
                 , heading "Grammatiken (neu)"
                      [ item Grammatik.CF.Interface2.make

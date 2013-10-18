@@ -875,4 +875,5 @@ Library
                  Network.Counting.Top
                  Regular.Type
                  Regular.Top
+                 Regular.Logic
 

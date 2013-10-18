@@ -11,13 +11,17 @@ import Autolib.Exp
 import qualified Autolib.NFA as A
 import qualified Autolib.NFA.Example 
 import qualified NFA.Property as A
+import qualified NFA.Test as A
 
 import qualified Autolib.Exp as E
 import qualified Autolib.Exp.Example 
 import qualified Exp.Property as E
+import qualified Exp.Test as E
 import qualified Autolib.Exp.Inter as E
 
--- import Autolib.Logic
+import qualified Autolib.Logic.Formula.FO as L
+import qualified Autolib.Logic as L
+import qualified Regular.Logic as L
 
 import Autolib.ToDoc
 import Autolib.Reporter
@@ -56,7 +60,7 @@ instance RegularC (A.NFA Char Int) where
         let [ alpha ] = do A.Alphabet a <- props ; return a    
         in  Autolib.NFA.Example.example_sigma alpha
 
-    validate p a = return ()
+    validate props a = A.tests props a
     semantics alpha a = return a
 
 
@@ -75,7 +79,27 @@ instance RegularC (E.RX Char ) where
         let [ alpha ] = do E.Alphabet a <- props ; return a
         in  Autolib.Exp.Example.example alpha
 
-    validate p e = return ()
+    validate props e = E.tests props e
     semantics alpha e = 
         return $ E.inter (E.std_sigma $ S.toList alpha) e
+
+
+instance RegularC L.Formula where
+
+    type Property L.Formula = L.Property 
+
+    bestimmt _ = text "die Formel" 
+    unbestimmt _ = text "eine dazu äquivalente Formel" 
+
+    alphabet _ props = do
+        let [ alpha ] = do L.Alphabet a <- props ; return a
+        return  alpha
+
+    initial props = 
+        let [ alpha ] = do L.Alphabet a <- props ; return a
+        in  L.f1
+
+    validate props e = L.tests props e
+    semantics alpha e = 
+        return $ L.semantics alpha e
 
