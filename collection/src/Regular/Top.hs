@@ -119,7 +119,7 @@ make_exp2fo = make "exp2fo"
        :: Config (RX Char) (L.Formula) )
 
 make_fo2exp :: Make
-make_fo2exp = make "nfa2exp"
+make_fo2exp = make "fo2exp"
     ( Config ( read "exists p : exists q : p < q && a(p) && b(q)" )
              Exp.Property.example 
        :: Config (L.Formula) (RX Char) )
