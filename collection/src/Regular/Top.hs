@@ -72,8 +72,8 @@ instance ( RegularC from, RegularC to ) => C.Partial ( Regular from to ) ( Confi
         flag <- nested 4 $ do
              f <- semantics alpha from
              t <- semantics alpha to
-             equ ( informed ( text "Sprache (gegeben)" ) f )
-                 ( informed ( text "Sprache (gesucht)" ) t )
+             equ ( informed ( text "Sprache der Aufgabenstellung" ) f )
+                 ( informed ( text "Sprache Ihrer Einsendung" ) t )
         when (not flag) $ reject $ text ""
 
 
