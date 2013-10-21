@@ -40,7 +40,7 @@ example3 = Grammatik
         { terminale = mkSet "ab"
         , variablen = mkSet "ST"
         , start = 'S'
-        , regeln = mkSet [ ("S", ""), ("S", "aT"), ("T", "BS") ]
+        , regeln = mkSet [ ("S", ""), ("S", "aT"), ("T", "bS") ]
         }
 
 $(derives [makeReader, makeToDoc] [''Grammatik])
