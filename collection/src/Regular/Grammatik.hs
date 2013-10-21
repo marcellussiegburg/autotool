@@ -1,3 +1,5 @@
+{-# language DoAndIfThenElse #-}
+
 module Regular.Grammatik where
 
 

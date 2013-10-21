@@ -24,6 +24,9 @@ import qualified Autolib.Exp.Inter as E
 import qualified Autolib.Logic.Formula.FO as L
 import qualified Regular.Logic as L
 
+import qualified Grammatik as G
+import qualified Grammatik.Property as G
+
 import Inter.Types
 
 import Autolib.ToDoc
@@ -128,11 +131,11 @@ make_exp2gram :: Make
 make_exp2gram = make "exp2gram"
     ( Config (read  "a (a+b)^* b" )
             [ G.Rechtslinear ] 
-       :: Config (RX Char) Grammatik )
+       :: Config (RX Char) G.Grammatik )
 
 make_gram2exp :: Make
 make_gram2exp = make "gram2exp"
     ( Config G.example3 
              Exp.Property.example 
-       :: Config Grammatik (RX Char) )
+       :: Config G.Grammatik (RX Char) )
 
