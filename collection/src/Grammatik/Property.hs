@@ -13,6 +13,8 @@ import qualified Autolib.Reporter.Checker as C
 
 import Autolib.Reader
 import Autolib.ToDoc
+import Autolib.Set
+import qualified Data.Set as S
 
 import Data.Typeable
 
@@ -29,6 +31,7 @@ data Property = Eindeutig Int
 	      | Kettenfrei
 	      | Chomsky_Normal
 	      | Greibach_Normal
+              | Alphabet ( Set Char )
      deriving ( Eq, Ord, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Property])
@@ -57,6 +60,11 @@ check p = case p of
     Greibach_Normal ->  greibach
     Eindeutig i -> eindeutig i
     At_Most_One_Terminal_In_Rhs -> at_most_one_terminal_in_rhs 
+    Alphabet a -> C.make 
+      "Alphabet"
+      (text "das Alphabet soll" <+> toDoc a <+> text "sein")
+      ( \ g -> assert ( subseteq ( terminale g) a ) empty )
+
 
 -- local variables:
 -- mode: haskell

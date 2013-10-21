@@ -1,4 +1,5 @@
 {-# language TypeSynonymInstances #-}
+{-# language FlexibleInstances #-}
 
 -- | derivation trees
 

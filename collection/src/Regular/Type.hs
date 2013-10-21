@@ -23,6 +23,9 @@ import qualified Autolib.Logic.Formula.FO as L
 import qualified Autolib.Logic as L
 import qualified Regular.Logic as L
 
+import qualified Grammatik as G
+import qualified Grammatik.Property as G
+
 import Autolib.ToDoc
 import Autolib.Reporter
 import Autolib.Reader
@@ -103,3 +106,11 @@ instance RegularC L.Formula where
     semantics alpha e = 
         return $ L.semantics alpha e
 
+instance RegularC G.Grammatik where
+
+    type Property G.Grammatik = G.Property
+
+    bestimmt _ = text "die Grammatik"
+    unbestimmt _ = text "eine dazu äquivalente Grammatik"
+
+    alphabet _ props = do

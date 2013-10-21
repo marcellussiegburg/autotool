@@ -1,4 +1,7 @@
 {-# language UndecidableInstances, OverlappingInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language FunctionalDependencies #-}
+{-# language FlexibleInstances #-}
 
 module Condition 
 
