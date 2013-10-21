@@ -34,6 +34,15 @@ example = Grammatik
         , regeln = mkSet [ ("S", ""), ("S", "aSbS") ]
         }
 
+
+example3 :: Grammatik
+example3 = Grammatik
+        { terminale = mkSet "ab"
+        , variablen = mkSet "ST"
+        , start = 'S'
+        , regeln = mkSet [ ("S", ""), ("S", "aT"), ("T", "BS") ]
+        }
+
 $(derives [makeReader, makeToDoc] [''Grammatik])
 
 instance Hash Grammatik where

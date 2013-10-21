@@ -152,9 +152,11 @@ rechtslinear = C.make "RightLin" ( text "Die Grammatik soll rechtslinear sein." 
     let schlecht = do
           lr @ ( l, r ) <- setToList $ regeln g
           case reverse r of
-              x : xs | any (`elementOf` nichtterminale g ) xs ->
+              x : xs | any (`elementOf` variablen g ) xs ->
                   return lr
-              _ -> []
+              _ -> case l of
+                  [ v ] | v `elementOf` variablen g -> []
+                  _ -> return lr
 
     verboten ( not $ null schlecht ) 
 	     "sind nicht von der Form V -> T^* V"
