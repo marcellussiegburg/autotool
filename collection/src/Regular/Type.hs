@@ -25,6 +25,7 @@ import qualified Regular.Logic as L
 
 import qualified Grammatik as G
 import qualified Grammatik.Property as G
+import qualified Regular.Grammatik as G
 
 import Autolib.ToDoc
 import Autolib.Reporter
@@ -127,7 +128,4 @@ instance RegularC G.Grammatik where
         C.run (G.check p) g
 
     semantics alpha g = do
-        let a = A.NFA { A.alphabet = alpha
-                      , A.states = variablen g
-                      , A.starts = start g
-                      , A.finals = 
+        return $ G.g2nfa g

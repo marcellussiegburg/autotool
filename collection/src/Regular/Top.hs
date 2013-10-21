@@ -123,3 +123,16 @@ make_fo2exp = make "fo2exp"
     ( Config ( read "exists p : exists q : p < q && a(p) && b(q)" )
              Exp.Property.example 
        :: Config (L.Formula) (RX Char) )
+
+make_exp2gram :: Make
+make_exp2gram = make "exp2gram"
+    ( Config (read  "a (a+b)^* b" )
+            [ G.Rechtslinear ] 
+       :: Config (RX Char) Grammatik )
+
+make_gram2exp :: Make
+make_gram2exp = make "gram2exp"
+    ( Config G.example3 
+             Exp.Property.example 
+       :: Config Grammatik (RX Char) )
+

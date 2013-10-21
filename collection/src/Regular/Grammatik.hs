@@ -6,25 +6,33 @@ import qualified Grammatik as G
 
 import qualified Autolib.NFA as A
 import qualified Autolib.ENFA as E
+import  Autolib.ENFA.Uneps (uneps)
 
 
 import Autolib.ToDoc
 import Autolib.Reporter
 import Autolib.Set
+import qualified Autolib.Relation
 
 import Control.Monad.State.Strict
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+g2nfa :: G.Grammatik -> A.NFA Char Int
+g2nfa = uneps . g2enfa
+
 g2enfa :: G.Grammatik -> E.ENFA Char Int
 g2enfa g = 
     let s = execState ( forM_ ( S.toList $ G.regeln g ) rule ) s0
+        sts = mkSet [ 0 .. pred $ top s ]
     in  E.ENFA { E.alphabet = G.terminale g
-             , E.states = mkSet [ 0 .. pred $ top s ]
+             , E.states = sts
              , E.starts = mkSet [ vars s M.! G.start g ]
              , E.finals = mkSet [ final s ]
-             , E.trans = E.collect $ trans s
-             , E.eps = eps s
+             , E.trans = E.tcollect $ trans s
+             , E.mirror_trans = E.mitcollect $ trans s
+             , E.eps = Autolib.Relation.make_on (sts,sts)
+                     $ eps s
              }
 
 data S = S { final :: Int
