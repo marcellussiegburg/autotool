@@ -25,7 +25,8 @@ g2nfa = uneps . g2enfa
 
 g2enfa :: G.Grammatik -> E.ENFA Char Int
 g2enfa g = 
-    let s = execState ( forM_ ( S.toList $ G.regeln g ) rule ) s0
+    let s = execState 
+          ( forM_ ( S.toList $ G.regeln g ) $ rule g ) s0
         sts = mkSet [ 0 .. pred $ top s ]
     in  E.ENFA { E.alphabet = G.terminale g
              , E.states = sts
@@ -33,8 +34,9 @@ g2enfa g =
              , E.finals = mkSet [ final s ]
              , E.trans = E.tcollect $ trans s
              , E.mirror_trans = E.mitcollect $ trans s
-             , E.eps = Autolib.Relation.make_on (sts,sts)
-                     $ eps s
+             , E.eps = Autolib.Relation.make_on (sts,sts) $ eps s
+             , E.mirror_eps = Autolib.Relation.make_on (sts,sts) $ map ( \(p,q)->(q,p)) $ eps s 
+             , E.eps_is_trans_reflex = False
              }
 
 data S = S { final :: Int
@@ -49,24 +51,23 @@ s0 = S { final = 0, top = 1, vars = M.empty
        , trans = [], eps = []
        }
 
-rule :: ( [Char],[Char] ) -> State S ()
-rule ( [lhs], rhs ) = do
+rule :: G.Grammatik -> ( [Char],[Char] ) -> State S ()
+rule g ( [lhs], rhs ) = do
     l <- variable lhs
-    if null rhs then do
-        modify $ \ s -> 
-            s { eps = ( l, final s) : eps s }
-    else do
-        links l rhs
+    links g l rhs
 
-links l rhs = case rhs of
-    [ last ] -> do
+links g l rhs = case rhs of
+    [] -> modify $ \ s -> 
+       s { eps = (l, final s) : eps s }
+    [ last ] | S.member last ( G.variablen g ) -> do
         r <- variable last
         modify $ \ s -> 
             s { eps = (l, r) : eps s }
-    (c : cs) -> do
+    (c : cs) | S.member c ( G.terminale g ) -> do
         r <- fresh
         modify $ \ s -> 
            s { trans = (l,c,r) : trans s }
+        links g r cs
         
 fresh :: State S Int
 fresh = do
