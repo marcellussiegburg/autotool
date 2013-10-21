@@ -28,12 +28,14 @@ import qualified Grammatik.Property as G
 
 import Autolib.ToDoc
 import Autolib.Reporter
+import qualified Autolib.Reporter.Checker as C
 import Autolib.Reader
 import Autolib.Size
 import Inter.Types
 
 import Data.Typeable
 import qualified Data.Set as S
+import Control.Monad (forM_ )
 
 class ( ToDoc a, Reader a, Size a , Typeable a
       , ToDoc ( Property a ), Reader (Property a)
@@ -114,3 +116,18 @@ instance RegularC G.Grammatik where
     unbestimmt _ = text "eine dazu äquivalente Grammatik"
 
     alphabet _ props = do
+        let [ alpha ] = do G.Alphabet a <- props ; return a
+        return  alpha
+
+    initial props = 
+        let [ alpha ] = do G.Alphabet a <- props ; return a
+        in  G.example
+
+    validate props g = forM_ props $ \ p -> 
+        C.run (G.check p) g
+
+    semantics alpha g = do
+        let a = A.NFA { A.alphabet = alpha
+                      , A.states = variablen g
+                      , A.starts = start g
+                      , A.finals = 
