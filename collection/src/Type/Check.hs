@@ -1,6 +1,9 @@
-module Type.Check where
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
 
---  $Id$
+module Type.Check where
 
 import Type.Data
 import Type.Tree

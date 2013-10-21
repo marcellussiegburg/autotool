@@ -1,6 +1,10 @@
-module Type.Quiz where
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
 
---  $Id$
+
+module Type.Quiz where
 
 import Type.Data
 import Type.Check

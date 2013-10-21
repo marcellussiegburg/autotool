@@ -1,8 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
 
 module Type.Data where
-
---  $Id$
 
 import Autolib.FiniteMap
 import Autolib.ToDoc
