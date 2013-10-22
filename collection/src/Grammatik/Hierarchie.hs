@@ -159,7 +159,7 @@ rechtslinear = C.make "RightLin" ( text "Die Grammatik soll rechtslinear sein." 
                   _ -> return lr
 
     verboten ( not $ null schlecht ) 
-	     "sind nicht von der Form V -> T^* V"
+	     "sind nicht von der Form   Variable -> Terminal^* [ Variable ]"
 	     schlecht
 
 at_most_one_terminal_in_rhs :: C.Type Grammatik
