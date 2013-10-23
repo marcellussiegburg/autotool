@@ -20,7 +20,9 @@ import Grammatik.CF.Nullable
 
 import Autolib.Set
 
-import Autolib.FiniteMap
+-- import Autolib.FiniteMap
+import qualified Data.Map as M
+
 import Control.Monad (guard)
 import Data.List (nub)
 import Autolib.ToDoc
@@ -78,8 +80,8 @@ construct2 epsflag g =
 normalize :: Ord a => Chomsky a -> Chomsky Int
 normalize ch = 
     let vs = unitSet (start ch) `union`  vars ( rules ch )
-	fm = listToFM $ zip ( setToList vs ) [1..] 
-	look = lookupWithDefaultFM fm (error "normalize")
+	fm = M.fromList $ zip ( setToList vs ) [1..] 
+	look x = M.findWithDefault (error "normalize") x fm
     in	fmap look ch
 
 vars :: Ord a => Rules a -> Set a
@@ -95,20 +97,20 @@ compact = fix comp . normalize
 comp :: Chomsky Int -> Chomsky Int
 comp ch = 
     let -- zu fester lhs  alle  rhs  aufsammeln
-	gr = addListToFM_C union emptyFM $ do
+	gr = M.fromListWith union $ do
 	   ( lhs, rhs ) <- rules ch
 	   return ( lhs, unitSet rhs )
 	-- alle gleichen rhs-mengen feststellen
-	fm = addListToFM_C union emptyFM $ do
-	   ( lhs, rhss ) <- fmToList gr
+	fm = M.fromListWith union $ do
+	   ( lhs, rhss ) <- M.toList gr
 	   return ( rhss, unitSet lhs )
 	-- durchzählen
-	tr = listToFM $ do
-	   ( k, ( rhss, lhss ) ) <- zip [1 ..] $ fmToList fm
+	tr = M.fromList $ do
+	   ( k, ( rhss, lhss ) ) <- zip [1 ..] $ M.toList fm
 	   lhs <- setToList lhss
 	   return ( lhs, k )
 	-- umnumerieren
-	dh = fmap ( lookupWithDefaultFM tr ( error "dh" ) ) ch
+	dh = fmap ( \ x -> M.findWithDefault ( error "dh" ) x tr ) ch
 	-- kürzen
     in	dh { rules = nub $ rules dh }
 
