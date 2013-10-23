@@ -1,7 +1,7 @@
+{-# language DeriveDataTypeable #-}
+{-# language MultiParamTypeClasses #-}
+
 module Grammatik.CF.Interface2 where
-
--- -- $Id$
-
 
 import Language.Type
 import Language.Syntax
@@ -101,6 +101,16 @@ add_test_cases p i b
 make :: Make
 make = direct CFG2 I2.example
 
+--------------------------------------------------------
+
+-- added for debugging:
+-- http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=326
+
+g0 = Grammatik { terminale = mkSet "ab" , variablen = mkSet "ST" , start = 'S',  regeln = mkSet [ ( "S" , "" ) , ("S", "aSbS") ] }
+
+c0 = I2.Config { I2.source = Sampler { language=Gleich "ab" [1,1], num_samples =20, min_sample_length =2, max_sample_length =20 } , I2.properties = [ Kontextfrei ] }
+
+t0 = repo $ Challenger.Partial.total  CFG2 c0 g0
 
 
 

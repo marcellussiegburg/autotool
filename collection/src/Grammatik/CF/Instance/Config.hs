@@ -1,5 +1,5 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Grammatik.CF.Instance.Config 
 
