@@ -52,3 +52,13 @@ pick num xs = do
     f 1 $ concat $ repeat xs
 
           
+g1 :: Grammatik
+g1 = Grammatik
+ { terminale = mkSet "ab" , variablen = mkSet "SAB", start = 'S'
+ , regeln = mkSet [ ( "S" , "aB" ) , ( "S" , "bA" ) , ( "A" , "a" ) , ( "A" , "aS" )
+                  , ( "A" , "bAA" ) , ( "B" , "b" ) , ( "B" , "bS" ) , ( "B" , "aBB" )
+                  ]
+ }
+
+t1 = G.main $ C.make g1
+

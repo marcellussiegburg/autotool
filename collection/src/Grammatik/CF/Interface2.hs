@@ -9,6 +9,8 @@ import Language.Inter
 import Language.Sampler
 import Grammatik.Type
 
+import qualified Language.Grammatik as LG
+
 import qualified Grammatik.CF.Instance.Config as I
 import qualified Grammatik.CF.Instance.Config2 as I2
 -- import qualified Grammatik.CF.Problem.Config as P
@@ -113,10 +115,6 @@ c0 = I2.Config { I2.source = Sampler { language=Gleich "ab" [1,1], num_samples =
 t0 = repo $ Challenger.Partial.total  CFG2 c0 g0
 
 
+c1 = I2.Config { I2.source = Sampler { language = From_Grammatik LG.g1 , num_samples = 1, min_sample_length = 4, max_sample_length = 10 } , I2.properties = [ Kontextfrei ] }
 
-
-
-
-
-
-
+t1 = repo $ Challenger.Partial.total CFG2 c1 LG.g1

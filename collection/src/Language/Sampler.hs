@@ -7,6 +7,8 @@ import Language.Syntax
 import Language.Type
 import Language.Inter
 
+import qualified Language.Grammatik as G -- for testing
+
 import Autolib.Util.Zufall
 import Autolib.Util.Wort ( alle )
 
@@ -34,6 +36,10 @@ example = Sampler
 	, max_sample_length = 40
     }
 
+s1 = Sampler { language = From_Grammatik G.g1
+             , num_samples = 1, min_sample_length = 4, max_sample_length = 10
+             }
+
 create :: Integral s
        => Sampler
        -> s -- ^ random seed
@@ -53,7 +59,7 @@ create i seed large = randomly ( fromIntegral seed ) $ do
      let top = case large of
             Nothing -> max_sample_length i
             Just lrg -> 5 + max lrg ( max_sample_length i )
-     farout <-      samples l 10 top
+     farout <- return [] --     samples l 10 top
      return $ partition (contains l) 
                $ nub 
                $ filter ( \ w -> length w <= top )

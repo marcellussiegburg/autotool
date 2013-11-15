@@ -4,8 +4,11 @@ import Grammatik.CF.Chomsky.Type
 
 import Autolib.FiniteMap
 
+import qualified Data.Map as M
+
 import Control.Monad ( guard )
 import Data.List ( nub )
+import Data.Maybe (maybeToList)
 
 main :: Ord a
      => Chomsky a -> [[ String ]]
@@ -19,21 +22,21 @@ creation :: Ord a
          => Chomsky a -> FiniteMap a [[String]]
 creation ch = 
     let sigma = nub $ map fst $ rules ch
+        vrules = M.fromListWith (++) $ do (l,r) <- rules ch ; return (l, [r])
         fm = listToFM $ do
                v <- sigma
                let words k = nub $ 
                      if k <= 0 then [ "" | v == start ch && eps ch ]
                      else if k == 1 then do
-                         ( v', Left c ) <- rules ch
-                         guard $ v' == v
+                         Left c <- M.findWithDefault [] v vrules
                          return [ c ]
                      else do
-                         ( v', Right ( x, y ) ) <- rules ch
-                         guard $ v' == v
+                         Right (x,y) <- M.findWithDefault [] v vrules
                          l <- [ 1 .. k -1 ]
                          let r = k - l
                          let Just wls = lookupFM fm x
                              Just wrs = lookupFM fm y
+                         guard $ not (null $ wls !! l) && not (null $ wrs !! r)
                          wl <- wls !! l
                          wr <- wrs !! r
                          return $ wl ++ wr
