@@ -11,8 +11,6 @@ import Autolib.Set
 import Autolib.Util.Zufall
 import Control.Monad (guard)
 
-import qualified Debug.Trace as DT
-
 data Language = Language
 	      { abbreviation :: String
 	      , nametag      :: String
@@ -88,7 +86,7 @@ samples :: Language
 	-> Int -- ^ so viele wörter (c)
 	-> Int -- ^ mindestens so lang (n)
 	-> RandoM [ String ]
-samples l c n | c > 0 =     DT.trace ( show (c,n)) $ do
+samples l c n | c > 0 =  do
 
     let m = truncate $ sqrt $ fromIntegral c
     here <- sample l m n 
