@@ -25,7 +25,7 @@ Library
         SHA,   base, random, bytestring, containers,
         haxr, mtl, parsec,  dataenc, directory, unix,
         process, old-time, utf8-string,
-        pretty, HaXml,  filepath,  binary,  digest
+        pretty, HaXml,  filepath,  binary==0.5.1.1,  digest
     Exposed-Modules:
         Util.Hash, Util.Png
         Util.Xml.OutputDTD, Util.Xml.Output

@@ -18,10 +18,12 @@ import Types.TT
 import Inter.Types
 import Inter.Evaluate
 import Autolib.Reporter.IO.Type
+import Autolib.ToDoc ( hsep, text )
 import qualified Autolib.Reporter.Classic.Type
 import Inter.Wert (is_okay, size)
 
 import Control.Monad.Error
+import qualified Control.Exception as CE
 
 grade_task_solution
     :: TT (Signed (Task, Instance)) -> TT Solution
@@ -34,16 +36,23 @@ grade_task_solution (TT sTaskInst) (TT (SString solution))
         let assertTypes :: (conf -> Var p i b) -> (p, i) -> ()
             assertTypes _ _ = ()
             () = assertTypes maker0 (p, inst')
-        let res = evaluate p inst' solution
-        ( mres, out ) <- liftIO $ run res     
-        score <- case mres of
-            Nothing -> throwReport res
-            Just score -> return score
-        when (not (is_okay score)) $ throwReport res
-        doc <- liftIO $ fromReport res
-        let sz = size score
-            sz' = if sz == 0 then 1 else sz
-        return $ Documented { D.contents = fromIntegral sz',
+        eres <- liftIO $ CE.try 
+           $ CE.evaluate $ evaluate p inst' solution 
+        case eres of
+          Left ex -> throwReport $ reject $ hsep
+             [ text "unhandle exception"
+             , text $ show ( ex :: CE.SomeException) 
+             ]
+          Right res -> do
+            ( mres, out ) <- liftIO $ run res     
+            score <- case mres of
+                Nothing -> throwReport res
+                Just score -> return score
+            when (not (is_okay score)) $ throwReport res
+            doc <- liftIO $ fromReport res
+            let sz = size score
+                sz' = if sz == 0 then 1 else sz
+            return $ Documented { D.contents = fromIntegral sz',
                               D.documentation = doc }
 
 throwReport :: Reporter b -> ErrorT Description IO a
