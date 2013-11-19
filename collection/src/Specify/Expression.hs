@@ -155,7 +155,7 @@ comparison = do
     return $ op x y
 
 instance Reader ( Expression Integer ) where
-    reader = 
+    reader = branch <|>
         let binop name f assoc   =
                  Infix ( do { my_symbol name; return $ f }  ) assoc
             unop name f =
@@ -174,7 +174,6 @@ instance Reader ( Expression Integer ) where
                 <|> do my_symbol "?" ; return Undefined
 		<|> do i <- my_integer ; return $ Constant i
 		<|> application
-		<|> branch
 		)
 
 
