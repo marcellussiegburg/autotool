@@ -134,7 +134,9 @@ generate auf seed cache = do
     auf <- update_signature_if_missing auf
     
     ( sti, desc, docsol ) <- do
-        mres <- io $ SI.get_task_instance_or_fail (toString $ A.server auf) 
+        mres <- io $ 
+             -- SI.get_task_instance_or_fail (toString $ A.server auf) 
+             fmap Right $ SI.get_task_instance (toString $ A.server auf) 
              ( signed_task_config auf )
              ( show seed ) -- ?
         case mres of
