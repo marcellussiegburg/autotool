@@ -133,10 +133,16 @@ generate :: A.Aufgabe
 generate auf seed cache = do
     auf <- update_signature_if_missing auf
     
-    ( sti, desc, docsol ) <- 
-        io $ SI.get_task_instance (toString $ A.server auf) 
+    ( sti, desc, docsol ) <- do
+        mres <- io $ SI.get_task_instance_or_fail (toString $ A.server auf) 
              ( signed_task_config auf )
              ( show seed ) -- ?
+        case mres of
+            Left err -> do
+                html $ M.specialize M.DE 
+                      $ ( O.render  ( descr err) :: H.Html )
+                mzero
+            Right res -> return res
     let 
         SString sol = D.contents docsol
     return ( sti, text sol , descr desc  )

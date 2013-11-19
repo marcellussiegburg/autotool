@@ -95,3 +95,9 @@ ex = Grammatik { terminale = mkSet "ab", variablen = mkSet "KLGAS"
                           , ("G", ""), ("G", "aG"), ("G", "aGbG")
                     ]
 	  }
+
+ex2 = Grammatik
+    { terminale = mkSet "ab" , variablen = mkSet "S" , start = 'S'
+    , regeln = mkSet [ ( "S" , "" ) , ( "S" , "aSb" ) , ( "S" , "bSa" ),("S","bSaaSb"),("S","aSbbSa")
+                     ]
+    }

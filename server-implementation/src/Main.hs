@@ -11,6 +11,7 @@ import Service.GetTaskTypes
 import Service.GetTaskDescription
 import Service.VerifyTaskConfig
 import Service.GetTaskInstance
+import Service.GetTaskInstanceOrFail
 import Service.GradeTaskSolution
 import Config (timeLimit, secret)
 
@@ -35,6 +36,7 @@ proto = [
     ("get_task_description", fun get_task_description),
     ("verify_task_config", fun verify_task_config),
     ("get_task_instance", fun get_task_instance),
+    ("get_task_instance_or_fail", fun get_task_instance_or_fail),
     ("grade_task_solution", fun grade_task_solution),
     ("ping", fun ping)
     ]

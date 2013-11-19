@@ -4,6 +4,7 @@ module Service.Interface (
     get_task_description,
     verify_task_config,
     get_task_instance,
+    get_task_instance_or_fail,
     grade_task_solution,
     Server
 ) where
@@ -48,6 +49,12 @@ get_task_instance :: Server
     -> IO (Signed (Task, Instance), Description, Documented Solution)
 get_task_instance srv a b =
     unTT <$> remote srv "get_task_instance" (TT a) (TT b)
+
+get_task_instance_or_fail :: Server
+    -> Signed (Task, Config) -> Seed
+    -> IO (Either Description (Signed (Task, Instance), Description, Documented Solution))
+get_task_instance_or_fail srv a b =
+    unTT <$> remote srv "get_task_instance_or_fail" (TT a) (TT b)
 
 grade_task_solution :: Server
     -> Signed (Task, Instance) -> Solution
