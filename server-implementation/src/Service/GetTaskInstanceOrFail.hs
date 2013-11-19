@@ -41,7 +41,9 @@ get_task_instance_or_fail
     :: TT (Signed (Task, Config)) -> TT Seed
     -> IO (TT (Either Description
                  (Signed (Task, Instance), Description, Documented Solution)))
-get_task_instance_or_fail  (TT sconf) (TT seed) = withTimeout $ fmap TT $ runErrorT $ do
+get_task_instance_or_fail  (TT sconf) (TT seed) = fmap TT $ runErrorT $ do
+
+    liftIO $ appendFile "/tmp/autotool.cgi" "get_task_instance_or_fail"
 
     (task, CString config) <- verifyM sconf
     Make _ _ maker0 _ _ <- lookupTaskM task
@@ -62,6 +64,8 @@ get_task_instance_or_fail  (TT sconf) (TT seed) = withTimeout $ fmap TT $ runErr
     b <- either ( \ ex -> fail $ "CP.initial" ++ show (ex::CE.SomeException))
                 ( \ b -> return b )
                 eb
+
+    -- let b = CP.initial (problem maker) i
     doc <- liftIO $ help b
 
     -- FIXME: this seems critical if it involves drawing (peng/graphviz):

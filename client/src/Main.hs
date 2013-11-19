@@ -40,10 +40,14 @@ main = do
 
     case res of
         Right signedTaskConfig -> do
-            putStrLn "\n=== Get a task instance ===\n"
-            let seed = "test"
-            res2@(signedTaskInstance, DString desc, _) <-
-                get_task_instance server signedTaskConfig seed
+          putStrLn "\n=== Get a task instance ===\n"
+          let seed = "test"
+          -- mres2 <- get_task_instance_or_fail server signedTaskConfig seed
+          mres2 <- fmap Right $ get_task_instance server signedTaskConfig seed
+          case mres2 of
+           Left err -> print (err :: Description)
+           Right res2@(signedTaskInstance, DString desc, _) -> do
+                 
             print res2
 
             print ( O.render ( xmlStringToOutput desc) :: Doc )
