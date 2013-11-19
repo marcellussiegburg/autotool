@@ -71,9 +71,9 @@ safe_io msg action = do
     case out of
         Left ex -> do
             embed $ inform $ vcat
-                [ text "internal error:"
-                , text $ show msg
-                , text $ show (ex::CE.SomeException)
+                [ text $ "internal error - please report the following:"
+                , text $ unwords [ "source:", msg ]
+                , text $ unwords [ "exception:", show (ex::CE.SomeException) ]
                 ]
             mzero
         Right res -> return res

@@ -66,12 +66,16 @@ get_task_instance  (TT sconf) (TT seed) = withTimeout $ fmap TT $ do
     descr <- fromReport $ Autolib.Reporter.IO.Type.lift 
                         $ CP.report (problem maker) i
 
-    return ( sign (task,
+    let st = sign (task,
                    Instance { I.tag = IT.tag maker,
                               I.contents = -- AT.showDoc . AT.toDoc $ i
                                 AT.render $ AT.toDoc i
                             })
-           , descr
-           , Documented { D.contents = SString . AT.render . AT.toDoc $ b,
+        docked = Documented { D.contents = SString . AT.render . AT.toDoc $ b,
                           D.documentation = doc }
+        result = ( st
+           , descr
+           , docked
            )
+
+    i `seq` b `seq` st `seq` return result
