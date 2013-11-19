@@ -27,7 +27,7 @@ import Data.Tree
 import Data.Typeable
 
 import Gateway.CGI ( embed, io, open, close, row, plain, textarea, submit, html, Form  )
-import Autolib.ToDoc ( ToDoc, toDoc, text, Doc )
+import Autolib.ToDoc ( ToDoc, toDoc, text, Doc, vcat )
 import Autolib.Reporter.IO.Type ( inform, reject )
 import Autolib.Output as O
 import qualified Autolib.Multilingual as M
@@ -38,6 +38,7 @@ import qualified Text.XHtml as X
 import Util.Xml.Output
 import Control.Monad ( mzero)
 
+import qualified Control.Exception as CE
 
 type Server = String
 
@@ -64,9 +65,21 @@ tt_to_tree server tt = case tt of
                             )  []
   Category {} -> Data.Tree.Node ( Left $ category_name tt )
       $ map (tt_to_tree server) $ sub_trees  tt
-                 
+
+safe_io msg action = do
+    out <- io $ CE.try action
+    case out of
+        Left ex -> do
+            embed $ inform $ vcat
+                [ text "internal error:"
+                , text $ show msg
+                , text $ show (ex::CE.SomeException)
+                ]
+            mzero
+        Right res -> return res
+
 get_task_config mk = do
-  td <- io $ SI.get_task_description ( server mk ) ( task mk )
+  td <- safe_io "get_task_config" $ SI.get_task_description ( server mk ) ( task mk )
   let conf = task_sample_config td
   -- embed $ inform $ toDoc $ D.documentation conf
   return $ D.contents conf
@@ -88,7 +101,7 @@ task_config_editor title mk mauf = do
     ms <- textarea $ conf
     sconf <- submit "submit"
     close -- row
-    ver <- io $ verify_task_config mk $ CString $ case ms of
+    ver <- safe_io "verify_task_config.1" $ verify_task_config mk $ CString $ case ms of
          Nothing -> conf
          Just s  -> s
     case ver of     
@@ -109,7 +122,7 @@ signed_task_config auf =
 update_signature_if_missing auf = 
     if toString (A.signature auf) == "missing"
     then do   
-        ver <- io $ SI.verify_task_config 
+        ver <- safe_io "verify_task_config-2" $ SI.verify_task_config 
            ( toString $ A.server auf ) 
            ( toString $ A.typ auf ) 
            ( CString $ toString $ A.config auf )
@@ -134,17 +147,9 @@ generate auf seed cache = do
     auf <- update_signature_if_missing auf
     
     ( sti, desc, docsol ) <- do
-        mres <- io $ 
-             -- SI.get_task_instance_or_fail (toString $ A.server auf) 
-             fmap Right $ SI.get_task_instance (toString $ A.server auf) 
+        safe_io "get_task_instance" $ SI.get_task_instance (toString $ A.server auf) 
              ( signed_task_config auf )
              ( show seed ) -- ?
-        case mres of
-            Left err -> do
-                html $ M.specialize M.DE 
-                      $ ( O.render  ( descr err) :: H.Html )
-                mzero
-            Right res -> return res
     let 
         SString sol = D.contents docsol
     return ( sti, text sol , descr desc  )

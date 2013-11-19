@@ -22,6 +22,7 @@ import Inter.Types as IT
 -- import Autolib.Reporter
 import Autolib.Reporter.IO.Type
 import Autolib.Reader
+import qualified Autolib.Reader as AR
 import qualified Autolib.ToDoc as AT
 import Challenger.Partial as CP
 
@@ -53,17 +54,12 @@ get_task_instance  (TT sconf) (TT seed) = withTimeout $ fmap TT $ do
     ri <- generate maker ( fromIntegral s ) 
           $ Util.Cache.cache
 
-    res <- liftIO $ result $ Autolib.Reporter.IO.Type.lift ri
+    res <- result $ Autolib.Reporter.IO.Type.lift ri
 
     i <- maybe (fail "internal error generating instance") return res
 
     let b = CP.initial (problem maker) i
-{-
-    eb <- liftIO $ CE.try $ CE.evaluate $ CP.initial (problem maker) i
-    b <- either ( \ ex -> fail $ "CP.initial" ++ show (ex::CE.SomeException))
-                ( \ b -> returnb )
-                eb
--}
+    
     doc <- help b
 
     -- FIXME: this seems critical if it involves drawing (peng/graphviz):
