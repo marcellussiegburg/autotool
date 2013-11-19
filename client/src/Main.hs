@@ -28,13 +28,15 @@ main = do
 
     putStrLn "\n=== Find task description ===\n"
     let task0 = "Convert_To_Exp-Quiz"
-        task = "SuchbaumBinary-Quiz"
+        task1 = "SuchbaumBinary-Quiz"
+    let task = task0
     print =<< get_task_description server task
 
     putStrLn "\n=== Configure task ===\n"
     let config0 = "-- com\nQuiz { generate = [ Alphabet (mkSet \"ab\"), Max_Size 5 ]\n\
                  \     , solve    = [ Alphabet (mkSet \"ab\"), Simple ] }"
-        config = "Config\n    { start_size = 3 , min_key = 0 , max_key = 1000\n    , fixed_insert_ops = 1 , fixed_delete_ops = 0\n    , guess_insert_ops = 1 , guess_delete_ops = 0\n    }"
+        config1 = "Config\n    { start_size = 3 , min_key = 0 , max_key = 1000\n    , fixed_insert_ops = 1 , fixed_delete_ops = 0\n    , guess_insert_ops = 1 , guess_delete_ops = 0\n    }"
+    let config = config0
     res <- verify_task_config server task (CString config)
     print res
 
