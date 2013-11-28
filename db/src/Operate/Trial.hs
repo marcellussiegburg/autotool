@@ -7,6 +7,8 @@ module Main where
 
 import Gateway.CGI
 
+import qualified Default
+
 import Inter.Evaluate
 
 import Types.Basic
@@ -102,16 +104,12 @@ import qualified Autolib.Multilingual.Html as H
 
 import Operate.DateTime ( defaults )
 
-
-default_server :: Server
-default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.2.cgi"
-
 main :: IO ()
 main = Gateway.CGI.execute ( Local.trial_cgi_name ) $ do
    wrap $ do -- FIXME: following code looks ugly
        mtopic <- look "topic"
        case mtopic of
-           Just topic -> fixed_topic default_server topic
+           Just topic -> fixed_topic Default.server topic
 	   Nothing -> do
 	       mproblem <- look "problem"
 	       case mproblem of
@@ -119,8 +117,8 @@ main = Gateway.CGI.execute ( Local.trial_cgi_name ) $ do
 		   Nothing -> do
                      mlecture <- look "lecture"
                      case mlecture of
-                       Just lecture -> fixed_lecture default_server lecture
-                       Nothing -> free_choice default_server
+                       Just lecture -> fixed_lecture Default.server lecture
+                       Nothing -> free_choice Default.server
 
 free_choice server = do
        selektor server
@@ -190,7 +188,7 @@ lecture server vor pack = do
 fixed_problem problem = do
     [ auf ] <- io $ Control.Aufgabe.DB.get_this $ fromCGI problem
     open btable -- ?
-    common_aufgaben default_server dummy ( Just auf ) False
+    common_aufgaben Default.server dummy ( Just auf ) False
 
 fixed_topic server topic = do
   {-
