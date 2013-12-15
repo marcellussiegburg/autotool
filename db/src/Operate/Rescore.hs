@@ -14,20 +14,22 @@ output: ?
 
 -}
 
+{-# language PatternSignatures #-}
+
 import Scorer.Einsendung 
 
-import Inter.Recommon
+import Operate.Recommon
 
-import Inter.Store ( location, load, store )
-import Inter.Bank ( logline )
+import Operate.Store ( location, load, store )
+import Operate.Bank ( logline )
 -- import Inter.Boiler ( boiler )
 
-import Inter.Collector
-import Inter.Common
-
-import Inter.Types
-import Inter.Evaluate
-import qualified Inter.Param as P
+-- import Inter.Collector
+import Operate.Common
+import Operate.Types
+-- import Inter.Types
+-- import Inter.Evaluate
+-- import qualified Inter.Param as P
 
 import qualified Control.Stud_Aufg as SA
 import qualified Control.Aufgabe as A
@@ -36,16 +38,18 @@ import qualified Control.Schule as U
 import qualified Control.Vorlesung as V
 import Control.Types
 
+import qualified Gateway.CGI as G
+
 import Util.Datei
 
 import Autolib.ToDoc
 import Autolib.Reporter
 import Autolib.Timer 
 
-import Control.Monad ( guard, forM )
+import Control.Monad ( guard, forM, void )
 import Control.Exception
 import Data.Maybe ( isJust )
-import System
+import System.Environment (getArgs)
 
 patience :: Int
 patience = 60 -- seconds
@@ -54,15 +58,14 @@ main :: IO ()
 main = do
     args <- getArgs
     contents <- mapM readFile args
-    let ms = Inter.Collector.makers 
+
     forM_ ( slurp $ concat contents ) $ \ ein -> do
-        rescore ms ein `Control.Exception.catch` \ e -> return ()
+        rescore ein `Control.Exception.catch` \ e -> return ()
 
     
-rescore :: [ Make ]
-	-> Einsendung 
+rescore :: Einsendung 
 	-> IO ()
-rescore mks e = do    
+rescore e = do    
     let mat = internal $ matrikel e 
     let infile = Datei { pfad  = [ "autotool", "done"
                                  , toString ( vor e ) , toString ( auf e )
@@ -73,63 +76,7 @@ rescore mks e = do
                       , extension = "input"
                       }
     input <- Util.Datei.lesen infile
-    [ aufgabe ] <- A.get_this $ auf e
+    [ aufgabe ] <- A.get_this $ Scorer.Einsendung.auf e
 
-    let [ mk ] = filter ( \ m -> show m == toString (A.typ aufgabe) ) mks
-
-    mres :: Maybe Wert <- case mk of 
-      Make p tag fun verify conf -> do
-        ( p, instant, icom ) <-  
-            make_instant_common_with (A.vnr aufgabe) (Just $ A.anr aufgabe) 
-                   ( error "S.Student" )
-                   ( fun $ read $ toString $ A.config aufgabe ) 
-                   ( toString mat )
-        let ( res :: Maybe Wert , com :: Doc ) 
-	        = export $ Inter.Evaluate.evaluate p instant input
-        return res
-
-    let param = P.Param { P.mmatrikel = Just mat
-                            , P.vnr = A.vnr aufgabe
-                            , P.anr = A.anr aufgabe
-                            }
-    case mres of
-       Just res -> do
-           putStr $ Inter.Bank.logline ( time e ) ( pid e ) param res
-
-
-{-
-
-
-    let ( aufg , '-' : vers  ) = span (/= '-') $ auf e
-
-    let vs = do
-	    vv @ ( Variant v ) <- P.variants p0
-	    guard $ ( aufgabe v == aufg ) && ( version v == vers )
-	    return vv
-    case vs of
-	 [ vv @ ( Variant v ) ] -> do
-	     let p1 = p0
-	 	   { P.matrikel = show $ matrikel e
-	 	   , P.problem  = show $ problem v
-	 	   , P.aufgabe  = aufgabe v
-	 	   , P.version  = version v
-	 	   , P.variante = vv
-	 	   }
-
-             cs <- load p1 ( pid e ) True
-	     let p2 = p1 { P.input = cs }
-
-	     k <- key  v $ P.matrikel p2
-	     generator <- gen v k
-             let ( Just i, com :: Doc ) = export generator
-
-	     ( res :: Maybe Int , com :: Doc ) 
-	          <- timed_run patience ( reject $ text "timer expired" ) $ do
-	                 evaluate ( problem v ) i p2
-
-
-
--}
-
-
+    void $ G.runForm $ Operate.Recommon.recompute_for_einsendung aufgabe e
 

@@ -1,19 +1,25 @@
-module Inter.Recommon where
+{-# language PatternSignatures #-}
+
+module Operate.Recommon where
 
 import qualified Control.Stud_Aufg as SA
 import qualified Control.Aufgabe as A
 import qualified Control.Student as S
 import Control.Types
 
-import Inter.Collector
-import Inter.Evaluate
-import Inter.Common
-import Inter.Types
-import qualified Inter.Param as P
-import qualified Inter.Bank
+import Operate.Types
+
+-- import Inter.Collector
+-- import Inter.Evaluate
+import Operate.Common
+-- import Inter.Types
+import qualified Operate.Param as P
+import qualified Operate.Bank
 
 import qualified Util.Datei
 import Challenger.Partial
+
+import qualified Gateway.CGI as G
 
 import Autolib.Reporter hiding ( wrap )
 import Autolib.ToDoc
@@ -27,50 +33,50 @@ import qualified System.Directory
 verbose :: Bool
 verbose = False -- True
 
-recompute_for_einsendung 
-    :: Make -> A.Aufgabe -> SA.Stud_Aufg -> IO ()
-recompute_for_einsendung  mk auf eins = 
+--  recompute_for_einsendung  :: Make -> A.Aufgabe -> SA.Stud_Aufg -> IO ()
+recompute_for_einsendung  auf eins = 
     {- wrap ("for einsendung " ++ show eins ) $ -} do
-        studs <- S.get_snr $ SA.snr eins
-        mapM ( \ s -> recompute_for_student mk auf eins s 
-		  `Control.Exception.catch` \ any -> do
-	              hPutStrLn stderr $ "err: " ++ show any
+        studs <- G.io $ S.get_snr $ SA.snr eins
+        mapM ( \ s -> recompute_for_student auf eins s 
+		--  `Control.Exception.catch` \ any -> do
+	        --      hPutStrLn stderr $ "err: " ++ show any
 	     ) studs
         return ()
 
-recompute_for_student ( Make p tag fun verify conf ) auf eins stud = do
-        ( p, instant, icom ) <- 
-            make_instant_common (A.vnr auf) (Just $ A.anr auf) stud 
-                   ( fun $ read $ toString $ A.config auf ) 
-        input   <- read_from_file $ SA.input eins
-        let ( res, doc :: Doc ) = export $ evaluate p instant input
+recompute_for_student auf eins stud = do
+        ( sti, sol, doc ) <- 
+            Operate.Common.make_instant_common (A.vnr auf) (Just $ A.anr auf) stud auf 
+                --   ( fun $ read $ toString $ A.config auf ) 
+        input   <- G.io $ read_from_file $ SA.input eins
+        ( res, doc  ) <- G.io $ Operate.Types.evaluate auf sti input
         let old_result = SA.result  eins
-        if ( compatible old_result res )
+        G.io $ if ( compatible old_result res )
            then do
               hPutStr stderr "."
            else do
               hPutStrLn stderr $ show $ vcat
-                   [ text "tag:" <+> toDoc tag
-                   , text "aufgabe:" <+> toDoc auf
+                   [ text "aufgabe:" <+> toDoc auf
                    , text "einsendung:" <+> toDoc eins
-                   , text "instant:" <+> toDoc instant
+                   -- , text "instant:" <+> toDoc instant
                    , text "input:" <+> text input
-                   , text "comment:" <+> doc
+                   -- , text "comment:" <+> doc
                    , text "computed result:" <+> toDoc res
                    , text "stored result:" <+> toDoc old_result
                    ]
               hFlush stderr
         let Just inf = SA.input   eins
-        clock <- System.Directory.getModificationTime $ toString inf
-        cal <- System.Time.toCalendarTime clock    
-        let time = System.Time.calendarTimeToString cal
+        clock <- G.io $ System.Directory.getModificationTime $ toString inf
+
+        -- cal <- G.io $ System.Time.toCalendarTime clock    
+        -- let time = System.Time.calendarTimeToString cal
+        let time = show clock
         let param = P.Param { P.mmatrikel = Just $ S.mnr stud 
                             , P.vnr = A.vnr auf
                             , P.anr = A.anr auf
                             }
         case res of
             Just res -> do
-                putStr $ Inter.Bank.logline time "771" param res
+                G.io $ putStrLn $ Operate.Bank.logline time "771" param res
             Nothing -> return ()
 
 
