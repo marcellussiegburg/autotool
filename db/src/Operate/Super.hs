@@ -42,6 +42,7 @@ import Challenger.Partial
 import Operate.Types
 import Operate.Common
 
+import qualified Default
 
 import Control.Student.CGI
 import Control.Vorlesung.DB
@@ -89,14 +90,12 @@ import Operate.Student
 
 import qualified Debug 
 
-default_server :: Server
-default_server = "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.2.cgi"
 
 main :: IO ()
 main = do
    Debug.debug "Super_Debug:main"
    ( Gateway.CGI.execute ( Local.super_cgi_name ++ "#hotspot" ) $ do
-       wrap $ iface default_server
+       wrap $ iface Default.server
        scores <- scores_link
        footer scores ) `CE.catch` \ ( e :: CE.SomeException ) -> do
          debug $ "caught: " ++ show e

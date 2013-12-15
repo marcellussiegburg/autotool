@@ -53,6 +53,7 @@ Library
 --     TemplateHaskell
   Hs-source-dirs: src
   Exposed-Modules:
+    Default
     Mysqlconnect
     Gateway.CGI, Gateway.My_CGI2
     Operate.DateTime

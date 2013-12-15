@@ -1,0 +1,5 @@
+module Default where
+
+server :: String
+server = -- "http://autolat.imn.htwk-leipzig.de/cgi-bin/autotool-0.4.2.cgi"
+  "http://kernkraft.imn.htwk-leipzig.de/cgi-bin/autotool-latest.cgi"
