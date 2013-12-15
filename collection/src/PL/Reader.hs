@@ -13,24 +13,31 @@ import Autolib.TES.Identifier
 import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec
 
+import Control.Applicative ( (<*>) )
+
 instance Reader Formel where
+    -- don't use this for unary operators (not, quantifiers)
+    -- since they cannot be stacked, as in "not not  Q(x)"
     reader = buildExpressionParser 
-       [ [ Prefix ( do my_reserved "not" ; return $ \ x -> Operation Not [x] ) 
-	 ]
-       , [ Infix ( do my_reserved "&&" ; return $ \ x y -> Operation And [x,y] )
+       [ [ Infix ( do my_reserved "&&" ; return $ \ x y -> Operation And [x,y] )
 		 AssocRight ]
        , [ Infix ( do my_reserved "||" ; return $ \ x y -> Operation Or  [x,y] ) 
 		 AssocRight ]
        , [ Infix ( do my_reserved "<=>" ; return $ \ x y -> Operation Iff [x,y] ) 
-		 AssocNone	  
+		 AssocRight	  
 	 , Infix ( do my_reserved "=>" ; return $ \ x y -> Operation Implies [x,y] ) 
 		 AssocRight	  
 	 ]
        ]
-       atomic
+       unary 
+
+unary = (( quantifier_prefix_simple <|> negated )  <*> unary ) <|> atomic 
+
+negated = do my_reserved "not" ; return $ \ x -> Operation Not [x] 
 
 atomic :: Parser Formel
-atomic = quantified <|> predicate <|> my_parens reader
+atomic = -- quantified <|> 
+       predicate <|> my_parens reader
 
 identifier :: Parser Identifier
 identifier = do
@@ -53,6 +60,20 @@ instance Reader Compare where
         my_whiteSpace
 	return c
 
+quantifier_prefix_simple :: Parser ( Formel -> Formel )
+quantifier_prefix_simple = do
+    q :: Quantor <- reader
+    v :: Identifier <- identifier
+    return $ Quantified q v
+
+quantifier_prefix :: Parser ( Formel -> Formel )
+quantifier_prefix = do
+    q :: Quantor <- reader
+    vs :: [ Identifier ] <- many1 identifier
+    my_reserved "."   
+    return $ \ f -> foldr ( Quantified q ) f vs 
+
+--  NOTUSED
 quantified :: Parser Formel
 quantified = do
     q :: Quantor <- reader

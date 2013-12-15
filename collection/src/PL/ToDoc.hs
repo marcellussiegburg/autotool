@@ -14,8 +14,8 @@ instance ToDoc Formel where
 		       And -> 8 ; Or -> 6 ; Iff -> 4 ; Implies -> 2
 		 in  docParen ( p > q )
 		     $ sep [ toDocPrec (q+1) x , toDoc op <+> toDocPrec q y ]
-    toDocPrec p ( Quantified q x f ) = docParen ( p > 0 ) $
-        toDoc q <+> toDoc x <+> text "." <+> toDoc f
+    toDocPrec p ( Quantified q x f )= docParen ( p > 9 ) $
+        toDoc q <+> toDoc x <+> toDocPrec 9 f
     toDocPrec p ( Predicate r xs ) = 
         toDoc r <+> parens ( sepBy comma $ map toDoc xs  )
     toDocPrec p ( Equals l r ) = docParen ( p > 8 )
