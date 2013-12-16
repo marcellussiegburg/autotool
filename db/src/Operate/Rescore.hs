@@ -1,3 +1,8 @@
+-- | input: on stdin, a list of file names, e.g.
+-- /space/autotool/done/196/2020/8644/OK/5837.input
+-- /space/autotool/done/196/2020/8644/OK/latest.input
+
+
 {-# language PatternSignatures #-}
 
 import Scorer.Einsendung 
@@ -34,21 +39,27 @@ import Control.Monad ( guard, forM, void )
 import Control.Exception
 import Data.Maybe ( isJust )
 import System.Environment (getArgs)
+import System.IO ( hPutStrLn, stderr )
 
 patience :: Int
 patience = 60 -- seconds
 
 main :: IO ()
 main = do
-    args <- getArgs
-    putStrLn $ "rescore for Aufgaben " ++ show args
-    forM_ args rescore_for_aufgabe
+    input <- getContents
+    forM_ (lines input) rescore_for_line
 
-rescore_for_aufgabe arg = do
-    let anr = ANr $ read arg
-    [ auf ] <- A.get_this anr
-    sas <- SA.get_anr anr
-    forM sas $ \ sa -> do
-        void $ G.runForm 
-             $ Operate.Recommon.recompute_for_einsendung auf sa
+rescore_for_line fname = do
+    let ws = words $ map ( \ c -> if c == '/' then ' ' else c) fname
+    hPutStrLn stderr $ show ws
+    case ws of 
+        [ "space", "autotool", "done", vnr, anr, mnr, okno, file ] -> do
+           [ vor ] <- V.get_this $ VNr $ read vnr
+           [ auf ] <- A.get_this $ ANr $ read anr
+           [ stud ] <- S.get_unr_mnr ( V.unr vor , MNr mnr )
+           void $ G.runForm 
+             $ Operate.Recommon.recompute_for_student fname auf stud
+        _ -> hPutStrLn stderr $ "cannot handle " ++ fname
 
+
+        
