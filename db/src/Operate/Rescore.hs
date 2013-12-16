@@ -1,19 +1,3 @@
--- module main where
-
-{-
-
-input: log file name with lines like:
-
-Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) VNr-ANr : OK # Size: 7 
-Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) VNr-ANr : NO 
-
-
-action: read the corresponding input file and re-do the evaluation
-
-output: ?
-
--}
-
 {-# language PatternSignatures #-}
 
 import Scorer.Einsendung 
@@ -57,26 +41,14 @@ patience = 60 -- seconds
 main :: IO ()
 main = do
     args <- getArgs
-    contents <- mapM readFile args
+    putStrLn $ "rescore for Aufgaben " ++ show args
+    forM_ args rescore_for_aufgabe
 
-    forM_ ( slurp $ concat contents ) $ \ ein -> do
-        rescore ein `Control.Exception.catch` \ e -> return ()
-
-    
-rescore :: Einsendung 
-	-> IO ()
-rescore e = do    
-    let mat = internal $ matrikel e 
-    let infile = Datei { pfad  = [ "autotool", "done"
-                                 , toString ( vor e ) , toString ( auf e )
-                                 , toString mat
-                                 , if isJust ( msize e ) then "OK" else "NO"
-                                 ]
-                      , name = pid e
-                      , extension = "input"
-                      }
-    input <- Util.Datei.lesen infile
-    [ aufgabe ] <- A.get_this $ Scorer.Einsendung.auf e
-
-    void $ G.runForm $ Operate.Recommon.recompute_for_einsendung aufgabe e
+rescore_for_aufgabe arg = do
+    let anr = ANr $ read arg
+    [ auf ] <- A.get_this anr
+    sas <- SA.get_anr anr
+    forM sas $ \ sa -> do
+        void $ G.runForm 
+             $ Operate.Recommon.recompute_for_einsendung auf sa
 

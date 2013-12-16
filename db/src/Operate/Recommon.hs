@@ -14,7 +14,7 @@ import Operate.Types
 import Operate.Common
 -- import Inter.Types
 import qualified Operate.Param as P
-import qualified Operate.Bank
+import qualified Operate.Bank ( logline ) 
 
 import qualified Util.Datei
 import Challenger.Partial
@@ -36,6 +36,7 @@ verbose = False -- True
 --  recompute_for_einsendung  :: Make -> A.Aufgabe -> SA.Stud_Aufg -> IO ()
 recompute_for_einsendung  auf eins = 
     {- wrap ("for einsendung " ++ show eins ) $ -} do
+        
         studs <- G.io $ S.get_snr $ SA.snr eins
         mapM ( \ s -> recompute_for_student auf eins s 
 		--  `Control.Exception.catch` \ any -> do
@@ -83,21 +84,6 @@ recompute_for_student auf eins stud = do
 compatible ( Just Pending ) _ = True
 compatible ( Just No ) Nothing = True
 compatible x y = x == y
-
-{-
-
-parse_from_file :: ( ToDoc a, Reader a ) => Maybe File -> IO a
-parse_from_file ( Just fname ) = do
-    input <- readFile $ toString fname
-    parse_from_string input
-
-parse_from_string :: ( ToDoc a, Reader a ) => String -> IO a
-parse_from_string input = do
-    case result $ parse_or_complain input of
-        Just it -> return it
-        Nothing -> error "no parse"
-
--}
 
 read_from_file :: Maybe File -> IO String
 read_from_file ( Just fname ) = do
