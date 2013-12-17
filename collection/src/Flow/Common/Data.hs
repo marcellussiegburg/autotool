@@ -9,7 +9,7 @@ module Flow.Common.Data
 
 where
 
--- import Flow.Program
+
 import Flow.Expression
 import Flow.Conditions
 import Flow.Actions
@@ -40,7 +40,7 @@ data Statement
     deriving ( Eq, Ord, Typeable )
 
 example :: Statement
-example = read "foo : while (f) { o; if (c) continue foo; o; if (c) break ; }"
+example = read "{ foo : while (f) { o; if (c) continue foo; o; if (d) goto end ; } p; end: skip; }"
 
 substatements s = s : case s of
         Block ss -> ss >>= substatements

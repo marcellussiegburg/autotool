@@ -36,7 +36,7 @@ check c s = let { ss = substatements s } in case c of
     Simple_Branches -> whine "Alle Verzweigungen sollen die Form 'if (b) goto l' haben."
             $ filter ( \ case 
                  Branch c y n -> case (y,n) of (Goto _, Nothing) -> False; _ -> True 
-                 _ -> True ) ss
+                 _ -> False ) ss
     Simple_Loops -> whine "Alle Schleifen sollen einfach sein (ohne break/continue)."
             $ filter ( \ case Break _ -> True ; Continue _ -> True ; _ -> False ) ss
     Flat -> case s of
@@ -45,6 +45,6 @@ check c s = let { ss = substatements s } in case c of
         _ -> reject $ text "Das Programm soll ein Block sein."
 
 whine msg bad = when (not $ null bad) $ reject $ 
-   text msg </> text "Folgende Teilprogramme verletzen diese Bedingung:"
-   </> vcat ( map toDoc bad  )
+   text msg </> ( text "Folgende Teilprogramme verletzen diese Bedingung:"
+                 </> vcat ( map toDoc bad  ) )
 
