@@ -1,4 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Flow.Transit where
 
@@ -34,6 +36,7 @@ data ST = ST
      { transitions :: [ Transition ]
      , top :: Int
      }
+
 
 next :: StateT ST Reporter Int
 next = do

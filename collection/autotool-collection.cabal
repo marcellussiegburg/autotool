@@ -73,7 +73,6 @@ Library
     --     GADTs
     Hs-source-dirs:
         src 
-    Haddock-Options: --ignore-all-exports --hyperlink-source
     Exposed-Modules:
         Inter.Collector
         -- Inter.Crypt
@@ -89,7 +88,8 @@ Library
         -- Gateway.Help
         -- Mysqlconnect,
                  -- Util.Datei.Base,
-    other-modules: 
+    -- cf. http://www.haskell.org/pipermail/haskell-cafe/2013-December/111838.html
+    -- other-modules: 
                  Haskell.SmallCheck		    
                  Haskell.Data,
                  Haskell.Central
@@ -214,6 +214,10 @@ Library
                  Flow.Auto,
                  Flow.Program,
                  Flow.Action,
+                 Flow.Common.Central,
+                 Flow.Common.Data,
+                 Flow.Common.Semantics,
+                 Flow.Common.Shape,
                  Specify.Definition,
                  Specify.Eval,
                  Specify.Expression,

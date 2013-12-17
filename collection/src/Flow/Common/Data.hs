@@ -1,6 +1,13 @@
 {-# language DeriveDataTypeable #-}
 
-module Flow.Common.Data where
+module Flow.Common.Data 
+
+( Statement (..)
+, substatements
+, example
+)
+
+where
 
 -- import Flow.Program
 import Flow.Expression
@@ -113,8 +120,6 @@ instance ToDoc Statement where
         Continue (Just i) -> text "continue" <+> toDoc i <> semi
         Label i st -> toDoc i <+> text ":" <+> toDoc st 
 
-
-instance Show Statement where show = render . toDoc
 
 instance Reader Statement where
     reader = skip <|> block <|> branch <|> while <|> control 

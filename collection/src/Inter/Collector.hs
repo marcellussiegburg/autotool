@@ -222,6 +222,7 @@ import Algebraic.Set
 import Algebraic.Relation
 
 import qualified Flow.Central
+import qualified Flow.Common.Central
 
 import qualified Petri.Reach
 import qualified Petri.Deadlock
@@ -506,8 +507,13 @@ tmakers =
                 , item Type.Poly.Quiz.make
 		, item FP.Check.make
 		, item FP.Quiz.make
-		, item Flow.Central.goto_to_struct_fixed
-		, item Flow.Central.struct_to_goto_fixed
+                , heading "Programmablaufsteuerung (alt)"
+ 		    [ item Flow.Central.goto_to_struct_fixed
+		    , item Flow.Central.struct_to_goto_fixed
+                    ]
+		, heading "Programmablaufsteuerung (neu)"
+                    [ item Flow.Common.Central.control_flow_fixed
+                    ]
 		, item Specify.Inter.make
                 , heading "Haskell-Programmierung"
                   [ item Haskell.Blueprint.Central.make_fixed
