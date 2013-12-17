@@ -1,19 +1,25 @@
-module Inter.Recommon where
+{-# language PatternSignatures #-}
+
+module Operate.Recommon where
 
 import qualified Control.Stud_Aufg as SA
 import qualified Control.Aufgabe as A
 import qualified Control.Student as S
 import Control.Types
 
-import Inter.Collector
-import Inter.Evaluate
-import Inter.Common
-import Inter.Types
-import qualified Inter.Param as P
-import qualified Inter.Bank
+import Operate.Types
+
+-- import Inter.Collector
+-- import Inter.Evaluate
+import Operate.Common
+-- import Inter.Types
+import qualified Operate.Param as P
+import qualified Operate.Bank ( logline ) 
 
 import qualified Util.Datei
 import Challenger.Partial
+
+import qualified Gateway.CGI as G
 
 import Autolib.Reporter hiding ( wrap )
 import Autolib.ToDoc
@@ -23,78 +29,40 @@ import Control.Exception ( catch )
 import System.IO
 import qualified System.Time
 import qualified System.Directory
+import Data.Time.LocalTime
+import System.Locale
+import Data.Time.Format
 
 verbose :: Bool
 verbose = False -- True
 
-recompute_for_einsendung 
-    :: Make -> A.Aufgabe -> SA.Stud_Aufg -> IO ()
-recompute_for_einsendung  mk auf eins = 
-    {- wrap ("for einsendung " ++ show eins ) $ -} do
-        studs <- S.get_snr $ SA.snr eins
-        mapM ( \ s -> recompute_for_student mk auf eins s 
-		  `Control.Exception.catch` \ any -> do
-	              hPutStrLn stderr $ "err: " ++ show any
-	     ) studs
-        return ()
-
-recompute_for_student ( Make p tag fun verify conf ) auf eins stud = do
-        ( p, instant, icom ) <- 
-            make_instant_common (A.vnr auf) (Just $ A.anr auf) stud 
-                   ( fun $ read $ toString $ A.config auf ) 
-        input   <- read_from_file $ SA.input eins
-        let ( res, doc :: Doc ) = export $ evaluate p instant input
-        let old_result = SA.result  eins
-        if ( compatible old_result res )
-           then do
-              hPutStr stderr "."
-           else do
-              hPutStrLn stderr $ show $ vcat
-                   [ text "tag:" <+> toDoc tag
-                   , text "aufgabe:" <+> toDoc auf
-                   , text "einsendung:" <+> toDoc eins
-                   , text "instant:" <+> toDoc instant
+recompute_for_student fname auf stud = do
+    ( sti, sol, doc ) <- 
+            Operate.Common.make_instant_common (A.vnr auf) (Just $ A.anr auf) stud auf 
+    input <- G.io $ readFile fname
+    ( mres, doc  ) <- G.io $ Operate.Types.evaluate auf sti input
+    G.io $ hPutStrLn stderr $ show $ vcat
+                   [ text "aufgabe:" <+> toDoc auf
                    , text "input:" <+> text input
-                   , text "comment:" <+> doc
-                   , text "computed result:" <+> toDoc res
-                   , text "stored result:" <+> toDoc old_result
+                   -- , text "comment:" <+> doc
+                   , text "computed result:" <+> toDoc mres
                    ]
-              hFlush stderr
-        let Just inf = SA.input   eins
-        clock <- System.Directory.getModificationTime $ toString inf
-        cal <- System.Time.toCalendarTime clock    
-        let time = System.Time.calendarTimeToString cal
-        let param = P.Param { P.mmatrikel = Just $ S.mnr stud 
+    G.io $ hFlush stderr
+        
+    clock <- G.io $ System.Directory.getModificationTime fname
+    lt <- G.io $ utcToLocalZonedTime clock        
+    let time = formatTime defaultTimeLocale "%c" lt
+            
+    let param = P.Param { P.mmatrikel = Just $ S.mnr stud 
                             , P.vnr = A.vnr auf
                             , P.anr = A.anr auf
                             }
-        case res of
-            Just res -> do
-                putStr $ Inter.Bank.logline time "771" param res
-            Nothing -> return ()
+    case mres of 
+        Just res -> G.io $ putStrLn $ Operate.Bank.logline time "771" param res
+        Nothing -> return ()
 
 
-compatible ( Just Pending ) _ = True
-compatible ( Just No ) Nothing = True
-compatible x y = x == y
 
-{-
 
-parse_from_file :: ( ToDoc a, Reader a ) => Maybe File -> IO a
-parse_from_file ( Just fname ) = do
-    input <- readFile $ toString fname
-    parse_from_string input
 
-parse_from_string :: ( ToDoc a, Reader a ) => String -> IO a
-parse_from_string input = do
-    case result $ parse_or_complain input of
-        Just it -> return it
-        Nothing -> error "no parse"
-
--}
-
-read_from_file :: Maybe File -> IO String
-read_from_file ( Just fname ) = do
-    this <- readFile $ toString fname
-    return this
 

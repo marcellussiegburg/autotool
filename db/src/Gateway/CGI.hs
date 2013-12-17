@@ -6,6 +6,7 @@
 module Gateway.CGI 
 
 ( Form, Tag, execute, look, write, delete
+, runForm
 , io, embed, wrap
 , gensym
 , begin, click, end, end0, end_with_default, end_maybe
@@ -205,6 +206,12 @@ wrap ( Form f ) = Form $ \ s0 -> do
 instance ( Monad m ) => MonadPlus ( Form m )  where
     mzero = Form $ \ s -> return ( s , mzero )
     mplus = error "instance MonadPlus (Form m) has no mplus"
+
+runForm :: Form IO a -> IO (Maybe a)
+runForm (Form f) = do
+    s0 <- state0 undefined
+    (s1 , ma) <- f s0
+    return ma
 
 execute :: String -> Form IO a -> IO ()
 -- close is not here, it is done by unwind in execute0
