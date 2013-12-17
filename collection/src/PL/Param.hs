@@ -18,7 +18,7 @@ data Param =
 example :: Param
 example = Param
 	{ model_size = 4
-	, formel = read "forall x . exists y . R(x,y)"
+	, formel = read "forall x exists y R(x,y)"
 	}
 
 $(derives [makeReader, makeToDoc] [''Param])
