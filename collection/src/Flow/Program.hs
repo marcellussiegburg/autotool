@@ -1,3 +1,5 @@
+{-# language DeriveDataTypeable #-}
+
 module Flow.Program where
 
 import Flow.Expression
@@ -20,6 +22,9 @@ data Program s = Program [ s ]
 
 instance ToDoc s => ToDoc ( Program s ) where
     toDoc ( Program stmts ) = vcat $ map toDoc stmts
+
+instance ToDoc s => Show (Program s ) where
+    show = render . toDoc
 
 instance Reader s => Reader ( Program s ) where
     reader = do

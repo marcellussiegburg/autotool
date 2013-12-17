@@ -22,6 +22,7 @@ import Data.Typeable
 import Data.Set ( Set )
 import qualified Data.Set 
 
+
 data Struct_To_Goto = Struct_To_Goto 
     deriving ( Read, Show, Typeable )
 

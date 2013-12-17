@@ -1,3 +1,5 @@
+{-# language DeriveDataTypeable #-}
+
 module Flow.Expression where
 
 import Flow.Conditions

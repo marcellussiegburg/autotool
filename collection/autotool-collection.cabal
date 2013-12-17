@@ -73,6 +73,7 @@ Library
     --     GADTs
     Hs-source-dirs:
         src 
+    Haddock-Options: --ignore-all-exports --hyperlink-source
     Exposed-Modules:
         Inter.Collector
         -- Inter.Crypt
