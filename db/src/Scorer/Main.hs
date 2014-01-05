@@ -6,6 +6,8 @@ import Scorer.Util
 
 import qualified Control.Schule as U
 import qualified Control.Vorlesung as V
+import qualified Control.Semester as E
+import qualified Control.Aufgabe as A
 
 import Autolib.ToDoc
 import Autolib.Output ( Output )
@@ -24,16 +26,22 @@ import System.Environment
 main :: IO ()
 main = do
     t <- zeit    
-    let header = O.Text $ "autotool -- Top Ten Scores, Stand von: " ++ t
-    vls <- Scorer.Aufgabe.get
+    let header = O.Text $ "autotool -- Top Ten Scores, Stand von: " ++ t        
     schulen <- U.get
     outss <- forM schulen $ \ schule -> do
-            vors <- V.get_at_school $ U.unr schule 
-            let table = do
-                vor <- vors
-                info <- maybeToList $ lookupFM vls ( V.vnr vor )
-                return ( vor, info )
-            forM table $ compute schule
+            sems <- E.get_at_school $ U.unr schule 
+            let current_sems = filter ( \ e -> E.status e == Current) sems
+            table <- forM current_sems $ \ sem -> do
+                 vors <- V.get_at_school_sem schule sem
+                 info <- forM vors $ \ vor -> do
+                     aufs <- A.get $ Just $ V.vnr vor
+                     let def = listToFM 
+                             $ map ( \  a -> (A.anr a, a ) ) 
+                             $ filter ( \ a -> A.highscore a /= Keine )
+                             $ aufs
+                     return ( vor, def )
+                 return info
+            forM (filter ( \ (vor,def) -> not $ isEmptyFM def ) $ concat table) $ compute schule
     let out = O.lead header $ O.Itemize $ concat outss >>= maybeToList
     print $ Autolib.Multilingual.specialize Autolib.Multilingual.DE
           $ ( O.render out :: Autolib.Multilingual.Type Text.XHtml.Html )

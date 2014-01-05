@@ -1,7 +1,5 @@
 module Scorer.Compute where
 
---   $Id$
-
 import Scorer.Aufgabe
 import Scorer.Einsendung
 import Scorer.Config
@@ -22,10 +20,13 @@ import Autolib.FiniteMap
 import Control.Monad ( guard )
 import System.Environment ( getArgs )
 
+import System.IO (hPutStrLn, stderr)
 
 -- | in fm steht abbildung von aufgabe(name) auf inhalt (z. b. direction)
 compute :: U.Schule -> ( V.Vorlesung, ScoreDefFM ) -> IO ( Maybe Output )
 compute u ( vor, aufs ) = do
+  
+    hPutStrLn stderr $ unwords [ "compute", show $ toDoc u, show vor, show $ toDoc aufs ]
 
     -- wir lesen die logfiles für jede vorlesung komplett neu ein,
     -- damit wir die entries, die wir nicht brauchen, 

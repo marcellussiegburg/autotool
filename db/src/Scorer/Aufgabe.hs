@@ -22,6 +22,7 @@ split_vorlesungen aufs =
         auf <- aufs
 	return ( A.vnr auf , listToFM [ ( A.anr auf, auf ) ] )
 
+-- TODO: das holt *alle* Aufgaben, das ist zu teuer.
 get :: IO ( FiniteMap VNr ScoreDefFM )
 get = do
     -- die informationen zu den aufgaben holen
