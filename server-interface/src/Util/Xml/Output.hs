@@ -3,7 +3,8 @@
 module Util.Xml.Output (
     outputToXmlString,
     stringToXmlString,
-    xmlStringToOutput
+    xmlStringToOutput,
+    outputToXOutput
 ) where
 
 import qualified Util.Xml.OutputDTD as X
@@ -13,8 +14,10 @@ import Text.XML.HaXml.Pretty
 import Text.XML.HaXml.XmlContent
 import Text.PrettyPrint.HughesPJ hiding (style)
 import qualified Autolib.Multilingual.Doc as D
+import Data.String ( fromString )
 
-import qualified Codec.Binary.Base64 as C
+-- import qualified Codec.Binary.Base64 as C
+import qualified Data.ByteString.Base64 as BB
 import qualified Data.ByteString as B
 import System.FilePath
 import Control.Applicative
@@ -38,7 +41,7 @@ outputToXOutput o = case o of
         let (w, h) = case ext of
                 "png" -> (pngSize contents')
                 _     -> (0, 0)
-            img = C.encode (B.unpack contents')
+            img = show $ BB.encode contents'
         return $ X.OImage $
             X.Image (X.Image_Attrs { X.imageType = ext,
                                      X.imageAlt = "<image>",
@@ -73,7 +76,7 @@ xoutputToOutput o = case o of
    X.OPre  (X.Pre  txt) -> O.Pre (D.text txt)
    X.OText (X.Text txt) -> O.Text txt
    X.OImage (X.Image _ img) ->
-       O.Image (mkData img) (return $ B.pack $ fromJust $ C.decode img)
+       O.Image (mkData img) (return $ BB.decodeLenient $ fromString img)
    X.OLink (X.Link (X.Link_Attrs { X.linkHref = uri }) txt) ->
        O.Named_Link txt uri
    X.OAbove (X.Above []) -> O.Empty

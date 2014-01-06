@@ -6,6 +6,7 @@ import Autolib.NFA
 import NFA.Property
 import Autolib.Set
 import Autolib.ToDoc
+import Autolib.Reporter
 import qualified Autolib.Output as O
 import Autolib.Multilingual
 import qualified Autolib.Multilingual.Html as H
@@ -25,6 +26,19 @@ inst =( Convert { name = Just [ "{ w | \"ababcd\" ist Suffix von w}" ]
           }
       , [ Max_Size 12 , Alphabet (mkSet "abcd") , Deterministic ]
       )
+
+aut0 :: NFA Char Int
+aut0 =  NFA { alphabet = mkSet "abcd" , states = mkSet [ 1 , 2 , 3,4 ]
+    , starts = mkSet [ 1 ] , finals = mkSet [ 4 ]
+    , trans = collect [ ( 1 , 'b' , 1 ) , ( 1 , 'c' , 1 )
+                      , ( 1 , 'd' , 1 ) , ( 1 , 'a' , 2 )
+                      , ( 2 , 'b' , 3 ) , ( 3 , 'a' , 4 ) , ( 2 , 'a' , 1 )
+                      , ( 2 , 'c' , 1 ) , ( 2 , 'd' , 1 ) , ( 3 , 'b' , 1 )
+                      , ( 3 , 'c' , 1 ) , ( 3 , 'd' , 1 ) , ( 4 , 'a' , 1 )
+                      , ( 4 , 'c' , 1 ) , ( 4 , 'd' , 1 )
+                        ]
+    }
+
 
 aut :: NFA Char Int
 aut = NFA { alphabet = mkSet "abcd" , states = mkSet [ 1 , 2 , 3,4,5,6,7 ]

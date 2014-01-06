@@ -22,7 +22,7 @@ Library
         autolib-reader,
         autolib-reporter,
         autolib-util,
-        SHA,   base, random, bytestring, containers,
+        SHA,   base, random, bytestring, base64-bytestring, containers,
         haxr, mtl, parsec,  dataenc, directory, unix,
         process, old-time, utf8-string,
         pretty, HaXml,  filepath,  binary==0.5.1.1,  digest
