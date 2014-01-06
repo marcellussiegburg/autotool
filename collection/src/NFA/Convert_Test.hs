@@ -6,11 +6,18 @@ import Autolib.NFA
 import NFA.Property
 import Autolib.Set
 import Autolib.ToDoc
+import qualified Autolib.Output as O
+import Autolib.Multilingual
+import qualified Autolib.Multilingual.Html as H
+import qualified Text.XHtml
+
+import Autolib.Dot
 
 import Autolib.NFA.Shortest
 
 import qualified Challenger as C
 import Autolib.Reporter
+-- import Autolib.Reporter.IO.Type
 
 inst :: ( Convert, [ Property Char ] )
 inst =( Convert { name = Just [ "{ w | \"ababcd\" ist Suffix von w}" ]
@@ -36,3 +43,7 @@ aut = NFA { alphabet = mkSet "abcd" , states = mkSet [ 1 , 2 , 3,4,5,6,7 ]
 
 test :: ( Maybe () , Doc )
 test = export $ C.total Convert_To_NFA inst aut
+
+otest = run ( Autolib.Dot.peng aut) >>= \ (r,o) -> 
+    putStrLn (Text.XHtml.renderHtml 
+       ( specialize DE ( O.render o::H.Html  )))

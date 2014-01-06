@@ -29,14 +29,16 @@ main = do
     putStrLn "\n=== Find task description ===\n"
     let task0 = "Convert_To_Exp-Quiz"
         task1 = "SuchbaumBinary-Quiz"
-    let task = task0
+        task2 = "Convert_To_NFA-Direct"
+    let task = task2
     print =<< get_task_description server task
 
     putStrLn "\n=== Configure task ===\n"
     let config0 = "-- com\nQuiz { generate = [ Alphabet (mkSet \"ab\"), Max_Size 5 ]\n\
                  \     , solve    = [ Alphabet (mkSet \"ab\"), Simple ] }"
         config1 = "Config\n    { start_size = 3 , min_key = 0 , max_key = 1000\n    , fixed_insert_ops = 1 , fixed_delete_ops = 0\n    , guess_insert_ops = 1 , guess_delete_ops = 0\n    }"
-    let config = config0
+        config2 = "( Convert { name = Nothing , input = Exp a (a + b)^* b } , [ Sane , Min_Size 4 , Max_Size 10 , Deterministic, Alphabet (mkSet \"ab\") ] )"
+    let config = config2
     res <- verify_task_config server task (CString config)
     print res
 
@@ -60,8 +62,9 @@ main = do
                                               (SString solution)
 
             do  putStrLn "\n=== Send another solution - at time of testing, it was valid. ===\n"
-                let solution = "((a+bb)(a+b))^*b(ab+b)^*"
+                let solution0 = "((a+bb)(a+b))^*b(ab+b)^*"
+                    solution2 = "NFA { alphabet = mkSet \"abcd\" , states = mkSet [ 1 , 2 , 3,4,5,6,7 ]    , starts = mkSet [ 1 ] , finals = mkSet [ 7 ]    , trans = collect [ ( 1 , 'b' , 1 ) , ( 1 , 'c' , 1 )                      , ( 1 , 'd' , 1 ) , ( 1 , 'a' , 2 )                      , ( 2 , 'b' , 3 ) , ( 3 , 'a' , 4 ) , ( 4 , 'b' , 5 )                      , ( 5 , 'c' , 6 ) , ( 6 , 'd' , 7 ) , ( 2 , 'a' , 1 )                      , ( 2 , 'c' , 1 ) , ( 2 , 'd' , 1 ) , ( 3 , 'b' , 1 )                      , ( 3 , 'c' , 1 ) , ( 3 , 'd' , 1 ) , ( 4 , 'a' , 1 )                      , ( 4 , 'c' , 1 ) , ( 4 , 'd' , 1 ) , ( 5 , 'a' , 1 )                      , ( 5 , 'b' , 1 ) , ( 5 , 'd' , 1 ) , ( 6 , 'a' , 1 )                      , ( 6 , 'b' , 1 ) , ( 6 , 'c' , 1 )                      ]    }"
                 print =<< grade_task_solution server signedTaskInstance
-                                              (SString solution)
+                                              (SString solution2)
 
         _ -> return ()

@@ -1,6 +1,6 @@
-module Exp.Roll where
+{-# LANGUAGE FlexibleContexts #-}
 
---  $Id$
+module Exp.Roll where
 
 import Autolib.Exp
 import Autolib.NFA
