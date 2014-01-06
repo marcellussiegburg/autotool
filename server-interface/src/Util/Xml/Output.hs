@@ -19,6 +19,7 @@ import Data.String ( fromString )
 -- import qualified Codec.Binary.Base64 as C
 import qualified Data.ByteString.Base64 as BB
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as BC
 import System.FilePath
 import Control.Applicative
 import Data.Maybe
@@ -41,7 +42,7 @@ outputToXOutput o = case o of
         let (w, h) = case ext of
                 "png" -> (pngSize contents')
                 _     -> (0, 0)
-            img = show $ BB.encode contents'
+            img = BC.unpack $ BB.encode contents'
         return $ X.OImage $
             X.Image (X.Image_Attrs { X.imageType = ext,
                                      X.imageAlt = "<image>",
