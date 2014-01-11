@@ -268,13 +268,31 @@ tmakers =
 	             , item Exp.Smaller.make
 	             , item Exp.Shortest_Missing.make
                      ]
-                , heading "Spezifikationen reg. Spr."
-                     [ item Regular.Top.make_nfa2exp
-                     , item Regular.Top.make_exp2nfa
-                     , item Regular.Top.make_fo2exp
-                     , item Regular.Top.make_exp2fo
-                     , item Regular.Top.make_gram2exp
-                     , item Regular.Top.make_exp2gram
+                , heading "Spezifikationen regulärer Sprachen"
+                    [ heading "konvertiere NFA zu ..."
+                       [ item Regular.Top.make_nfa2nfa
+                       , item Regular.Top.make_nfa2exp
+                       , item Regular.Top.make_nfa2gram
+                       , item Regular.Top.make_nfa2fo
+                       ]
+                    , heading "konvertiere Exp zu ..."
+                       [ item Regular.Top.make_exp2nfa
+                       , item Regular.Top.make_exp2exp
+                       , item Regular.Top.make_exp2gram
+                       , item Regular.Top.make_exp2fo
+                       ]
+                    , heading "konvertiere Grammatik zu ..."
+                       [ item Regular.Top.make_gram2nfa
+                       , item Regular.Top.make_gram2exp
+                       , item Regular.Top.make_gram2gram
+                       , item Regular.Top.make_gram2fo
+                       ]
+                    , heading "konvertiere log. Formel zu ..."
+                       [ item Regular.Top.make_fo2nfa
+                       , item Regular.Top.make_fo2exp
+                       , item Regular.Top.make_fo2gram
+                       , item Regular.Top.make_fo2fo
+                       ]
                      ]
                 , heading "Grammatiken (neu)"
                      [ item Grammatik.CF.Interface2.make
