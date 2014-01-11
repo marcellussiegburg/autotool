@@ -196,7 +196,7 @@ make_fo2exp = make "fo2exp"
        :: Config (L.Formula) (RX Char) )
 
 make_fo2gram :: Make
-make_fo2gram = make "fo2exp"
+make_fo2gram = make "fo2gram"
     ( Config ( read "exists p : exists q : p < q && a(p) && b(q)" )
              [ G.Rechtslinear ]
        :: Config (L.Formula) (G.Grammatik) )
