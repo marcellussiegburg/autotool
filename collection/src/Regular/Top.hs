@@ -177,6 +177,7 @@ make_gram2gram = make "gram2gram"
    ( Config G.example3 [ G.Rechtslinear ] 
       :: Config G.Grammatik G.Grammatik )
 
+make_gram2fo :: Make
 make_gram2fo = make "gram2fo"
    ( Config G.example3 L.example 
       :: Config G.Grammatik L.Formula )

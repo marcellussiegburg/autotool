@@ -128,4 +128,4 @@ instance RegularC G.Grammatik where
         C.run (G.check p) g
 
     semantics alpha g = do
-        return $ G.g2nfa g
+        G.g2nfa g

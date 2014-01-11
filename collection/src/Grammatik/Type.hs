@@ -26,6 +26,14 @@ data Grammatik = Grammatik
 	       }
          deriving ( Eq, Typeable )
 
+
+-- | L(mirror (G)) = map reverse (L(G))
+-- achieved by reversing both sides of each rule
+mirror :: Grammatik -> Grammatik
+mirror g = g { regeln = 
+               smap ( \(l,r) -> (reverse l, reverse r))
+               $ regeln g }
+
 example :: Grammatik
 example = Grammatik
         { terminale = mkSet "ab"

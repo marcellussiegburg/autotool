@@ -4,9 +4,12 @@ module Regular.Grammatik where
 
 
 import qualified Grammatik as G
+import qualified Grammatik.Property as G
 
 
 import qualified Autolib.NFA as A
+import qualified Autolib.NFA.Mirror as A
+
 import qualified Autolib.ENFA as E
 import  Autolib.ENFA.Uneps (uneps)
 
@@ -15,16 +18,34 @@ import Autolib.ToDoc
 import Autolib.Reporter
 import Autolib.Set
 import qualified Autolib.Relation
+import qualified Condition as C
 
 import Control.Monad.State.Strict
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-g2nfa :: G.Grammatik -> A.NFA Char Int
-g2nfa = uneps . g2enfa
+g2nfa :: G.Grammatik -> Reporter ( A.NFA Char Int )
+g2nfa g = do
+    ma <- try_g2enfa g
+    case ma of
+        Just a -> return a
+        Nothing -> do
+            mb <- try_g2enfa $ G.mirror g
+            case mb of
+                Just b -> return $ A.mirror b
+                Nothing -> reject $ text "Die Grammatik ist weder rechts- noch links-linear."
 
-g2enfa :: G.Grammatik -> E.ENFA Char Int
-g2enfa g = 
+try_g2enfa g = do
+    r <- Autolib.Reporter.silent 
+       $ Autolib.Reporter.wrap 
+       $ C.condition G.Rechtslinear g
+    return $ case r of
+        Nothing -> Nothing
+        Just _ -> Just $ uneps $ reli_g2enfa g
+
+-- | rechtslineare Grammatik zu Automat
+reli_g2enfa :: G.Grammatik -> E.ENFA Char Int
+reli_g2enfa g = 
     let s = execState 
           ( forM_ ( S.toList $ G.regeln g ) $ rule g ) s0
         sts = mkSet [ 0 .. pred $ top s ]
