@@ -1,4 +1,5 @@
 {-# language TemplateHaskell #-}
+{-# language DisambiguateRecordFields #-}
 
 module Up.Store where
 
@@ -12,31 +13,50 @@ import qualified Control.Monad.State.Strict as S
 
 data Value = ValUnit
            | ValInt Integer
-           | ValClosure Exp Int
+           | ValClosure { link :: Int
+                        , body :: Exp
+                        }
 
-data Frame = Frame { values :: M.Map Name Value
-                   , dynamic_link :: Maybe Int
-                   , static_link :: Maybe Int
+data Frame = Frame { number :: Int
+                   , values :: M.Map Name Value
+                   , dynamic_link :: Int
+                   , static_link :: Int
                    }
 
-data Store = Store { store :: M.Map Int Frame }
+data Store = Store { step :: Int
+                   , max_steps :: Int
+                   , store :: M.Map Int Frame 
+                   }
 
 derives [makeToDoc] [''Value, ''Frame, ''Store ]
 
-blank :: Store
-blank = Store { store = M.empty }
+
+blank :: Int -> Store
+blank r = Store 
+        { step = 0
+        , max_steps = r
+        , store = M.empty 
+        }
+
+tick :: Monad m => S.StateT Store m Bool
+tick = do
+     s <- S.get
+     let t = step s
+     S.put $ s { step = succ t }
+     return $ step s >= max_steps s
 
 -- | allocate new empty frame, return its address
 frame :: Monad m
-      => Maybe Int -> Maybe Int
+      => Int -> Int
       -> S.StateT Store m Int
 frame dyn stat = do
-    let f = Frame { values = M.empty
+    s <- S.get
+    let n = succ $ M.size $ store s 
+    let f = Frame { number = n
+                  , values = M.empty
                   , dynamic_link = dyn
                   , static_link = stat
                   }
-    s <- S.get
-    let n = M.size $ store s 
     S.put $ s { store = M.insert n f $ store s }
     return n
 

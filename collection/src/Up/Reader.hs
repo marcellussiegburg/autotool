@@ -14,7 +14,8 @@ instance Reader Name where
          guard $ not $ n `elem` reserved
          return n
 
-reserved = [ "int", "bool", "unit", "Func", "here" ]
+reserved = 
+    [ "int", "bool", "unit", "Func", "halt", "missing" , "function" ]
     
 instance Reader Typ where
  reader =  do my_reserved "unit" ; return TUnit
@@ -40,11 +41,12 @@ instance Reader Exp where
 
 atom :: Parser Exp
 atom = ( ConstInteger <$> my_integer )
+     <|> ( do my_reserved "missing" ; return Missing )
+      <|> ( do my_reserved "function"
+               ps <- my_parens $ my_commaSep reader
+               b <- reader 
+               return $ Program ps b )
      <|> ( Ref <$> reader )
-      <|> try (do ps <- my_parens $ my_commaSep reader
-                  my_symbol "=>"
-                  b <- reader 
-                  return $ Program ps b )
     
 instance Reader Block where
     reader = my_braces $ Block <$> many reader

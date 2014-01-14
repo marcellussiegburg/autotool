@@ -882,4 +882,13 @@ Library
                  Regular.Top
                  Regular.Logic
                  Regular.Grammatik
-
+                 Up.Central
+                 Up.Shape
+                 Up.Data
+                 Up.Store
+                 Up.Exec
+                 Up.ToDoc
+                 Up.Iso
+                 Up.Type
+                 Up.Reader
+                

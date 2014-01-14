@@ -37,23 +37,25 @@ instance ToDoc Statement where
 instance Show Statement where show = render . toDoc
 
 instance ToDoc Block where
-    toDoc (Block ss) = braces ( vcat $ map toDoc ss )
+    toDoc (Block ss) = braces' ( map toDoc ss )
 
 instance Show Block where show = render . toDoc
 
 instance ToDoc Exp where
     toDoc e = case e of
+        Missing -> text "missing"
         ConstInteger i -> toDoc i
         Ref n -> toDoc n
         App f args -> toDoc f 
            <+> parens' ( map toDoc args )
         Program tns b -> 
-           parens' (map toDoc tns)
-           <+> text "=>" <+> toDoc b
+           text  "function" <+>
+           parens' (map toDoc tns) <+> toDoc b
 
 instance Show Exp where show = render . toDoc
 
 parens' = dutch Nothing (text "(", text ",", text ")")
+braces' = dutch Nothing (text "{", text " ", text "}")
 
 
 

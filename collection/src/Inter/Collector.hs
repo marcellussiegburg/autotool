@@ -239,6 +239,8 @@ import qualified Network.Counting.Top
 
 import qualified Regular.Top 
 
+import qualified Up.Central
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -537,6 +539,8 @@ tmakers =
                   [ item Haskell.Blueprint.Central.make_fixed
                   , item Haskell.Central.make_fixed
                   ]
+                , heading "Unterprogramme (Frames)" 
+                    [ item Up.Central.make ]
                 ]
          , heading "Algorithmen"
                 [ heading "Sortiernetze"
