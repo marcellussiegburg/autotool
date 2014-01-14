@@ -1,6 +1,6 @@
-module Up.Type where
+module Up.Type ( module Up.Data ) where
 
 import Up.Data
-import Up.Read
+import Up.Reader
 import Up.ToDoc
 
