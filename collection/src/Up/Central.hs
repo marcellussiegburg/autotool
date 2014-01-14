@@ -45,7 +45,7 @@ instance C.Partial Up Config Block where
         inform $ vcat 
             [ text "Ersetzen Sie im Programm"
             , nest 4 $ toDoc $ pattern c
-            , text "jedes 'missing' durch einen Ausdruck,"
+            , text "jedes 'missing' durch eine Deklaration oder einen Ausdruck,"
             , text "so daß nach höchstens" <+> toDoc (max_steps c) <+> text "Auswertungsschritten"
             , text "die Anweisung 'halt' erreicht wird"
             , text "und die Frames dann folgende Verweise enthalten:"

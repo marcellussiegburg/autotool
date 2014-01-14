@@ -18,9 +18,9 @@ data Value = ValUnit
                         }
 
 data Frame = Frame { number :: Int
-                   , values :: M.Map Name Value
                    , dynamic_link :: Int
                    , static_link :: Int
+                   , values :: M.Map Name Value
                    }
 
 data Store = Store { step :: Int
@@ -38,12 +38,8 @@ blank r = Store
         , store = M.empty 
         }
 
-tick :: Monad m => S.StateT Store m Bool
-tick = do
-     s <- S.get
-     let t = step s
-     S.put $ s { step = succ t }
-     return $ step s >= max_steps s
+tick :: Monad m => S.StateT Store m ()
+tick = S.modify $ \  s -> s { step = succ $ step s }
 
 -- | allocate new empty frame, return its address
 frame :: Monad m

@@ -30,6 +30,7 @@ instance Show TypedName where show = render . toDoc
 instance ToDoc Statement where
     toDoc s = case s of
         Halt -> text "halt" <+> text ";"
+        Missing -> text "missing" <+> text ";"
         Declaration tn e -> 
            toDoc tn <+> text "=" <+> toDoc e <> text ";"
         Statement e -> toDoc e <> text ";"
@@ -43,7 +44,6 @@ instance Show Block where show = render . toDoc
 
 instance ToDoc Exp where
     toDoc e = case e of
-        Missing -> text "missing"
         ConstInteger i -> toDoc i
         Ref n -> toDoc n
         App f args -> toDoc f 

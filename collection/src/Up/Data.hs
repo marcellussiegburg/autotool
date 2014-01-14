@@ -25,6 +25,7 @@ data TypedName = TypedName Typ Name
 data Statement
      = Declaration Name Exp
      | Statement Exp
+     | Missing
      | Halt
     deriving ( Eq, Ord, Typeable, Data )
 
@@ -35,6 +36,5 @@ data Exp = ConstInteger Integer
          | Ref Name
          | Program [ Name ] Block
          | App Exp [ Exp ]
-         | Missing
     deriving ( Eq, Ord, Typeable, Data )
 

@@ -30,6 +30,7 @@ instance Reader TypedName where
 instance Reader Statement where
    reader = 
         ( do my_reserved "halt" ; my_semi ; return Halt )
+    <|> ( do my_reserved "missing" ; my_semi ; return Missing )
     <|> try ( do tn <- reader ; my_symbol "=" ; e <- reader ; my_semi ; return $ Declaration tn e )
     <|> ( do s <- reader ; my_semi ; return $ Statement s )
 
@@ -41,7 +42,6 @@ instance Reader Exp where
 
 atom :: Parser Exp
 atom = ( ConstInteger <$> my_integer )
-     <|> ( do my_reserved "missing" ; return Missing )
       <|> ( do my_reserved "function"
                ps <- my_parens $ my_commaSep reader
                b <- reader 

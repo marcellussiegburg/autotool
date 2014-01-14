@@ -29,6 +29,7 @@ block exit f (Block ss) = do
 
 statement exit f s = case s of
     Halt -> exit ValUnit
+    Missing -> rej [ text "soll Anweisung oder Deklaration ersetzt werden" ]
     Statement e -> evaluate exit f e
     Declaration tn e -> do
         v <- evaluate exit f e
@@ -39,27 +40,23 @@ assign f n v = do
     C.lift $ put f n v
 
 traced f e a = do
-    inf [ text "in Frame" <+> toDoc f
-        , text "beginne Auswertung von" <+> toDoc e
+    C.lift tick
+    s <- C.lift S.get
+    when (step s >= max_steps s) $ rej
+        [ text "die Anzahl der Auswertungsschritte ist zu hoch" ]
+    inf [ text "Schritt" <+> toDoc (step s) 
+        <+> parens (text "in Frame" <+> toDoc f)
+        <+> text "beginne Auswertung von" <+> toDoc e
         ]
     v <- C.mapContT ( S.mapStateT $ nested 2 ) a
-    inf [ text "in Frame" <+> toDoc f
-        , text "Auswertung von" <+> toDoc e
-        , text "liefert Wert" <+> toDoc v
+    inf [ text "Ergebnis von Schritt" <+> toDoc (step s) <+> text "ist" <+> toDoc v
         ]
     return v
-
-timed a = do
-    timeout <- C.lift tick
-    when timeout $ rej
-        [ text "die Anzahl der Auswertungsschritte ist zu hoch" ]
-    a
 
 inf docs = C.lift $ S.lift $ inform $ vcat docs
 rej docs = C.lift $ S.lift $ reject $ vcat docs
 
-evaluate exit f e = traced f e $ timed $ case e of
-    Missing -> rej [ text "soll durch einen Ausdruck ersetzt werden" ]
+evaluate exit f e = traced f e $ case e of
     ConstInteger i -> return $ ValInt i
     Ref n -> C.lift $ get f n
     Program {} -> do
