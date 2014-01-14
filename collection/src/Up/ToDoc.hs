@@ -29,6 +29,7 @@ instance Show TypedName where show = render . toDoc
 
 instance ToDoc Statement where
     toDoc s = case s of
+        Halt -> text "halt" <+> text ";"
         Declaration tn e -> 
            toDoc tn <+> text "=" <+> toDoc e <> text ";"
         Statement e -> toDoc e <> text ";"

@@ -8,11 +8,11 @@ import Autolib.ToDoc
 import Autolib.FiniteMap () -- for instances
 import qualified Data.Map as M
 
-import qualified Control.Monad.State as S
+import qualified Control.Monad.State.Strict as S
 
-data Value = ValInt Integer
-           | ValClosure Exp (Maybe Int)
-
+data Value = ValUnit
+           | ValInt Integer
+           | ValClosure Exp Int
 
 data Frame = Frame { values :: M.Map Name Value
                    , dynamic_link :: Maybe Int
@@ -23,12 +23,16 @@ data Store = Store { store :: M.Map Int Frame }
 
 derives [makeToDoc] [''Value, ''Frame, ''Store ]
 
--- | allocate new frame
-frame :: M.Map Name Value
-      -> Maybe Int -> Maybe Int
-      -> S.State Store Int
-frame v dyn stat = do
-    let f = Frame { values = v, dynamic_link = dyn
+blank :: Store
+blank = Store { store = M.empty }
+
+-- | allocate new empty frame, return its address
+frame :: Monad m
+      => Maybe Int -> Maybe Int
+      -> S.StateT Store m Int
+frame dyn stat = do
+    let f = Frame { values = M.empty
+                  , dynamic_link = dyn
                   , static_link = stat
                   }
     s <- S.get

@@ -17,16 +17,15 @@ data TypedName = TypedName Typ Name
 data Statement
      = Declaration TypedName Exp
      | Statement Exp
+     | Halt
     deriving ( Eq, Ord, Typeable )
 
-data Block = Block  [Statement]
+data Block = Block [ Statement ]
     deriving ( Eq, Ord, Typeable )
 
 data Exp = ConstInteger Integer
          | Ref Name
-         | Program { parameters :: [ TypedName ]
-             , body :: Block
-             }
+         | Program [ TypedName ] Block
          | App Exp [ Exp ]
     deriving ( Eq, Ord, Typeable )
 

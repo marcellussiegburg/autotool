@@ -14,7 +14,7 @@ instance Reader Name where
          guard $ not $ n `elem` reserved
          return n
 
-reserved = [ "int", "bool", "unit", "Func" ]
+reserved = [ "int", "bool", "unit", "Func", "here" ]
     
 instance Reader Typ where
  reader =  do my_reserved "unit" ; return TUnit
@@ -28,7 +28,8 @@ instance Reader TypedName where
 
 instance Reader Statement where
    reader = 
-      try ( do tn <- reader ; my_symbol "=" ; e <- reader ; my_semi ; return $ Declaration tn e )
+        ( do my_reserved "halt" ; my_semi ; return Halt )
+    <|> try ( do tn <- reader ; my_symbol "=" ; e <- reader ; my_semi ; return $ Declaration tn e )
     <|> ( do s <- reader ; my_semi ; return $ Statement s )
 
 instance Reader Exp where
