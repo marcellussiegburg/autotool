@@ -78,6 +78,7 @@ import Data.Typeable
 import Data.Maybe
 import Data.Tree
 import Data.List ( partition )
+import Data.Char ( isAlpha, toLower )
 import Control.Monad
 
 import qualified Control.Exception as CE
@@ -95,15 +96,29 @@ main :: IO ()
 main = do
    Debug.debug "Super_Debug:main"
    ( Gateway.CGI.execute ( Local.super_cgi_name ++ "#hotspot" ) $ do
-       wrap $ iface Default.server
+       wrap $ preface Default.server
        scores <- scores_link
        footer scores ) `CE.catch` \ ( e :: CE.SomeException ) -> do
          debug $ "caught: " ++ show e
          print e
 
 
+preface server = do
+    mschool <- look "school"
+    school <- bestmatch $ Control.Types.Name $ case mschool of
+        Nothing -> "HTWK Leipzig"
+        Just school -> school
+    iface (Just school) server
+
+bestmatch name = do
+    us <- io $ U.get
+    let essence = map toLower . filter isAlpha . toString
+        eq s t = essence s == essence t
+    [ u ] <- return $ filter ( eq name . U.name ) us
+    return u
+
 -- iface :: Tree ( Either String Make ) -> Form IO ()
-iface server = do
+iface mschool server = do
 
     new <- click_choice_with_default 0 "Aktion" 
         [ ( "Account benutzen", False ) 
@@ -111,14 +126,14 @@ iface server = do
 	]
 
     if new 
-       then edit_create Nothing
-       else use_account server
+       then edit_create mschool Nothing
+       else use_account mschool server
 
 data Code = Stat | Auf | Einsch
    deriving ( Show, Eq, Typeable )
 
 
-use_account server = do
+use_account mschool server = do
 
     h3 "Login"
     -- für Student und Tutor gleicher Start

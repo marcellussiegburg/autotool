@@ -102,7 +102,7 @@ wrong_password stud = do
 
 edit :: Student -> Form IO ()
 edit s = do
-    edit_create $ Just s
+    edit_create Nothing $ Just s
     return ()
 
 is_a_word :: Monad m => String -> String -> Form m ()
@@ -150,15 +150,17 @@ complain css = do
 
 -- | falls 'Just Student', dann editieren
 -- falls 'Nothing', dann anlegen
-edit_create :: Maybe Student -> Form IO ()
-edit_create ms = do
+edit_create :: Maybe Schule -> Maybe Student 
+            -> Form IO ()
+edit_create (Just u) ms = do
+    edit_create_continue u ms
+
+edit_create Nothing ms = do
 
     open btable
-    let dtf label select = 
-           defaulted_textfield label $ case ms of
-                Just s -> toString $ select s ; Nothing -> ""
     
     us <- io $ Control.Schule.get 
+
     u <- case ms of
         -- Student darf Schule nicht ändern
         Just s -> return $ head $ do
@@ -168,6 +170,17 @@ edit_create ms = do
         Nothing -> click_choice "Schule" $ do
             u <- us
 	    return ( toString $ Control.Schule.name u , u )
+
+    edit_create_continue u ms
+
+
+edit_create_continue u ms = do
+
+    plain $ toString $ U.name u
+
+    let dtf label select = 
+           defaulted_textfield label $ case ms of
+                Just s -> toString $ select s ; Nothing -> ""
 
     mnr <- dtf "Matrikelnummer" T.mnr
     vorname <- dtf "Vorname" T.vorname
