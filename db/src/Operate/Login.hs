@@ -8,6 +8,7 @@ import Control.Monad ( when, mzero )
 
 import qualified Control.Vorlesung as V
 import qualified Control.Semester
+import qualified Control.Schule as U
 import qualified Control.Vorlesung
 import qualified Control.Student.CGI
 import qualified Control.Student.Type as S
@@ -25,11 +26,12 @@ data Status = Student | Tutor | Direktor | Minister
 -- | returns ( s, v, ist_tutor, ist_eingeschrieben )
 -- unterschiede: tutor darf "alles",
 -- student darf keine aufgaben ändern und nur aktuelle aufgaben sehen
-form :: Form IO ( S.Student, V.Vorlesung, Status , Bool )
-form = do
+form :: Maybe U.Schule 
+     -> Form IO ( S.Student, V.Vorlesung, Status , Bool )
+form mschool = do
 
     -- open btable
-    stud <- Control.Student.CGI.login
+    stud <- Control.Student.CGI.login mschool
     -- close -- btable
 
     Control.Admin.CGI.main stud

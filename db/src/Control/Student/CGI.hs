@@ -20,19 +20,26 @@ import qualified Debug
 import qualified Local
 
 
-login :: Form IO Student
-login = do
+login :: Maybe Schule -> Form IO Student
+login mschool = do
     -- click    <- submit    "Login:"
 
     open btable
-    us <- io $ Control.Schule.get 
-    u <- click_choice "Schule" $ do
-        u <- us
-	return ( toString $ Control.Schule.name u , u )
+    
+    u <- case mschool of
+      Just u -> do 
+        open row ; plain "Schule" ; plain $ toString $ U.name u ; close -- row
+        return u
+      Nothing -> do
+        us <- io $ Control.Schule.get 
+        click_choice "Schule" $ do
+            u <- us
+	    return ( toString $ Control.Schule.name u , u )
+        
     mnr <- defaulted_textfield "Matrikel" ""
     pwd <- defaulted_password  "Passwort" ""
 
-    change <- click_choice_with_default 0 "Aktion"
+    change <- click_choice "Aktion"
            [ ("Login", False)
            , ( "persönliche Daten ändern", True) 
            ]

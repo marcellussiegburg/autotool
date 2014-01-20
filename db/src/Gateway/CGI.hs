@@ -236,7 +236,7 @@ execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
                  << ( render $ toDoc $ env s0 ) -- environment
         let handler msg = do
                   let Form f = do
-			 plain $ "got exce5Aption" ++ msg
+			 plain $ "got exception" ++ msg
                          mzero
                   f s0
 {-

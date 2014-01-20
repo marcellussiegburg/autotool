@@ -95,7 +95,8 @@ import qualified Debug
 main :: IO ()
 main = do
    Debug.debug "Super_Debug:main"
-   ( Gateway.CGI.execute ( Local.super_cgi_name ++ "#hotspot" ) $ do
+   let my_name = Local.super_cgi_name
+   ( Gateway.CGI.execute ( my_name ) $ do
        wrap $ preface Default.server
        scores <- scores_link
        footer scores ) `CE.catch` \ ( e :: CE.SomeException ) -> do
@@ -138,7 +139,7 @@ use_account mschool server = do
     h3 "Login"
     -- für Student und Tutor gleicher Start
 
-    svt @ ( stud, vor, status0, attends0 ) <- Operate.Login.form
+    svt @ ( stud, vor, status0, attends0 ) <- Operate.Login.form mschool
 
     ( status, attends ) <- 
         if status0 == Tutor
