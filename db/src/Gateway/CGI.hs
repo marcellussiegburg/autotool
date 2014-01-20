@@ -227,7 +227,7 @@ execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
                  return $  Network.CGI.urlEncode k 
                         ++ "=" 
                         ++ Network.CGI.urlEncode v
-        cgi = cgi0 ++ if null query then "" else '?' : query
+        cgi = cgi0 ++ ( if null query then "" else '?' : query )
                    ++ "#hotspot"
     timed 15 (return $ clock cgi) ( do 
 
