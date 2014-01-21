@@ -83,6 +83,10 @@ xoutputToOutput o = case o of
    X.OAbove (X.Above []) -> O.Empty
    X.OAbove (X.Above xs) -> foldl1 O.Above $ map xoutputToOutput xs
    X.OBeside (X.Beside []) -> O.Empty
+
+   -- handle special shape that is produce by  outputToXOutput (Nest this)
+   X.OBeside (X.Beside [ X.OSpace{}, this ]) -> O.Nest $ xoutputToOutput this
+
    X.OBeside (X.Beside xs) -> foldl1 O.Beside $ map xoutputToOutput xs
    X.OItemize (X.Itemize xs) -> O.Itemize $ map xoutputToOutput xs
    X.OSpace _ -> O.Empty -- FIXME
