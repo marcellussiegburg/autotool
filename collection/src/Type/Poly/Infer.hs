@@ -15,13 +15,13 @@ import Autolib.FiniteMap () -- instances
 
 infer :: Signature -> Expression -> Reporter Type
 infer sig exp = do
-    inform $ text "berechne Typ für Ausdruck:" <+> protect ( toDoc exp )
+    inform $ text "berechne Typ für Ausdruck:" <+> ( toDoc exp )
     t <- nested 4 $ case exp of
         Apply q targs n args -> 
 	    case do f <- functions sig ; guard $ fname f == n ; return f
 	    of  [ f ] -> do
 		    inform $ text "Name" <+> toDoc n <+> text "hat Deklaration:" 
-                           <+> protect ( toDoc f )
+                           <+> ( toDoc f )
                     silent $ assert ( length targs == length ( tyvars f ) ) 
                         $ text "Anzahl der Typ-Argumente stimmt mit Deklaration überein?"
                     
@@ -29,7 +29,7 @@ infer sig exp = do
                         
                     when ( not $ null targs ) $ inform    
                         $ text "die Substitution für die Typ-Parameter ist"
-                        </> protect ( toDoc sub )
+                        </> ( toDoc sub )
                         
                     argtypes <- forM ( arguments f ) $ apply sub
                     rtype <- apply sub $ result f
@@ -40,7 +40,7 @@ infer sig exp = do
                                       }
                     when ( not $ null targs ) $ inform 
                          $ text "die instantiierte Deklaration der Funktion ist"
-                         </> protect ( toDoc finst )
+                         </> ( toDoc finst )
 
 		    silent $ assert ( length args == length ( arguments finst ) )
 			   $ text "Anzahl der Argumente stimmt mit Deklaration überein?" 
@@ -59,8 +59,8 @@ infer sig exp = do
 			 , toDoc fs
 			 ]
     inform $ vcat 
-        [ text "Ausdruck:" <+> protect ( toDoc exp )
-        , text "hat Typ:" <+> protect ( toDoc t )
+        [ text "Ausdruck:" <+>  ( toDoc exp )
+        , text "hat Typ:" <+>  ( toDoc t )
         ]
     return t
 
@@ -72,7 +72,7 @@ apply sub t = case t of
         Just w -> return w  
         Nothing -> reject $ vcat 
               [ text "Variable" <+> toDoc v
-              , text "nicht gebunden in" <+> protect ( toDoc sub )
+              , text "nicht gebunden in" <+>  ( toDoc sub )
               ]
     TyCon f args -> do
         bargs <- forM args $ apply sub
