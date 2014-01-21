@@ -47,3 +47,42 @@ given   <T> Integer foo (T x);
 required to produce an Integer,
 we need to call  S.<Unit>foo(unit);
 
+
+question: 
+
+what is the set of expressions with a given type?
+(It is a tree language - of what Chomsky type)?
+
+special case: if all type constructors are nullary
+(no polymorphic types, but possibly polymorphic functions?) then it's a regular language: accepted 
+by the tree automaton whose (finite set of) states are the types.
+
+special case: type constructors and functions
+at most unary.
+then we are basically dealing with string rewriting, 
+actually, a stack automaton,
+and language obtained is context-free (?)
+
+Example 1: Signature
+       Unit u ();
+<T>    A<T> f (T x);
+<T>    T    g (A<T> x);
+
+Set of all expressions of type Unit includes:
+u(), g(f(u())), ggffu, gfgfu, ...
+should be the Dyck language
+where  g = open parenthesis, f = closed par.
+
+can we make something more tricky, 
+e.g., two counter machines?
+
+Example 2:
+       Pair<Unit,A<Unit>> p();
+<S,T>  Pair<A<A<T>>,S> f (Pair<T,A<S>> x)
+<S>    Pair<Unit,S> g (Pair<S,Unit> x)
+<S>    Unit h(Pair<S,S> x);
+
+then expressions of type Unit include ...
+hm, some long strings of f with very few g 
+in the right places. Certainly not context-free.
+

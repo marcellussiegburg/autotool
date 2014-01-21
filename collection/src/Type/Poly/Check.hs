@@ -28,16 +28,16 @@ instance C.Partial TypePolyCheck TI Expression where
 
     describe p i = vcat
         [ text "Gesucht ist ein Ausdruck vom Typ" 
-               <+> protect (toDoc (target i))
+               <+> toDoc (target i)
 	, text "in der Signatur"
-	, nest 4 $ protect $ toDoc (signature i)
+	, nest 4 $ toDoc (signature i)
 	]
 
     initial p i = read "S.f(S.a(),S.<Foo>g(S.b()))"
 
     total p i b = do
         inform $ vcat [ text "Die Baumstruktur des Ausdrucks"
-                      , nest 4 $ protect $ toDoc b
+                      , nest 4 $ toDoc b
                       , text "ist"
                       ]
 	peng b

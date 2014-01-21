@@ -52,16 +52,6 @@ angles p = Autolib.ToDoc.char '<'
 anglist :: [ Doc ] -> Doc
 anglist ps = angles ( hsep $ punctuate comma  ps )
 
-protect :: Doc -> Doc
-protect d = vcat 
-        $ map text $ lines 
-        $ concat 
-        $ map ( \ c -> case c of
-                    '<' -> "&lt;"
-                    '>' -> "&gt;"
-                    _ -> [c] )
-        $ render d
-
 instance ToDoc Type where 
     toDoc t = case t of
         TyVar v -> toDoc v
