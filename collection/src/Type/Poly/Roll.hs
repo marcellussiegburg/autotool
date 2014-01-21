@@ -5,6 +5,7 @@ import Type.Poly.Data
 import Autolib.Util.Zufall
 import Autolib.TES.Identifier
 import Autolib.Util.Size
+import Autolib.ToDoc
 
 import qualified Data.Map as M
 import qualified Data.Set as S

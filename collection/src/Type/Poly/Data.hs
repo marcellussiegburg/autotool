@@ -229,14 +229,26 @@ data Conf = Conf { types_with_arities :: [ (Identifier, Int) ]
 		 }
     deriving ( Typeable )
 
-conf :: Conf
-conf = Conf { types_with_arities = 
+conf0 :: Conf
+conf0 = Conf { types_with_arities = 
                  read "[ (Foo, 0), (List, 1), (Map, 2) ]"
                  , type_variables = read "[ R, S, T ]"
                  , function_names = read "[ f, g, h ]" 
                  , type_expression_size_range = (1, 4)
                  , arity_range = (0, 2)
                  , solution_size_range = (7, 10 )
+                 , generator_iterations = 500
+                 , generator_retries = 10
+	    }
+
+conf1 :: Conf
+conf1 = Conf { types_with_arities = 
+                 read "[ (Integer, 0), (Set, 1), (Pair, 2) ]"
+                 , type_variables = read "[ T1, T2, T3 ]"
+                 , function_names = read "[ a,b,c,d ]" 
+                 , type_expression_size_range = (1, 4)
+                 , arity_range = (0, 2)
+                 , solution_size_range = (6, 12 )
                  , generator_iterations = 500
                  , generator_retries = 10
 	    }

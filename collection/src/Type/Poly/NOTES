@@ -34,3 +34,16 @@ and rhs has none:
 e.g.   g (T) -> List<T>   with variable T.
 
 
+usage:
+
+we reverse these rewrite rules, 
+to enumerate expressions with a given target type.
+
+note 1: we can only apply the rules right below
+defined symbols.
+
+note 2: we might need to invent types, e.g., 
+given   <T> Integer foo (T x);
+required to produce an Integer,
+we need to call  S.<Unit>foo(unit);
+
