@@ -5,6 +5,7 @@ import Up.Store
 
 import Autolib.Reporter
 import Autolib.ToDoc
+import qualified Autolib.Output as O
 
 import qualified Control.Monad.State.Strict as S
 import qualified Control.Monad.Cont as C
@@ -49,7 +50,9 @@ traced f e a = do
         <+> text "beginne Auswertung von" <+> toDoc e
         ]
     v <- C.mapContT ( S.mapStateT $ nested 2 ) a
-    inf [ text "Ergebnis von Schritt" <+> toDoc (step s) <+> text "ist" <+> toDoc v
+    inf [ text "Ergebnis von Schritt" 
+          <+> toDoc (step s)        
+          <+> text "ist" <+> toDoc v
         ]
     return v
 
