@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeSynonymInstances, MultiParamTypeClasses #-}
 {-# language DeriveDataTypeable #-}
+{-# language FlexibleInstances #-}
 
 module Type.Poly.Data where
 
@@ -23,6 +24,7 @@ instance Container Identifier String where
      label _ = "Identifier"
      pack = show 
      unpack = mknullary
+
 
 data Type = TyCon Identifier [ Type ]
           | TyVar Identifier
@@ -89,25 +91,30 @@ instance Reader Variable where
         return $ Variable { vname = n, vtype = t }
 
 
-data Expression = Apply [ Type ] Identifier  [ Expression ]
+data Expression = 
+       Apply Identifier [ Type ] 
+             Identifier  [ Expression ]
     deriving ( Eq, Ord, Typeable )
+
+exp0 :: Expression
+exp0 = read "S.<Integer> eq (S.a(), S.a())"
 
 instance Size Expression where
     size x = case x of
-        Apply vs f args -> succ $ sum $ map size args
+        Apply q vs f args -> succ $ sum $ map size args
 
 subexpressions x = x : case x of
-    Apply _ _ args -> args >>= subexpressions
+    Apply _ _ _ args -> args >>= subexpressions
 
 expression_signature x = S.fromList $ do
-    Apply _ f _ <- subexpressions x
+    Apply _ _ f _ <- subexpressions x
     return f
 
 instance ToDoc Expression where
     toDoc x = case x of
-        Apply vs f args -> hsep
-            [ if null vs then empty else text "M." <> anglist ( map toDoc vs )
-            , toDoc f
+        Apply q vs f args -> hsep
+            [ toDoc q <> text "."
+            <> ( if null vs then empty else anglist ( map toDoc vs ) ) <> toDoc f
             , parens $ fsep $ punctuate comma $ map toDoc args
             ]
 
@@ -115,13 +122,12 @@ instance Show Expression where show = render . toDoc
 
 instance Reader Expression where
     reader = do
-        vs <- option [] $ do
-            my_reserved "M"
-            my_reserved "."
+        q <- reader; my_symbol "."
+        vs <- option [] $ 
             my_angles $ my_commaSep reader            
         f <- reader
         args <- my_parens $ my_commaSep reader
-        return $ Apply vs f args
+        return $ Apply q vs f args
 
 data Function = 
      Function { fname :: Identifier
@@ -137,7 +143,6 @@ supply = do
     return $ mknullary [v]
 
 instance ToDoc Function where
-    -- vorsicht: alte syntax ist im cache -- na und?
     toDoc f = hsep [ text "static"
                    , if null ( tyvars f ) then empty
                      else anglist ( map toDoc $ tyvars f )
@@ -175,21 +180,34 @@ instance Reader Function where
 			  }
 
 data Signature =
-     Signature { functions :: [ Function ]
+     Signature { classname :: Identifier
+               , functions :: [ Function ]
 	       }
   deriving ( Typeable, Eq, Ord )
+
+sig0 :: Signature
+sig0 = read "class S { static Integer a(); static <T> Boolean eq (T a, T b); }"
+
+instance Show Signature where show = render . toDoc
 
 instance Size Signature where
      size s = length (functions s) 
 
 instance ToDoc Signature where
-    toDoc sig = vcat 
-       $ do f <- functions sig ; return $ toDoc f <> semi
+    toDoc sig = vcat
+        [ text "class" <+> toDoc (classname sig) <+> text "{"
+        , nest 4 $ vcat $ map ( \ f -> toDoc f <> semi ) $ functions sig 
+        , text "}"
+        ]
 
 instance Reader Signature where
     reader = do
-        vfs <- many $ do x <- reader ; my_semi ; return x
-        return $ Signature { functions = vfs }
+        my_reserved "class" 
+        n <- reader
+        vfs <- my_braces $ many $ do
+            f <- reader ; my_semi ; return f
+        return $ Signature { classname = n 
+                           , functions = vfs }
 
 
 

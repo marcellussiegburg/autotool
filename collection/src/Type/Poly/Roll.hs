@@ -62,7 +62,7 @@ typed_terms sig = output where
                 v <- tyvars f
                 return $ sub M.! v
         return ( apply sub $ result f 
-               , Apply sub_in_order ( fname f ) args
+               , Apply (classname sig) sub_in_order ( fname f ) args
                )
 
 distributions1 total slots | total <= 0 || slots <= 0 = do
@@ -114,7 +114,9 @@ apply m t = case t of
 signature :: Conf -> IO Signature
 signature conf = do
     fs <- Type.Poly.Roll.functions conf
-    return $ Signature { Type.Poly.Data.functions = fs }
+    return $ Signature { classname = read "S"
+                       , Type.Poly.Data.functions = fs
+                       }
 
 functions :: Conf -> IO [ Function ]
 functions conf = forM ( function_names conf ) $ \ n -> do

@@ -33,7 +33,7 @@ instance C.Partial TypePolyCheck TI Expression where
 	, nest 4 $ protect $ toDoc (signature i)
 	]
 
-    initial p i = read "f(a(),M.<Foo>g(b()))"
+    initial p i = read "S.f(S.a(),S.<Foo>g(S.b()))"
 
     total p i b = do
         inform $ vcat [ text "Die Baumstruktur des Ausdrucks"
@@ -50,6 +50,6 @@ instance C.Measure TypePolyCheck TI Expression where
 
 make :: Make
 make = direct TypePolyCheck $
-    TI { target = read "boolean"
-       , signature = read "static int a(); static <T>boolean eq (T a, T b);"
+    TI { target = read "Boolean"
+       , signature = sig0
        }

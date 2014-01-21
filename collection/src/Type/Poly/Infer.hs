@@ -17,7 +17,7 @@ infer :: Signature -> Expression -> Reporter Type
 infer sig exp = do
     inform $ text "berechne Typ für Ausdruck:" <+> protect ( toDoc exp )
     t <- nested 4 $ case exp of
-        Apply targs n args -> 
+        Apply q targs n args -> 
 	    case do f <- functions sig ; guard $ fname f == n ; return f
 	    of  [ f ] -> do
 		    inform $ text "Name" <+> toDoc n <+> text "hat Deklaration:" 
@@ -58,7 +58,10 @@ infer sig exp = do
 		         [ toDoc n <+> text "ist mehrfach deklarierte Funktion:"
 			 , toDoc fs
 			 ]
-    inform $ text "hat Typ:" <+> protect ( toDoc t )
+    inform $ vcat 
+        [ text "Ausdruck:" <+> protect ( toDoc exp )
+        , text "hat Typ:" <+> protect ( toDoc t )
+        ]
     return t
 
 apply :: M.Map Identifier Type

@@ -20,5 +20,6 @@ instance T.ToTree Type where
         T.Node ( show f ) $ map T.toTree args
 
 instance T.ToTree Expression where
-    toTree ( Apply ts f args ) = 
-        T.Node ( show f ) $ map T.toTree ts ++ map T.toTree args
+    toTree ( Apply q ts f args ) = 
+        T.Node ( show q ++ "." ++ show f ) 
+            $ map T.toTree ts ++ map T.toTree args
