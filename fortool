@@ -1,0 +1,39 @@
+#! /bin/bash
+
+PACKAGES=$(echo {interface,collection,server-interface,server-implementation,db})
+
+function usage() {
+    cat <<EOF
+Usage:
+    [VERBOSE=1] $0 cmd
+
+Execute command 'cmd' for all subdirectories in dependency order. The
+placeholder {} is replaced by the subdirectory name.
+
+Examples:
+    $0 cabal install
+    VERBOSE=1 $0 cabal clean
+EOF
+    exit 0
+}
+
+function stamp() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+[ -z "$*" ] && usage
+
+# make defined aliases available
+. ~/.bashrc
+shopt -s expand_aliases
+
+for pkg in $PACKAGES; do
+    [ -n "$VERBOSE" ] && echo === $(stamp) === $pkg ===
+    if ! [ -d $pkg ]; then
+	echo Skipping $pkg.
+	continue
+    fi
+    cd $pkg
+    eval $(sed s^{}^$pkg^g <<<$*) || exit 1
+    cd - > /dev/null
+done
