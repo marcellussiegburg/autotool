@@ -1,0 +1,36 @@
+notes for generating random instances 
+for this task type:
+
+
+prelims:
+
+we consider a signature that consists of functions.
+each function can have several type variables.
+there are several polymorphic types, 
+think of List<T>, Map<K,V>. example Sig:
+
+class S {
+    Integer f ();
+    List<T> g (T x);
+}
+
+task is to find an expression of a certain type.
+the expression has to be written with all 
+type variable instantiations made explicit
+(like you can do in Java or C#, but using Java syntax)
+
+
+model:
+
+use rewriting with this signature:
+
+* constructors: for building types 
+    (e.g., List/1, Integer/0)
+* defined symbols: the function names (e.g., f/0, g/1)
+
+each function is a rewrite rule 
+where lhs has exactly one defined symbol (at root)
+and rhs has none:
+e.g.   g (T) -> List<T>   with variable T.
+
+
