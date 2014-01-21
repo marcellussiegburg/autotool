@@ -14,6 +14,6 @@ instance Project TypePolyCheck ( TI, Expression ) TI where
     project p ( ti, x ) = ti
 
 make :: Make
-make = quiz TypePolyCheck conf
+make = quiz TypePolyCheck conf0
 
 
