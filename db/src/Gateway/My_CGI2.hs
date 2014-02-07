@@ -20,6 +20,7 @@ import System.IO
 -- | same type as official function
 wrapper :: ([(String,String)] -> IO Text.Blaze.Html.Html) -> IO ()
 wrapper f = runCGI $ do
+    setHeader "Content-Type" "text/html; charset=UTF-8"
     e <- getInputs
     a <- lift $ f $ e
     outputFPS $ Text.Blaze.Html.Renderer.Utf8.renderHtml a
