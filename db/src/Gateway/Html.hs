@@ -75,7 +75,7 @@ submit n v =
 checkbox n v = 
     input H.! type_ "checkbox" H.! name n H.! A.id (fromString n) H.! value v
 radio n v = input H.! type_ "radio" 
-textfield n = input H.! type_ "textfield"
+textfield n = input H.! type_ "text" H.! name n H.! A.id (fromString n)
 password n = input H.! type_ "password"
 -- textarea = input H.! type_ "textarea"
 thetitle = title
