@@ -34,7 +34,7 @@ import qualified Autolib.Multilingual as M
 import qualified Autolib.Multilingual.Html as H
 
 import Inter.Types ( CacheFun )
-import qualified Text.XHtml as X
+-- import qualified Text.XHtml as X
 import Util.Xml.Output
 import Control.Monad ( mzero)
 

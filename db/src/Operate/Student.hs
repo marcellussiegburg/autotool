@@ -20,7 +20,7 @@ import qualified Control.Student as S
 import Control.Types (toString, VNr, MNr)
 import Challenger.Partial
 
-import qualified Text.XHtml
+import qualified Gateway.Html
 
 import Autolib.Multilingual hiding ( Make )
 
@@ -63,8 +63,8 @@ solution vnr  manr stud auf = do
     when ( not $ A.current auf ) vorbei
 
     ---------------------------------------------------------
-    html $ Text.XHtml.anchor Text.XHtml.! [ Text.XHtml.name "hotspot" ]
-         Text.XHtml.<< ""
+    html $ Gateway.Html.anchor Gateway.Html.! [ Gateway.Html.name "hotspot" ]
+         Gateway.Html.<< ""
 
     h3 "Neue Einsendung"
 
@@ -93,7 +93,7 @@ solution vnr  manr stud auf = do
 	    close -- row
 	    open row
 {-            
-            let helper :: Text.XHtml.Html
+            let helper :: Gateway.Html.Html
                 helper = specialize lang
                     $ Autolib.Output.render 
                  $ Autolib.Output.Beside

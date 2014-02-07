@@ -1,4 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 
 module Operate.Common where
 
@@ -21,6 +23,7 @@ import Control.Monad ( when )
 import Data.String
 import Data.ByteString ( ByteString )
 import Data.Digest.CRC32
+-- import Data.Text 
 
 -- import qualified Text.XHtml
 import qualified Autolib.Multilingual.Html as Html

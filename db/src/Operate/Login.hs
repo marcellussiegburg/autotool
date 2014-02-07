@@ -14,7 +14,7 @@ import qualified Control.Student.CGI
 import qualified Control.Student.Type as S
 import qualified Control.Admin.CGI
 import qualified Control.Direktor.CGI
-import qualified Text.XHtml
+-- import qualified Text.XHtml
 
 import Autolib.Util.Sort
 

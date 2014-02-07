@@ -19,8 +19,8 @@ Executable autotool-Trial
     autotool-interface, autotool-server-interface>=0.3.1,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
-    base , haxr, random, containers, xhtml, cgi, mtl,
-    directory, utf8-string
+    base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
+    directory, utf8-string, text
 
 Executable autotool-Super
   Main-is: src/Operate/Super.hs
@@ -28,17 +28,17 @@ Executable autotool-Super
     autotool-interface, autotool-server-interface>=0.3.1,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
-    base , haxr, random, containers, xhtml, cgi, mtl,
-    directory, utf8-string
+    base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
+    directory, utf8-string, text
 
 Library
   Build-Depends:
     autotool-interface, autotool-server-interface>=0.3.1,
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
-    base , haxr, random, containers, xhtml, cgi, mtl,
+    base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
     hsql==1.8.2, hsql-mysql==1.8.2, old-locale, old-time, parsec,
-    directory, digest, bytestring, unix, utf8-string,
+    directory, digest, bytestring, unix, utf8-string, text,
     process
   GHC-Options:    -Wall -fglasgow-exts
   Extensions:
@@ -55,7 +55,7 @@ Library
   Exposed-Modules:
     Default
     Mysqlconnect
-    Gateway.CGI, Gateway.My_CGI2
+    Gateway.CGI, Gateway.My_CGI2, Gateway.Html
     Operate.DateTime
     Operate.Common
     Operate.Types

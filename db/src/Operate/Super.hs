@@ -83,7 +83,7 @@ import Control.Monad
 
 import qualified Control.Exception as CE
 
-import qualified Text.XHtml
+import qualified Gateway.Html as Html
 
 import Operate.DateTime ( defaults )
 import Operate.Tutor
@@ -333,7 +333,7 @@ aufgaben server ( stud, vnr, tutor ) = do
 		      return $ do
 		          Operate.Common.punkte tutor stud auf
 			      ( Nothing, Nothing, Just w
-			      , Just $ Text.XHtml.primHtml 
+			      , Just $ Html.primHtml 
 					    "Bewertung durch Tutor"  
 			      )
 
@@ -492,7 +492,7 @@ show_previous edit vnr mks stud auf sa0 = do
         Just file -> do
             cs <- io $ logged "Super.view" 
     	         $ readFile $ toString file
-    	    html $ Text.XHtml.primHtml cs
+    	    html $ Html.primHtml cs
         Nothing -> do
 	    plain "(keine Aufgabe)"
     br ; plain "Einsendung:"
@@ -517,7 +517,7 @@ show_previous edit vnr mks stud auf sa0 = do
 		 Nothing -> return "(keine Eingabe)"
     case edit of
 	 False -> do
-             html $ Text.XHtml.primHtml h
+             html $ Html.primHtml h
              blank -- ??
 	     return Nothing
          True  -> do
@@ -539,7 +539,7 @@ show_previous edit vnr mks stud auf sa0 = do
 			     , mgrade
 			     , case mgrade of 
 			           Just x | x /= Pending -> 
-			                 Just $ Text.XHtml.primHtml com 
+			                 Just $ Html.primHtml com 
 			           _ -> Nothing
 			     )
 

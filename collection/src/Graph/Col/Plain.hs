@@ -1,6 +1,10 @@
-module Graph.Col.Plain where
+{-# language OverloadedStrings #-}
+{-# language TypeSynonymInstances #-}
+{-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
 
---  $Id$
+module Graph.Col.Plain where
 
 import Graph.Util
 import Graph.Color
@@ -10,7 +14,8 @@ import Autolib.Graph.Kneser ( petersen )
 import Autolib.Dot ( peng, Layout_Program (..) )
 
 import qualified Autolib.Multilingual as M
-import qualified Text.PrettyPrint.HughesPJ as T
+-- import qualified Text.PrettyPrint.HughesPJ as T
+import Data.String 
 
 import Inter.Types
 import Autolib.ToDoc
@@ -32,8 +37,8 @@ instance ( GraphC a, Show a )
 
     report p (c, g) = do
         inform $ vcat
-	    [ M.make [ (M.DE, T.text "Gesucht ist eine konfliktfreie Knoten-Färbung des Graphen")
-                     , (M.UK, T.text "Give a conflict free colouring of")
+	    [ M.make [ (M.DE, "Gesucht ist eine konfliktfreie Knoten-Färbung des Graphen")
+                     , (M.UK, "Give a conflict free colouring of")
                      ]
 	    , nest 4 $ toDoc g
 	    ]
@@ -41,12 +46,12 @@ instance ( GraphC a, Show a )
 		 , layout_hints = [ "-Nshape=ellipse" ]
 		 }
 	inform $ fsep 
-	    [ M.make [ ( M.DE, T.text "mit höchstens" )
-                     , ( M.UK, T.text "with at most" )  
+	    [ M.make [ ( M.DE, "mit höchstens" )
+                     , ( M.UK, "with at most" )  
                      ]
             , toDoc c
-            , M.make [ ( M.DE, T.text "verschiedenen Farben." ) 
-                     , ( M.UK, T.text "different colours." )
+            , M.make [ ( M.DE, "verschiedenen Farben." ) 
+                     , ( M.UK, "different colours." )
                      ]
             ]
 
@@ -56,13 +61,13 @@ instance ( GraphC a, Show a )
 	return ( v, col )
 
     partial p (c, g) f = do
-        let s1 = ( M.make [ ( M.DE, T.text "Knotenmenge des Graphen" )
-                          , ( M.UK, T.text "node set of graph" )
+        let s1 = ( M.make [ ( M.DE, "Knotenmenge des Graphen" )
+                          , ( M.UK, "node set of graph" )
                           ]
                  , knoten g 
                  )
-	    s2 = ( M.make [ ( M.DE, T.text "gefärbte Knoten" )
-                          , ( M.UK, T.text "coloured nodes" )
+	    s2 = ( M.make [ ( M.DE, "gefärbte Knoten" )
+                          , ( M.UK, "coloured nodes" )
                           ]
                  , mkSet $ keysFM f 
                  )
@@ -72,8 +77,8 @@ instance ( GraphC a, Show a )
         let col v = lookupWithDefaultFM f (error $ "Graph.Col.Plain" ++ show v) v
         let fg = gmap ( \ v ->  (v, col v ) ) g 
         inform $ vcat 
-               [ M.make [ ( M.DE, T.text "Der gefärbte Graph ist" )
-                        , ( M.UK, T.text "The coloured graph is" )
+               [ M.make [ ( M.DE, "Der gefärbte Graph ist" )
+                        , ( M.UK, "The coloured graph is" )
                         ]
                ]
         peng $ fg { layout_program = Dot
@@ -84,21 +89,21 @@ instance ( GraphC a, Show a )
 	      guard $ col (von k) == col (nach k)
 	      return k
         when ( not $ null wrong ) $ reject $ vcat
-	     [ M.make [ (M.DE, T.text "Diese Kante(n) verlaufen zwischen gleichfarbigen Knoten:" )
-                      , (M.UK, T.text "These edge(s) connect nodes of equal colour:")
+	     [ M.make [ (M.DE, "Diese Kante(n) verlaufen zwischen gleichfarbigen Knoten:" )
+                      , (M.UK, "These edge(s) connect nodes of equal colour:")
                       ]
 	     , nest 4 $ toDoc wrong
 	     ]
-	inform $ M.make [ ( M.DE, T.text "Die Färbung ist konfliktfrei." )
-                        , ( M.UK, T.text "The colouring is free of conflicts." )
+	inform $ M.make [ ( M.DE, "Die Färbung ist konfliktfrei." )
+                        , ( M.UK, "The colouring is free of conflicts." )
                         ]
         let cc = C.measure p (c, g) f 
-	inform $ M.make [ (M.DE, T.text "Sie benutzt"), (M.UK, T.text "it uses" ) ]
+	inform $ M.make [ (M.DE, "Sie benutzt"), (M.UK, "it uses" ) ]
 		 <+> toDoc cc
-		 <+> M.make [ (M.DE, T.text "Farben.") , (M.UK, T.text "colours.") ]
+		 <+> M.make [ (M.DE, "Farben.") , (M.UK, "colours.") ]
 	when ( cc > c ) $ reject 
-             $ M.make [ ( M.DE, T.text "erlaubt sind aber höchstens" )
-                      , ( M.UK, T.text "but the largest number allowed is")
+             $ M.make [ ( M.DE, "erlaubt sind aber höchstens" )
+                      , ( M.UK, "but the largest number allowed is")
                       ]
              <+> toDoc c
 

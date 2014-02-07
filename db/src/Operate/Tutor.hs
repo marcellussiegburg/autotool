@@ -28,7 +28,7 @@ import Autolib.Reporter.IO.Type
 import Autolib.ToDoc
 import Autolib.Reader
 
-import qualified Text.XHtml
+-- import qualified Text.XHtml
 import System.Random
 import Data.Maybe
 import Data.Tree ( flatten )

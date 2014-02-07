@@ -9,7 +9,8 @@ import Inter.Types ( Variant, Make )
 import Operate.Click
 import Control.Types
 
-import qualified Text.XHtml
+-- import qualified Text.XHtml
+import qualified Gateway.Html as H
 
 -- | CGI - Zustands-Daten
 data Type = 
@@ -25,10 +26,10 @@ data Type =
 	  , conf :: Config
 	  , remark :: Remark
 
-          , minstant :: Maybe Text.XHtml.Html
+          , minstant :: Maybe H.Html
           , input    :: Maybe String
           , mresult    :: Maybe Wert
-          , report    :: Maybe Text.XHtml.Html
+          , report    :: Maybe H.Html
 
 	  , wahl :: String -- ^ vorige aufgabe
 	  , click    :: Click
@@ -41,7 +42,7 @@ data Type =
             -- | generated
           , variante :: Variant
           }
-    deriving Show
+     deriving Show
 
 {-
 result p = case mresult p of

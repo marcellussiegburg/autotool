@@ -9,10 +9,11 @@ module Util.Xml.Output (
 
 import qualified Util.Xml.OutputDTD as X
 import qualified Autolib.Output as O
-import Text.XML.HaXml hiding (o, txt)
-import Text.XML.HaXml.Pretty
-import Text.XML.HaXml.XmlContent
-import Text.PrettyPrint.HughesPJ hiding (style)
+
+import Util.Xml.Representation
+
+-- import Text.PrettyPrint.HughesPJ hiding (style)
+
 import qualified Autolib.Multilingual.Doc as D
 import Data.String ( fromString )
 
@@ -23,6 +24,7 @@ import qualified Data.ByteString.Char8 as BC
 import System.FilePath
 import Control.Applicative
 import Data.Maybe
+import Data.Text (unpack)
 
 import Util.Png
 
@@ -32,8 +34,10 @@ outputToXOutput o = case o of
         return $ X.OBeside $ X.Beside []
     O.Doc doc ->
         outputToXOutput $ O.Pre doc
-    O.Text txt ->
+    O.String txt ->
         return $ X.OText $ X.Text txt
+    O.Text txt ->
+        return $ X.OText $ X.Text $ Data.Text.unpack txt
     O.Pre txt ->
         return $ X.OPre $ X.Pre (show txt)
     O.Image file contents -> do
@@ -75,7 +79,7 @@ outputToXOutput o = case o of
 xoutputToOutput :: X.Output -> O.Output
 xoutputToOutput o = case o of
    X.OPre  (X.Pre  txt) -> O.Pre (D.text txt)
-   X.OText (X.Text txt) -> O.Text txt
+   X.OText (X.Text txt) -> O.String txt
    X.OImage (X.Image _ img) ->
        O.Image (mkData img) (return $ BB.decodeLenient $ fromString img)
    X.OLink (X.Link (X.Link_Attrs { X.linkHref = uri }) txt) ->
@@ -100,9 +104,9 @@ wrapXOutput o = let [CElem e _] = toContents o in
     Document (Prolog (Just (XMLDecl "1.0" Nothing Nothing)) [] Nothing [])
              emptyST e []
 
+-- FIXME: this should go to Bytestring or Text instead
 xmlToString :: Document () -> String
-xmlToString = renderStyle style . document where
-    style = Style OneLineMode 0 0
+xmlToString = renderDocument 
 
 outputToXmlString ::  O.Output -> IO String
 outputToXmlString = fmap (xmlToString . wrapXOutput) . outputToXOutput

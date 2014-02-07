@@ -1,5 +1,7 @@
 {-# OPTIONS -fglasgow-exts -fallow-overlapping-instances -fallow-incoherent-instances -fallow-undecidable-instances #-}
 
+{-# language OverloadedStrings #-}
+
 -- | abstraction to simple CGI input elements
 -- the state is in the CGI parameters (the Env)
 
@@ -56,10 +58,12 @@ import qualified Network.CGI
 
 import Autolib.Multilingual ( Language (..), specialize )
 
-import qualified Text.XHtml
-import Text.XHtml (HTML (..), Html, (!), (+++), (<<), primHtml, renderHtml)
+-- import qualified Text.XHtml
+-- import Text.XHtml (HTML (..), Html, (!), (+++), (<<), primHtml, renderHtml)
+import qualified Gateway.Html as Html
+import Gateway.Html (Html, toHtml, primHtml, HTML, (!), (<<), (+++) )
 
-import qualified Autolib.Output.XHtml
+import qualified Autolib.Output.Html
 import qualified Autolib.Multilingual.Html
 
 import Prelude hiding ( catch )
@@ -78,9 +82,10 @@ import Data.Dynamic
 import Data.Typeable
 import Data.List ( nub, isPrefixOf, intersperse )
 import Data.Char (isDigit, toLower)
+import Data.String ( fromString )
 
 instance Typeable Html where
-    typeOf _ = mkTyConApp ( mkTyCon "Text.XHtml.Html" ) []
+    typeOf _ = mkTyConApp ( mkTyCon "Html.Html" ) []
 
 instance ToDoc Html where toDoc x = text "Html" -- text . show
 
@@ -103,8 +108,6 @@ pop s = final s $ reverse $ contents s
 
 drops :: Stack a -> Stack a
 drops s = s { contents = drop 1 $ contents s }
-
-
 
 -- | existential HTML
 class ( Typeable a, ToDoc a, HTML a, Parts a ) => ETML a 
@@ -232,7 +235,7 @@ execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
     timed 15 (return $ clock cgi) ( do 
 
         s0 <- state0 e
-        let info = Text.XHtml.pre 
+        let info = Html.pre 
                  << ( render $ toDoc $ env s0 ) -- environment
         let handler msg = do
                   let Form f = do
@@ -257,13 +260,13 @@ execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
 	-- need to unwind because computation might have been interrupted
 	let h = toHtml $ unwind $ stack s'
         return $ page cgi h -- $ if Local.debug then info +++ h else h
-           -- ( Text.XHtml.font h ! [ Text.XHtml.face "Helvetica" ] )
+           -- ( Html.font h ! [ Html.face "Helvetica" ] )
       )
     `CE.catch` \ (err :: CE.SomeException) -> 
-                 return $ Text.XHtml.pre << primHtml ( show err )
+                 return $ Html.pre << primHtml ( show err )
 
 clock :: String -> Html
-clock cgi = page cgi ( Text.XHtml.pre << primHtml timer_expired_message )
+clock cgi = page cgi ( Html.pre << primHtml timer_expired_message )
                                               -- "Timer expired" )
 
 timer_expired_message :: String 
@@ -283,18 +286,21 @@ unwind ( st : sts ) =
 	   []         -> p
 	   st' : rest -> unwind ( push p st' : rest)
 
-sty = ( Text.XHtml.style 
+sty :: Html
+sty = ( Html.style 
          << ( "pre { margin-top: 0em; margin-bottom: 0em; }" 
          +++ "blockquote { margin-top: 0em; margin-bottom: 0em; }" 
+          :: Html
          )
-      ) ! [ Text.XHtml.thetype "text/css" ]
+      ) ! [ Html.thetype "text/css" ]
 
 page :: String -> Html -> Html
-page cgi h = Text.XHtml.header << ( sty +++ Text.XHtml.thetitle << cgi )
-      +++ Text.XHtml.body ( Text.XHtml.form h 
-			 ! [ Text.XHtml.action cgi 
-			   , Text.XHtml.method "POST" 
-			   , Text.XHtml.strAttr "enctype" "multipart/form-data"
+page cgi h = ( Html.html << ) $
+     Html.header << ( Html.meta ! [Html.charset "UTF-8"] +++ sty +++ Html.thetitle << cgi )
+      +++ Html.body ( Html.form h 
+			 ! [ Html.action $ fromString cgi 
+			   , Html.method "POST" 
+			   , Html.strAttr "enctype" "multipart/form-data"
 			   ]
 		         )
 
@@ -597,31 +603,31 @@ fromdyn a = f where
 --------------------------------------------------------------------------
 
 glue :: ETML a => [ a ] -> Etml
-glue = Etml . Text.XHtml.concatHtml . map toHtml
+glue = Etml . Html.concatHtml . map toHtml
 
 h1 :: Monad m => String -> Form m ()
-h1 w = html $ Text.XHtml.h1 << w
+h1 w = html $ Html.h1 << w
 
 h2 :: Monad m => String -> Form m ()
-h2 w = html $ Text.XHtml.h2 << w
+h2 w = html $ Html.h2 << w
 
 h3 :: Monad m => String -> Form m ()
-h3 w = html $ Text.XHtml.h3 << w
+h3 w = html $ Html.h3 << w
 
 pre :: Monad m => String -> Form m ()
-pre w = html $ Text.XHtml.p << Text.XHtml.pre << w
+pre w = html $ Html.p << Html.pre << w
 
 plain :: Monad m => String -> Form m ()
 plain = html . primHtml
 
 br :: Monad m => Form m ()
-br = html Text.XHtml.br
+br = html Html.br
 
 hr :: Monad m => Form m ()
-hr = html Text.XHtml.hr
+hr = html Html.hr
 
 par :: Monad m => Form m ()
-par = html $ Text.XHtml.p << ""
+par = html $ Html.p << ( "" :: Html )
 
 
 ------------------------------------------------------------
@@ -639,7 +645,7 @@ instance ETML a => ToDoc ( Row a ) where
 instance ETML a => HTML ( Row a ) where
     toHtml r @ ( Row xs )
       -- = error $ unlines [ "toHtml" , show ( typeOf r )  ]
-      = toHtml $ glue $ map ( Text.XHtml.td << ) $ map toHtml xs
+      = toHtml $ glue $ map ( Html.td << ) $ map toHtml xs
 
 class Parts a  where 
     parts :: a -> [ Etml ]
@@ -655,7 +661,7 @@ instance Parts Etml where
 
 data Glued a = Glued [a] deriving ( Typeable )
 instance ETML a => ToDoc ( Glued a ) where
-    toDoc ( Glued xs ) = toDoc "Glued .."
+    toDoc ( Glued xs ) = toDoc ( "Glued .." :: String )
 instance ETML a => HTML ( Glued a ) where
     toHtml g @ ( Glued xs ) 
       =  toHtml $ glue $ map toHtml xs
@@ -669,15 +675,15 @@ row hs = Etml $ Row hs
 
 -- | close for table: put TR around each element, and TABLE around all
 table :: ETML a => [ a ] -> Etml
-table rows =  Etml $ Text.XHtml.table 
+table rows =  Etml $ Html.table 
 	     $ toHtml 
-	     << glue ( map ( Text.XHtml.tr << ) rows )
+	     << glue ( map ( Html.tr << ) rows )
 
 -- | close for table: put TR around each element, and TABLE around all
 btable :: ETML a => [ a ] -> Etml
 btable rows = Etml 
-            $ Text.XHtml.table ! [ Text.XHtml.border 1 ] 
-	    << ( glue ( map ( Text.XHtml.tr << ) rows ) )
+            $ Html.table ! [ Html.border "1" ] 
+	    << ( glue ( map ( Html.tr << ) rows ) )
 
 -- | close for sorted table: put TR around each element, and TABLE around all
 -- TODO: sortierbar nach beliebiger spalte
@@ -691,13 +697,13 @@ sorted_btable heading i rows  =
 	    row <- rows
 	    return $ do
 	        it <- parts row
-		return $ it
+		return $ toHtml it
     in  Etml
-             $ Text.XHtml.table ! [ Text.XHtml.border 1 ] 
-	    << glue ( map ( Text.XHtml.tr << ) 
+             $ Html.table ! [ Html.border "1" ] 
+	    << glue ( map ( Html.tr << ) 
 		    $ toHtml heading 
 		    : map ( toHtml . Row ) 
-			  ( sortBy ( tonum . Text.XHtml.renderHtml . (!! i) ) entries )
+			  ( sortBy ( tonum . Html.renderHtml . (!! i) ) entries )
 		    )
 
 -- | sorting hack:
@@ -783,19 +789,19 @@ widgetpref f  w lab = do
     widget0 w tag lab
 
 submit :: Monad m => Bool_Widget m
-submit   = widgetpref "C" Text.XHtml.submit
+submit   = widgetpref "C" Html.submit
 
 submit0 :: Monad m => Tag -> Bool_Widget m
-submit0   = widget0 Text.XHtml.submit
+submit0   = widget0 Html.submit
 
 radio :: Monad m => Bool_Widget m
-radio    = widget $ Text.XHtml.radio     
+radio    = widget $ Html.radio     
 
 
 checkbox :: Monad m => Bool -> Bool_Widget m
 checkbox def = widget $ \ tag lab -> 
-    Text.XHtml.checkbox tag lab 
-        ! [ Text.XHtml.strAttr "checked" "checked" | def ]
+    Html.checkbox tag lab 
+        ! [ Html.strAttr "checked" "checked" | def ]
 
 -- | text input elements
 -- come in two variants:
@@ -822,38 +828,38 @@ textual element def = do
 
 hidden0 :: Monad m => Textual0 m
 hidden0 = textual0 $ \ tag cont -> 
-    Text.XHtml.hidden tag cont
+    Html.hidden tag cont
 
 hidden :: Monad m => Textual m
 hidden = textual $ \ tag cont -> 
-    Text.XHtml.hidden tag cont
+    Html.hidden tag cont
 
 textfield :: Monad m => Textual m
 textfield = textual $ \ tag cont -> 
-    Text.XHtml.textfield tag ! [ Text.XHtml.value cont ] 
+    Html.textfield tag ! [ Html.value cont ] 
 
 password :: Monad m => Textual m
 password = textual $ \ tag cont ->
-    Text.XHtml.password tag ! [ Text.XHtml.value cont ] 
+    Html.password tag ! [ Html.value cont ] 
 
 textarea :: Monad m => Textual m
 textarea = textual $ \ tag cont -> 
     let ls   = lines cont
-    in  Text.XHtml.textarea ( primHtml cont )
-	  ! [ Text.XHtml.name tag 
-	    , Text.XHtml.thestyle "background: lightblue"
-	    , Text.XHtml.cols $ show $ 2 + maximum ( 60 : map length ls )
-	    , Text.XHtml.rows $ show $ 2 + length ls 
+    in  Html.textarea ( primHtml cont )
+	  ! [ Html.name tag 
+	    , Html.thestyle "background: lightblue"
+	    , Html.cols $ show $ 2 + maximum ( 60 : map length ls )
+	    , Html.rows $ show $ 2 + length ls 
 	    ] 
 
 -- | attributes see <http://de.selfhtml.org/html/formulare/datei_upload.htm>
 file :: Monad m => Textual m
 file = textual $ \ tag cont ->
-    Text.XHtml.input 
-            ! [ Text.XHtml.name    tag
-	      , Text.XHtml.thetype "file"
-	      , Text.XHtml.intAttr "maxlength" 10000
-	      , Text.XHtml.strAttr "accept"    "text/*"
+    Html.input 
+            ! [ Html.name    tag
+	      , Html.thetype "file"
+	      , Html.intAttr "maxlength" 10000
+	      , Html.strAttr "accept"    "text/*"
 	      ]
 
 select :: Monad m
@@ -865,9 +871,9 @@ select ws def = do
     let cont = fromMaybe def prev
         opts = do
 	    w <- ws   
-            return $ Text.XHtml.option (Text.XHtml.primHtml w) 
-		   ! [ Text.XHtml.selected | w == cont ]
-    html $ Text.XHtml.select ! [ Text.XHtml.name tag ] << opts
+            return $ Html.option (Html.primHtml w) 
+		   ! [ Html.selected | w == cont ]
+    html $ Html.select ! [ Html.name tag ] << opts
     return prev
 
 radiogroup :: Monad m
@@ -883,9 +889,9 @@ radiogroup def pairs = do
     sequence_ $ do
 	w <- ws
         return $ html $ glue
-	    [ Text.XHtml.radio tag w 
-                 ! [ Text.XHtml.strAttr "checked" "checked" | w == cont ] 
-	    , Text.XHtml.primHtml w
+	    [ Html.radio tag w 
+                 ! [ Html.strAttr "checked" "checked" | w == cont ] 
+	    , Html.primHtml w
 	    ]
     close
     return $ do w <- prev ; lookup w pairs
@@ -956,7 +962,7 @@ editor' break def = do
     mcs <- textarea ( render $ toDoc def )
     close
     open row
-    let helper :: Text.XHtml.Html
+    let helper :: Html.Html
         helper = specialize Autolib.Multilingual.DE
                $ Autolib.Output.render 
                $ Autolib.Output.Beside 
@@ -1106,8 +1112,8 @@ editor_submit title ex = do
 
 farbe :: Monad m =>  String -> String -> Form m ()
 farbe cs h = html 
-	 $ Text.XHtml.font ( Text.XHtml.primHtml h )
-	 ! [ Text.XHtml.color cs ]
+	 $ Html.font ( Html.primHtml h )
+	 ! [ Html.color cs ]
  
 beside l r = do
     open table

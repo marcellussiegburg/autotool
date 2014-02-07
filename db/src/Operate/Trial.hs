@@ -97,7 +97,8 @@ import Data.Maybe
 import Data.Tree
 import Data.List ( partition )
 import Control.Monad
-import qualified Text.XHtml
+
+import qualified Gateway.Html as Html
 
 import qualified Autolib.Multilingual as M
 import qualified Autolib.Multilingual.Html as H
