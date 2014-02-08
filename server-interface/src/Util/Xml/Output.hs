@@ -13,6 +13,10 @@ import qualified Autolib.Output as O
 import Util.Xml.Representation
 
 -- import Text.PrettyPrint.HughesPJ hiding (style)
+import qualified Autolib.Multilingual as M
+import qualified Autolib.Multilingual.Html as H
+-- import qualified Text.Blaze.Html.Renderer.String
+-- import qualified Text.Blaze.Html.Renderer.Utf8
 
 import qualified Autolib.Multilingual.Doc as D
 import Data.String ( fromString )
@@ -29,17 +33,18 @@ import Data.Text (unpack)
 import Util.Png
 
 outputToXOutput :: O.Output -> IO X.Output
-outputToXOutput o = case o of
+
+outputToXOutput o = do
     O.Empty ->
         return $ X.OBeside $ X.Beside []
     O.Doc doc ->
         outputToXOutput $ O.Pre doc
+    O.Pre doc ->
+        return $ X.OPre $ X.Pre $ D.render doc
     O.String txt ->
         return $ X.OText $ X.Text txt
     O.Text txt ->
         return $ X.OText $ X.Text $ Data.Text.unpack txt
-    O.Pre txt ->
-        return $ X.OPre $ X.Pre (show txt)
     O.Image file contents -> do
         let ext = drop 1 $ snd $ splitExtension file
         contents' <- contents
@@ -106,7 +111,7 @@ wrapXOutput o = let [CElem e _] = toContents o in
 
 -- FIXME: this should go to Bytestring or Text instead
 xmlToString :: Document () -> String
-xmlToString = renderDocument 
+xmlToString = renderDocument_via_Doc 
 
 outputToXmlString ::  O.Output -> IO String
 outputToXmlString = fmap (xmlToString . wrapXOutput) . outputToXOutput

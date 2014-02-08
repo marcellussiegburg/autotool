@@ -6,6 +6,7 @@ import Types.TaskDescription
 import Util.Xml.Output
 
 import qualified Autolib.Output as O
+import qualified Autolib.Output.Doc
 import Autolib.Multilingual.Doc
 
 import System.Environment
