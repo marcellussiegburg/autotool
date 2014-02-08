@@ -25,5 +25,5 @@ renderDocument_via_BS
     . Text.XML.HaXml.ByteStringPP.document 
 
 renderDocument_via_Doc
-    = P.renderStyle (P.Style { P.mode=P.LeftMode })
+    = P.renderStyle (P.Style { P.mode=P.OneLineMode })
     . Text.XML.HaXml.Pretty.document

@@ -33,8 +33,7 @@ import Data.Text (unpack)
 import Util.Png
 
 outputToXOutput :: O.Output -> IO X.Output
-
-outputToXOutput o = do
+outputToXOutput o = case o of
     O.Empty ->
         return $ X.OBeside $ X.Beside []
     O.Doc doc ->
