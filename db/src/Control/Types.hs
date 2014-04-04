@@ -439,6 +439,8 @@ instance ToString UNr where
 instance FromCGI UNr where
     fromCGI cs = UNr $ read cs
 
+instance ToEx Bool where
+    toEx b = EString $ map toLower $ show b
 
 -- | Semester-Nummer
 

@@ -36,6 +36,11 @@ login mschool = do
             u <- us
 	    return ( toString $ Control.Schule.name u , u )
         
+    if U.use_shibboleth u 
+       then login_via_shibboleth u
+       else login_via_stored_password u
+
+login_via_stored_password u = do
     mnr <- defaulted_textfield "Matrikel" ""
     pwd <- defaulted_password  "Passwort" ""
 
@@ -70,6 +75,84 @@ login mschool = do
     when change $ do
         Control.Student.CGI.edit stud
     return stud
+
+-- | spec: cut_at c w = xss  <=>  intercalate [c] xss == w
+cut_at :: Eq a => a -> [a] -> [[a]]
+cut_at c [] = []
+cut_at c w = 
+      let (pre, post) = span (/= c) w
+      in  pre : if null post then [] else cut_at c $ tail post
+
+login_via_shibboleth u = do
+    mpuc <- look "puc"
+    -- example: "urn:mace:terena.org:schac:personalUniqueCode:de:htwk-leipzig.de:Matrikelnummer:"
+    
+    case mpuc of
+      Nothing -> do 
+        plain "missing puc (personal unique code)"
+        mzero
+      Just puc -> do
+        let pucs = cut_at ':' puc
+        case pucs of
+          [ "urn", "mace", "terena", "org", "schac", "personalUniqueCode", "de"
+            , school, "Matrikelnummer", mat ] -> login_via_shibboleth_cont u school mat
+          _ -> do
+            plain "malformed puc"
+            plain $ show pucs
+            mzero
+
+login_via_shibboleth_con u school mnr = do
+    when (not $ isSuffix school $ U.mail_suffix u) $ do
+        plain "puc school attribute and mail_suffix differ"
+        plain $ show (school, U.mail_suffix u)
+        mzero
+    sn <- look "sn" ; gn <- look "givenName"
+    when (null mnr) $ do
+        maff <- look "affiliation"
+        case maff of
+          Nothing -> do 
+            plain "missing affiliation attribute"
+            mzero
+          aff -> do
+            let parts = cut_at ';' aff
+            if exists ( \ part -> isPrefix "staff@" part) parts
+               then return ()
+               else do
+                 plain "no Matrikelnummer and no staff@"
+                 mzero
+    
+    use_or_make_account u sn gn mnr
+      
+use_or_make_account u sn gn mnr = do
+
+    close -- btable
+
+    -- studs <- io $ Control.Student.DB.get_unr_mnr ( U.unr u , fromCGI mnr )
+    studs <- io $ Control.Student.DB.get_sn_gn_mnr ( U.unr u , fromCGI mnr )
+    
+    -- close -- row
+
+    stud <- case studs of
+         [ stud ] ->
+             if Operate.Crypt.compare ( passwort stud ) pwd
+                then use_first_passwort stud
+                else if Operate.Crypt.compare ( next_passwort stud ) pwd
+                then use_next_passwort stud
+                else wrong_password stud
+
+         [ ] -> do
+             plain "Account existiert nicht."
+             mzero
+
+         xs -> do
+             plain "Mehrere Studenten mit dieser Matrikelnummer?"
+             plain $ show $ map T.snr xs
+             mzero
+
+    when change $ do
+        Control.Student.CGI.edit stud
+    return stud
+
 
 use_first_passwort stud = 
     if ( Operate.Crypt.is_empty $ next_passwort stud ) 

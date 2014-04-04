@@ -33,16 +33,19 @@ qq =  Select
      $ map reed [ "schule.UNr as UNr" 
 		, "schule.Name as Name"
                 , "schule.Mail_Suffix as Mail_Suffix"
+                , "schule.Use_Shibboleth as Use_Shibboleth"
 		] 
 
 common = collectRows $ \ state -> do
     	g_unr <- getFieldValue state "UNr"
         g_name <- getFieldValue state "Name"
         g_mail_suffix <- getFieldValue state "Mail_Suffix"
+        g_use_shibboleth <- getFieldValue state "Use_Shibboleth"
         return $ Schule { unr = g_unr
 			 , name = g_name
                          , mail_suffix = g_mail_suffix
-    			   }
+                         , use_shibboleth = g_use_shibboleth
+    			 }
 
 -- | put into table:
 put :: Maybe UNr
@@ -52,6 +55,7 @@ put munr vor = do
     conn <- myconnect 
     let common = [ ( reed "Name", toEx $ name vor )
 		 , ( reed "Mail_Suffix", toEx $ mail_suffix vor )
+                 , ( reed "Use_Shibboleth", toEx $ use_shibboleth vor )
 		 ]
     case munr of
 	 Nothing -> squery conn $ Query

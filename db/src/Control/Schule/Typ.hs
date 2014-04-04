@@ -18,6 +18,7 @@ data Schule =
             , mail_suffix :: Name
                   -- ^ Studenten werden nur akzeptiert,
                   -- wenn email so endet
+            , use_shibboleth :: Bool
 	    }
 	deriving ( Typeable )
 
