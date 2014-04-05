@@ -1,7 +1,5 @@
 module Control.Student.CGI where
 
---  $Id$
-
 import Control.Types
 import Gateway.CGI
 import Operate.Crypt
@@ -11,7 +9,7 @@ import Control.Student.DB
 import qualified Control.Schule
 
 import Control.Monad
-import Data.List ( partition, isSuffixOf )
+import Data.List ( partition, isSuffixOf, isPrefixOf )
 import Data.Char ( isAlphaNum )
 import Data.Maybe ( isNothing , isJust , fromJust )
 
@@ -101,56 +99,58 @@ login_via_shibboleth u = do
             plain $ show pucs
             mzero
 
-login_via_shibboleth_con u school mnr = do
-    when (not $ isSuffix school $ U.mail_suffix u) $ do
+login_via_shibboleth_cont u school mnr = do
+    when (not $ isSuffixOf school $ toString $ U.mail_suffix u) $ do
         plain "puc school attribute and mail_suffix differ"
         plain $ show (school, U.mail_suffix u)
         mzero
-    sn <- look "sn" ; gn <- look "givenName"
+    Just sn <- look "sn" ; Just gn <- look "givenName"
     when (null mnr) $ do
         maff <- look "affiliation"
         case maff of
           Nothing -> do 
             plain "missing affiliation attribute"
             mzero
-          aff -> do
+          Just aff -> do
             let parts = cut_at ';' aff
-            if exists ( \ part -> isPrefix "staff@" part) parts
+            if any ( \ part -> isPrefixOf "staff@" part) parts
                then return ()
                else do
                  plain "no Matrikelnummer and no staff@"
                  mzero
-    
-    use_or_make_account u sn gn mnr
+    close -- btable    
+    use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr)
       
-use_or_make_account u sn gn mnr = do
-
-    close -- btable
-
+use_or_make_account unr sn gn mnr = do
     -- studs <- io $ Control.Student.DB.get_unr_mnr ( U.unr u , fromCGI mnr )
-    studs <- io $ Control.Student.DB.get_sn_gn_mnr ( U.unr u , fromCGI mnr )
-    
-    -- close -- row
-
+    studs <- io $ Control.Student.DB.get_unr_sn_gn_mnr ( unr , sn, gn, mnr )
+    studs <- 
+        if (null studs) then do
+             plain "Account existiert nicht => wird angelegt"
+             
+             let stud = Student { T.snr = error "noch nicht"
+                                     , T.unr = unr
+                                     , T.mnr =  mnr
+                                     , T.name =  sn
+                                     , T.vorname =  gn
+                                     , T.email = fromCGI "use shibboleth"
+                                     , T.passwort = Crypt "use shibboleth"
+                                     , T.next_passwort = Crypt "use shibboleth"
+                                     }
+             io $ Control.Student.DB.put Nothing stud 
+             io $ Control.Student.DB.get_unr_sn_gn_mnr ( unr , sn, gn, mnr )
+        else return studs     
+             
     stud <- case studs of
-         [ stud ] ->
-             if Operate.Crypt.compare ( passwort stud ) pwd
-                then use_first_passwort stud
-                else if Operate.Crypt.compare ( next_passwort stud ) pwd
-                then use_next_passwort stud
-                else wrong_password stud
-
+         [ stud ] -> return stud
          [ ] -> do
-             plain "Account existiert nicht."
+             plain "kein Account (Anlegen fehlgeschlagen)"
              mzero
-
          xs -> do
-             plain "Mehrere Studenten mit dieser Matrikelnummer?"
+             plain "Mehrere Accounts mit diesen Merkmalen"
              plain $ show $ map T.snr xs
              mzero
 
-    when change $ do
-        Control.Student.CGI.edit stud
     return stud
 
 

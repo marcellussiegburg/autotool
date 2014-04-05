@@ -1,7 +1,5 @@
 module Control.Student.DB where
 
---  $Id$
-
 import Control.SQL
 import Control.Types
 import Operate.Crypt
@@ -17,6 +15,15 @@ get_unr_mnr ( unr , mnr ) =
 	      [ equals ( reed "student.UNr" ) ( toEx unr )
 	      , equals ( reed "student.MNr" ) ( toEx mnr )
 	      ]
+
+get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) =
+    get_where $ ands
+              [ equals ( reed "student.UNr" ) ( toEx unr )
+              , equals ( reed "student.Name") (toEx sn)
+              , equals ( reed "student.Vorname") (toEx gn)
+	      , equals ( reed "student.MNr" ) ( toEx mnr )
+	      ]
+
 
 get_snr  :: SNr -> IO [ CST.Student ]
 get_snr snr = get_where $ equals ( reed "student.SNr" ) ( toEx snr )
