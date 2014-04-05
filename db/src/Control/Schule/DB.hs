@@ -44,7 +44,7 @@ common = collectRows $ \ state -> do
         return $ Schule { unr = g_unr
 			 , name = g_name
                          , mail_suffix = g_mail_suffix
-                         , use_shibboleth = g_use_shibboleth
+                         , use_shibboleth = 0 /= ( g_use_shibboleth :: Int )
     			 }
 
 -- | put into table:

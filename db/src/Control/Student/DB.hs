@@ -16,12 +16,16 @@ get_unr_mnr ( unr , mnr ) =
 	      , equals ( reed "student.MNr" ) ( toEx mnr )
 	      ]
 
+-- | wenn mnr = "", dann wird diese nicht geprueft,
+-- das ist fuer tutoren, die bisher mnr hatten, 
+-- aber ueber shibboleth keine bekommen.
 get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) =
-    get_where $ ands
+    get_where $ ands $
               [ equals ( reed "student.UNr" ) ( toEx unr )
               , equals ( reed "student.Name") (toEx sn)
-              , equals ( reed "student.Vorname") (toEx gn)
-	      , equals ( reed "student.MNr" ) ( toEx mnr )
+              , equals ( reed "student.Vorname") (toEx gn) ]
+          ++  [ equals ( reed "student.MNr" ) ( toEx mnr )
+              | not $ null $ toString mnr 
 	      ]
 
 

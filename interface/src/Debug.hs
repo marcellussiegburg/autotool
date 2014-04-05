@@ -3,7 +3,7 @@ module Debug where
 import System.IO.UTF8
 import System.Directory
 import System.Time
-import qualified Local
+
 import Control.Monad ( when )
 import qualified System.Cmd
 

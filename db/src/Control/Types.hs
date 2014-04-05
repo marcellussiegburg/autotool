@@ -440,7 +440,7 @@ instance FromCGI UNr where
     fromCGI cs = UNr $ read cs
 
 instance ToEx Bool where
-    toEx b = EString $ map toLower $ show b
+    toEx b = EString $ show $ fromEnum b
 
 -- | Semester-Nummer
 

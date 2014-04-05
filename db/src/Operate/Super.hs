@@ -70,7 +70,6 @@ import qualified Autolib.Multilingual.Html as H
 
 import qualified Util.Datei as D
 import Debug
-import qualified Local
 
 import System.Random
 import qualified System.Directory
@@ -95,14 +94,18 @@ import qualified Debug
 main :: IO ()
 main = do
    Debug.debug "Super_Debug:main"
-   let my_name = Local.super_cgi_name
+   let my_name = Default.super_cgi_name
    ( Gateway.CGI.execute ( my_name ) $ do
+       
+       -- vs <- get_vars ; plain $ show vs
+       -- is <- get_env  ; plain $ show is
+      
        wrap $ preface Default.server
+       
        scores <- scores_link
        footer scores ) `CE.catch` \ ( e :: CE.SomeException ) -> do
          debug $ "caught: " ++ show e
          print e
-
 
 preface server = do
     mschool <- look "school"
@@ -120,15 +123,19 @@ bestmatch name = do
 
 -- iface :: Tree ( Either String Make ) -> Form IO ()
 iface mschool server = do
+  
+    case mschool of
+      Just u | U.use_shibboleth u -> use_account mschool server
+      _ -> do
 
-    new <- click_choice_with_default 0 "Aktion" 
-        [ ( "Account benutzen", False ) 
-	, ( "Account anlegen", True )
-	]
-
-    if new 
-       then edit_create mschool Nothing
-       else use_account mschool server
+        new <- click_choice_with_default 0 "Aktion" 
+            [ ( "Account benutzen", False ) 
+            , ( "Account anlegen", True )
+            ]
+        
+        if new 
+           then edit_create mschool Nothing
+           else use_account mschool server
 
 data Code = Stat | Auf | Einsch
    deriving ( Show, Eq, Typeable )

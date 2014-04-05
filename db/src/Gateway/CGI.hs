@@ -8,6 +8,7 @@
 module Gateway.CGI 
 
 ( Form, Tag, execute, look, write, delete
+, get_env, get_vars, look_var, look_env
 , runForm
 , io, embed, wrap
 , gensym
@@ -81,7 +82,7 @@ import qualified Data.Set as S
 import Data.Dynamic
 import Data.Typeable
 import Data.List ( nub, isPrefixOf, intersperse )
-import Data.Char (isDigit, toLower)
+import Data.Char (isDigit, toLower, toUpper)
 import Data.String ( fromString )
 
 instance Typeable Html where
@@ -129,6 +130,7 @@ instance ToDoc Etml where
 -- new elements are added in front of the top list
 data State = 
      State { stack :: [ Stack Etml ]
+           , vars :: Env
 	   , env :: Env
 	   , forms :: [ Int ] -- ^ (random) sequence of uniqe ids
            , group :: [ ( Tag, Dynamic ) ] -- ^ candidates for next mutex
@@ -136,9 +138,10 @@ data State =
 	   }
      deriving Typeable
 
-state0 :: Env -> IO State
-state0 e = do
+state0 :: Env -> Env -> IO State
+state0 vs e = do
     return $ State { stack = [ ]
+          , vars = vs                   
 	  , env = cleanup e
 	  , forms = [ 1 .. ] 
 	  , group = [ ]
@@ -212,7 +215,7 @@ instance ( Monad m ) => MonadPlus ( Form m )  where
 
 runForm :: Form IO a -> IO (Maybe a)
 runForm (Form f) = do
-    s0 <- state0 undefined
+    s0 <- state0 [] []
     (s1 , ma) <- f s0
     return ma
 
@@ -221,10 +224,10 @@ execute :: String -> Form IO a -> IO ()
 execute cgi f = execute0 cgi $ do { open glue ; f } 
 
 execute0 :: String -> Form IO a -> IO ()
-execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
+execute0 cgi0 (Form f) = N.wrapper $ \ vs is -> do
 
     let query = concat $ intersperse "&" $ do
-                 kv @ (k,v) <- e
+                 kv @ (k,v) <- is
                  guard $ not $ clicked kv
                  guard $ not $ chosen kv
                  return $  Network.CGI.urlEncode k 
@@ -234,7 +237,7 @@ execute0 cgi0 (Form f) = N.wrapper $ \ e -> do
                    ++ "#hotspot"
     timed 15 (return $ clock cgi) ( do 
 
-        s0 <- state0 e
+        s0 <- state0 vs is
         let info = Html.pre 
                  << ( render $ toDoc $ env s0 ) -- environment
         let handler msg = do
@@ -746,8 +749,23 @@ blank = Form $ \ s -> return $
 
 ----------------------------------------------------------------------
 
+look_var :: Monad m => String -> Form m ( Maybe String )
+look_var w = Form $ \ s -> do
+    let v = "HTTP_" ++ map toUpper w
+    return ( s , return $ lookup v $ vars s )
+
+get_vars :: Monad m => Form m  [(String,String)] 
+get_vars = Form $ \  s -> return ( s, return $ vars s )
+
+-- | for compatibility
 look :: Monad m => String -> Form m ( Maybe String )
-look w = Form $ \ s -> return ( s , return $ lookup w $ env s )
+look = look_env
+
+look_env :: Monad m => String -> Form m ( Maybe String )
+look_env w = Form $ \ s -> return ( s , return $ lookup w $ env s )
+
+get_env :: Monad m => Form m  [(String,String)] 
+get_env = Form $ \  s -> return ( s, return $ env s )
 
 write :: Monad m => String -> String -> Form m ()
 write name value = Form $ \ s -> 

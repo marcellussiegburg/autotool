@@ -10,7 +10,7 @@ import qualified Control.Schule
 
 import Control.Monad
 import Data.List ( partition, isSuffixOf, isPrefixOf )
-import Data.Char ( isAlphaNum )
+import Data.Char ( isAlphaNum, toUpper )
 import Data.Maybe ( isNothing , isJust , fromJust )
 
 import Autolib.Util.Zufall
@@ -26,7 +26,7 @@ login mschool = do
     
     u <- case mschool of
       Just u -> do 
-        open row ; plain "Schule" ; plain $ toString $ U.name u ; close -- row
+        -- open row ; plain "Schule" ; plain $ toString $ U.name u ; close -- row
         return u
       Nothing -> do
         us <- io $ Control.Schule.get 
@@ -76,13 +76,12 @@ login_via_stored_password u = do
 
 -- | spec: cut_at c w = xss  <=>  intercalate [c] xss == w
 cut_at :: Eq a => a -> [a] -> [[a]]
-cut_at c [] = []
 cut_at c w = 
       let (pre, post) = span (/= c) w
       in  pre : if null post then [] else cut_at c $ tail post
 
 login_via_shibboleth u = do
-    mpuc <- look "puc"
+    mpuc <- look_var "puc"
     -- example: "urn:mace:terena.org:schac:personalUniqueCode:de:htwk-leipzig.de:Matrikelnummer:"
     
     case mpuc of
@@ -92,7 +91,7 @@ login_via_shibboleth u = do
       Just puc -> do
         let pucs = cut_at ':' puc
         case pucs of
-          [ "urn", "mace", "terena", "org", "schac", "personalUniqueCode", "de"
+          [ "urn", "mace", "terena.org", "schac", "personalUniqueCode", "de"
             , school, "Matrikelnummer", mat ] -> login_via_shibboleth_cont u school mat
           _ -> do
             plain "malformed puc"
@@ -104,9 +103,9 @@ login_via_shibboleth_cont u school mnr = do
         plain "puc school attribute and mail_suffix differ"
         plain $ show (school, U.mail_suffix u)
         mzero
-    Just sn <- look "sn" ; Just gn <- look "givenName"
+    Just sn <- look_var "sn" ; Just gn <- look_var "givenName"
     when (null mnr) $ do
-        maff <- look "affiliation"
+        maff <- look_var "affiliation"
         case maff of
           Nothing -> do 
             plain "missing affiliation attribute"
@@ -118,11 +117,13 @@ login_via_shibboleth_cont u school mnr = do
                else do
                  plain "no Matrikelnummer and no staff@"
                  mzero
+                 
+    plain $ unwords [ "Ihre Identifikation (Shibboleth):"
+                    , sn, gn, mnr, toString $ U.mail_suffix u ] 
     close -- btable    
     use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr)
       
 use_or_make_account unr sn gn mnr = do
-    -- studs <- io $ Control.Student.DB.get_unr_mnr ( U.unr u , fromCGI mnr )
     studs <- io $ Control.Student.DB.get_unr_sn_gn_mnr ( unr , sn, gn, mnr )
     studs <- 
         if (null studs) then do

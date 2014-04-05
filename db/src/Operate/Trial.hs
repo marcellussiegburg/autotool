@@ -88,7 +88,6 @@ import Autolib.FiniteMap
 
 import qualified Util.Datei as D
 import Debug
-import qualified Local
 
 import System.Random
 import System.Directory
@@ -106,7 +105,7 @@ import qualified Autolib.Multilingual.Html as H
 import Operate.DateTime ( defaults )
 
 main :: IO ()
-main = Gateway.CGI.execute ( Local.trial_cgi_name ) $ do
+main = Gateway.CGI.execute ( Default.trial_cgi_name ) $ do
    wrap $ do -- FIXME: following code looks ugly
        mtopic <- look "topic"
        case mtopic of
