@@ -1,5 +1,6 @@
 {-# language DeriveDataTypeable, TemplateHaskell #-}
 {-# language GeneralizedNewtypeDeriving #-}
+{-# language DeriveGeneric #-}
 
 module Network.Counting.Data where
 
@@ -9,18 +10,19 @@ import Autolib.Hash
 import Autolib.Size
 import Data.Typeable
 import Data.Ix
+import GHC.Generics
 
 newtype Wire = Wire Int 
-    deriving (Eq, Ord, Ix, Typeable, Enum, Num)
+    deriving (Eq, Ord, Ix, Typeable, Enum, Num, Generic)
 
 instance ToDoc Wire where toDoc (Wire i) = toDoc i
 instance Reader Wire where reader = fmap Wire reader
-instance Hash Wire where hash (Wire i) = hash i
+instance Hashable Wire 
 
 type Balancer = (Wire, Wire)
 
 data Network = Network [ Balancer ] 
-     deriving (Eq, Typeable)
+     deriving (Eq, Typeable, Generic)
 
 wires (Network bs) = do (top,bot) <- bs ; [ top, bot ]
 
@@ -30,7 +32,7 @@ instance Show Wire where show = render . toDoc
 instance Show Network where show = render . toDoc
 instance Size Network where
     size (Network bs) = length bs
-instance Hash Network where hash (Network bs) = hash bs
+instance Hashable Network 
 
 ex :: Network
 ex = Network 
