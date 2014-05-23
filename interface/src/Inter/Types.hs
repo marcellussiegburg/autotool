@@ -48,6 +48,7 @@ data Make = forall conf p i b
 		  (conf -> Var p i b) --  maker function
 		  (conf -> Reporter ()) -- verify config
                   conf --  example
+    deriving Typeable
 
 ---------------------------------------------------------------------------------
 
@@ -71,8 +72,7 @@ instance ( Reader a, ToDoc a, Typeable a ) => XmlRpcType a where
 
 ---------------------------------------------------------------------------------
 
-instance Typeable Make where 
-    typeOf _ = mkTyConApp ( mkTyCon "Inter.Types.Make" ) []
+-- instance Typeable Make where typeOf _ = mkTyConApp ( mkTyCon "Inter.Types.Make" ) []
 
 instance ToDoc Make 
     where toDoc ( Make p doc fun veri ex ) = text doc

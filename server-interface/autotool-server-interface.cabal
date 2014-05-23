@@ -26,7 +26,7 @@ Library
         haxr, mtl, parsec,  dataenc, directory, unix,
         process, old-time, utf8-string,
         HaXml, pretty,
-        text, filepath,  binary==0.5.1.1,  digest
+        text, filepath,  binary,  digest
     Exposed-Modules:
         Util.Hash, Util.Png
         Util.Xml.OutputDTD, Util.Xml.Output, Util.Xml.Representation,

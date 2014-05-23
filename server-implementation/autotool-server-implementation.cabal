@@ -27,7 +27,9 @@ Executable autotool.cgi
         SHA,   base, random, bytestring, containers,
         haxr, mtl, parsec,  dataenc, directory, unix,
         process, old-time, utf8-string,
-        pretty, HaXml==1.22.*,  filepath,  binary,  digest
+        pretty, 
+        -- HaXml,  
+        filepath,  binary,  digest
     Extensions:
         -- FlexibleInstances
         -- UndecidableInstances
