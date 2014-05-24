@@ -1,7 +1,5 @@
 module RAM.State where
 
---   $Id$
-
 import RAM.Type
 import RAM.Memory
 import Machine.History
@@ -23,7 +21,7 @@ instance ToDoc State where
 	    [ text "schritt" <+> equals <+> toDoc ( schritt s )
 	    , text "memory" <+> equals <+> toDoc ( memory s )
 	    , text "todo" <+> equals 
-	      <+> clipped_dutch_list 1 ( map toDoc $ todo s )
+	      <+> dutch_list ( take 1 $ map toDoc $ todo s )
 	    ]
 
 instance History State where

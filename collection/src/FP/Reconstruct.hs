@@ -132,7 +132,7 @@ isinstanceof tgt typ = do
 data Sub = Sub ( FiniteMap Identifier ( Term Identifier Identifier ) )
 
 instance ToDoc Sub where
-    toDoc ( Sub sub ) = dutch Nothing ( text "{" , semi , text "}" ) $ do
+    toDoc ( Sub sub ) = dutch ( text "{" , semi , text "}" ) $ do
        ( n, t ) <- fmToList sub
        return $ toDoc n <+> text "=" <+> toDoc ( Arrow t )
 

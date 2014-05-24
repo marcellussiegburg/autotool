@@ -15,7 +15,7 @@ data Env = Env ( FiniteMap Identifier Type )
     deriving Typeable
 
 instance ToDoc Env where
-   toDoc ( Env env ) = dutch Nothing ( text "{" , semi, text "}" ) $ do
+   toDoc ( Env env ) = dutch ( text "{" , semi, text "}" ) $ do
        ( n, t ) <- fmToList env
        return $ toDoc n <+> text "::" <+> toDoc t
 
