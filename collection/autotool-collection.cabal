@@ -56,7 +56,8 @@ Library
         temporary,
         smallcheck, 
         -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
-        QuickCheck < 2.6,
+        -- QuickCheck < 2.6,
+        QuickCheck,
         mueval>=0.8.1.1, hint, haskell-src-exts, syb,
         transformers
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances

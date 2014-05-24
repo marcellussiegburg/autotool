@@ -145,7 +145,7 @@ make_fixed = direct Haskell_Blueprint code_example
 
 parse m = case E.readExtensions m of
     Nothing -> R.reject $ text "cannot parse LANGUAGE pragmas at top of file"
-    Just exts -> 
+    Just (lang, exts) -> 
         let pamo = P.defaultParseMode 
                    { P.extensions = exts }
         in  case P.parseModuleWithMode pamo m of

@@ -34,7 +34,7 @@ instance Size Code where
 code_example :: Code
 code_example = Code "\\ n -> (0,n)"
 
-data Driver = QuickCheck Args
+data Driver = QuickCheck -- Args
             | SmallCheck { tests_run :: Int 
                          , failures_shown :: Int
                          }
@@ -46,7 +46,7 @@ $(derives [makeReader, makeToDoc] [''Driver])
 instance Reader StdGen 
 instance ToDoc StdGen
 
-$(derives [makeReader, makeToDoc] [''Args])
+
 
 data Instance = 
      Instance { global :: Code
