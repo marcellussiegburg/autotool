@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Grammatik.Type 
 
@@ -17,6 +18,7 @@ import Autolib.ToDoc
 import Autolib.Reader
 
 import Data.Typeable
+import GHC.Generics
 
 data Grammatik = Grammatik
 	       { terminale      :: Set Char
@@ -24,7 +26,7 @@ data Grammatik = Grammatik
 	       , start	:: Char
 	       , regeln		:: Set (String, String) 
 	       }
-         deriving ( Eq, Typeable )
+         deriving ( Eq, Typeable, Generic )
 
 
 -- | L(mirror (G)) = map reverse (L(G))
@@ -53,12 +55,7 @@ example3 = Grammatik
 
 $(derives [makeReader, makeToDoc] [''Grammatik])
 
-instance Hash Grammatik where
-    hash g = hash [ hash $ terminale g
-                  , hash $ variablen g
-                  , hash $ start g
-                  , hash $ regeln g
-                  ]
+instance Hashable Grammatik
 
 terms = setToList . terminale
 vars  = setToList . variablen
@@ -70,9 +67,7 @@ instance Size Grammatik where size = cardinality . regeln
 nichtterminale = variablen
 startsymbol = start
 
--- local variables:
--- mode: haskell
--- end:
+
 
 
 

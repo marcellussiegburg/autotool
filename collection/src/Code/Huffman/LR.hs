@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Code.Huffman.LR where
 
@@ -11,9 +12,10 @@ import Autolib.Size
 import Code.Type
 
 import Data.Typeable
+import GHC.Generics
 
 data LR = L | R 
-     deriving ( Eq, Ord, Enum, Bounded, Typeable )
+     deriving ( Eq, Ord, Enum, Bounded, Typeable, Generic )
 
 $(derives [makeReader, makeToDoc] [''LR])
 instance Show LR where show = render . toDoc
@@ -21,7 +23,7 @@ instance Show LR where show = render . toDoc
 
 instance Symbol LR 
 instance Size LR where size _ = 1
-instance Hash LR where hash = hash . fromEnum
+instance Hashable LR 
 
 data Ord a => Letter a = Letter 
 	      { weight :: Int

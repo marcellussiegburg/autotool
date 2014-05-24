@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Robots3.Data where
 
@@ -9,6 +10,7 @@ import Autolib.Hash
 
 import Data.Typeable
 import Data.Ix
+import GHC.Generics
 
 data Robots3 = Robots3 deriving ( Typeable )
 data Robots3_Inverse = Robots3_Inverse deriving ( Typeable )
@@ -20,12 +22,12 @@ instance Show Robots3 where show = render . toDoc
 instance Show Robots3_Inverse where show = render . toDoc
 
 data Position = Position { x :: Int, y :: Int }
-     deriving ( Eq, Ord, Typeable )
+     deriving ( Eq, Ord, Typeable, Generic )
 
 $(derives [makeReader, makeToDoc] [''Position])
 
 
-instance Hash Position where hash p = hash (x p, y p)
+instance Hash Position
 
 same_line p q = x p == x q || y p == y q
 
@@ -53,14 +55,13 @@ scalar k p = Position ( k * x p ) ( k * y p )
 data Robot = Robot { name :: String
 		   , position :: Position
 		   }
-     deriving ( Eq, Ord, Typeable )
+     deriving ( Eq, Ord, Typeable, Generic )
 
 $(derives [makeReader, makeToDoc] [''Robot])
 
 
 
-instance Hash Robot where
-    hash r = hash ( name r, position r )
+instance Hash Robot
 
 data Richtung = N | O | S | W 
      deriving ( Eq, Ord, Enum, Bounded, Typeable )

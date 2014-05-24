@@ -1,4 +1,5 @@
 {-# language TypeSynonymInstances, MultiParamTypeClasses, DeriveDataTypeable #-}
+{-# language DeriveGeneric #-}
 
 module Expression.Op 
 
@@ -8,8 +9,6 @@ module Expression.Op
 )
 
 where
-
---  $Id$
 
 import Autolib.Reader 
 import Autolib.ToDoc
@@ -37,6 +36,7 @@ import Text.ParserCombinators.Parsec.Language
 import Data.List (partition)
 
 import Data.Typeable
+import GHC.Generics
 
 type Exp a = T.Term Identifier ( Op a )
 
@@ -111,7 +111,7 @@ instance Ops a => Container (Op a) String where
 
 instance Eq (Op a) where o == p = name o == name p
 instance Ord (Op a) where compare o p = compare (name o) (name p)
-instance Hash (Op a) where hash = hash . name
+instance Hashable (Op a) where hashWithSalt s = hashWithSalt s . name
 instance Size (Op a) where size = const 1
 
 instance Ops a => Autolib.Symbol.Symbol (Op a) where

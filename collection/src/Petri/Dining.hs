@@ -1,6 +1,7 @@
 {-# language GeneralizedNewtypeDeriving #-}
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
+{-# language DeriveGeneric #-}
 
 module Petri.Dining where
 
@@ -15,23 +16,22 @@ import Autolib.Reader
 import Autolib.Hash
 import Autolib.Size
 import Data.Typeable
+import GHC.Generics
 
 import qualified Data.Set as S
 import qualified Data.Map as M
 
 newtype Philo = Philo Int 
-    deriving ( Eq, Ord, Num, ToDoc, Reader, Hash, Typeable )
+    deriving ( Eq, Ord, Num, ToDoc, Reader, Hashable, Typeable, Generic )
 newtype Gabel = Gabel Int 
-    deriving ( Eq, Ord, Num, ToDoc, Reader, Hash, Typeable )
+    deriving ( Eq, Ord, Num, ToDoc, Reader, Hashable, Typeable, Generic )
 
-data Stelle = P Philo Int | G Gabel deriving ( Eq, Ord, Typeable )
-instance Hash Stelle where 
-  hash ( P x y ) = hash (x, y) ; hash ( G x ) = hash x
+data Stelle = P Philo Int | G Gabel deriving ( Eq, Ord, Typeable, Generic )
+instance Hashable Stelle
 
-data Transition = Tak Philo Gabel | Drp Philo deriving ( Eq, Ord, Typeable )
-instance Hash Transition where
-  hash ( Tak p g ) = hash (p,g) ; hash ( Drp p ) = hash p
-  
+data Transition = Tak Philo Gabel | Drp Philo deriving ( Eq, Ord, Typeable, Generic )
+instance Hashable Transition  
+
 instance Size Transition where size _ = 1
 
 $(derives [makeReader, makeToDoc] [''Stelle, ''Transition ])

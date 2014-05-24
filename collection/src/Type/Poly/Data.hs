@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TypeSynonymInstances, MultiParamTypeClasses #-}
 {-# language DeriveDataTypeable #-}
+{-# language DeriveGeneric #-}
 {-# language FlexibleInstances #-}
 
 module Type.Poly.Data where
@@ -15,6 +16,7 @@ import Autolib.Hash
 import Autolib.Size
 
 import Data.Typeable
+import GHC.Generics
 import Control.Monad ( when, forM )
 import Data.List ( nub )
 
@@ -28,16 +30,13 @@ instance Container Identifier String where
 
 data Type = TyCon Identifier [ Type ]
           | TyVar Identifier
-     deriving ( Eq, Ord, Typeable )
+     deriving ( Eq, Ord, Typeable, Generic )
 
 instance Size Type where
     size ( TyCon f xs ) = succ $ sum $ map size xs
     size _  = 1
 
-instance Hash Type where 
-    hash t = case t of
-        TyVar v -> hash (0 :: Int, v)
-        TyCon f args -> hash (1 :: Int, (f, args))
+instance Hash Type 
 
 -- | subexpressions
 subtypes t = t : case t of
@@ -70,7 +69,7 @@ data Variable =
      Variable { vname :: Identifier
 	      , vtype :: Type
 	      }
-     deriving ( Eq, Ord, Typeable )
+     deriving ( Eq, Ord, Typeable, Generic )
 
 instance ToDoc Variable where
     toDoc v = toDoc (vtype v) <+> toDoc (vname v)
@@ -84,7 +83,7 @@ instance Reader Variable where
 data Expression = 
        Apply Identifier [ Type ] 
              Identifier  [ Expression ]
-    deriving ( Eq, Ord, Typeable )
+    deriving ( Eq, Ord, Typeable, Generic )
 
 exp0 :: Expression
 exp0 = read "S.<Integer> eq (S.a(), S.a())"

@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell, DeriveDataTypeable, TypeSynonymInstances #-}
+{-# language DeriveGeneric #-}
 
 module Robots.Data where
 
@@ -8,6 +9,7 @@ import Autolib.Size
 import Autolib.Hash
 
 import Data.Typeable
+import GHC.Generics
 
 data Robots = Robots deriving ( Typeable )
 data Robots_Inverse = Robots_Inverse deriving ( Typeable )
@@ -24,12 +26,12 @@ data Robot = Robot { name :: String
 		   , position :: Position
 		   , ziel :: Maybe Position
 		   }
-     deriving ( Eq, Ord, Typeable )
+     deriving ( Eq, Ord, Typeable, Generic )
 
 $(derives [makeReader, makeToDoc] [''Robot])
 
-instance Hash Robot where
-    hash r = hash ( name r, position r, ziel r )
+instance Hashable Robot 
+--    where hash r = hash ( name r, position r, ziel r )
 
 data Richtung = N | O | S | W 
      deriving ( Eq, Ord, Enum, Bounded, Typeable )
@@ -43,6 +45,4 @@ type Zug = ( String, Richtung )
 
 instance Size Zug where size _ = 1
 
--- local variables:
--- mode: haskell
--- end:
+

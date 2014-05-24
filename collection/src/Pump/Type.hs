@@ -1,9 +1,7 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Pump.Type where
-
---   $Id$
 
 import Autolib.ToDoc
 import Autolib.Reader
@@ -15,6 +13,7 @@ import Autolib.Hash
 import Autolib.FiniteMap
 
 import Data.Typeable
+import GHC.Generics
 
 --------------------------------------------------------------------------
 
@@ -49,7 +48,8 @@ instance Pumping z => Size ( Pump z ) where
     size p @ Nein {} = sum [ length $ w | (n,w) <- fmToList $ wort p ]
     size p @ Ja   {} = n p
 
-instance Pumping z => Hash ( Pump z ) where
-    hash ( n @ Nein {} ) = hash $ wort n
-    hash ( j @ Ja {}   ) = hash ( n j, hash $ zerlege j )
+instance Pumping z => Hashable ( Pump z ) where
+    hashWithSalt s p = case p of
+        Nein {} -> hashWithSalt s ( False, wort p )
+        Ja {} -> hashWithSalt s ( True, zerlege p )
 

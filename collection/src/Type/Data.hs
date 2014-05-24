@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# language MultiParamTypeClasses #-}
 {-# language DeriveDataTypeable #-}
+{-# language DeriveGeneric #-}
 
 module Type.Data where
 
@@ -17,6 +18,7 @@ import Autolib.Hash
 import Autolib.Size
 
 import Data.Typeable
+import GHC.Generics
 
 instance Container Identifier String where
      label _ = "Identifier"
@@ -24,9 +26,9 @@ instance Container Identifier String where
      unpack = mknullary
 
 data Type = Type Identifier 
-     deriving ( Eq, Ord, Typeable )
+     deriving ( Eq, Ord, Typeable, Generic )
 
-instance Hash Type where hash (Type t) = hash t
+instance Hash Type 
 
 instance ToDoc Type where toDoc (Type t) = toDoc t
 instance Reader Type where 

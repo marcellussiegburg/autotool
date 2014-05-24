@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Graph.Series_Parallel.Type where
 
@@ -9,6 +10,7 @@ import Autolib.ToDoc
 import Data.Autolib.Transport
 import Autolib.Hash
 import Data.Typeable
+import GHC.Generics
 
 data GraphC a => STGraph a = STGraph
                { source :: a
@@ -21,6 +23,8 @@ data GraphC a => STGraph a = STGraph
 
 $(derives [makeReader, makeToDoc] [''STGraph])
 
+instance ( GraphC a ) => Hashable ( STGraph a )  where
+    hashWithSalt s g = hashWithSalt s ( source g, target g, contents g )
 instance GraphC a => Show (STGraph a) where 
     show = render . toDoc
                            
@@ -30,18 +34,12 @@ example = STGraph { source = 1, target = 3
                   }
 
 data Threeway a b = This a | That b | Both Int
-   deriving ( Typeable , Ord, Eq )
+   deriving ( Typeable , Ord, Eq, Generic )
 
 $(derives [makeReader, makeToDoc, makeToTransport] [''Threeway])
 
 instance (ToDoc a, ToDoc b) => Show (Threeway a b) where show = render . toDoc
                            
-instance ( Hash a, Hash b ) => Hash ( Threeway a b ) where
-    hash ( This x ) = hash ( 15 :: Int , x )
-    hash ( That y ) = hash ( 11 :: Int , y )
-    hash ( Both i ) = hash ( 22 :: Int , i )
+instance ( Hash a, Hash b ) => Hashable ( Threeway a b ) 
 
--- local variables:
--- mode: haskell
--- end:
 

@@ -39,7 +39,7 @@ import Data.Maybe ( isJust, maybeToList, fromMaybe )
 import Data.Typeable
 import Data.Int
 
-data Config = Config { c_hash :: Int32
+data Config = Config { c_hash :: Int
 		     , inhalt :: FiniteMap String Robot
 		     , breit :: Integer
 		     , geschichte :: [ Zug ]
@@ -131,11 +131,11 @@ instance Container Config [ Robot ] where
     pack = robots
     unpack = make
 
-instance Hash Config where hash = c_hash
+instance Hashable Config where hashWithSalt s = c_hash 
 
 -- | die mit ziel werden echt verglichen,
 -- | von den anderen nur die positionen
-essence :: Config -> ( Int32, Set Robot, Set Position )
+essence :: Config -> ( Int, Set Robot, Set Position )
 essence k = 
     let rs = robots k
 	(zs, ns) = partition ( isJust . ziel ) rs

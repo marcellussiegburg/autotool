@@ -1,5 +1,6 @@
 {-# LANGUAGE OverlappingInstances, FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# language DeriveGeneric #-}
 
 module Tree.Class where
 
@@ -13,6 +14,7 @@ import qualified Autolib.Dot.Node
 import Autolib.Hash
 import Autolib.ToDoc
 
+import GHC.Generics
 
 class ToTree baum where
       -- | easy interface:
@@ -34,11 +36,11 @@ instance ( ToTree baum ) => ToDot baum  where
 
 
 
-instance Hash a => Hash ( Tree a ) where
-    hash ( Node f args ) = hash ( f, hash args )
+instance Hash a => Hashable ( Tree a ) where  
+    hashWithSalt s ( Node f args ) = hashWithSalt s ( f, args )
 
-instance ( Eq baum, ToTree baum ) => Hash baum  where
-    hash = hash . toTree
+instance ( Eq baum, ToTree baum ) => Hashable baum  where    
+    hashWithSalt s = hashWithSalt s . toTree
 
 mirror :: Tree a -> Tree a
 mirror ( Node f args ) = Node f ( map mirror args )

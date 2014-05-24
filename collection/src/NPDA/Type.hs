@@ -1,13 +1,10 @@
--- {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE TemplateHaskell #-}
--- {-# LANGUAGE IncoherentInstances #-}
+{-# LANGUAGE DeriveGeneric #-}
 
--- -*- mode: haskell -*-
+
+-- | nicht-deterministischer Kellerautomat
 
 module NPDA.Type
-
--- nicht-deterministischer Kellerautomat
---   $Id$
 
 ( module NPDA.Type
 , module Autolib.Set
@@ -25,7 +22,7 @@ import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.Hash
 import Data.Typeable
-
+import GHC.Generics
 import Data.Maybe
 import Autolib.Reporter
 
@@ -42,9 +39,10 @@ instance ( Read z, Reader z , Reader [z], ToDoc z, ToDoc [z], Ord z
 data RTO z => Modus z = Leerer_Keller | Zustand (Set z) 
     deriving ( Eq, Typeable )
 
-instance RTO z => Hash ( Modus z ) where
-    hash Leerer_Keller = 67
-    hash ( Zustand xs ) = hash xs
+instance RTO z => Hashable ( Modus z ) where
+    hashWithSalt s m = case m of
+        Leerer_Keller -> hashWithSalt s (1234 :: Int)
+        Zustand m -> hashWithSalt s m
 
 $(derives [makeReader, makeToDoc] [''Modus])
 
@@ -66,11 +64,8 @@ data NPDAC x y z => NPDA x y z =
 	  }
      deriving ( Eq, Typeable )
 
-instance ( NPDAC x y z ) => Hash ( NPDA x y z ) where
-    hash a = hash [ hash $ startzustand a
-                  , hash $ startsymbol a
-                  , hash $ transitionen a
-                  ]
+instance ( NPDAC x y z ) => Hashable ( NPDA x y z ) where
+    hashWithSalt s a = hashWithSalt s ( transitionen a )
 
 instance Container (x, z, y) (x, (z, y)) where
     label _ = "Triple"

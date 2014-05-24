@@ -3,6 +3,7 @@
 {-# language DeriveDataTypeable #-}
 {-# language TemplateHaskell #-}
 {-# language DatatypeContexts #-}
+{-# language DeriveGeneric #-}
 
 module CSP.STS.Type where
 
@@ -14,6 +15,7 @@ import Autolib.Set
 import qualified Data.Set as S
 import qualified Autolib.Relation as R
 import Data.Typeable
+import GHC.Generics
 
 data Ord t => STS s t = STS { start :: s
                    , alphabet :: Set t
@@ -21,8 +23,8 @@ data Ord t => STS s t = STS { start :: s
                    , hidden :: [ (s, s) ]
                    }  deriving ( Eq, Ord, Typeable )
                
-instance ( Hash s, Hash t, Ord t ) => Hash ( STS s t ) where
-    hash s = hash ( visible s, hidden s )
+instance ( Hash s, Hash t , Ord t ) => Hashable ( STS s t ) where
+    hashWithSalt s sts = hashWithSalt s ( visible sts, hidden sts )
 
 states :: (Ord t, Ord s ) => STS s t -> Set s
 states s = S.fromList 

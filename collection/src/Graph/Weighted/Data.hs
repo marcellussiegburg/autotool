@@ -1,4 +1,5 @@
 {-# language TemplateHaskell, DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Graph.Weighted.Data where
 
@@ -8,13 +9,14 @@ import Autolib.Set
 import Autolib.Hash
 
 import Data.Typeable
+import GHC.Generics
 
 data ( Ord v ) => Kante v w = 
      Kante { von :: v, nach :: v, gewicht :: w }
-     deriving ( Typeable )
+     deriving ( Typeable  )
 
-instance ( Ord v, Hash v, Hash w ) => Hash ( Kante v w ) where
-     hash k = hash ( von k, nach k, gewicht k )
+instance ( Ord v, Hash v, Hash w ) => Hashable ( Kante v w ) where
+    hashWithSalt s k = hashWithSalt s (von k, nach k)
 
 -- | das Gewicht wird beim Vergleich der Kanten ignoriert.
 -- Das ist eventuell keine gute Idee. 
@@ -34,9 +36,8 @@ data ( Ord v ) => Graph v w =
            }
     deriving ( Typeable, Eq )
 
-instance (Ord v, Hash v, Hash w) => Hash ( Graph v w ) where
-    hash g = hash ( knoten g, kanten g )
-
+instance (Ord v, Hash v, Hash w) => Hashable ( Graph v w ) where
+    hashWithSalt s g = hashWithSalt s (knoten g, kanten g)
 
 
 $(derives [makeReader, makeToDoc] [''Kante, ''Graph])

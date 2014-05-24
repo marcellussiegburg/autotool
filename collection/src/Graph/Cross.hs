@@ -1,3 +1,5 @@
+{-# language DeriveGeneric #-}
+
 module Graph.Cross where
 
 
@@ -14,6 +16,7 @@ import Autolib.Reporter
 import qualified Challenger as C
 
 import Data.Typeable
+import GHC.Generics
 import Data.Maybe ( fromMaybe, isNothing )
 import Data.List ( tails )
 
@@ -37,7 +40,7 @@ extension f =
     in  max (range $ map fst xys)
 	    (range $ map snd xys)
 
-data Cross = Cross deriving ( Eq, Ord, Show, Read, Typeable )
+data Cross = Cross deriving ( Eq, Ord, Show, Read, Typeable, Generic )
 
 instance OrderScore Cross where
     scoringOrder _ = Increasing
@@ -92,11 +95,10 @@ b = C.initial Cross (1 :: Int, g)
 --------------------------------------------------------------
 
 data Pin a = Pin ( Graph a ) ( Karte a )
-    deriving ( Show , Eq, Ord
+    deriving ( Show , Eq, Ord, Generic
 	     )
 
-instance GraphC a  => Hash ( Pin a ) where
-    hash (Pin g f) = hash (g, f)
+instance GraphC a  => Hashable ( Pin a )
 
 instance ( GraphC a, Show a ) => ToDot ( Pin a ) where
     toDot ( Pin g f ) = toDot $ pin g f 

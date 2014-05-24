@@ -15,8 +15,6 @@ module Robots3.Config
 
 where
 
---  $Id$
-
 import Robots3.Data
 import Robots3.Exact
 
@@ -38,7 +36,7 @@ import Data.Maybe ( isJust, maybeToList, fromMaybe )
 import Data.Typeable
 import Data.Int
 
-data Config = Config { c_hash :: Int32
+data Config = Config { c_hash :: Int
 		     , inhalt :: FiniteMap String Robot
 		     , targets :: Set Position
 		     , breit :: Int
@@ -134,10 +132,10 @@ instance Container Config ([ Robot ],[Position]) where
     pack k = (robots k, goals k)
     unpack (rs,ts) = make rs ts
 
-instance Hash Config where hash = c_hash
+instance Hashable Config where hashWithSalt s = c_hash
 
 -- | nur Positionen vergleichen
-essence :: Config -> ( Int32, Set Position )
+essence :: Config -> ( Int, Set Position )
 essence k = 
     let rs = robots k
     in	(hash k, mkSet $ map position rs)

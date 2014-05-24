@@ -1,4 +1,5 @@
 {-# language DeriveDataTypeable #-}
+{-# language DeriveGeneric #-}
 {-# language TemplateHaskell #-}
 
 module CSP.Syntax where
@@ -9,6 +10,7 @@ import Autolib.Size
 import Autolib.Hash
 
 import Data.Typeable
+import GHC.Generics
 import qualified Data.Set as S
 
 data Process a = Stop 
@@ -20,7 +22,7 @@ data Process a = Stop
            | Fix ( Process a ) | Point
            | Star ( Process a )
            | Undefined
-    deriving ( Eq, Ord )             
+    deriving ( Eq, Ord, Generic ) 
              
 $(derives [ makeReader, makeToDoc ] [ ''Process ] )
 
@@ -57,18 +59,7 @@ splits2 c p q =
     ++ splits1 ( \ q' -> c p q' ) q
 
 
-instance Hash a => Hash ( Process a ) where
-     hash p = case p of
-         Stop -> 17
-         Pre x p -> hash (x, p)
-         Ext p q -> hash (37 :: Int , p, q)
-         Int p q -> hash (47 :: Int , p, q)
-         Seq p q -> hash (57 :: Int , p, q)
-         Par s p q -> hash (s, p, q)
-         Fix p -> hash (67 :: Int, p)
-         Star p -> hash (77 :: Int, p)
-         Point -> 27
-         Undefined -> 87
+instance Hash a => Hashable ( Process a )
 
 example1 :: Process Char
 example1 = Int ( Pre 'a' ( Pre 'b' Stop ))

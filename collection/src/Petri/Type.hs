@@ -1,5 +1,6 @@
 {-# language DeriveDataTypeable, TemplateHaskell #-}
 {-# language GeneralizedNewtypeDeriving #-}
+{-# language DeriveGeneric #-}
 
 module Petri.Type where
   
@@ -14,6 +15,7 @@ import Autolib.ToDoc
 import Data.Typeable  
 import Autolib.Size  
 import Autolib.Hash
+import GHC.Generics
   
 type Connection s t = 
     ( [s], t, [s] )
@@ -53,10 +55,8 @@ instance ( Ord s, Ord t, ToDoc s, ToDoc t ) => Show (Net s t) where show = rende
                           
 
 
-instance ( Ord s, Ord t, Hash s, Hash t ) => Hash ( Net s t ) where
-    hash n = hash ( ( places n, transitions n )
-                  , (connections n , start n )
-                  )
+instance ( Ord s, Ord t, Hash s, Hash t ) => Hashable ( Net s t ) where
+    hashWithSalt s n = hashWithSalt s ( ( places n, transitions n ) , (connections n , start n ) )
                   
 
 all_non_negative (State z) = 

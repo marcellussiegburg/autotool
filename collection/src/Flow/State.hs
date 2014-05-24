@@ -1,3 +1,5 @@
+{-# language DeriveGeneric #-}
+
 module Flow.State 
 
 ( State 
@@ -26,15 +28,16 @@ import qualified Data.Set as S
 import Control.Monad ( forM )
 
 import GHC.Int
+import GHC.Generics
 
 -- | possible status of tests (predicates)
 data State = State
-    { hashcode :: Int32
+    { hashcode :: Int
     , contents :: Map Identifier Bool
     }
     deriving ( Eq, Ord )
 
-instance Hash State where hash = hashcode
+instance Hashable State where hashWithSalt _ = hashcode 
 
 instance Size State -- who needs this?
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Pump.REG.Type where
 
@@ -11,17 +12,17 @@ import Autolib.ToDoc
 import Autolib.Util.Splits
 import Control.Monad (guard)
 import Data.Typeable
+import GHC.Generics
 
 data Zerlegung = Zerlegung
 	       { u :: String, v :: String, w :: String }
-     deriving (Eq, Ord, Typeable)
+     deriving (Eq, Ord, Typeable, Generic)
 
 $(derives [makeReader, makeToDoc] [''Zerlegung])
 
 instance Show Zerlegung where show = render . toDoc
 
-instance Hash Zerlegung where
-    hash z = hash ( u z, v z, w z )
+instance Hash Zerlegung 
 
 --------------------------------------------------------------------------
 
