@@ -92,7 +92,7 @@ roll_for_depth (d : ds) bnd = do
 instance ToDoc Value where
     toDoc v = case v of
         Scalar i -> toDoc i
-	Row vs -> dutch_record $ map toDoc vs
+	Row vs -> dutch_set $ map toDoc vs
 
 instance Reader Value where
     reader = scalar <|> row

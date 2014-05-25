@@ -24,12 +24,12 @@ data State =
      deriving ( Eq, Ord, Typeable )
 
 instance ToDoc State where
-    toDoc st = text "State" <+> dutch_record 
-	    [ text "schritt" <+> equals <+> toDoc ( schritt st )
-	    , text "memory" <+> equals <+> toDoc ( memory st )
-	    , text "stack" <+> equals <+> toDoc ( stack st )
-	    , text "pc" <+> equals <+> toDoc ( pc st )
-	    , text "code [pc]" <+> equals <+> 
+    toDoc st = named_dutch_record (text "State")
+	    [ text "schritt" <+.> equals <+.> toDoc ( schritt st )
+	    , text "memory" <+.> equals <+.> toDoc ( memory st )
+	    , text "stack" <+.> equals <+.> toDoc ( stack st )
+	    , text "pc" <+.> equals <+.> toDoc ( pc st )
+	    , text "code [pc]" <+.> equals <+.> 
 	         if   inRange (bounds $ code st) ( pc st )
 	         then toDoc ( code st ! pc st )
 	         else text "<<outside>>"

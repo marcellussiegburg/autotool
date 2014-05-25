@@ -17,7 +17,7 @@ data Value = Collect { typeof :: Type , contents :: [ Value ] }
 
 instance ToDoc Value where
     toDoc v = case v of
-        Collect {} -> dutch_record $ map toDoc $ contents v
+        Collect {} -> dutch_set $ map toDoc $ contents v
         Scalar s -> toDoc s
         Void -> text "void"
 

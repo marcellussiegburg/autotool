@@ -23,11 +23,11 @@ examplematrix n = Matrix
 
 instance ( Reader a, ToDoc a ) => ToDoc ( Matrix a ) where
     toDocPrec d m = docParen ( d >= 10 ) $
-        text "Matrix" </> dutch_record
-	    [ text "width" <+> equals <+> toDocPrec 0 ( width m )
-	    , text "height" <+> equals <+> toDocPrec 0 ( height m )
-	    , text "contents" <+> equals 
-	        <+> dutch_matrix ( map ( map toDoc ) $ contents m ) 
+        named_dutch_record (text "Matrix")
+	    [ text "width" <+.> equals <+.> toDocPrec 0 ( width m )
+	    , text "height" <+.> equals <+.> toDocPrec 0 ( height m )
+	    , text "contents" <+.> equals 
+	        <+.> dutch_matrix ( map ( map toDoc ) $ contents m ) 
 	    ]
 
 dutch_matrix = dutch_vertical_list . map dutch_horizontal_list

@@ -1,9 +1,6 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
 
 module NPDA.Konfiguration where
-
---   $Id$
 
 import NPDA.Type
 
@@ -22,11 +19,11 @@ data Konfiguration x y z =
     deriving ( Typeable )
 
 instance NPDAC x y z => ToDoc (Konfiguration x y z) where
-    toDoc k = text "Konfiguration" <+> dutch_record
-        [ text "schritt" <+> equals <+> toDoc (schritt k) 
-	, text "eingabe" <+> equals <+> toDoc (eingabe k) 
-	, text "zustand" <+> equals <+> toDoc (zustand k) 
-	, text "keller"  <+> equals <+> toDoc (keller  k) 
+    toDoc k = named_dutch_record (text "Konfiguration")
+        [ text "schritt" <+.> equals <+.> toDoc (schritt k) 
+	, text "eingabe" <+.> equals <+.> toDoc (eingabe k) 
+	, text "zustand" <+.> equals <+.> toDoc (zustand k) 
+	, text "keller"  <+.> equals <+.> toDoc (keller  k) 
 	] 
 
 -- keine Reader/Read-Instanzen

@@ -20,7 +20,7 @@ instance ToDoc Typ where
 
 instance Show Typ where show = render . toDoc
 
-angles = filled_dutch (text "<", text ",", text ">")
+angles = flowing_dutch (text "<", text ",", text ">")
 
 instance ToDoc TypedName where
     toDoc (TypedName t n) = toDoc t <+> toDoc n
@@ -54,8 +54,8 @@ instance ToDoc Exp where
 
 instance Show Exp where show = render . toDoc
 
-parens' = filled_dutch (text "(", text ",", text ")")
-braces' = filled_dutch (text "{", text " ", text "}")
+parens' = dutch_tuple
+braces' = dutch_set
 
 
 

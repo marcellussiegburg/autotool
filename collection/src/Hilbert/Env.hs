@@ -28,7 +28,7 @@ instance Size ( Env a ) where
     size = length . contents
 
 instance ToDoc a => ToDoc ( Env a ) where
-    toDoc ( Env e ) = dutch_record $ do
+    toDoc ( Env e ) = dutch_set $ do
         ( id, val ) <- e
 	return $ hsep [ toDoc id, text "=", toDoc val ]
 

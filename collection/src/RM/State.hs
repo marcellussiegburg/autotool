@@ -17,10 +17,10 @@ data State =
      deriving ( Eq , Ord, Typeable )
 
 instance ToDoc State where
-    toDoc st = text "State" <+> dutch_record
-	       [ text "schritt" <+> equals <+> toDoc ( schritt st )
-	       , text "program" <+> equals <+> toDoc ( program st )
-	       , text "memory" <+> equals <+> toDoc ( memory st )
+    toDoc st = named_dutch_record (text "State")
+	       [ text "schritt" <+.> equals <+.> toDoc ( schritt st )
+	       , text "program" <+.> equals <+.> toDoc ( program st )
+	       , text "memory" <+.> equals <+.> toDoc ( memory st )
 	       ]
 
 instance History State where

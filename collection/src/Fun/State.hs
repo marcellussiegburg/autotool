@@ -31,12 +31,12 @@ instance Ord State where
 
 instance ToDoc State where
     toDocPrec d (State aa ab ac ad ae) = docParen (d >= 10)
-	      (text "State" <+> dutch_record
-	       [ text "schritt" <+> equals <+> toDocPrec 0 aa
-	       , text "todo" <+> equals <+> toDocPrec 0 ab
-	       , text "stack" <+> equals <+> toDocPrec 0 ac
-		-- text "past" <+> equals <+> toDocPrec 0 ad,
-		-- text "cache" <+> equals <+> toDocPrec 0 ae
+	      (named_dutch_record (text "State")
+	       [ text "schritt" <+.> equals <+.> toDocPrec 0 aa
+	       , text "todo" <+.> equals <+.> toDocPrec 0 ab
+	       , text "stack" <+.> equals <+.> toDocPrec 0 ac
+		-- text "past" <+.> equals <+.> toDocPrec 0 ad,
+		-- text "cache" <+.> equals <+.> toDocPrec 0 ae
 	       ])
 
 instance Show State where show = render . toDoc

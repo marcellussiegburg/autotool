@@ -32,9 +32,9 @@ data Trace = Trace { contents :: List State Action
 instance Size Trace where size = size . contents
 
 instance ToDoc Trace where
-    toDoc t = named_dutch_record "Trace" 
-            [ text "contents" <+> equals <+> vcat ( reverse $ h $ contents t )
-            , text "complete" <+> equals <+> toDoc ( complete t )
+    toDoc t = named_dutch_record (text "Trace")
+            [ text "contents" <+.> equals <+.> vcat ( reverse $ h $ contents t )
+            , text "complete" <+.> equals <+.> toDoc ( complete t )
             ]
 
 start s = Trace { contents = Cons s Nil
