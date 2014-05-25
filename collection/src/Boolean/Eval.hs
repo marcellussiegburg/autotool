@@ -1,8 +1,5 @@
 module Boolean.Eval where
 
---  $Id$
-
--- import Boolean.Data
 import Boolean.Op 
 import Expression.Op
 

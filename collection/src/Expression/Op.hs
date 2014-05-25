@@ -1,5 +1,6 @@
 {-# language TypeSynonymInstances, MultiParamTypeClasses, DeriveDataTypeable #-}
 {-# language DeriveGeneric #-}
+{-# language FlexibleInstances #-}
 
 module Expression.Op 
 
