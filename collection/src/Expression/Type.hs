@@ -10,14 +10,11 @@ data Expression
      | Tuple	  [ Expression ]
      deriving (Eq, Ord)
 
-
-
 instance ToDoc Expression where toDoc = docker False
 instance Show Expression where show = render . toDoc
 
-
+-- | first arg: if true, then inside positional (=> use parens)
 docker :: Bool -> Expression -> Doc
--- first arg: if true, then inside positional (=> use parens)
 docker f (Id foo) = text foo
 docker f (Strg foo) = text $ show foo
 docker f (Num foo) = text $ show foo

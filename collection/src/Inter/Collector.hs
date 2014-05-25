@@ -239,6 +239,8 @@ import qualified Network.Counting.Top
 
 import qualified Regular.Top 
 
+import qualified BDD.Top
+
 import qualified Up.Central
 
 makers :: [ Make ]
@@ -344,6 +346,8 @@ tmakers =
 		    , item Hilbert.Central.make_fixed
 		    , item Resolution.Central.make_fixed
 		    , item Resolution.Central.make_quiz
+                    , item BDD.Top.make_fixed
+                    , item BDD.Top.make_quiz
 		    ]
 		, heading "Prädikatenlogik"
 		    [ item PL.Find_Model.make_fixed

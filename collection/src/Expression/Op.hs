@@ -42,7 +42,7 @@ import GHC.Generics
 type Exp a = T.Term Identifier ( Op a )
 
 data Op a = Op { name  :: String
-	     , arity :: Int
+             , arity :: Int
 	     , precedence :: Maybe Int
 	     , assoc :: Assoc
 	     , inter :: [a] -> Reporter a

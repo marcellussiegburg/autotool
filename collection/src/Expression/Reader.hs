@@ -1,6 +1,3 @@
-
---   $Id$
-
 module Expression.Reader 
 
 ( expression

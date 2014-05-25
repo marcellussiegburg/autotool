@@ -1,5 +1,3 @@
---   $Id$
-
 module Expression.Tokens where
 
 import Text.ParserCombinators.Parsec

@@ -1,5 +1,5 @@
 Name:           autotool-collection
-Version:        1.2
+Version:        1.3
 -- License:        GPL
 -- License-File:   LICENSE
 Author:         Johannes Waldmann
@@ -892,4 +892,10 @@ Library
                  Up.Iso
                  Up.Type
                  Up.Reader
-                
+                 BDD.Top      
+                 BDD.Quiz          
+                 BDD.Check
+                 BDD.Data
+                 BDD.Semantics
+                 Boolean.BDD
+
