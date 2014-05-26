@@ -22,15 +22,17 @@ import System.Random
 data DPLL_Reconstruct = DPLL_Reconstruct deriving Typeable
 
 data Instance =
-     Instance { cnf :: [ Pattern [ Pattern Literal ] ]
+     Instance { modus :: Modus
+              , cnf :: [ Pattern [ Pattern Literal ] ]
               , steps :: [ Pattern Step ]
               }
      deriving Typeable
 
 instance0 :: Instance
 instance0 = Instance 
-    { cnf = read "[[1,2,3],[-1,*],[*,-3],*,[-2,3]]"
-    , steps = read "[ Decide -1 , * , Propagate    2 , Backtrack, Propagate -2, * , Success ]"
+    { modus = DPLL
+    , cnf = read "[[1,2,3],[-1,*],[*,-3],*,[-2,3]]"
+    , steps = read "[ Decide -1 , * , Propagate 2 , Backtrack, Propagate -2, * , Success ]"
     }
 
 derives [makeReader, makeToDoc] [''DPLL_Reconstruct, ''Instance ]
@@ -44,7 +46,9 @@ instance Partial DPLL_Reconstruct Instance CNF where
     describe _ i  = vcat 
         [ text "Gesucht ist eine Formel in CNF,"
         , text "die zu diesem Muster paßt:" </> toDoc (cnf i)
-        , text "und deren DPLL-Schritte zu diesem Muster passen:" </> toDoc (steps i)
+        , text "und deren DPLL-Schritte" 
+            <+> case modus i of DPLL -> empty ; DPLL_with_CDCL -> text "(mit CDCL)"
+        , text "zu diesem Muster passen:" </> toDoc (steps i)
         ]
     initial _ i = do
         This cl <- cnf i
@@ -52,9 +56,9 @@ instance Partial DPLL_Reconstruct Instance CNF where
     partial _ i f = do
         matches (cnf i) f
     total _ i f = do
-        let s = solve f
+        let s = solve (modus i) f
         inform $ text "Die DPLL-Rechnung ist" </> toDoc s
-        matches (steps i) s
+        matches (steps i) (map snd s)
 
 make_fixed = direct DPLL_Reconstruct instance0
 
