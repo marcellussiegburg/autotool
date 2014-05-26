@@ -239,9 +239,10 @@ import qualified Network.Counting.Top
 
 import qualified Regular.Top 
 
-import qualified BDD.Top
-
 import qualified Up.Central
+
+import qualified BDD.Top
+import qualified DPLL.Top
 
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
@@ -348,6 +349,7 @@ tmakers =
 		    , item Resolution.Central.make_quiz
                     , item BDD.Top.make_fixed
                     , item BDD.Top.make_quiz
+                    , item DPLL.Top.make_fixed
 		    ]
 		, heading "Prädikatenlogik"
 		    [ item PL.Find_Model.make_fixed

@@ -14,14 +14,15 @@ import qualified Data.Set as S
 import Data.Typeable
 
 data Step = Decide Literal | Propagate Literal | Learn Clause | Backtrack
-          | Success Assignment | Fail
-    deriving Typeable
+          | Success -- Assignment 
+          | Fail
+    deriving (Eq, Typeable)
 
 
 type Assignment = [ Literal ]
 
 data State =
-     State { cnf :: CNF
+     State { formula :: CNF
            , assignment :: Assignment 
            , decisions :: [ Literal ]
            }
@@ -29,11 +30,11 @@ data State =
 derives [makeReader, makeToDoc] [''Step, ''State]
 
 solve :: CNF -> [ Step ]
-solve c = work $ State { cnf = c, assignment = [], decisions = [] }
+solve cnf = work $ State { formula = cnf, assignment = [], decisions = [] }
 
 work :: State  -> [ Step ]
 work st = 
-    let red = reduce (assignment st) (cnf st)
+    let red = reduce (assignment st) (formula st)
         units = concat $ filter ( \ cl -> 1 == length cl ) red
         v = minimum $ map abs $ concat red
     in  if null red then success st
@@ -42,7 +43,7 @@ work st =
              [] -> decide (negate v) st
              u : _ -> propagate u st
 
-success st = [ Success $ assignment st ]
+success st = [ Success {- ( assignment st ) -} ]
 
 decide lit st = Decide lit
        : work  st { decisions = lit : decisions st

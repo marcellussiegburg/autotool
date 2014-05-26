@@ -898,4 +898,8 @@ Library
                  BDD.Data
                  BDD.Semantics
                  Boolean.BDD
+                 DPLL.Top
+                 DPLL.Data
+                 DPLL.Solve
+                 DPLL.Pattern
 
