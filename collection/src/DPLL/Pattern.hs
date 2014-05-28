@@ -14,17 +14,6 @@ import System.Random
 
 data Pattern v = Any | This v 
 
--- | insert k patterns into a list
-mkpat :: Int -> [d] -> IO [Pattern d]
-mkpat k ds = 
-    let modify [] = return []
-        modify ps = do
-            i <- randomRIO (0, length ps -1)
-            let (pre, this : post) = splitAt i ps
-            return $ pre ++ Any : post
-        f k ps = if k > 0 then modify ps >>= f (k-1) else return ps
-    in  f k $ map This ds
-
 
 instance ToDoc v => ToDoc (Pattern v) where
     toDoc p = case p of
@@ -34,6 +23,7 @@ instance ToDoc v => ToDoc (Pattern v) where
 instance Reader v => Reader (Pattern v) where
     reader = const Any <$> my_symbol "*"
          <|> This <$> reader
+
 
 class Matches p d where
     matches :: p -> d -> Reporter ()
@@ -62,3 +52,26 @@ instance (ToDoc d, ToDoc p, Matches p d) => Matches [p] [d] where
     matches (p:ps) (d:ds) = do
         matches p d
         matches ps ds
+
+
+class Punch d p where
+    punch :: d -> IO p
+
+punches :: Punch d p => Int -> d -> IO p
+punches k d = 
+    if k > 0 then punch d >>= punches (k-1) else return d
+
+-- | introduce exactly one pattern
+instance Punch d (Pattern d) where
+    punch d = return Any
+
+instance Punch (Pattern d) (Pattern d) where
+    punch d = return Any
+
+instance Punch d p => Punch [d] [p] where
+    punch xs = do
+        i <- randomRIO (0, length xs - 1)
+        let (pre, this : post) = splitAt i xs
+        that <- punch this
+        return $ pre ++ that : post
+
