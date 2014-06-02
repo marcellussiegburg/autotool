@@ -177,5 +177,5 @@ step p s = trace p $ case p of
 
 trace :: ToDoc a => a -> Reporter b -> Reporter b
 trace e a = do
-    inform $ toDoc e
+    inform $ text "evaluate" <+> toDoc e
     a
