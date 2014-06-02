@@ -244,6 +244,8 @@ import qualified Up.Central
 import qualified BDD.Top
 import qualified DPLL.Top
 
+import qualified SOS
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -559,6 +561,7 @@ tmakers =
                   ]
                 , heading "Sortierprogramme"
 		  [ item Sortier.Programm.Check.make
+                  , item SOS.make_fixed_plain
 		  ] 
                 , heading "String-Matching"
                   [ item String_Matching.KMP.Central.make_fixed

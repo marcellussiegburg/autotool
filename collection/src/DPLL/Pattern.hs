@@ -55,23 +55,26 @@ instance (ToDoc d, ToDoc p, Matches p d) => Matches [p] [d] where
 
 
 class Punch d p where
+    embed :: d -> p
     punch :: d -> IO p
 
 punches :: Punch d p => Int -> d -> IO p
-punches k d = 
-    if k > 0 then punch d >>= punches (k-1) else return d
+punches k d = undefined
 
 -- | introduce exactly one pattern
 instance Punch d (Pattern d) where
+    embed d = This d
     punch d = return Any
 
 instance Punch (Pattern d) (Pattern d) where
+    embed d = d
     punch d = return Any
 
 instance Punch d p => Punch [d] [p] where
+    embed = map embed
     punch xs = do
         i <- randomRIO (0, length xs - 1)
         let (pre, this : post) = splitAt i xs
         that <- punch this
-        return $ pre ++ that : post
+        return $ map embed pre ++ that : map embed post
 
