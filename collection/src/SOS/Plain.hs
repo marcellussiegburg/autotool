@@ -42,7 +42,7 @@ some n = Program <$> M.fromList <$> ( forM (states n) $ \ s -> do
         t <- randomRIO (0,2)
         return (observe s, Move (f,t)) )
     
-restricted = True
+restricted = False
 
 step :: Program -> State -> Reporter State
 step (Program m) s = do
