@@ -24,18 +24,22 @@ import qualified Data.Set as S
 import Data.Typeable
 import System.Random
 
-data Sort_Of_Sorts = Sort_Of_Sorts deriving Typeable
+data Sort_Of_Sorts_Plain = Sort_Of_Sorts_Plain deriving Typeable
+data Sort_Of_Sorts_Exp = Sort_Of_Sorts_Exp deriving Typeable
 
-data Instance p = Instance { cards :: Int } deriving Typeable
+data Instance = Instance { cards :: Int } deriving Typeable
 
-derives [makeToDoc,makeReader] [''Sort_Of_Sorts, ''Instance]
+derives [makeToDoc,makeReader] [''Sort_Of_Sorts_Plain, ''Sort_Of_Sorts_Exp, ''Instance]
 
-instance Show Sort_Of_Sorts where show = render . toDoc
+instance Show Sort_Of_Sorts_Plain where show = render . toDoc
+instance Show Sort_Of_Sorts_Exp where show = render . toDoc
 
-instance OrderScore Sort_Of_Sorts where
+instance OrderScore Sort_Of_Sorts_Plain where
+    scoringOrder _ = Decreasing
+instance OrderScore Sort_Of_Sorts_Exp where
     scoringOrder _ = Decreasing
 
-instance Partial Sort_Of_Sorts (Instance P.Program) P.Program where
+instance Partial Sort_Of_Sorts_Plain Instance P.Program where
     describe _ i = vcat
         [ text "Gesucht ist ein speicherloses Sortierverfahren"
         , text "für" <+> toDoc (cards i) <+> text "Elemente in 3 Kellern."
@@ -46,7 +50,7 @@ instance Partial Sort_Of_Sorts (Instance P.Program) P.Program where
         forM_ (states $ cards i) $ \ s -> do
             silent $ work P.step p S.empty s
 
-instance Partial Sort_Of_Sorts (Instance E.Program) E.Program where
+instance Partial Sort_Of_Sorts_Exp Instance E.Program where
     describe _ i = vcat
         [ text "Gesucht ist ein speicherloses Sortierverfahren"
         , text "für" <+> toDoc (cards i) <+> text "Elemente in 3 Kellern."
@@ -57,8 +61,8 @@ instance Partial Sort_Of_Sorts (Instance E.Program) E.Program where
         forM_ (states $ cards i) $ \ s -> do
             silent $ work E.step p S.empty s
 
-make_fixed_plain = direct Sort_Of_Sorts 
-                 $ (Instance { cards = 3 } :: Instance P.Program)
+make_fixed_plain = direct Sort_Of_Sorts_Plain 
+                 $ Instance { cards = 3 } 
 
-make_fixed_exp = direct Sort_Of_Sorts 
-                 $ (Instance { cards = 3 } :: Instance E.Program)
+make_fixed_exp = direct Sort_Of_Sorts_Exp
+                 $ Instance { cards = 3 } 
