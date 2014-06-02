@@ -46,5 +46,19 @@ instance Partial Sort_Of_Sorts (Instance P.Program) P.Program where
         forM_ (states $ cards i) $ \ s -> do
             silent $ work P.step p S.empty s
 
+instance Partial Sort_Of_Sorts (Instance E.Program) E.Program where
+    describe _ i = vcat
+        [ text "Gesucht ist ein speicherloses Sortierverfahren"
+        , text "für" <+> toDoc (cards i) <+> text "Elemente in 3 Kellern."
+        ]
+    initial _ i = E.program0 $ cards i
+    partial _ i p = return ()
+    total _ i p = do      
+        forM_ (states $ cards i) $ \ s -> do
+            silent $ work E.step p S.empty s
+
 make_fixed_plain = direct Sort_Of_Sorts 
                  $ (Instance { cards = 3 } :: Instance P.Program)
+
+make_fixed_exp = direct Sort_Of_Sorts 
+                 $ (Instance { cards = 3 } :: Instance E.Program)

@@ -2,6 +2,8 @@
 {-# language TemplateHaskell #-}
 {-# language FlexibleInstances #-}
 {-# language LambdaCase #-}
+{-# language DeriveDataTypeable #-}
+{-# language StandaloneDeriving #-}
 
 module SOS.Exp where
 
@@ -12,23 +14,38 @@ import Prelude hiding ( Left, Right, LT, EQ, GT )
 import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.Reporter
+import Autolib.Size
 
 import Text.Parsec.Expr
 
 import Control.Applicative ( (<$>), (<*>) )
+import Data.Typeable
+import Data.Data ( Data )
+import Data.Generics.Schemes ( gsize )
 
 data Place = Left | Mid | Right 
-    deriving ( Enum, Eq, Ord )
+    deriving ( Enum, Eq, Ord, Typeable, Data )
 
 instance Reader Place where
     reader = foldr1 (<|>) 
            $ map ( \ (c, s) -> const c <$> my_reserved s )
            [ (Left, "left"), (Mid, "mid"), (Right, "right") ]
 
+instance ToDoc Place where
+    toDoc p = case p of
+        Left -> text "left" ; Mid -> text "mid" ; Right -> text "right"
+
 my_int = fromIntegral <$> my_integer
 
 instance Reader (Exp Int) where
-    reader =  Const <$> my_int <|> Top <$> reader
+    reader =  Const <$> my_int 
+       <|> do my_reserved "top" ; Top <$> reader
+
+instance ToDoc (Exp Int) where
+    toDoc e = case e of
+        Const i -> toDoc i
+        Top p -> text "top" <+> toDoc p
+
 instance Reader (Exp Bool) where
     reader = buildExpressionParser
         [ [ Prefix ( const Not <$> my_symbol "!" )  ] 
@@ -39,16 +56,36 @@ instance Reader (Exp Bool) where
         <|> Compare <$> reader <*> reader <*> reader 
         <|> do my_reserved "null" ; Null <$> reader
         )
+
+instance ToDoc (Exp Bool) where
+    toDocPrec p e = parens $ case e of
+        Compare l c r -> toDoc l <+> toDoc c <+> toDoc r
+        Null p -> text "null" <+> toDoc p
+        Not e -> text "!" <+> toDoc e
+        And l r -> toDoc l <+> text "&&" <+> toDoc r
+        Or l r -> toDoc l <+> text "||" <+> toDoc r
+
 instance Reader (Exp Action) where
     reader = do my_reserved "move" ; Move <$> reader <*> reader
         <|>  do my_reserved "if" ; p <- reader
                 my_reserved "then" ; t <- reader
                 my_reserved "else" ; e <- reader
                 return $ If p t e
+instance ToDoc (Exp Action) where
+    toDoc e = case e of
+        Move l r -> text "move" <+> toDoc l <+> toDoc r
+        If p t e -> vcat 
+               [ text "if" <+> toDoc p 
+               , text "then" <+> toDoc t
+               , text "else" <+> toDoc e
+               ]
 
 data Action -- just used as type argument
+    deriving ( Typeable )
+deriving instance Data Action
 
 data Compare = LT | LE | EQ | GE | GT
+    deriving ( Typeable, Data )
 
 instance Reader Compare where
     reader = foldr1 (<|>) 
@@ -56,6 +93,12 @@ instance Reader Compare where
            [ (LT, "<"), (LE, "<="), (EQ, "==")
            , (GE, ">="), (GT, ">") 
            ] 
+
+instance ToDoc Compare where
+    toDoc c = case c of
+        LT -> text "<" ; LE -> text "<=" 
+        EQ -> text "=="
+        GE -> text ">=" ; GT -> text ">"
 
 data Exp a where
     Move :: Place -> Place -> Exp Action
@@ -67,8 +110,28 @@ data Exp a where
     And :: Exp Bool -> Exp Bool -> Exp Bool 
     Or  :: Exp Bool -> Exp Bool -> Exp Bool 
     If :: Exp Bool -> Exp Action -> Exp Action -> Exp Action
+  deriving (Typeable )
 
-derives [makeToDoc] [''Place,''Compare, ''Exp]
+instance Size (Exp Int) where
+    size (Top p) = 2 
+    size (Const i) = 1
+instance Size (Exp Bool) where
+    size (Compare l c r) = 2 + size l + size r
+    size (Null p) = 2
+    size (Not e) = 1 + size e
+    size (And l r) = 1 + size l + size r
+    size (Or l r) = 1 + size l + size r
+instance Size (Exp Action) where
+    size (Move l r) = 3
+    size (If p t e) = 1 + size p + size t + size e
+
+program0 :: Int -> Program
+program0 _ = If (Null Left)
+              (If (Null Mid) (Move Right Mid) (Move Mid Right))
+           (If (Null Mid) (Move Left Right)
+               (If (Compare (Top Left) LT (Top Mid))
+                   (Move Mid Left) (Move Left Mid)))
+         
 
 instance Show (Exp Action) where show = render . toDoc
 
