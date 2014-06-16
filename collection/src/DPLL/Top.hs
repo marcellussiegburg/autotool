@@ -8,7 +8,7 @@ module DPLL.Top where
 
 import DPLL.Data
 import DPLL.Solve
-import DPLL.Pattern
+-- import DPLL.Pattern
 
 import Challenger.Partial
 import Autolib.ToDoc
@@ -19,46 +19,44 @@ import Inter.Quiz
 import Data.Typeable
 import System.Random
 
-data DPLL_Reconstruct = DPLL_Reconstruct deriving Typeable
+data DPLL = DPLL deriving Typeable
 
 data Instance =
      Instance { modus :: Modus
-              , cnf :: [ Pattern [ Pattern Literal ] ]
-              , steps :: [ Pattern Step ]
+              , cnf :: CNF              
               }
      deriving Typeable
 
 instance0 :: Instance
 instance0 = Instance 
-    { modus = DPLL
-    , cnf = read "[[1,2,3],[-1,*],[*,-3],*,[-2,3]]"
-    , steps = read "[ Decide -1 , * , Propagate 2 , Backtrack, Propagate -2, * , Success ]"
+    { modus = modus0
+    , cnf = read "[[1,2,3],[-1,4],[2,-3],[1,-2,3,-4],[-2,3]]"
     }
 
-derives [makeReader, makeToDoc] [''DPLL_Reconstruct, ''Instance ]
+derives [makeReader, makeToDoc] [''DPLL, ''Instance ]
 
-instance Show DPLL_Reconstruct where show = render . toDoc
+instance Show DPLL where show = render . toDoc
 
-instance OrderScore DPLL_Reconstruct where 
+instance OrderScore DPLL where 
     scoringOrder _ = None
 
-instance Partial DPLL_Reconstruct Instance CNF where
+instance Partial DPLL Instance [Step] where
     describe _ i  = vcat 
-        [ text "Gesucht ist eine Formel in CNF,"
-        , text "die zu diesem Muster paßt:" </> toDoc (cnf i)
-        , text "und deren DPLL-Schritte" 
-            <+> case modus i of DPLL -> empty ; DPLL_with_CDCL -> text "(mit CDCL)"
-        , text "zu diesem Muster passen:" </> toDoc (steps i)
+        [ text "Gesucht ist eine DPLL-Rechnung für die Formel" </> toDoc (cnf i)
+        , text "mit diesen Eigenschaften" </> toDoc (modus i)
         ]
-    initial _ i = do
-        This cl <- cnf i
-        return $ do This lit <- cl ; return lit
-    partial _ i f = do
-        matches (cnf i) f
-    total _ i f = do
-        let s = solve (modus i) f
-        inform $ text "Die DPLL-Rechnung ist" </> toDoc s
-        matches (steps i) (map snd s)
+    initial _ i = 
+        [ Decide 2, Propagate [2,-3] (-3), SAT ]
+    partial _ i steps = do
+        DPLL.Solve.execute (modus i) (cnf i) steps
+        return ()
+    total _ i steps = do
+        case reverse steps of
+            SAT : _ -> return ()
+            UNSAT : _ -> return ()
+            _ -> reject $ text "die Rechnung soll mit SAT oder UNSAT enden"
+                
+        
 
-make_fixed = direct DPLL_Reconstruct instance0
+make_fixed = direct DPLL instance0
 

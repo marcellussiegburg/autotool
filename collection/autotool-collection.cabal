@@ -901,7 +901,7 @@ Library
                  DPLL.Top
                  DPLL.Data
                  DPLL.Solve
-                 DPLL.Pattern
+                 -- DPLL.Pattern
                  SOS
                  SOS.State
                  SOS.Plain
