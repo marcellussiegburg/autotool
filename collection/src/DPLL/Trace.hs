@@ -37,7 +37,7 @@ derives [makeReader] [''Step ]
 
 instance ToDoc Step where toDoc = text . show
 
-data Reason = Decision 
+data Reason = Decision | Alternate_Decision
             | Propagation { antecedent :: Clause }
     deriving (Eq, Typeable, Show)
 
@@ -73,6 +73,7 @@ state0 cnf = State
 
 data Modus = Modus
      { require_complete_propagation :: Bool
+     , decisions_must_be_negative :: Bool
      , clause_learning :: Bool
      , variable_elimination :: Bool
      }
@@ -81,6 +82,7 @@ data Modus = Modus
 modus0 :: Modus
 modus0 = Modus
      { require_complete_propagation = False
+     , decisions_must_be_negative = True
      , clause_learning = False
      , variable_elimination = False
      }
@@ -104,7 +106,8 @@ work mo a s = do
             assert_no_conflict a
             let p = positive l ; v = variable l
             must_be_unassigned a l
-            when p $ reject $ text "initial decision must be negative"
+            when (decisions_must_be_negative mo) $
+                when p $ reject $ text "decision literal must be negative"
             return $ decide a l
         Propagate { use = cl, obtain = l } -> do
             assert_no_conflict a
@@ -141,7 +144,7 @@ work mo a s = do
         Backtrack -> assert_conflict a $ \ cl -> do
             let dl = decision_level a
             when (dl <= 0) $ reject 
-                $ text "no previous decision (use Fail instead of Backtrack)"
+                $ text "no previous decision (use UNSAT instead of Backtrack)"
             return $ backtrack a 
         Backjump { to_level = dl, learn = cl } -> do
             when (not $ clause_learning mo ) $ reject $ text "clause learning is not allowed"
@@ -174,11 +177,13 @@ backtrack a =
                 [(v,i)] = filter (\(v,i) -> reason i == Decision && level i == dl) 
                         $ M.toList $ assignment a
                 a' = reset_dl (pred dl) a
-            in  if not (value i) 
-               then decide ( a' { conflict_clause = Nothing } ) (mkLiteral v True ) 
-               else a' -- do not remove conflict_clause, need to backtrack more.
+            in  alternate  ( a' { conflict_clause = Nothing } ) v ( not $ value i ) 
 
 conflict a cl = a { conflict_clause = Just cl }
+
+alternate a v p = 
+   let i = Info { value = p, level = decision_level a, reason = Alternate_Decision }
+   in  a { assignment = M.insert v i $ assignment a }
 
 must_be_unassigned a l = 
       maybe ( return () ) 
