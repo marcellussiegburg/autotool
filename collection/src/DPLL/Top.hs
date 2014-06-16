@@ -7,7 +7,7 @@
 module DPLL.Top where
 
 import DPLL.Data
-import DPLL.Solve
+import DPLL.Trace
 -- import DPLL.Pattern
 
 import Challenger.Partial
@@ -46,9 +46,9 @@ instance Partial DPLL Instance [Step] where
         , text "mit diesen Eigenschaften" </> toDoc (modus i)
         ]
     initial _ i = 
-        [ Decide 2, Propagate [2,-3] (-3), SAT ]
+        [ Decide (-2), Propagate [2,-3] (-3), SAT ]
     partial _ i steps = do
-        DPLL.Solve.execute (modus i) (cnf i) steps
+        DPLL.Trace.execute (modus i) (cnf i) steps
         return ()
     total _ i steps = do
         case reverse steps of

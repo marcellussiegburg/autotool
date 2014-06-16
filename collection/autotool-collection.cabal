@@ -900,7 +900,7 @@ Library
                  Boolean.BDD
                  DPLL.Top
                  DPLL.Data
-                 DPLL.Solve
+                 DPLL.Trace
                  -- DPLL.Pattern
                  SOS
                  SOS.State
