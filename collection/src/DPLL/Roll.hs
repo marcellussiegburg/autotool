@@ -16,7 +16,7 @@ import Autolib.Util.Perm
 
 import Control.Applicative (( <$> ))
 import Data.Function ( on )
-import Data.List ( minimumBy )
+import Data.List ( minimumBy, sort, nub )
 import Data.Typeable
 import System.Random
 
@@ -58,11 +58,12 @@ roll conf = do
     return $ minimumBy ( compare `on` eval ) cnfs
    
 
-roll_cnf conf = forM [ 1 .. num_clauses conf ] $ \ i -> do
+roll_cnf conf = nub <$> ( forM [ 1 .. num_clauses conf ] $ \ i -> do
     vs <- permIO $ map Variable [ 1 .. num_variables conf ]
     l <- randomRIO $ num_literals_in_clause conf
-    forM (take l vs) $ \ v -> mkLiteral v <$> randomRIO (False,True)
-    
+    forM (sort $ take l vs) $ \ v -> mkLiteral v <$> randomRIO (False,True)
+  )    
+
 pick xs = do
     i <-  randomRIO ( 0, length xs - 1) 
     return $ xs !! i

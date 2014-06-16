@@ -53,7 +53,10 @@ instance Partial DPLL Instance [Step] where
         , text "für diese Formel:" </> toDoc (cnf i)
         ]
     initial _ i = 
-        [ Decide (-2), Propagate [2,-3] (-3), SAT ]
+        let p = case clause_learning $ DPLL.Top.modus i of
+                True -> Backjump 1 [4,-1]
+                False -> Backtrack 
+        in  [ Decide (-2), Propagate [2,-3] (-3), Conflict [1,-2], p, SAT ]
     partial _ i steps = do
         DPLL.Trace.execute (DPLL.Top.modus i) (cnf i) steps
         return ()

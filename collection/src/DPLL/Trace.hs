@@ -142,17 +142,49 @@ work mo a s = do
                     ]
             return $ conflict a cl 
         Backtrack -> assert_conflict a $ \ cl -> do
+            when (clause_learning mo) $ reject $ text "Backtrack is not allowed (use Backjump)"
             let dl = decision_level a
             when (dl <= 0) $ reject 
                 $ text "no previous decision (use UNSAT instead of Backtrack)"
             return $ backtrack a 
-        Backjump { to_level = dl, learn = cl } -> do
-            when (not $ clause_learning mo ) $ reject $ text "clause learning is not allowed"
-            return $ undefined -- will not happen
+        Backjump { to_level = dl, learn = learnt_cl } -> assert_conflict a $ \ cl -> do
+            when (not $ clause_learning mo ) $ reject $ text "clause learning is not allowed (use Backtrack)"
+            reverse_unit_propagation_check a learnt_cl cl
+            when (dl >= decision_level a) $ reject $ text "must jump to a lower level"
+            return $ ( reset_dl dl a ) 
+                { formula = learnt_cl : formula a, conflict_clause = Nothing }
+
         UNSAT -> assert_conflict a $ \ cl -> do
             let dl = decision_level a
             when (dl > 0) $ reject $ text "not at root decision level"
             return a
+
+reverse_unit_propagation_check a lcl cl = do
+    let antes = do 
+            (v, Info { reason = Propagation { antecedent = a}}) <- M.toList $ assignment a
+            return a
+    ok <- is_implied_by lcl $ cl : antes
+    when (not ok) $ reject 
+       $ text "the learnt clause is not implied by conflict and antecedent clauses."
+        
+is_implied_by cl antes = 
+    derive_conflict $ map ( \ l -> [ opposite l ] ) cl ++ antes
+
+derive_conflict cnf = do
+    let ( conf, noconf ) = partition null cnf
+        ( unit, nounit ) = partition (\ cl -> length cl == 1 ) noconf
+    if null conf 
+        then if null unit
+             then return False -- no conflict, no propagation
+             else do
+                let cnf' = foldr assign cnf $ concat unit
+                derive_conflict cnf'
+        else return True -- conflict
+
+assign l cnf = 
+    let ( sat, open) = partition ( \ cl -> elem l cl ) cnf
+    in  map ( filter ( \ l' -> l' /= opposite l) ) open
+    
 
 decide a l = 
             let p = positive l ; v = variable l
@@ -192,7 +224,7 @@ must_be_unassigned a l =
 
 assert_no_conflict a = 
       maybe ( return () )
-            ( const $ reject $ text "must handle conflict first" )
+            ( const $ reject $ text "must handle conflict first (by Backtrack, Backjump or UNSAT)" )
    $  conflict_clause a
 
 assert_conflict :: State -> ( Clause -> Reporter r ) -> Reporter r

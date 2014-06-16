@@ -47,6 +47,8 @@ positive = ( > 0 ) . unLiteral
 negative :: Literal -> Bool
 negative = ( < 0 ) . unLiteral
 
+opposite :: Literal -> Literal
+opposite = Literal . negate . unLiteral
 
 mkLiteral :: Variable -> Bool -> Literal
 mkLiteral (Variable v) b = Literal $ ( if b then id else negate ) v
