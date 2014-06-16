@@ -59,7 +59,8 @@ Library
         -- QuickCheck < 2.6,
         QuickCheck,
         mueval>=0.8.1.1, hint, haskell-src-exts, syb,
-        transformers
+        transformers,
+        logict>=0.6.0.2
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -901,6 +902,8 @@ Library
                  DPLL.Top
                  DPLL.Data
                  DPLL.Trace
+                 DPLL.Solve
+                 DPLL.Roll
                  -- DPLL.Pattern
                  SOS
                  SOS.State

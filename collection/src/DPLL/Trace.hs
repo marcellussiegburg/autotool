@@ -15,7 +15,7 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Data.List ( partition )
 import Control.Applicative ((<$>))
-
+import Data.List ( nub )
 import Data.Typeable
 import Data.Maybe ( isNothing )
 
@@ -29,31 +29,43 @@ data Step = Decide Literal
           | Backtrack 
           | Backjump { to_level :: Int, learn :: Clause }
           | UNSAT
-    deriving (Eq, Typeable)
+    deriving (Eq, Typeable, Show)
 
 instance Size Step where size = const 1
 
+derives [makeReader] [''Step ]
+
+instance ToDoc Step where toDoc = text . show
 
 data Reason = Decision 
             | Propagation { antecedent :: Clause }
-    deriving (Eq, Typeable)
+    deriving (Eq, Typeable, Show)
+
+derives [makeReader] [''Reason ]
+
+instance ToDoc Reason where toDoc = text . show
 
 data Info = 
      Info { value :: Bool
           , level :: Int
           , reason :: Reason
           }
-    deriving (Eq, Typeable)
+    deriving (Eq, Typeable, Show)
+
+instance ToDoc Info where toDoc = text . show
+derives [makeReader] [''Info]
 
 data State =
-     State { formula :: CNF
-           , decision_level :: Int
+     State { decision_level :: Int
            , assignment :: M.Map Variable Info
            , conflict_clause :: Maybe Clause
+           , variables :: S.Set Variable
+           , formula :: CNF
            }
 
 state0 cnf = State 
-    { formula = cnf
+    { formula = nub $ map nub cnf
+    , variables = S.fromList $ map variable $ concat cnf
     , decision_level = 0
     , assignment = M.empty
     , conflict_clause = Nothing
@@ -73,9 +85,11 @@ modus0 = Modus
      , variable_elimination = False
      }
 
-derives [makeReader, makeToDoc] [''Step, ''Reason, ''Info, ''State, ''Modus]
+derives [makeReader, makeToDoc] [''State, ''Modus]
 
-instance Show Step where show = render . toDoc
+
+instance Show State where show = render . toDoc
+
 
 execute :: Modus -> CNF -> [Step] -> Reporter State
 execute mo cnf steps = foldM ( work mo ) (state0 cnf)  steps
@@ -162,7 +176,7 @@ backtrack a =
                 a' = reset_dl (pred dl) a
             in  if not (value i) 
                then decide ( a' { conflict_clause = Nothing } ) (mkLiteral v True ) 
-               else a'
+               else a' -- do not remove conflict_clause, need to backtrack more.
 
 conflict a cl = a { conflict_clause = Just cl }
 

@@ -352,6 +352,7 @@ tmakers =
                     , item BDD.Top.make_fixed
                     , item BDD.Top.make_quiz
                     , item DPLL.Top.make_fixed
+                    , item DPLL.Top.make_quiz
 		    ]
 		, heading "Prädikatenlogik"
 		    [ item PL.Find_Model.make_fixed
