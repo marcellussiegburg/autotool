@@ -43,7 +43,7 @@ import Gateway.Help
 import qualified Local
 import Gateway.Errmsg
 
-import Autolib.ToDoc hiding ( beside )
+import Autolib.ToDoc hiding ( beside, group )
 import qualified Autolib.Output
 import Autolib.Reader
 import Autolib.FiniteMap
@@ -85,9 +85,9 @@ import Data.List ( nub, isPrefixOf, intersperse )
 import Data.Char (isDigit, toLower, toUpper)
 import Data.String ( fromString )
 
-instance Typeable Html where
+{-instance Typeable Html where
     typeOf _ = mkTyConApp ( mkTyCon "Html.Html" ) []
-
+-}
 instance ToDoc Html where toDoc x = text "Html" -- text . show
 
 type Env = [(String, String)]
@@ -585,9 +585,10 @@ path_tree_choice path top = do
         Left sub -> path_tree_choice ( drop 1 path ) sub
         Right x    -> return x
 
-instance Typeable a => Typeable ( Tree a )  where
+{-instance Typeable a => Typeable ( Tree a )  where
     typeOf ( t :: Tree a ) = mkTyConApp ( mkTyCon "Data.Tree.Tree" )
                                          [ typeOf ( undefined :: a ) ]
+-}
 ----------------------------------------------------------------------
 
 fromdyn :: forall m a

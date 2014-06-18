@@ -418,7 +418,8 @@ instance ToString ANr where
     toString (ANr i) = show i
 instance FromCGI ANr where
     fromCGI cs = ANr $ read cs
-instance Hash ANr where
+instance Hashable ANr where
+    hashWithSalt s (ANr x) = hashWithSalt s x
     hash (ANr x) = hash ( 25 :: Int , x)
 
 -- | Schul-Nummer
@@ -494,7 +495,8 @@ instance ToString VNr where
     toString (VNr x) = show x
 instance FromCGI VNr where
     fromCGI cs = VNr $ read cs
-instance Hash VNr where
+instance Hashable VNr where
+    hashWithSalt s (VNr x) = hashWithSalt s x
     hash ( VNr x ) = hash ( 17 :: Int , x )
 
 -- | OK-Bewertung (Anzahl)
