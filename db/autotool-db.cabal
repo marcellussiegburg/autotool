@@ -20,7 +20,7 @@ Executable autotool-Trial
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
-    directory, utf8-string, text
+    directory, utf8-string, text, hashable
 
 Executable autotool-Super
   Main-is: src/Operate/Super.hs
@@ -29,7 +29,14 @@ Executable autotool-Super
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
-    directory, utf8-string, text
+    directory, utf8-string, text, hashable
+
+Executable autotool-Scorer
+  Main-is: src/Scorer/Main.hs
+  Build-Depends:
+    base, text, blaze-html,
+    autolib-data, autolib-todoc, autolib-output,
+    autotool-db
 
 Library
   Build-Depends:
@@ -39,7 +46,8 @@ Library
     base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
     hsql==1.8.2, hsql-mysql==1.8.2, old-locale, old-time, parsec,
     directory, digest, bytestring, unix, utf8-string, text,
-    process
+    process,
+    hashable
   GHC-Options:    -Wall -fglasgow-exts
   Extensions:
 --     DeriveDataTypeable
@@ -128,4 +136,10 @@ Library
     Control.Passwort
     Control.SQL
     Control.Schule
+    Scorer.Util
+    Scorer.Compute
+    Scorer.Aufgabe
+    Scorer.Einsendung
+    Scorer.Emit
+    Scorer.Config
 

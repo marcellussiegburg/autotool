@@ -6,6 +6,7 @@ import Scorer.Config
 import Scorer.Einsendung
 import Scorer.Aufgabe
 import Scorer.Util hiding ( size )
+--import Prelude hiding (unwords, map, head, null, all, filter, foldr1)
 
 import Control.Types hiding ( size )
 
@@ -21,6 +22,7 @@ import Autolib.Util.Sort
 import Autolib.ToDoc
 import Autolib.Output ( Output )
 import qualified Autolib.Output as O
+import qualified Data.Text as T
 
 import Control.Monad ( guard , liftM, when, forM )
 import System.IO ( hFlush, stdout )
@@ -79,7 +81,7 @@ isadmin m =
 single :: Bool -> UNr -> ( ANr, [ Einsendung ] ) -> IO Output
 single deco u arg @( anr, es ) = do
     [ auf ] <- A.get_this anr
-    let header = O.Text $ unwords 
+    let header = O.Text $ T.pack $ unwords 
 	       [ "Aufgabe" , toString $ A.name auf
 	       , unwords $ if null es then [] else
 	         [ "( beste bekannte Lösung", show (size $ head es), ")" ]
@@ -91,7 +93,7 @@ single deco u arg @( anr, es ) = do
         if False -- deco 
         then mapM (liftM show . decorate u) realized 
         else return $ map show realized
-    let scored = O.Itemize $ map O.Text decorated
+    let scored = O.Itemize $ map (O.Text . T.pack) decorated
 
 
     let try = O.Named_Link  "Aufgabe ausprobieren (ohne Wertung)"
@@ -114,7 +116,7 @@ totalize deco u fm = do
 
     infos <- collect deco u fm
 
-    return $ O.lead (O.Text "Top Ten") $ O.Doc $ vcat $ do 
+    return $ O.lead (O.Text $ T.pack "Top Ten") $ O.Doc $ vcat $ do 
                        (i,(p,ps)) <- infos
 		       return $ text $ unwords [ stretch 10 $ show p
 					, ":"
@@ -123,13 +125,13 @@ totalize deco u fm = do
 					, pshow ps
 					]
 
-pshow ps = unwords $ [ stretch 4 $ show (length ps)
+pshow ps = unwords $ [ stretch 4 $ show (Prelude.length ps)
 		     , "Platzierungen"
 		     , ":"
 		     , cshow ps
 		     ]
 
-cshow ps = fshow $ addListToFM_C (+) emptyFM $ zip ps $ repeat 1
+cshow ps = fshow $ addListToFM_C (+) emptyFM $ Prelude.zip ps $ repeat (1 :: Integer)
 
 fshow pfm = unwords $ do
 	    p <- [1..10]
@@ -155,7 +157,7 @@ collect deco u fm = do
 	     (e,p,k) <- zip3 (realize es) scorePoints [1..]
 	     return (e,(p,[k]))
 
-    return $ take scoreItems
+    return $ Prelude.take scoreItems
 	   $ sortBy ( \ (_,(p,_)) -> negate p ) -- größten zuerst
 	   $ fmToList
 	   $ addListToFM_C ( \ (x,xs) (y,ys) -> (x+y,xs++ys) ) emptyFM 
