@@ -121,6 +121,7 @@ CREATE TABLE `schule` (
   `UNr` int(11) NOT NULL default '0',
   `Name` varchar(50) NOT NULL default '',
   `Mail_Suffix` text NOT NULL
+  `Use_Shibboleth` tinyint(1) NOT NULL Default 0,
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
