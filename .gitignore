@@ -8,3 +8,7 @@
 /src/Control/Mysqlconnect.hs
 /common
 /collection/dist/*
+/db/dist/
+/interface/dist/
+/server-implementation/dist/
+/server-interface/dist/
