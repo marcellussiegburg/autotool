@@ -75,11 +75,11 @@ make_fixed = direct DPLL instance0
 
 instance Generator DPLL Config ( Instance, [Step] ) where
     generator p conf key = do
-        (c, s) <- roll conf
+        (c, s, o) <- roll conf
         return ( Instance { modus = DPLL.Roll.modus conf
                           , max_solution_length = case require_max_solution_length conf of
                                 DPLL.Roll.No -> Nothing
-                                Yes { allow_extra = e } -> Just $ length s + e 
+                                Yes { allow_extra = e } -> Just $ o + e 
                           , cnf = c 
                           } , s )
 instance Project DPLL ( Instance, [Step] ) Instance where

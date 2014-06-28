@@ -53,10 +53,15 @@ instance Show Config where show = render . toDoc
 roll conf = do
     cnfs <- forM [ 1 .. num_candidates conf ] $ \ k -> do
         cnf <- roll_cnf conf
-        return ( cnf, solveBestOf (solve_best_of conf) (modus conf) cnf )
-    let eval (c,s) = abs (length s - solution_length_target conf)
+        let sol = solveBestOf (solve_best_of conf) (modus conf) cnf 
+            cost = case clause_learning (modus conf) of
+                False -> length sol
+                True -> length sol 
+                      + length (filter (== Backtrack) sol)
+        return ( cnf, sol, cost )
+    let eval (cnf,sol,cost) = 
+            abs (cost - solution_length_target conf)
     return $ minimumBy ( compare `on` eval ) cnfs
-   
 
 roll_cnf conf = nub <$> ( forM [ 1 .. num_clauses conf ] $ \ i -> do
     vs <- permIO $ map Variable [ 1 .. num_variables conf ]
