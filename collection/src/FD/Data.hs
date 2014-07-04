@@ -11,10 +11,11 @@ import qualified Data.Set as S
 import Data.Typeable
 import Control.Applicative ((<$>),(<*>))
 
-f :: Formula
-f = [ Atom (Rel "<") [ Var "x", Var "y" ]
-    , Atom (Rel "<") [ Var "y", Var "z" ]
-    , Atom (Rel "<") [ Var "z", Var "y" ]
+formula0 :: Formula
+formula0 = 
+    [ Atom (Rel "P") [ Var "x", Var "y", Var "z" ]
+    , Atom (Rel "P") [ Var "x", Var "x", Var "y" ]
+    , Atom (Rel "G") [ Var "y", Var "x" ]
     ]
 
 newtype Var = Var { unVar :: String }

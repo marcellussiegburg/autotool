@@ -19,20 +19,20 @@ import qualified Autolib.Relation as R
 import Data.List ( partition )
 import Control.Applicative ((<$>))
 import Data.List ( nub )
-import Data.Maybe ( isNothing )
+import Data.Maybe ( isNothing, isJust )
 
 
 data Step u = Decide Var u
           | Arc_Consistency_Deduction { use :: (Atom, Var) , obtain :: [ u ]   }
           | Solved -- SAT
           | Failed (Maybe Var)
-          | Backtrack           
+          | Backtrack 
           | Inconsistent -- UNSAT
     deriving Typeable
 
-steps :: [ Step Int ]
-steps = [ Arc_Consistency_Deduction 
-            ( Atom (Rel "<") [Var "x", Var "y"] , Var "x") [ 1 .. 999 ]
+steps0 :: [ Step Int ]
+steps0 = [ Arc_Consistency_Deduction 
+            ( Atom (Rel "<") [Var "x", Var "y"] , Var "x") [ 1 .. 3 ]
         , Inconsistent
         ]
 
@@ -67,11 +67,24 @@ data Ord u => Algebra u =
     deriving Typeable
 
 derives [makeReader, makeToDoc] [''Algebra ]
+instance (ToDoc u, Ord u) => Show ( Algebra u) where show = render . toDoc
+
+algebra0 :: Algebra Int
+algebra0 = 
+    let u = [ 0 .. 3 ] 
+    in Algebra
+        { universe = u
+        , relations = M.fromList 
+             [ ( Rel "G", S.fromList [ [x,y] | x<-u, y<-u, x >y ] )
+             , ( Rel "P", S.fromList [ [x,y,z] | x<-u, y<-u, z<-u, x + y == z ] )
+             ]
+       }
 
 data Modus = Modus
      { require_hyperarc_consistency_up_to :: Maybe Int
      , allow_hyperarc_propagation_up_to :: Maybe Int
      , decisions_must_be_increasing :: Bool
+     , max_solution_length :: Maybe Int
      }
     deriving (Eq, Typeable)
 
@@ -82,6 +95,7 @@ modus0 = Modus
     { require_hyperarc_consistency_up_to = Nothing
     , allow_hyperarc_propagation_up_to = Just 2
     , decisions_must_be_increasing = True
+    , max_solution_length = Nothing
     }
 
 data Ord u => Instance u = 
@@ -89,6 +103,7 @@ data Ord u => Instance u =
               , formula :: Formula
               , algebra :: Algebra u
               }
+    deriving (Typeable)
 
 derives [makeReader, makeToDoc] [''Instance]
 
@@ -122,164 +137,130 @@ work :: (Ord u, ToDoc u)
      => Instance u -> State u  -> Step u -> Reporter (State u)
 work inst a s = do
     inform $ vcat [ text "current" </> toDoc a, text "step" </> toDoc s ]
-
     case s of
-        Decide var elt -> do
-            case require_hyperarc_consistency_up_to $ modus $ inst of
-                Just bound -> assert_hyperarc_consistent bound inst a
-                Nothing -> return ()
-            info <- maybe ( reject $ text "unbound variable" ) return
-                 $ M.lookup var ( assignment a )
-            let dom = domain info
-            when (not $ elem elt dom) $ reject 
-                 $ text "not in current domain of the variable"
-            when ( decisions_must_be_increasing $ modus inst ) $ do
-                 when (not ( elt == minimum dom )) $ reject 
-                     $ text "is not the minimum element of the domain"
-            let todo = filter ( /= elt ) dom
-                info = Info { level = succ $ decision_level a
-                            , domain = [elt]
-                            , future_domain = Just todo
-                            }
-            return $ State 
-                   { decision_level = succ $ decision_level a
-                   , failed = False
-                   , assignment = M.insert var info $ assignment a
-                   }
+        Decide var elt -> work_decide inst a var elt
+        Failed mvar -> work_failed inst a mvar
+        Backtrack -> work_backtrack inst a 
+        Inconsistent -> work_inconsistent inst a
+        Solved -> work_solved inst a
+        Arc_Consistency_Deduction {} -> work_arc_consistency_deduction inst a s
 
-{-
-            
-          | Arc_Consistency_Deduction { use :: (Atom, Var) , obtain :: [ u ]   }
-          | Solved -- SAT
-          | Failed (Maybe Var)
-          | Backtrack           
-          | Inconsistent -- UNSAT
-
-
-        Propagate { use = cl, obtain = l } -> do
-            assert_no_conflict a
-            must_be_unassigned a l
-            when (not $ elem cl $ formula a) $ reject $ text "the cnf does not contain this clause"
-            when (not $ elem l cl) $ reject $ text "the clause does not contain this literal"
-            let ( me, others ) = partition (== l) cl
-            forM_ others $ \ o -> case (evaluate_literal (assignment a) o) of
-                Nothing -> reject $ text "the clause is not unit, because" 
-                        <+> toDoc o <+> text "is unassigned"
-                Just True -> reject $ text "the clause is not unit, because" 
-                        <+> toDoc o <+> text "is true"
-                Just False -> return ()
-            return $ propagate a cl l
-        SAT -> do
-            assert_no_conflict a
-            forM_ (formula a) $ \ cl -> do
-                let vs = map (\ l -> (l, evaluate_literal (assignment a) l)) cl
-                    sat = any ( \ (l,v) -> v == Just True ) vs
-                when (not sat) $ reject $ vcat
-                    [ text "clause" <+> toDoc cl <+> text "is not satisfied"
-                    , text "values of literals are" <+> toDoc vs
-                    ]
-            return a
-        Conflict cl -> do
-            assert_no_conflict a
-            let vs = map (\ l -> (l, evaluate_literal (assignment a) l)) cl
-                unsat = all ( \ (l,v) -> v == Just False ) vs
-            when (not unsat) $ reject $ vcat
-                    [ text "clause" <+> toDoc cl <+> text "is not a conflict clause"
-                    , text "values of literals are" <+> toDoc vs
-                    ]
-            return $ conflict a cl 
-        Backtrack -> assert_conflict a $ \ cl -> do
-            when (clause_learning mo) $ reject $ text "Backtrack is not allowed (use Backjump)"
-            let dl = decision_level a
-            when (dl <= 0) $ reject 
-                $ text "no previous decision (use UNSAT instead of Backtrack)"
-            return $ backtrack a 
-        Backjump { to_level = dl, learn = learnt_cl } -> assert_conflict a $ \ cl -> do
-            when (not $ clause_learning mo ) $ reject $ text "clause learning is not allowed (use Backtrack)"
-            reverse_unit_propagation_check a learnt_cl cl
-            when (dl >= decision_level a) $ reject $ text "must jump to a lower level"
-            return $ ( reset_dl dl a ) 
-                { formula = learnt_cl : formula a, conflict_clause = Nothing }
-
-        UNSAT -> assert_conflict a $ \ cl -> do
-            let dl = decision_level a
-            when (dl > 0) $ reject $ text "not at root decision level"
-            return a
--}
-
-assert_hyperarc_consistent bound form a = do
-    reject $ text "assert_hyperarc_consistent: not implemented"
-
-{-
-assign l cnf = 
-    let ( sat, open) = partition ( \ cl -> elem l cl ) cnf
-    in  map ( filter ( \ l' -> l' /= opposite l) ) open
+work_arc_consistency_deduction inst a 
+        (Arc_Consistency_Deduction { use = (atom, var), obtain = elts }) = do
+    let vs = variables [ atom ]
+    when ( not $ S.member var vs ) $ reject 
+        $ text "variable does not occur in the atom"
+    case allow_hyperarc_propagation_up_to $ modus inst  of
+        Nothing -> return ()
+        Just bound -> when (S.size vs > bound) $ reject 
+            $ text "deduction for hyper-edges of size" <+> toDoc (S.size vs) <+> text "is not allowed"
+    info <- get_info a var
+    let ok = and $ do
+            elt <- elts
+            return $ or $ do
+                    b0 <- assignments a $ S.delete var vs
+                    let b = M.insert var elt b0
+                    return $ evaluate (algebra inst) [atom] b
+    when (not ok) $ reject 
+        $ text "not all elements of the target domain have a matching assignment"
+    let info' = info { domain = elts }
+    return $ a { assignment = M.insert var info' $ assignment a }
     
+assignments a vs = map M.fromList 
+    $ sequence  
+    $ map ( \ (v, i) -> map ( \ e -> (v,e)) (domain i)) 
+    $ M.toList $ assignment a 
 
-decide a l = 
-            let p = positive l ; v = variable l
-                dl = succ $ decision_level a
-            in  a 
-                { decision_level = dl
-                , assignment = M.insert v
-                    (Info { value = p
-                          , level = dl
-                          , reason = Decision } ) $ assignment a
-                }
+evaluate alg form b = and $ map (evaluate_atom alg b) form
 
-propagate a cl l =    
-            let dl = decision_level a
-            in  a 
-               { assignment = M.insert (variable l) (Info {
-                   value = positive l, level = dl, reason = Propagation cl}) $ assignment a
+evaluate_atom alg b atom = 
+    let argv = map ( b M.! ) $ args atom
+    in  S.member argv $ relations alg M.! rel atom
+
+assert_failed a = 
+    when (not $ failed a) $ reject $ text "only allowed in a failed state"
+
+assert_not_failed a = 
+    when (failed a) $ reject $ text "only allowed in a non-failed state"
+
+work_solved inst a = do
+    assert_not_failed a
+    let bs = assignments a $ variables $ formula inst
+    let (ok, wrong) = partition (evaluate ( algebra inst) ( formula inst)) bs
+    when (not $ null wrong) $ reject $ vcat
+        [ text "there is some assignment that is a non-model"
+        , toDoc $ take 1 $ wrong
+        ]
+    when (null ok) $ reject $ text "there is no assignment (some domain is empty)"
+    return a
+
+work_inconsistent inst a = do
+    assert_failed a
+    let dl = decision_level a ; dl' = pred dl
+    when ( dl > 0 ) $ reject 
+        $ text "Inconsistency can only be claimed at top level (use Backtrack)"
+    return a
+
+work_backtrack inst a = do
+    assert_failed a
+    let dl = decision_level a ; dl' = pred dl
+    when ( dl <= 0 ) $ reject $ text "cannot backtrack at level 0 (use Inconsistent)"
+    let these = M.filter ( \ i -> level i == dl ) $ assignment a
+        previous = M.filter ( \ i -> level i < dl ) $ assignment a
+        [ (var, Info { future_domain = Just fdom } ) ] 
+            = M.toList $ M.filter ( isJust . future_domain ) these
+        info' = Info { level = dl', domain = fdom, future_domain = Nothing }
+    return $ a { decision_level = dl'
+               , assignment = M.insert var info' $ assignment a 
+               , failed = False
                }
 
-backtrack a = 
-            let dl = decision_level a
-                [(v,i)] = filter (\(v,i) -> reason i == Decision && level i == dl) 
-                        $ M.toList $ assignment a
-                a' = reset_dl (pred dl) a
-            in  alternate  ( a' { conflict_clause = Nothing } ) v ( not $ value i ) 
+work_failed inst a mvar = do
+    assert_not_failed a
+    case mvar of
+      Nothing -> do
+        if S.null $ variables $ formula inst
+            then error "work_failed { mvar = Nothing } not implemented"
+            else reject $ text "Failed Nothing can only be used when there are no variables"
+      Just var -> do
+        info <- get_info a var
+        if null $ domain info
+            then return $ a { failed = True }
+            else reject $ text "domain of this variable is not empty"
 
-conflict a cl = a { conflict_clause = Just cl }
+work_decide inst a var elt = do
+    assert_not_failed a
+    assert_hyperarc_consistent inst a
+    info <- get_info a var
+    let dom = domain info
+    when (not $ elem elt dom) $ reject 
+         $ text "not in current domain of the variable"
+    when ( decisions_must_be_increasing $ modus inst ) $ do
+         when (not ( elt == minimum dom )) $ reject 
+             $ text "is not the minimum element of the domain"
+    let todo = filter ( /= elt ) dom
+        info' = if null todo
+            then Info { level = decision_level a
+                    , domain = [elt]
+                    , future_domain = Nothing
+                    }
+            else Info { level = succ $ decision_level a
+                      , domain = [elt]
+                      , future_domain = Just todo
+                      }
+    return $ State 
+                 { decision_level = level info'
+                 , failed = False
+                 , assignment = M.insert var info' $ assignment a
+                 }
 
-alternate a v p = 
-   let i = Info { value = p, level = decision_level a, reason = Alternate_Decision }
-   in  a { assignment = M.insert v i $ assignment a }
-
-must_be_unassigned a l = 
-      maybe ( return () ) 
-            ( const $ reject $ text "literal" <+> toDoc l <+> text "is already assigned")
-  $ M.lookup (variable l) $ assignment a
-
-assert_no_conflict a = 
-      maybe ( return () )
-            ( const $ reject $ text "must handle conflict first (by Backtrack, Backjump or UNSAT)" )
-   $  conflict_clause a
-
-assert_conflict :: State -> ( Clause -> Reporter r ) -> Reporter r
-assert_conflict a cont = case conflict_clause a of
-    Nothing -> reject $ text "must find conflict first"
-    Just cl -> cont cl
-
-assert_completely_propagated a = do
-    when (not $ null $ unit_clauses a) $ reject
-        $ text "must do all unit propagations first"
+get_info a var = 
+    maybe ( reject $ text "unbound variable" ) return
+         $ M.lookup var ( assignment a )
     
-is_unit_clause a cl = 
-    let vs = map (evaluate_literal (assignment a)) cl
-    in    ( not $ Just True `elem` vs )
-       &&  ( 1 == length (filter isNothing vs) )
+assert_hyperarc_consistent inst a = 
+    case require_hyperarc_consistency_up_to $ modus $ inst of
+        Nothing -> return ()
+        Just bound -> do
+            reject $ text "assert_hyperarc_consistent: not implemented"
 
-unit_clauses a = filter (is_unit_clause a) $ formula a
-
-reset_dl dl a = a 
-    { assignment = M.filter ( \ i -> level i <= dl ) $ assignment a
-    , decision_level = dl
-    }
-
-evaluate_literal a l = do
-    let f = if positive l then id else not
-    f <$> value <$> M.lookup (variable l) a
-
--}

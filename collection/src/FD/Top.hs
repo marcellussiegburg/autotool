@@ -4,12 +4,11 @@
 {-# language MultiParamTypeClasses #-}
 {-# language DisambiguateRecordFields #-}
 
-module DPLL.Top where
+module FD.Top where
 
-import DPLL.Data
-import DPLL.Trace
--- import DPLL.Pattern
-import DPLL.Roll 
+import FD.Data
+import FD.Trace
+-- import FD.Roll 
 
 import Challenger.Partial
 import Autolib.ToDoc
@@ -20,69 +19,60 @@ import Inter.Quiz
 import Data.Typeable
 import System.Random
 
-data DPLL = DPLL deriving Typeable
+data FD = FD deriving Typeable
 
-data Instance =
-     Instance { modus :: Modus
-              , cnf :: CNF         
-              , max_solution_length :: Maybe Int
-              }
-     deriving Typeable
-
-instance0 :: Instance
+instance0 :: Instance Int
 instance0 = Instance 
     { modus = modus0
-    , cnf = read "[[1,2,3],[-1,4],[2,-3],[1,-2,3,-4],[-2,3]]"
-    , max_solution_length = Nothing
+    , algebra = algebra0
+    , formula = formula0
     }
 
-derives [makeReader, makeToDoc] [''DPLL, ''Instance ]
+derives [makeReader, makeToDoc] [''FD ]
 
-instance Show DPLL where show = render . toDoc
+instance Show FD where show = render . toDoc
 
-instance OrderScore DPLL where 
+instance OrderScore FD where 
     scoringOrder _ = None
 
-instance Partial DPLL Instance [Step] where
+instance Partial FD (Instance Int) [Step Int] where
     describe _ i  = vcat 
-        [ text "Gesucht ist eine vollständige DPLL-Rechnung" </>
-          case max_solution_length i of
-            Nothing -> empty
-            Just l -> text "mit höchstens" <+> toDoc l <+> text "Schritten"
-        , text "mit diesen Eigenschaften:" </> toDoc (DPLL.Top.modus i)
-        , text "für diese Formel:" </> toDoc (cnf i)
+        [ text "Gesucht ist eine vollständige FD-Rechnung" 
+        , text "mit diesen Eigenschaften:" </> toDoc (modus i)
+        , text "für diese Formel:" </> toDoc (formula i)
+        , text "in dieser Struktur:" </> toDoc (algebra i)
         ]
-    initial _ i = 
-        let p = case clause_learning $ DPLL.Top.modus i of
-                True -> Backjump 1 [4,-1]
-                False -> Backtrack 
-        in  [ Decide (-2), Propagate [2,-3] (-3), Conflict [1,-2], p, SAT ]
+    initial _ i = steps0
     partial _ i steps = do
-        DPLL.Trace.execute (DPLL.Top.modus i) (cnf i) steps
+        FD.Trace.execute i steps
         return ()
     total _ i steps = do
-        case max_solution_length i of
+        case max_solution_length $ modus i of
             Nothing -> return ()
             Just l -> when (length steps > l) $ reject 
                 $ text "Die Anzahl der Schritte" <+> parens (toDoc $ length steps)
                 <+> text "ist größer als" <+> toDoc l
         case reverse steps of
-            SAT : _ -> return ()
-            UNSAT : _ -> return ()
-            _ -> reject $ text "die Rechnung soll vollständig sein (mit SAT oder UNSAT enden)"
+            Inconsistent : _ -> return ()
+            Solved : _ -> return ()
+            _ -> reject $ text "die Rechnung soll vollständig sein (mit Consistent oder Solved enden)"
                         
-make_fixed = direct DPLL instance0
+make_fixed = direct FD instance0
 
-instance Generator DPLL Config ( Instance, [Step] ) where
+{-
+
+instance Generator FD Config ( Instance, [Step] ) where
     generator p conf key = do
         (c, s, o) <- roll conf
-        return ( Instance { modus = DPLL.Roll.modus conf
+        return ( Instance { modus = FD.Roll.modus conf
                           , max_solution_length = case require_max_solution_length conf of
-                                DPLL.Roll.No -> Nothing
+                                FD.Roll.No -> Nothing
                                 Yes { allow_extra = e } -> Just $ o + e 
                           , cnf = c 
                           } , s )
-instance Project DPLL ( Instance, [Step] ) Instance where
+instance Project FD ( Instance, [Step] ) Instance where
     project p (c, s) = c
 
-make_quiz = quiz DPLL config0
+make_quiz = quiz FD config0
+
+-}
