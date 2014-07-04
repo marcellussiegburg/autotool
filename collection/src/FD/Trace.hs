@@ -1,5 +1,6 @@
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
+{-# language DatatypeContexts #-}
 
 module FD.Trace where
 
@@ -8,8 +9,6 @@ import FD.Data
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Data.Typeable
-
-{-
 
 import Autolib.Reader
 import Autolib.ToDoc
@@ -22,107 +21,141 @@ import Control.Applicative ((<$>))
 import Data.List ( nub )
 import Data.Maybe ( isNothing )
 
-import Debug.Trace
--}
 
 data Step u = Decide Var u
-          | Arc_Cons { use :: (Atom, Var) , obtain :: S.Set u   }
+          | Arc_Consistency_Deduction { use :: (Atom, Var) , obtain :: [ u ]   }
           | Solved -- SAT
           | Failed (Maybe Var)
           | Backtrack           
           | Inconsistent -- UNSAT
-    deriving (Eq, Typeable, Show)
+    deriving Typeable
 
 steps :: [ Step Int ]
-steps = [ Arc_Cons ( Atom (Rel "<") [Var "x", Var "y"] , Var "x") ( S.fromList[1..999])
+steps = [ Arc_Consistency_Deduction 
+            ( Atom (Rel "<") [Var "x", Var "y"] , Var "x") [ 1 .. 999 ]
         , Inconsistent
         ]
 
-{-
+instance Size (Step u) where size = const 1
 
-instance Size Step where size = const 1
+derives [makeReader, makeToDoc] [''Step ]
 
-derives [makeReader] [''Step ]
 
-instance ToDoc Step where toDoc = text . show
-
--}
-
-data Reason = Decision 
-            | Ultimate_Decision
+data Reason = Initial
+            | Decision 
+            | Ultimate_Decision -- ^ skip on backtrack
             | Propagation 
-    deriving (Eq, Typeable, Show)
+    deriving ( Typeable, Show )
 
--- derives [makeReader] [''Reason ]
+derives [makeReader, makeToDoc] [''Reason ]
 
--- instance ToDoc Reason where toDoc = text . show
 
 data Info u = 
-     Info { domain :: S.Set u
-          , level :: Int
-          , reason :: Reason
+     Info { level :: Int
+          , domain :: [ u ]
+          , future_domain :: Maybe [u] 
+            -- ^ for decision nodes: the branches that need to be taken in the future
           }
-    deriving (Eq, Typeable, Show)
+    deriving Typeable
 
+derives [makeReader, makeToDoc] [''Info ]
+
+data Ord u => Algebra u = 
+     Algebra { universe :: [u]
+             , relations :: M.Map Rel ( S.Set [u] )
+             }
+    deriving Typeable
+
+derives [makeReader, makeToDoc] [''Algebra ]
+
+data Modus = Modus
+     { require_hyperarc_consistency_up_to :: Maybe Int
+     , allow_hyperarc_propagation_up_to :: Maybe Int
+     , decisions_must_be_increasing :: Bool
+     }
+    deriving (Eq, Typeable)
+
+derives [makeReader, makeToDoc] [''Modus]
+
+modus0 :: Modus
+modus0 = Modus
+    { require_hyperarc_consistency_up_to = Nothing
+    , allow_hyperarc_propagation_up_to = Just 2
+    , decisions_must_be_increasing = True
+    }
+
+data Ord u => Instance u = 
+     Instance { modus :: Modus
+              , formula :: Formula
+              , algebra :: Algebra u
+              }
+
+derives [makeReader, makeToDoc] [''Instance]
 
 data State u =
      State { decision_level :: Int
            , assignment :: M.Map Var (Info u)
            , failed :: Bool
-           , variables :: S.Set Var
-           , formula :: Formula
-           , universe :: S.Set u
            }
 
-state0 form u = State 
-    { formula = form
-    , universe = u
-    , variables = S.fromList $ map variable $ concat cnf
-    , decision_level = 0
-    , assignment = M.empty
-    , conflict_clause = Nothing
+derives [makeReader, makeToDoc] [''State ]
+
+state0 inst = State 
+    { decision_level = 0
+    , assignment = M.fromList $ do
+          v <- S.toList $ variables $ formula inst
+          return (v, Info { domain = universe $ algebra inst
+                          , level = 0, future_domain = Nothing } )
+    , failed = False
     }
 
-{-
 
-data Modus = Modus
-     { require_complete_propagation :: Bool
-     , decisions_must_be_negative :: Bool
-     , clause_learning :: Bool
-     , variable_elimination :: Bool
-     }
-    deriving (Eq, Typeable)
-
-modus0 :: Modus
-modus0 = Modus
-     { require_complete_propagation = False
-     , decisions_must_be_negative = True
-     , clause_learning = False
-     , variable_elimination = False
-     }
-
-derives [makeReader, makeToDoc] [''State, ''Modus]
+instance ToDoc u => Show (State u) where show = render . toDoc
 
 
-instance Show State where show = render . toDoc
+execute :: (Ord u, ToDoc u) 
+        => Instance u -> [Step u] -> Reporter (State u)
+execute inst steps = foldM (work inst) (state0 inst)  steps
 
 
-execute :: Modus -> CNF -> [Step] -> Reporter State
-execute mo cnf steps = foldM ( work mo ) (state0 cnf)  steps
-
-
-work :: Modus -> State  -> Step -> Reporter State
-work mo a s = do
+work :: (Ord u, ToDoc u) 
+     => Instance u -> State u  -> Step u -> Reporter (State u)
+work inst a s = do
     inform $ vcat [ text "current" </> toDoc a, text "step" </> toDoc s ]
+
     case s of
-        Decide l -> do
-            when (require_complete_propagation mo) $ assert_completely_propagated a
-            assert_no_conflict a
-            let p = positive l ; v = variable l
-            must_be_unassigned a l
-            when (decisions_must_be_negative mo) $
-                when p $ reject $ text "decision literal must be negative"
-            return $ decide a l
+        Decide var elt -> do
+            case require_hyperarc_consistency_up_to $ modus $ inst of
+                Just bound -> assert_hyperarc_consistent bound inst a
+                Nothing -> return ()
+            info <- maybe ( reject $ text "unbound variable" ) return
+                 $ M.lookup var ( assignment a )
+            let dom = domain info
+            when (not $ elem elt dom) $ reject 
+                 $ text "not in current domain of the variable"
+            when ( decisions_must_be_increasing $ modus inst ) $ do
+                 when (not ( elt == minimum dom )) $ reject 
+                     $ text "is not the minimum element of the domain"
+            let todo = filter ( /= elt ) dom
+                info = Info { level = succ $ decision_level a
+                            , domain = [elt]
+                            , future_domain = Just todo
+                            }
+            return $ State 
+                   { decision_level = succ $ decision_level a
+                   , failed = False
+                   , assignment = M.insert var info $ assignment a
+                   }
+
+{-
+            
+          | Arc_Consistency_Deduction { use :: (Atom, Var) , obtain :: [ u ]   }
+          | Solved -- SAT
+          | Failed (Maybe Var)
+          | Backtrack           
+          | Inconsistent -- UNSAT
+
+
         Propagate { use = cl, obtain = l } -> do
             assert_no_conflict a
             must_be_unassigned a l
@@ -172,29 +205,12 @@ work mo a s = do
             let dl = decision_level a
             when (dl > 0) $ reject $ text "not at root decision level"
             return a
+-}
 
-reverse_unit_propagation_check a lcl cl = do
-    let antes = do 
-            (v, Info { reason = Propagation { antecedent = a}}) <- M.toList $ assignment a
-            return a
-    ok <- is_implied_by lcl $ cl : antes
-    when (not ok) $ reject 
-       $ text "the learnt clause is not implied by conflict and antecedent clauses."
-        
-is_implied_by cl antes = 
-    derive_conflict $ map ( \ l -> [ opposite l ] ) cl ++ antes
+assert_hyperarc_consistent bound form a = do
+    reject $ text "assert_hyperarc_consistent: not implemented"
 
-derive_conflict cnf = do
-    let ( conf, noconf ) = partition null cnf
-        ( unit, nounit ) = partition (\ cl -> length cl == 1 ) noconf
-    if null conf 
-        then if null unit
-             then return False -- no conflict, no propagation
-             else do
-                let cnf' = foldr assign cnf $ concat unit
-                derive_conflict cnf'
-        else return True -- conflict
-
+{-
 assign l cnf = 
     let ( sat, open) = partition ( \ cl -> elem l cl ) cnf
     in  map ( filter ( \ l' -> l' /= opposite l) ) open
