@@ -17,7 +17,7 @@ instance ToDoc v => ToDoc (Linear v) where
         return $ sign <> co_times_var
 
 instance ToDoc v => ToDoc (Atom v) where
-    toDoc (NonNegative f) = toDoc f <+> text ">=" <+> text "0"
+    toDoc a = text "0" <+> (if strict a then text "<" else text "<=" ) <+> toDoc (linear a)
 
 instance ToDoc v => Show (Linear v) where show = render . toDoc
 instance ToDoc v => Show (Atom v) where show = render . toDoc

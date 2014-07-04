@@ -18,13 +18,15 @@ resolve x con =
     let (withx, nox) = partition (contains x . linear) con
         (posx, negx) = partition ((> 0) . coefficient x . linear) withx
     in  nox ++ do
-            f <- map (remove x) posx ; g <-  map (remove x) negx
-            return $ NonNegative $ minus g f
+            p <- posx ; q <- negx
+            return $ atom (strict p || strict q) 
+                   $ minus (remove x q) (remove x p)
 
 satisfiable con = 
     let vs = S.unions $ map (variables . linear) con
     in  case S.minView vs of
-            Nothing -> all ( (>= 0) . absolute . linear ) con
+            Nothing -> all ( \ a -> let cmp = if strict a then (> 0) else (>= 0)
+                                    in  cmp $ absolute $ linear a ) con
             Just (x,xs) -> satisfiable $ resolve x con
 
 unsat = 

@@ -909,3 +909,11 @@ Library
                  SOS.State
                  SOS.Plain
                  SOS.Exp
+                 Fourier_Motzkin.Data
+                 Fourier_Motzkin.ToDoc
+                 Fourier_Motzkin.Reader
+                 Fourier_Motzkin.Type
+                 Fourier_Motzkin.Solve
+                 DPLLT.Top
+                 DPLLT.Data
+                 DPLLT.Trace

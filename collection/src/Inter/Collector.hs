@@ -243,6 +243,7 @@ import qualified Up.Central
 
 import qualified BDD.Top
 import qualified DPLL.Top
+import qualified DPLLT.Top
 
 import qualified SOS
 
@@ -353,6 +354,7 @@ tmakers =
                     , item BDD.Top.make_quiz
                     , item DPLL.Top.make_fixed
                     , item DPLL.Top.make_quiz
+                    , item DPLLT.Top.make_fixed
 		    ]
 		, heading "Prädikatenlogik"
 		    [ item PL.Find_Model.make_fixed
