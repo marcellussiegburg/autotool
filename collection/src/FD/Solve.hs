@@ -29,7 +29,9 @@ handle inst history a =
     if is_solved inst a 
     then return $ reverse $ Solved : history
     else let empties = M.toList $ M.filter null $ current a 
-         in  if null empties then propagate inst history a
+         in  if null empties 
+             then L.interleave ( propagate inst history a )
+                  ( decide inst history a )
              else handle_conflict inst history a
 
 apply inst history a step = 
@@ -51,26 +53,20 @@ decide inst history a = interleaveMany $ do
         True -> [ minimum dom ]
     return $ apply inst history a $ Decide var elt
     
-propagate inst history a = 
-    let props = do
-            at <- formula inst
-            let fvs = free_vars a [at]
-            guard $ case allow_hyperarc_propagation_up_to $ modus inst of
-                Nothing -> True
-                Just bound -> S.size fvs <= bound
-            var <- S.toList $ variables [at]
-            let dom = current a M.! var
-            let range = do
-                    elt <- dom
-                    guard $ not $ null $ satisfying_assignments inst a [at] var elt
-                    return elt
-            guard $ range /= dom
-            return $ Arc_Consistency_Deduction 
+propagate inst history a = interleaveMany $ do
+    at <- formula inst
+    let fvs = free_vars a [at]
+    guard $ case allow_hyperarc_propagation_up_to $ modus inst of
+        Nothing -> True
+        Just bound -> S.size fvs <= bound
+    var <- S.toList $ variables [at]
+    let dom = current a M.! var
+    let range = do
+            elt <- dom
+            guard $ not $ null $ satisfying_assignments inst a [at] var elt
+            return elt
+    guard $ range /= dom
+    return $ apply inst history a $ Arc_Consistency_Deduction 
                    { atom = at, variable = var, restrict_to = range }
-    in  if null props 
-        then decide inst history a
-        else interleaveMany $ do 
-            step <- props 
-            return $ apply inst history a step
 
 interleaveMany = foldr L.interleave ( fail undefined )
