@@ -356,12 +356,13 @@ tmakers =
                     , item DPLL.Top.make_fixed
                     , item DPLL.Top.make_quiz
 		    ]
-		, heading "Prädikatenlogik"
+		, heading "Prädikatenlogik (mit Constraint-Programmierung)"
 		    [ item PL.Find_Model.make_fixed
                     , item PL.Split.Term.Fixed.make
                     , item PL.Split.Term.Quiz.make
                     , item DPLLT.Top.make_fixed
                     , item FD.Top.make_fixed
+                    , item FD.Top.make_quiz
 		    ]
 		]
          , heading "Mengen und Relationen"

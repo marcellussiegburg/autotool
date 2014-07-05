@@ -8,7 +8,7 @@ module FD.Top where
 
 import FD.Data
 import FD.Trace
--- import FD.Roll 
+import FD.Roll ( roll, config0, Config )
 
 import Challenger.Partial
 import Autolib.ToDoc
@@ -52,20 +52,12 @@ instance Partial FD (Instance Int) [Step Int] where
                         
 make_fixed = direct FD instance0
 
-{-
+instance Generator FD Config ( Instance Int, [Step Int] ) where
+    generator p conf key = FD.Roll.roll conf
 
-instance Generator FD Config ( Instance, [Step] ) where
-    generator p conf key = do
-        (c, s, o) <- roll conf
-        return ( Instance { modus = FD.Roll.modus conf
-                          , max_solution_length = case require_max_solution_length conf of
-                                FD.Roll.No -> Nothing
-                                Yes { allow_extra = e } -> Just $ o + e 
-                          , cnf = c 
-                          } , s )
-instance Project FD ( Instance, [Step] ) Instance where
+instance Project FD ( Instance Int, [Step Int] ) (Instance Int) where
     project p (c, s) = c
 
 make_quiz = quiz FD config0
 
--}
+

@@ -920,4 +920,6 @@ Library
                  FD.Top
                  FD.Data
                  FD.Trace
+                 FD.Solve
+                 FD.Roll
                  
