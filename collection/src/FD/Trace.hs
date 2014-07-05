@@ -18,21 +18,21 @@ import qualified Autolib.Relation as R
 
 import Data.List ( partition )
 import Control.Applicative ((<$>))
-import Data.List ( nub )
+import Data.List ( nub, (\\) )
 import Data.Maybe ( isNothing, isJust )
 
 
 data Step u = Decide Var u
-          | Arc_Consistency_Deduction { use :: (Atom, Var) , obtain :: [ u ]   }
+          | Arc_Consistency_Deduction { atom :: Atom, variable :: Var, restrict_to :: [ u ]   }
           | Solved -- SAT
-          | Failed (Maybe Var)
+          | Empty_Domain Var
           | Backtrack 
           | Inconsistent -- UNSAT
     deriving Typeable
 
 steps0 :: [ Step Int ]
 steps0 = [ Arc_Consistency_Deduction 
-            ( Atom (Rel "<") [Var "x", Var "y"] , Var "x") [ 1 .. 3 ]
+            ( Atom (Rel "P") [Var "x", Var "x", Var "y"]) ( Var "x") [ 1 .. 2 ]
         , Inconsistent
         ]
 
@@ -52,13 +52,25 @@ derives [makeReader, makeToDoc] [''Reason ]
 
 data Info u = 
      Info { level :: Int
+          , decision :: Bool 
           , domain :: [ u ]
-          , future_domain :: Maybe [u] 
-            -- ^ for decision nodes: the branches that need to be taken in the future
+          , future_domain :: [ u ]
           }
-    deriving Typeable
+    deriving ( Typeable, Show )
 
-derives [makeReader, makeToDoc] [''Info ]
+derives [makeReader] [''Info ]
+instance ToDoc u => ToDoc (Info u) where 
+    toDoc i = 
+        let t = text
+        in  oneline $ named_dutch_record (t "Info")
+            [ t "level =" <+> toDoc (level i)
+            , t "decision =" <+> toDoc (decision i)
+            , t "domain =" <+> toDoc (domain i)
+            , t "future_domain =" <+> toDoc (future_domain i)
+            ]
+
+-- FIXME this is super-ugly:
+oneline = text . unwords . words . render
 
 data Ord u => Algebra u = 
      Algebra { universe :: [u]
@@ -109,7 +121,7 @@ derives [makeReader, makeToDoc] [''Instance]
 
 data State u =
      State { decision_level :: Int
-           , assignment :: M.Map Var (Info u)
+           , domain_assignment :: M.Map Var (Info u)
            , failed :: Bool
            }
 
@@ -117,10 +129,10 @@ derives [makeReader, makeToDoc] [''State ]
 
 state0 inst = State 
     { decision_level = 0
-    , assignment = M.fromList $ do
+    , domain_assignment = M.fromList $ do
           v <- S.toList $ variables $ formula inst
           return (v, Info { domain = universe $ algebra inst
-                          , level = 0, future_domain = Nothing } )
+                          , level = 0, future_domain = [], decision = False } )
     , failed = False
     }
 
@@ -139,37 +151,55 @@ work inst a s = do
     inform $ vcat [ text "current" </> toDoc a, text "step" </> toDoc s ]
     case s of
         Decide var elt -> work_decide inst a var elt
-        Failed mvar -> work_failed inst a mvar
+        Empty_Domain var -> work_empty_domain inst a var
         Backtrack -> work_backtrack inst a 
         Inconsistent -> work_inconsistent inst a
         Solved -> work_solved inst a
         Arc_Consistency_Deduction {} -> work_arc_consistency_deduction inst a s
 
-work_arc_consistency_deduction inst a 
-        (Arc_Consistency_Deduction { use = (atom, var), obtain = elts }) = do
-    let vs = variables [ atom ]
+work_arc_consistency_deduction inst a s = do
+    let at = atom s ; var = variable s ; res = restrict_to s
+    when ( not $ elem at $ formula inst ) $ reject
+        $ text "atom does not occur in formula"
+    let vs = variables [ at ]
     when ( not $ S.member var vs ) $ reject 
-        $ text "variable does not occur in the atom"
+        $ text "variable does not occur in atom"
     case allow_hyperarc_propagation_up_to $ modus inst  of
         Nothing -> return ()
-        Just bound -> when (S.size vs > bound) $ reject 
-            $ text "deduction for hyper-edges of size" <+> toDoc (S.size vs) <+> text "is not allowed"
+        Just bound -> do
+            let free v = (> 1) $ length $ domain $ domain_assignment a M.! v 
+                free_vars = S.filter free vs
+                f = S.size free_vars
+            when (f > bound) $ reject $ vcat
+                [  text "this atom contains" <+> toDoc f <+> text "variables with non-unit domain:" </> toDoc free_vars
+                , text "but deduction is only allowed for hyper-edges of size up to" <+> toDoc bound
+                ]
     info <- get_info a var
-    let ok = and $ do
-            elt <- elts
-            return $ or $ do
+    case res \\ domain info of
+        [] -> return ()
+        bad -> reject $ text "these elements are not in the domain" <+> toDoc bad
+    let wrong = do
+            elt <- domain info \\ res
+            m <- take 1 $ do
                     b0 <- assignments a $ S.delete var vs
                     let b = M.insert var elt b0
-                    return $ evaluate (algebra inst) [atom] b
-    when (not ok) $ reject 
-        $ text "not all elements of the target domain have a matching assignment"
-    let info' = info { domain = elts }
-    return $ a { assignment = M.insert var info' $ assignment a }
+                    guard $ evaluate (algebra inst) [ at ] b
+                    return b
+            return ( elt, m )
+    when (not $ null wrong) $ reject $ vcat
+        [ text "these elements cannot be excluded from the domain of the variable,"
+        , text "because the given assignment is a model for the atom:"
+        , toDoc wrong
+        ]
+    let info' = info { domain = res }
+    return $ a { domain_assignment = M.insert var info' $ domain_assignment a }
     
 assignments a vs = map M.fromList 
     $ sequence  
     $ map ( \ (v, i) -> map ( \ e -> (v,e)) (domain i)) 
-    $ M.toList $ assignment a 
+    $ M.toList 
+    $ M.filterWithKey ( \ v i -> S.member v vs ) 
+    $ domain_assignment a 
 
 evaluate alg form b = and $ map (evaluate_atom alg b) form
 
@@ -205,26 +235,20 @@ work_backtrack inst a = do
     assert_failed a
     let dl = decision_level a ; dl' = pred dl
     when ( dl <= 0 ) $ reject $ text "cannot backtrack at level 0 (use Inconsistent)"
-    let these = M.filter ( \ i -> level i == dl ) $ assignment a
-        previous = M.filter ( \ i -> level i < dl ) $ assignment a
-        [ (var, Info { future_domain = Just fdom } ) ] 
-            = M.toList $ M.filter ( isJust . future_domain ) these
-        info' = Info { level = dl', domain = fdom, future_domain = Nothing }
+    let these = M.filter ( \ i -> level i == dl ) $ domain_assignment a
+        previous = M.filter ( \ i -> level i < dl ) $ domain_assignment a
+        [ (var, info ) ] = M.toList $ M.filter decision these
+        info' = Info { level = dl' , decision = False
+                     , domain = future_domain info, future_domain = [] }
     return $ a { decision_level = dl'
-               , assignment = M.insert var info' $ assignment a 
+               , domain_assignment = M.insert var info' $ domain_assignment a 
                , failed = False
                }
 
-work_failed inst a mvar = do
+work_empty_domain inst a var = do
     assert_not_failed a
-    case mvar of
-      Nothing -> do
-        if S.null $ variables $ formula inst
-            then error "work_failed { mvar = Nothing } not implemented"
-            else reject $ text "Failed Nothing can only be used when there are no variables"
-      Just var -> do
-        info <- get_info a var
-        if null $ domain info
+    info <- get_info a var
+    if null $ domain info
             then return $ a { failed = True }
             else reject $ text "domain of this variable is not empty"
 
@@ -238,25 +262,27 @@ work_decide inst a var elt = do
     when ( decisions_must_be_increasing $ modus inst ) $ do
          when (not ( elt == minimum dom )) $ reject 
              $ text "is not the minimum element of the domain"
-    let todo = filter ( /= elt ) dom
+    let todo = filter ( /= elt ) dom ++ future_domain info
         info' = if null todo
             then Info { level = decision_level a
                     , domain = [elt]
-                    , future_domain = Nothing
+                    , future_domain = []
+                    , decision = False
                     }
             else Info { level = succ $ decision_level a
                       , domain = [elt]
-                      , future_domain = Just todo
+                      , future_domain = todo
+                      , decision = True
                       }
     return $ State 
                  { decision_level = level info'
                  , failed = False
-                 , assignment = M.insert var info' $ assignment a
+                 , domain_assignment = M.insert var info' $ domain_assignment a
                  }
 
 get_info a var = 
     maybe ( reject $ text "unbound variable" ) return
-         $ M.lookup var ( assignment a )
+         $ M.lookup var ( domain_assignment a )
     
 assert_hyperarc_consistent inst a = 
     case require_hyperarc_consistency_up_to $ modus $ inst of

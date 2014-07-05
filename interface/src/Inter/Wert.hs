@@ -1,4 +1,5 @@
 {-# language TemplateHaskell #-}
+{-# language DeriveDataTypeable #-}
 
 module Inter.Wert where
 
