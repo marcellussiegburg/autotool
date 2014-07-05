@@ -21,13 +21,6 @@ import System.Random
 
 data FD = FD deriving Typeable
 
-instance0 :: Instance Int
-instance0 = Instance 
-    { modus = modus0
-    , algebra = algebra0
-    , formula = formula0
-    }
-
 derives [makeReader, makeToDoc] [''FD ]
 
 instance Show FD where show = render . toDoc
@@ -37,10 +30,10 @@ instance OrderScore FD where
 
 instance Partial FD (Instance Int) [Step Int] where
     describe _ i  = vcat 
-        [ text "Gesucht ist eine vollständige FD-Rechnung" 
-        , text "mit diesen Eigenschaften:" </> toDoc (modus i)
-        , text "für diese Formel:" </> toDoc (formula i)
-        , text "in dieser Struktur:" </> toDoc (algebra i)
+        [ text "Give a complete computation of an FD solver"
+        , text "that determines satisfiability of:" </> toDoc (formula i)
+        , text "in the structure:" </> toDoc (algebra i)
+        , text "The computation must have these properties:" </> toDoc (modus i)
         ]
     initial _ i = steps0
     partial _ i steps = do
@@ -50,12 +43,12 @@ instance Partial FD (Instance Int) [Step Int] where
         case max_solution_length $ modus i of
             Nothing -> return ()
             Just l -> when (length steps > l) $ reject 
-                $ text "Die Anzahl der Schritte" <+> parens (toDoc $ length steps)
-                <+> text "ist größer als" <+> toDoc l
+                $ text "The number of computation steps" <+> parens (toDoc $ length steps)
+                <+> text "is larger than" <+> toDoc l
         case reverse steps of
             Inconsistent : _ -> return ()
             Solved : _ -> return ()
-            _ -> reject $ text "die Rechnung soll vollständig sein (mit Consistent oder Solved enden)"
+            _ -> reject $ text "The computation must be complete (end with Consistent or Solved)"
                         
 make_fixed = direct FD instance0
 

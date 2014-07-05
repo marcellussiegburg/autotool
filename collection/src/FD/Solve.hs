@@ -1,7 +1,10 @@
-module DPLL.Solve where
+module FD.Solve where
 
-import DPLL.Trace
-import DPLL.Data
+import FD.Trace
+import FD.Data
+
+import qualified Autolib.Reporter
+import Autolib.ToDoc
 
 import qualified Control.Monad.Logic  as L
 import qualified Data.Map.Strict as M
@@ -11,54 +14,63 @@ import Data.Function ( on )
 import Data.List ( minimumBy )
 import Control.Monad ( guard )
 
-solve :: Modus -> CNF -> [Step]
-solve mo cnf = L.observe $ handle mo [] $ state0 cnf
+solve :: (ToDoc u, Ord u) 
+      => Instance u -> [Step u]
+solve inst = L.observe $ handle inst [] $ state0 inst
 
-solveBestOf :: Int -> Modus -> CNF -> [Step]
-solveBestOf m mo cnf = 
-    minimumBy (compare `on` length) $ L.observeMany m $ handle mo [] $ state0 cnf
+solveBestOf :: (ToDoc u, Ord u)
+            => Int -> Instance u -> [ Step u ]
+solveBestOf m inst = 
+    minimumBy (compare `on` length) $ L.observeMany m $ handle inst [] $ state0 inst
 
-handle :: Modus -> [Step] -> State -> L.Logic [Step ]
-handle mo history a = 
-    let ec =  evaluate_clause (assignment a) 
-        (sat, unsat) = partition ( \ cl -> ec cl == Just True ) $ formula a
-        (con, uncon) = partition ( \ cl -> ec cl == Just False ) $ unsat
-        (unit, nunit) = partition (is_unit_clause a) $ uncon
-        open = S.difference (variables a) ( M.keysSet $ assignment a )
-    in  if null unsat then return $ reverse $ SAT : history
-        else if not $ null con then handle_conflicts mo history a con
-        else if not $ null unit then handle_units mo history a unit
-        else handle_decisions mo history a ( S.toList  open )
+handle :: (ToDoc u, Ord u)
+       => Instance u -> [ Step u ] -> State u -> L.Logic [ Step u ]
+handle inst history a = 
+    if is_solved inst a 
+    then return $ reverse $ Solved : history
+    else let empties = M.toList $ M.filter null $ current a 
+         in  if null empties then propagate inst history a
+             else handle_conflict inst history a
 
-evaluate_clause b cl = 
-    let vs = map (evaluate_literal b) cl
-    in  if Just True `elem` vs then Just True
-        else if Nothing `elem` vs then Nothing
-        else Just False
+apply inst history a step = 
+    let a' = case Autolib.Reporter.result $ work inst a step of
+            Just a' -> a'
+            Nothing -> error $ render $ vcat [ toDoc a, toDoc history, toDoc step ]
+    in  handle inst (step : history) a'
 
-handle_units mo history a (cl : nit) = 
-    let vs = map (\ l -> (l, evaluate_literal (assignment a) l)) cl
-        [ l ] = map fst $ filter ( (== Nothing) . snd ) vs
-    in  handle mo (Propagate cl l : history) $ propagate a cl l
+handle_conflict inst history a = 
+    if at_top a 
+    then return $ reverse $ Inconsistent : history
+    else apply inst history a Backtrack
 
-handle_decisions mo history a vs = interleaveMany $ do
-    v <- vs
-    w <- case decisions_must_be_negative mo of
-        True -> return False
-        False -> L.interleave (return False) (return True)
-    let l = mkLiteral v w
-    return $ handle mo (Decide l : history) $ decide a l
+decide inst history a = interleaveMany $ do
+    (var, dom) <- M.toList $ current a
+    guard $ free a var
+    elt <- case decisions_must_be_increasing $ modus inst of
+        False -> dom
+        True -> [ minimum dom ]
+    return $ apply inst history a $ Decide var elt
     
-handle_conflicts mo history a con = interleaveMany $ do
-    cl <- con
-    return $ handle_backtrack mo (Conflict cl : history) $ conflict a cl
-
-handle_backtrack mo history a = 
-    let dl = decision_level a
-    in  if dl <= 0 then return $ reverse $ UNSAT : history
-        else let a' = backtrack a
-            in case conflict_clause a' of
-                Nothing -> handle mo (Backtrack : history) a'
-                Just cl -> error "should not happen" -- handle_backtrack mo (Backtrack : history) a'
+propagate inst history a = 
+    let props = do
+            at <- formula inst
+            let fvs = free_vars a [at]
+            guard $ case allow_hyperarc_propagation_up_to $ modus inst of
+                Nothing -> True
+                Just bound -> S.size fvs <= bound
+            var <- S.toList $ variables [at]
+            let dom = current a M.! var
+            let range = do
+                    elt <- dom
+                    guard $ not $ null $ satisfying_assignments inst a [at] var elt
+                    return elt
+            guard $ range /= dom
+            return $ Arc_Consistency_Deduction 
+                   { atom = at, variable = var, restrict_to = range }
+    in  if null props 
+        then decide inst history a
+        else interleaveMany $ do 
+            step <- props 
+            return $ apply inst history a step
 
 interleaveMany = foldr L.interleave ( fail undefined )
