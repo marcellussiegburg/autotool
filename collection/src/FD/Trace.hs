@@ -23,7 +23,8 @@ import Data.Maybe ( isNothing, isJust )
 
 
 data Step u = Decide Var u
-          | Arc_Consistency_Deduction { atom :: Atom, variable :: Var, restrict_to :: [ u ]   }
+          | Arc_Consistency_Deduction 
+              { atoms :: [ Atom ], variable :: Var, restrict_to :: [ u ]   }
           | Solved -- SAT
           | Backtrack 
           | Inconsistent -- UNSAT
@@ -31,7 +32,7 @@ data Step u = Decide Var u
 
 steps0 :: [ Step Int ]
 steps0 = [ Arc_Consistency_Deduction 
-            ( Atom (Rel "P") [Var "x", Var "x", Var "y"]) ( Var "x") [ 1 .. 2 ]
+            [ Atom (Rel "P") [Var "x", Var "x", Var "y"] ] ( Var "x") [ 1 .. 2 ]
         , Inconsistent
         ]
 
@@ -167,19 +168,20 @@ work inst a s = do
         Arc_Consistency_Deduction {} -> work_arc_consistency_deduction inst a s
 
 work_arc_consistency_deduction inst a s = do
-    let at = atom s ; var = variable s ; res = restrict_to s
-    when ( not $ elem at $ formula inst ) $ reject
-        $ text "atom does not occur in formula"
-    let vs = variables [ at ]
+    let var = variable s ; res = restrict_to s
+    let bad_atoms = atoms s \\ formula inst
+    when (not $ null bad_atoms) $ reject $ 
+        text "these atoms do not occur in the formula:" </> toDoc bad_atoms
+    let vs = variables $ atoms s
     when ( not $ S.member var vs ) $ reject 
-        $ text "variable does not occur in atom"
+        $ text "variable does not occur in atoms"
     case allow_hyperarc_propagation_up_to $ modus inst  of
         Nothing -> return ()
         Just bound -> do
-            let fvs = free_vars a [at]
+            let fvs = free_vars a $ atoms s
                 f = S.size fvs
             when (f > bound) $ reject $ vcat
-                [  text "this atom contains" <+> toDoc f <+> text "variables with non-unit domain:" </> toDoc fvs
+                [  text "these atom contain" <+> toDoc f <+> text "variables with non-unit domain:" </> toDoc fvs
                 , text "but deduction is only allowed for hyper-edges of size up to" <+> toDoc bound
                 ]
     dom <- get_domain a var
@@ -188,11 +190,11 @@ work_arc_consistency_deduction inst a s = do
         bad -> reject $ text "these elements are not in the domain" <+> toDoc bad
     let wrong = do
             elt <- dom \\ res
-            m <- take 1 $ satisfying_assignments inst a [at] var elt
+            m <- take 1 $ satisfying_assignments inst a (atoms s) var elt
             return ( elt, m )
     when (not $ null wrong) $ reject $ vcat
         [ text "these elements cannot be excluded from the domain of the variable,"
-        , text "because the given assignment is a model for the atom:"
+        , text "because the given assignment is a model for the atoms:"
         , toDoc wrong
         ]
     return $ replace (M.insert var res $ current a) a

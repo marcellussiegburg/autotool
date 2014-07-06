@@ -54,19 +54,29 @@ decide inst history a = interleaveMany $ do
     return $ apply inst history a $ Decide var elt
     
 propagate inst history a = interleaveMany $ do
-    at <- formula inst
-    let fvs = free_vars a [at]
+    let fvs = free_vars a $ formula inst
+    vs <- subsets fvs
+    guard $ not $ S.null vs
     guard $ case allow_hyperarc_propagation_up_to $ modus inst of
         Nothing -> True
-        Just bound -> S.size fvs <= bound
-    var <- S.toList $ variables [at]
+        Just bound -> S.size vs <= bound
+    let ats = filter ( \ at -> S.isSubsetOf (free_vars a [at]) vs ) 
+            $ formula inst
+    var <- S.toList $ variables ats
     let dom = current a M.! var
+    guard $ length dom >= 2
     let range = do
             elt <- dom
-            guard $ not $ null $ satisfying_assignments inst a [at] var elt
+            guard $ not $ null $ satisfying_assignments inst a ats var elt
             return elt
     guard $ range /= dom
     return $ apply inst history a $ Arc_Consistency_Deduction 
-                   { atom = at, variable = var, restrict_to = range }
+                   { atoms = ats, variable = var, restrict_to = range }
 
 interleaveMany = foldr L.interleave ( fail undefined )
+
+subsets s = case S.minView s of
+    Nothing -> [s]
+    Just (x,t) -> 
+        let ss = subsets t
+        in  ss ++ map (S.insert x) ss
