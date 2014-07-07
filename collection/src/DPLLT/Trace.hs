@@ -5,6 +5,8 @@ module DPLLT.Trace where
 
 import DPLLT.Data
 
+import qualified Fourier_Motzkin as FM
+
 import Autolib.Reader
 import Autolib.ToDoc
 import Autolib.Reporter
@@ -17,17 +19,18 @@ import Data.List ( partition )
 import Control.Applicative ((<$>))
 import Data.List ( nub )
 import Data.Typeable
-import Data.Maybe ( isNothing )
+import Data.Maybe ( isNothing, isJust )
 
 import Debug.Trace
 
+data Conflict = Boolean Clause 
+              | Theory
+    deriving (Eq, Typeable, Show)
 
 data Step = Decide Literal
-          | Propagate { use :: Clause, obtain :: Literal }
-          | Theory_Propagate { obtain :: Literal }
+          | Propagate { use :: Conflict , obtain :: Literal }
           | SAT
-          | Conflict Clause
-          | Theory_Conflict
+          | Conflict Conflict
           | Backtrack 
           | Backjump { to_level :: Int, learn :: Clause }
           | UNSAT
@@ -40,7 +43,7 @@ derives [makeReader] [''Step ]
 instance ToDoc Step where toDoc = text . show
 
 data Reason = Decision | Alternate_Decision
-            | Propagation { antecedent :: Clause }
+            | Propagation { antecedent :: Conflict }
     deriving (Eq, Typeable, Show)
 
 derives [makeReader] [''Reason ]
@@ -57,20 +60,26 @@ data Info =
 instance ToDoc Info where toDoc = text . show
 derives [makeReader] [''Info]
 
+instance ToDoc Conflict where toDoc = text . show
+derives [makeReader] [''Conflict]
+
 data State =
      State { decision_level :: Int
            , assignment :: M.Map Atom Info
-           , conflict_clause :: Maybe Clause
+           , conflict :: Maybe Conflict
            , variables :: S.Set Atom
            , formula :: CNF
            }
+
+conflicting :: State -> Bool
+conflicting s = isJust $ conflict s
 
 state0 cnf = State 
     { formula = nub $ map nub cnf
     , variables = S.fromList $ map atom $ concat cnf
     , decision_level = 0
     , assignment = M.empty
-    , conflict_clause = Nothing
+    , conflict = Nothing
     }
 
 data Modus = Modus
@@ -111,7 +120,23 @@ work mo a s = do
             when (decisions_must_be_negative mo) $
                 when p $ reject $ text "decision literal must be negative"
             return $ decide a l
-        Propagate { use = cl, obtain = l } -> do
+
+        Propagate { use = Theory, obtain = l } -> do
+            assert_no_conflict a
+            must_be_unassigned a l
+            case atom l of 
+                Boolean_Atom ba -> do
+                    reject $ text "theory propagation cannot yield a Boolean atom"
+                Theory_Atom ta -> do
+                    let la = if positive l then ta else FM.negated ta
+                        tcs = FM.negated la : theory_atoms a
+                        sat = FM.satisfiable tcs
+                    when sat $ reject 
+                        $ text "atom cannot be inferred because its negation, together with current theory atoms, is satisfiable"
+                        </> toDoc tcs
+                    return $ propagate a Theory l
+
+        Propagate { use = Boolean cl, obtain = l } -> do
             assert_no_conflict a
             must_be_unassigned a l
             when (not $ elem cl $ formula a) $ reject $ text "the cnf does not contain this clause"
@@ -123,7 +148,8 @@ work mo a s = do
                 Just True -> reject $ text "the clause is not unit, because" 
                         <+> toDoc o <+> text "is true"
                 Just False -> return ()
-            return $ propagate a cl l
+            return $ propagate a (Boolean cl) l
+
         SAT -> do
             assert_no_conflict a
             forM_ (formula a) $ \ cl -> do
@@ -133,8 +159,14 @@ work mo a s = do
                     [ text "clause" <+> toDoc cl <+> text "is not satisfied"
                     , text "values of literals are" <+> toDoc vs
                     ]
+            let tcs = theory_atoms a
+                sat = FM.satisfiable tcs
+            when (not sat) $ reject 
+                $ text "the conjunction of theory atoms is not satisfiable"
+                </> toDoc tcs
             return a
-        Conflict cl -> do
+
+        Conflict (Boolean cl) -> do
             assert_no_conflict a
             let vs = map (\ l -> (l, evaluate_literal (assignment a) l)) cl
                 unsat = all ( \ (l,v) -> v == Just False ) vs
@@ -142,28 +174,48 @@ work mo a s = do
                     [ text "clause" <+> toDoc cl <+> text "is not a conflict clause"
                     , text "values of literals are" <+> toDoc vs
                     ]
-            return $ conflict a cl 
+            return $ boolean_conflict a cl 
+
+        Conflict Theory -> do
+            assert_no_conflict a
+            let tcs = theory_atoms a
+                sat = FM.satisfiable tcs
+            when sat $ reject $ 
+                text "not a theory conflict, since the conjunction of theory atoms is satisfiable"
+                </> toDoc tcs
+            return $ a { conflict = Just Theory }
+            
         Backtrack -> assert_conflict a $ \ cl -> do
-            when (clause_learning mo) $ reject $ text "Backtrack is not allowed (use Backjump)"
+            when ( clause_learning mo ) $ reject 
+                 $ text "Backtrack is not allowed (use Backjump)"
             let dl = decision_level a
             when (dl <= 0) $ reject 
                 $ text "no previous decision (use UNSAT instead of Backtrack)"
             return $ backtrack a 
-        Backjump { to_level = dl, learn = learnt_cl } -> assert_conflict a $ \ cl -> do
+
+        Backjump { to_level = dl, learn = learnt_cl } -> assert_conflict a $ \ con -> do
             when (not $ clause_learning mo ) $ reject $ text "clause learning is not allowed (use Backtrack)"
-            reverse_unit_propagation_check a learnt_cl cl
-            when (dl >= decision_level a) $ reject $ text "must jump to a lower level"
-            return $ ( reset_dl dl a ) 
-                { formula = learnt_cl : formula a, conflict_clause = Nothing }
+            case con of
+                Boolean cl -> do
+                    reverse_unit_propagation_check a learnt_cl cl
+                    when (dl >= decision_level a) 
+                        $ reject $ text "must jump to a lower level"
+                    return $ ( reset_dl dl a ) 
+                           { formula = learnt_cl : formula a, conflict = Nothing }
+                _ -> reject $ text "Backjump only after Boolean conflict (for now)"
 
         UNSAT -> assert_conflict a $ \ cl -> do
             let dl = decision_level a
             when (dl > 0) $ reject $ text "not at root decision level"
             return a
 
+theory_atoms a = do
+    (Theory_Atom a , info) <- M.toList $ assignment a
+    return $ if value info then a else FM.negated a
+
 reverse_unit_propagation_check a lcl cl = do
     let antes = do 
-            (v, Info { reason = Propagation { antecedent = a}}) <- M.toList $ assignment a
+            (v, Info { reason = Propagation { antecedent = Boolean a}}) <- M.toList $ assignment a
             return a
     ok <- is_implied_by lcl $ cl : antes
     when (not ok) $ reject 
@@ -199,11 +251,12 @@ decide a l =
                           , reason = Decision } ) $ assignment a
                 }
 
-propagate a cl l =    
+
+propagate a prop l =    
             let dl = decision_level a
             in  a 
                { assignment = M.insert (atom l) (Info {
-                   value = positive l, level = dl, reason = Propagation cl}) $ assignment a
+                   value = positive l, level = dl, reason = Propagation prop}) $ assignment a
                }
 
 backtrack a = 
@@ -211,9 +264,9 @@ backtrack a =
                 [(v,i)] = filter (\(v,i) -> reason i == Decision && level i == dl) 
                         $ M.toList $ assignment a
                 a' = reset_dl (pred dl) a
-            in  alternate  ( a' { conflict_clause = Nothing } ) v ( not $ value i ) 
+            in  alternate  ( a' { conflict = Nothing } ) v ( not $ value i ) 
 
-conflict a cl = a { conflict_clause = Just cl }
+boolean_conflict a cl = a { conflict = Just (Boolean cl) }
 
 alternate a v p = 
    let i = Info { value = p, level = decision_level a, reason = Alternate_Decision }
@@ -224,15 +277,13 @@ must_be_unassigned a l =
             ( const $ reject $ text "literal" <+> toDoc l <+> text "is already assigned")
   $ M.lookup (atom l) $ assignment a
 
-assert_no_conflict a = 
-      maybe ( return () )
-            ( const $ reject $ text "must handle conflict first (by Backtrack, Backjump or UNSAT)" )
-   $  conflict_clause a
+assert_no_conflict a = when (conflicting a) $ reject 
+         $ text "must handle conflict first (by Backtrack, Backjump or UNSAT)" 
 
-assert_conflict :: State -> ( Clause -> Reporter r ) -> Reporter r
-assert_conflict a cont = case conflict_clause a of
-    Nothing -> reject $ text "must find conflict first"
-    Just cl -> cont cl
+assert_conflict :: State -> ( Conflict -> Reporter r ) -> Reporter r
+assert_conflict a cont = case conflict a of
+    Just con -> cont con
+    _ -> reject $ text "must find conflict first"
 
 assert_completely_propagated a = do
     when (not $ null $ unit_clauses a) $ reject

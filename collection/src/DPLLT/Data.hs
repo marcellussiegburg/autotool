@@ -17,15 +17,15 @@ newtype Variable = Variable String deriving (Eq, Ord)
 instance ToDoc Variable where toDoc (Variable v) = text v
 instance Reader Variable where reader = Variable <$> my_identifier
 
-data Atom = Atom ( FM.Atom Variable )
-          | Boolean Variable
+data Atom = Theory_Atom ( FM.Atom Variable )
+          | Boolean_Atom Variable
     deriving (Eq, Ord, Typeable )
 
 instance ToDoc Atom where
     toDoc a = case a of
-        Atom a -> toDoc a ; Boolean b -> toDoc b
+        Theory_Atom a -> toDoc a ; Boolean_Atom b -> toDoc b
 instance Reader Atom where
-    reader = ( Atom <$> reader ) <|> ( Boolean <$> reader )
+    reader = ( Theory_Atom <$> reader ) <|> ( Boolean_Atom <$> reader )
 
 data Literal =  Literal { polarity :: Bool, atom :: Atom  }
     deriving (Eq, Ord, Typeable )

@@ -56,7 +56,8 @@ instance Partial DPLLT Instance [Step] where
         let p = case clause_learning $ DPLLT.Top.modus i of
                 True -> read "Backjump 1 [ p, ! q ]"
                 False -> Backtrack 
-        in  read "[ Decide ! p, Propagate [p, !q] !q, Conflict [r, !s], p, SAT ]"
+        in  read "[ Decide ! p, Propagate {use = [p, !q], obtain = !q }, Conflict [r, !s]]"
+        ++ [p] ++ read "[ SAT ]"
     partial _ i steps = do
         DPLLT.Trace.execute (DPLLT.Top.modus i) (cnf i) steps
         return ()

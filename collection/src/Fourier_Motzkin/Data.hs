@@ -30,7 +30,8 @@ scale q (Linear m) = Linear $ M.map (* q) m
 plus (Linear p) (Linear q) = 
     Linear $ M.filter (/= 0) $ M.unionWith (+) p q
 
-minus f g = plus f ( scale (-1) g )
+minus f g = plus f ( opposite g )
+opposite g =  scale (-1) g 
 
 removeKey x (Linear m) = Linear $ M.filterWithKey ( \ k v -> k /= Just x) m
 
@@ -41,6 +42,9 @@ data Atom v = NonNegative { linear :: Linear v }
 atom s lin = ( case s of True -> Positive ; False -> NonNegative ) lin
 
 strict a = case a of NonNegative {} -> False ; Positive {} -> True
+
+negated :: Atom v -> Atom v
+negated a = atom (not $ strict a) (opposite $ linear a)
 
 type Constraint v = [ Atom v ]
 
