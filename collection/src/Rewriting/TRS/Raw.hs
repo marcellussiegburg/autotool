@@ -18,8 +18,8 @@ import Data.Typeable
 -- needs to be processed because what should be variables
 -- will be parsed as nullary symbols by the derived parser
 data ( Symbol c, Symbol v ) => TRS v c = 
-     TRS { variablen :: [ v ]
-         , regeln :: [ Rule ( Term v c ) ]
+     TRS { variables :: [ v ]
+         , rules :: [ Rule ( Term v c ) ]
          }
     deriving ( Eq, Ord, Typeable )
 

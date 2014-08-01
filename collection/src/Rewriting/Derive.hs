@@ -15,6 +15,7 @@ import Rewriting.Derive.Config
 
 import Autolib.Reporter
 import Autolib.ToDoc
+import Autolib.Multilingual
 import Autolib.Reader
 import Autolib.FiniteMap
 
@@ -56,11 +57,17 @@ instance ( RDT tag, RDT action, RDT object , RDT system
 
     report ( Derive tag ) inst = do 
         inform $ vcat
-            [ text "gesucht ist für das System"
+            [ multitext [(DE, "gesucht ist für das System")
+	      		,(UK, "for the system")
+			]
             , nest 4 $ toDoc $ system inst
-            , text "eine Folge von Schritten, die"
+            , multitext [(DE, "eine Folge von Schritten, die")
+	      		,(UK, "give a sequence of steps from")
+			]
             , nest 4 $ toDoc $ from inst
-            , text "überführt in"
+            , multitext [(DE, "überführt in")
+	      		,(UK, "to")
+			]
             , nest 4 $ toDoc $ to inst
             ]
         -- peng $ from inst
@@ -74,7 +81,9 @@ instance ( RDT tag, RDT action, RDT object , RDT system
         let sys = system inst
         t <- foldM ( apply tag sys ) ( from inst ) steps
         assert ( t == to inst )
-               $ text "stimmt mit Ziel überein?"
+               $ multitext [(DE, "stimmt mit Ziel überein?")
+	       	 	   ,(UK, "agrees with target?")
+			   ]
 
 instance Measure ( Derive tag ) ( Instance system object ) [ action ] where
     measure ( Derive tag ) inst actions = fromIntegral $ length actions

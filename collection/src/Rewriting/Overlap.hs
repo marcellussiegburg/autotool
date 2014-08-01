@@ -24,12 +24,12 @@ data ( Ord v, Symbol c ) => Overlap v c = Overlap
 overlaps :: ( Symbol v, Symbol c )
          => TRS v c -> [ Overlap v c ]
 overlaps trs = do
-    ( i, rule1 ) <- zip [ 1.. ] $ regeln trs
+    ( i, rule1 ) <- zip [ 1.. ] $ rules trs
     let x = vmap Left $ lhs rule1
     ( p, z ) <- positions x
     guard $ not $ isvar z
 
-    ( j, rule2 ) <- zip [ 1 .. ] $ regeln trs
+    ( j, rule2 ) <- zip [ 1 .. ] $ rules trs
     let y = vmap Left $ lhs rule2
     -- treat self-overlaps specially
     guard $ ( i == j ) <= not ( null p )

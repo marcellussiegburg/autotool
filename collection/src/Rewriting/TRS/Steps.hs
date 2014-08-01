@@ -12,6 +12,7 @@ import Autolib.Schichten
 import Autolib.Set
 import Autolib.Reporter
 import Autolib.ToDoc
+import Autolib.Multilingual
 import Autolib.FiniteMap
 
 import Data.Maybe
@@ -24,7 +25,7 @@ steps :: ( Symbol v, Symbol c )
       -> [ Step v c ]
 steps rs t = do
     ( p, s ) <- positions t
-    ( k, r ) <- zip [ 0 .. ] $ regeln rs
+    ( k, r ) <- zip [ 0 .. ] $ rules rs
     sub <- maybeToList $ match ( lhs r ) s
     return $ Step
            { rule_number = k
@@ -82,42 +83,64 @@ exec ::  ( Symbol v, Symbol c )
      -> Reporter ( Term v c )
 exec trs t step = do
     inform $ vcat
-           [ text "Anwenden des Ersetzungsschrittes"
+           [ multitext [(DE, "Anwenden des Ersetzungsschrittes")
+	     	       ,(UK, "apply step")
+		       ]
            , nest 4 $ toDoc step
-           , text "auf den Term"
+           , multitext [(DE, "auf den Term")
+	     	       ,(UK, "to term")
+		       ]
            , nest 4 $ toDoc t
            ]
     let k = rule_number step
-    inform $ text "die Regel Nummer" <+> toDoc k
-    rule <- if k < length ( regeln trs )
+    inform $ multitext [(DE, "die Regel Nummer") 
+    	     	       ,(UK, "the rule number")
+		       ]
+	   <+> toDoc k
+    rule <- if k < length ( rules trs )
          then do
-             let rule = regeln trs !! k
-             inform $ text "ist" <+> toDoc rule
+             let rule = rules trs !! k
+             inform $ multitext [(DE, "ist"), (UK, "is")] <+> toDoc rule
              return rule
-         else reject $ text "existiert nicht."
+         else reject $ multitext [(DE, "existiert nicht.")
+	      	       		 ,(UK, "does not exist.")
+				 ]
 
     let p = position step
-    inform $ text "der Teilterm an Position" <+> toDoc p 
+    inform $ multitext [(DE, "der Teilterm an Position")
+    	     	       ,(UK, "the subterm at position")
+		       ]
+	   <+> toDoc p 
     s <- case mpeek t ( position step ) of
          Just s -> do 
-             inform $ text "ist" <+> toDoc s
+             inform $ multitext [(DE, "ist"), (UK, "is")] <+> toDoc s
              return s
-         Nothing -> reject $ text "existiert nicht"
+         Nothing -> reject $ multitext [(DE, "existiert nicht")
+	 	    	     	       ,(UK, "does not exist")
+				       ]
 
     let sub = substitution step
-    inform $ text "die substituierte linke Regelseite ist" 
+    inform $ multitext [(DE, "die substituierte linke Regelseite ist")
+    	     	       ,(UK, "the instantiated lhs is")
+		       ] 
     slhs <- mapply sub $ lhs rule
     inform $ toDoc slhs
 
     assert ( slhs == s )
-           $ text "stimmt überein mit Teilterm an Position?"
+           $ multitext [(DE, "stimmt überein mit Teilterm an Position?")
+	     	       ,(UK, "agrees with subterm at position?")
+		       ]
 
-    inform $ text "die substituierte rechte Regelseite ist" 
+    inform $ multitext [(DE, "die substituierte rechte Regelseite ist")
+    	     	       ,(UK, "the instantiated rhs is")
+		       ] 
     srhs <- mapply sub $ rhs rule
     inform $ toDoc srhs
 
     let res = poke t ( p,  srhs )
-    inform $ text "der resultierende Term ist" 
+    inform $ multitext [(DE, "der resultierende Term ist")
+    	     	       ,(UK, "the resulting term is")
+		       ] 
            $$ ( nest 4 $ toDoc res )
     peng res
 
@@ -142,7 +165,10 @@ mapply sub ( Var v ) = do
     case lookupFM sub v of
         Just t -> return t
         Nothing -> reject $ fsep
-            [ text "Variable", toDoc v, text "ist nicht gebunden" ]
+            [ multitext [(DE, "Variable"), (UK, "variable")]
+	    , toDoc v
+	    , multitext [(DE, "ist nicht gebunden"), (UK,"not bound")] 
+	    ]
 mapply sub ( Node f args ) = do
     ys <- mapM ( mapply sub ) args
     return $ Node f ys

@@ -21,7 +21,7 @@ import qualified Autolib.Reporter.Checker as R
 
 instance ( Symbol c, Symbol v ) => Size ( TRS v c ) where 
     size trs = sum $ do
-        r <- regeln trs
+        r <- rules trs
         t <- [ lhs r, rhs r ]
         return $ size t
 

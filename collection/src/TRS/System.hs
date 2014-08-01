@@ -6,8 +6,6 @@ module TRS.System
 
 where
 
---   $Id$
-
 import TRS.Term
 
 import ToDoc

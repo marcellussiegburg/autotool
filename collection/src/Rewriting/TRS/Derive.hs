@@ -47,7 +47,7 @@ instance (  Symbol c, Typeable c )
         [ Step { rule_number = 2
                , position = [0,2]
                , substitution = listToFM 
-                              $ zip ( variablen $ system inst )
+                              $ zip ( variables $ system inst )
                               $ drop 2 $ subterms $ from inst
                }
         ]
@@ -75,6 +75,6 @@ instance (Symbol v, Symbol c, Reader ( TRS v c ) )
     project  Derive inst = inst
 
 firstvar trs = take 1 $ do
-    r <- regeln trs
+    r <- rules trs
     t <- [ lhs r, rhs r ]
     lvars t
