@@ -68,10 +68,10 @@ get_task_instance_localized  (TT sconf) (TT seed) (TT lang) = withTimeout $ fmap
 
     let b = CP.initial (problem maker) i
     
-    doc <- help b
+    doc <- help lang b
 
     -- FIXME: this seems critical if it involves drawing (peng/graphviz):
-    descr <- fromReport $ Autolib.Reporter.IO.Type.lift 
+    descr <- fromReport lang $ Autolib.Reporter.IO.Type.lift 
                         $ CP.report (problem maker) i
 
     let st = sign (task,

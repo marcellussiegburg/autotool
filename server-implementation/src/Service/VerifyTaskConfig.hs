@@ -31,11 +31,11 @@ verify_task_config_localized
 verify_task_config_localized (TT task) (TT (CString config)) (TT lang)
     = withTimeout . fmap TT . runErrorT $ do
         Make _ _ _ verifyConf _ <- lookupTaskM task
-        config' <- parseHelper "<config>" config
+        config' <- parseHelper lang "<config>" config
         let report = Autolib.Reporter.IO.Type.lift 
                    $ verifyConf config'
         rr <- liftIO $ result report
         case rr of
-            Nothing -> liftIO (fromReport report) >>= throwError
+            Nothing -> liftIO (fromReport lang report) >>= throwError
             _       -> return ()
         return $ sign (task, CString config)

@@ -18,21 +18,24 @@ import qualified Gateway.Help as GH
 import Autolib.Reporter.IO.Type
 -- import Autolib.Reporter
 
+import Autolib.Multilingual as M
+
 import Data.Typeable
 
-fromToDoc :: AT.ToDoc a => a -> IO Description
-fromToDoc = fromDoc . AT.toDoc
+fromToDoc :: AT.ToDoc a => M.Language -> a -> IO Description
+fromToDoc lang = fromDoc lang . AT.toDoc
 
-fromDoc :: AT.Doc -> IO Description
-fromDoc = fromOutput . AO.Doc
+fromDoc :: M.Language -> AT.Doc -> IO Description
+fromDoc lang = fromOutput lang . AO.Doc
 
-fromOutput :: AO.Output -> IO Description
-fromOutput = fmap DString . outputToXmlString
+fromOutput :: M.Language -> AO.Output -> IO Description
+fromOutput lang = fmap DString . outputToXmlString lang
 
-fromReport :: Reporter a -> IO Description
-fromReport rep = 
-    do k <- kommentar rep ; fromOutput k
+fromReport :: M.Language -> Reporter a -> IO Description
+fromReport lang rep = 
+    do k <- kommentar rep ; fromOutput lang k
     -- fromOutput ( kommentar rep )
 
-help :: (Data.Typeable.Typeable a) => a -> IO Description
-help = fromOutput . GH.help
+help :: (Data.Typeable.Typeable a) 
+     => M.Language -> a -> IO Description
+help lang = fromOutput lang . GH.help

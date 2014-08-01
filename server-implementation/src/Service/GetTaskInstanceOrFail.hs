@@ -74,10 +74,10 @@ get_task_instance_or_fail_localized  (TT sconf) (TT seed) (TT lang) = fmap TT $ 
                 eb
 
     -- let b = CP.initial (problem maker) i
-    doc <- liftIO $ help b
+    doc <- liftIO $ help lang b
 
     -- FIXME: this seems critical if it involves drawing (peng/graphviz):
-    descr <- liftIO $ fromReport $ Autolib.Reporter.IO.Type.lift 
+    descr <- liftIO $ fromReport lang $ Autolib.Reporter.IO.Type.lift 
                         $ CP.report (problem maker) i
 
     return ( sign (task,

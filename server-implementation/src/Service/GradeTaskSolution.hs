@@ -39,28 +39,28 @@ grade_task_solution_localized (TT sTaskInst) (TT (SString solution)) (TT lang)
     = withTimeout . fmap TT . runErrorT $ do
         (task, inst) <- verifyM sTaskInst
         Make p _ maker0 _ _ <- lookupTaskM task
-        inst' <- parseHelper "<instance>" (I.contents inst)
+        inst' <- parseHelper lang "<instance>" (I.contents inst)
         let assertTypes :: (conf -> Var p i b) -> (p, i) -> ()
             assertTypes _ _ = ()
             () = assertTypes maker0 (p, inst')
         eres <- liftIO $ CE.try 
            $ CE.evaluate $ evaluate p inst' solution 
         case eres of
-          Left ex -> throwReport $ reject $ hsep
+          Left ex -> throwReport lang $ reject $ hsep
              [ text "unhandle exception"
              , text $ show ( ex :: CE.SomeException) 
              ]
           Right res -> do
             ( mres, out ) <- liftIO $ run res     
             score <- case mres of
-                Nothing -> throwReport res
+                Nothing -> throwReport lang res
                 Just score -> return score
-            when (not (is_okay score)) $ throwReport res
-            doc <- liftIO $ fromReport res
+            when (not (is_okay score)) $ throwReport lang res
+            doc <- liftIO $ fromReport lang res
             let sz = size score
                 sz' = if sz == 0 then 1 else sz
             return $ Documented { D.contents = fromIntegral sz',
                               D.documentation = doc }
 
-throwReport :: Reporter b -> ErrorT Description IO a
-throwReport rep = liftIO (fromReport rep) >>= throwError
+throwReport :: Language -> Reporter b -> ErrorT Description IO a
+throwReport lang rep = liftIO (fromReport lang rep) >>= throwError

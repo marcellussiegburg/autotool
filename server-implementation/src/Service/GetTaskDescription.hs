@@ -21,7 +21,7 @@ get_task_description (TT name) =
 get_task_description_localized :: TT Task -> TT Language -> IO (TT TaskDescription)
 get_task_description_localized (TT name) (TT lang) = TT `fmap` do
     m@(Make _ _ _ _ conf) <- lookupTaskM name
-    doc <- help conf
+    doc <- help lang conf
     let sample = Documented
             (CString (AT.render_for lang . AT.toDoc $ conf))
             doc

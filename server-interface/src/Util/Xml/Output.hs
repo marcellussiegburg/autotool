@@ -32,14 +32,14 @@ import Data.Text (unpack)
 
 import Util.Png
 
-outputToXOutput :: O.Output -> IO X.Output
-outputToXOutput o = case o of
+outputToXOutput :: M.Language -> O.Output -> IO X.Output
+outputToXOutput lang o = case o of
     O.Empty ->
         return $ X.OBeside $ X.Beside []
     O.Doc doc ->
-        outputToXOutput $ O.Pre doc
+        outputToXOutput lang $ O.Pre doc
     O.Pre doc ->
-        return $ X.OPre $ X.Pre $ D.render doc
+        return $ X.OPre $ X.Pre $ D.render_for lang doc
     O.String txt ->
         return $ X.OText $ X.Text txt
     O.Text txt ->
@@ -59,25 +59,25 @@ outputToXOutput o = case o of
                                      X.imageHeight = show h })
                     img
     O.Link uri ->
-        outputToXOutput (O.Named_Link uri uri)
+        outputToXOutput lang (O.Named_Link uri uri)
     O.Named_Link txt uri ->
         return $ X.OLink $ X.Link (X.Link_Attrs { X.linkHref = uri }) txt
         
     O.HRef uri o1 -> do
         -- FIXME
         -- outputToXOutput $ O.Above ( O.Link uri ) o1
-        outputToXOutput o1
+        outputToXOutput lang o1
         
     O.Above o1 o2 ->
-        X.OAbove . X.Above <$> mapM outputToXOutput (aboves o1 ++ aboves o2)
+        X.OAbove . X.Above <$> mapM (outputToXOutput lang) (aboves o1 ++ aboves o2)
     O.Beside o1 o2 ->
-        X.OBeside . X.Beside <$> mapM outputToXOutput (besides o1 ++ besides o2)
+        X.OBeside . X.Beside <$> mapM (outputToXOutput lang) (besides o1 ++ besides o2)
     O.Itemize os ->
-        X.OItemize . X.Itemize <$> mapM outputToXOutput os
+        X.OItemize . X.Itemize <$> mapM (outputToXOutput lang) os
     O.Nest o' ->
-        X.OBeside . X.Beside <$> sequence [return nestSpacing, outputToXOutput o']
+        X.OBeside . X.Beside <$> sequence [return nestSpacing, outputToXOutput lang o']
     O.Figure a b ->
-        X.OFigure <$> (X.Figure <$> outputToXOutput a <*> outputToXOutput b)
+        X.OFigure <$> (X.Figure <$> outputToXOutput lang a <*> outputToXOutput lang b)
 
 
 xoutputToOutput :: X.Output -> O.Output
@@ -112,8 +112,8 @@ wrapXOutput o = let [CElem e _] = toContents o in
 xmlToString :: Document () -> String
 xmlToString = renderDocument_via_Doc 
 
-outputToXmlString ::  O.Output -> IO String
-outputToXmlString = fmap (xmlToString . wrapXOutput) . outputToXOutput
+outputToXmlString ::  M.Language -> O.Output -> IO String
+outputToXmlString lang = fmap (xmlToString . wrapXOutput) . outputToXOutput lang
 
 xmlStringToOutput :: String -> O.Output
 xmlStringToOutput = xoutputToOutput . either error id . readXml
