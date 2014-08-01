@@ -107,6 +107,7 @@ import Operate.DateTime ( defaults )
 main :: IO ()
 main = Gateway.CGI.execute ( Default.trial_cgi_name ) $ do
    wrap $ do -- FIXME: following code looks ugly
+       btabled $ select_preferred_language 
        mtopic <- look "topic"
        case mtopic of
            Just topic -> fixed_topic Default.server topic

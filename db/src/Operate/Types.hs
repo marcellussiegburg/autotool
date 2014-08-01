@@ -26,7 +26,7 @@ import Control.Applicative
 import Data.Tree
 import Data.Typeable
 
-import Gateway.CGI ( embed, io, open, close, row, plain, textarea, submit, html, Form  )
+import Gateway.CGI ( embed, io, open, close, row, plain, textarea, submit, html, Form, get_preferred_language  )
 import Autolib.ToDoc ( ToDoc, toDoc, text, Doc, vcat )
 import Autolib.Reporter.IO.Type ( inform, reject )
 import Autolib.Output as O
@@ -78,32 +78,34 @@ safe_io msg action = do
             mzero
         Right res -> return res
 
-get_task_config mk = do
-  td <- safe_io "get_task_config" $ SI.get_task_description ( server mk ) ( task mk )
+get_task_config mk lang = do
+  td <- safe_io "get_task_config" 
+      $ SI.get_task_description_localized ( server mk ) ( task mk ) lang
   let conf = task_sample_config td
   -- embed $ inform $ toDoc $ D.documentation conf
   return $ D.contents conf
   
 
-verify_task_config mk conf = do
-    SI.verify_task_config ( server mk ) ( task mk ) conf
+verify_task_config mk conf lang = do
+    SI.verify_task_config_localized ( server mk ) ( task mk ) conf lang
 
 instance ToDoc Description where  
     toDoc (DString s) = text s
 
 task_config_editor title mk mauf = do
+    lang <- get_preferred_language 
     open row
     plain title
     CString conf <- case mauf of
-        Nothing  -> get_task_config mk
+        Nothing  -> get_task_config mk lang
         Just auf -> 
             return $ CString $ toString $ A.config auf
     ms <- textarea $ conf
     sconf <- submit "submit"
     close -- row
-    ver <- safe_io "verify_task_config.1" $ verify_task_config mk $ CString $ case ms of
+    ver <- safe_io "verify_task_config.1" $ verify_task_config mk ( CString $ case ms of
          Nothing -> conf
-         Just s  -> s
+         Just s  -> s ) lang
     case ver of     
         Left err -> do 
             html $ M.specialize M.DE 
@@ -145,11 +147,14 @@ generate :: A.Aufgabe
          -> Form IO ( Signed (Task,Instance), Doc, Output )
 generate auf seed cache = do
     auf <- update_signature_if_missing auf
+
+    lang <- get_preferred_language 
     
     ( sti, desc, docsol ) <- do
-        safe_io "get_task_instance" $ SI.get_task_instance (toString $ A.server auf) 
+        safe_io "get_task_instance" $ SI.get_task_instance_localized (toString $ A.server auf) 
              ( signed_task_config auf )
              ( show seed ) -- ?
+             lang
     let 
         SString sol = D.contents docsol
     return ( sti, text sol , descr desc  )
@@ -160,10 +165,10 @@ evaluate :: A.Aufgabe
          -> String
          -> 
 -}
-evaluate auf sti s = do
+evaluate auf sti s lang = do
     result <- 
-       SI.grade_task_solution (toString $ A.server auf) 
-           sti $ SString s
+       SI.grade_task_solution_localized (toString $ A.server auf) 
+           sti (  SString s ) lang
     case result of  
        Left err -> return ( Nothing, descr err )
        Right dd -> return ( Just $ ok $ round $ D.contents dd

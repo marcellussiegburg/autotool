@@ -10,7 +10,10 @@ module Gateway.CGI
 ( Form, Tag, execute, look, write, delete
 , get_env, get_vars, look_var, look_env
 , runForm
-, io, embed, wrap
+, io, embed, embed_for, wrap
+, select_preferred_language
+, get_preferred_language
+, set_preferred_language
 , gensym
 , begin, click, end, end0, end_with_default, end_maybe
 , cc
@@ -132,6 +135,7 @@ data State =
 	   , forms :: [ Int ] -- ^ (random) sequence of uniqe ids
            , group :: [ ( Tag, Dynamic ) ] -- ^ candidates for next mutex
 	   , mutex :: Maybe Tag -- ^ tag of hidden element that keeps previous choice within current group 
+           , preferred_language :: Language
 	   }
      deriving Typeable
 
@@ -143,6 +147,7 @@ state0 vs e = do
 	  , forms = [ 1 .. ] 
 	  , group = [ ]
 	  , mutex = Nothing
+          , preferred_language = DE
 	  }
 
 -- | input components are numbered.
@@ -319,10 +324,14 @@ io action = Form $ \ s -> do
 embed :: R.Reporter a 
       -> Form IO ( Maybe a )
 embed r = do
+    lang <- get_preferred_language 
+    embed_for lang r
+
+embed_for lang r = do
     ( ma, out ) <- io $ R.run r
     let h :: Autolib.Multilingual.Html.Html
         h = Autolib.Output.render out 
-    html $ specialize Autolib.Multilingual.DE h
+    html $ specialize lang h
     return ma
 
 -- | new html stack level
@@ -366,6 +375,20 @@ gensympref f = Form $ \ s -> do
 	   )
 
 --------------------------------------------------------------------
+
+select_preferred_language :: Monad m => Form m ()
+select_preferred_language = do
+    lang <- click_choice_with_default 0 
+        "preferred language" [ ("english", UK), ("deutsch", DE) ]
+    set_preferred_language lang
+
+set_preferred_language :: Monad m => Language -> Form m ()
+set_preferred_language l = Form $ \ s ->
+    return (s { preferred_language = l }, return () )
+
+get_preferred_language :: Monad m => Form m Language
+get_preferred_language = Form $ \  s -> 
+    return (s, return $ preferred_language s )
 
 -- | clear mutex group
 clear_mutex :: Monad m => Form m ()
@@ -974,8 +997,9 @@ editor' break def = do
     mcs <- textarea ( render $ toDoc def )
     close
     open row
+    lang <- get_preferred_language
     let helper :: Html.Html
-        helper = specialize Autolib.Multilingual.DE
+        helper = specialize lang
                $ Autolib.Output.render 
                $ Autolib.Output.Beside 
                  ( Autolib.Output.Doc

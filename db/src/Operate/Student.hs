@@ -46,8 +46,7 @@ data Method = Textarea | Upload
 -- für tutor zum ausprobieren
 -- für student echt
 solution vnr  manr stud auf = do
-
-    lang <- Operate.Language.choose
+    lang <- get_preferred_language -- ; plain $ show lang
 
     ( sti, ini, icom ) <- make_instant vnr manr stud auf
 
@@ -119,7 +118,7 @@ solution vnr  manr stud auf = do
     Just cs <- return mcs
     hr ; h3 "Neue Bewertung"
     -- (res, o ) <- io $ run $ evaluate p i cs
-    (res, o ) <- io $ evaluate auf sti cs
+    (res, o ) <- io $ evaluate auf sti cs lang
     
     let com = Autolib.Output.render o :: H.Html
     html $ specialize lang com
