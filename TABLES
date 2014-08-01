@@ -18,6 +18,8 @@ CREATE TABLE `aufgabe` (
   `Remark` text,
   `Typ` blob,
   `Status` enum('demo','mandatory','optional') default NULL,
+  `server` blob,
+  `signature` blob,
   PRIMARY KEY  (`ANr`)
 ) TYPE=MyISAM COMMENT='aufgabe';
 
@@ -40,7 +42,8 @@ CREATE TABLE `punkte` (
 CREATE TABLE `schule` (
   `UNr` int(11) NOT NULL default '0',
   `Name` varchar(50) NOT NULL default '',
-  `Mail_Suffix` text NOT NULL
+  `Mail_Suffix` text NOT NULL,
+  `Use_Shibboleth` tinyint(1) NOT NULL Default 0
 ) TYPE=MyISAM;
 
 CREATE TABLE `stud_aufg` (

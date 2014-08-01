@@ -20,8 +20,8 @@ roll_trs conf = do
              r <- rs
              [ vars $ lhs r, vars $ rhs r ]
     return $ TRS
-           { variablen = setToList vs
-           , regeln = rs
+           { Rewriting.TRS.variables = setToList vs
+           , rules = rs
            }
 
 roll_rule :: ( Symbol v, Symbol c )
@@ -29,7 +29,7 @@ roll_rule :: ( Symbol v, Symbol c )
           -> IO ( Rule ( Term v c ))
 roll_rule conf = do
     num_lvars <- randomRIO ( 0, num_vars conf )
-    lvars <- sequence $ replicate num_lvars $ eins $ variables conf
+    lvars <- sequence $ replicate num_lvars $ eins $ Rewriting.Roller.variables conf
     num_rvars <- randomRIO ( 0, num_vars conf )
     rvars <- if 0 == num_lvars then return []
              else sequence $ replicate num_rvars $ eins lvars
@@ -79,7 +79,7 @@ data ( Symbol v, Symbol c ) => Config v c =
 example :: Config Identifier Identifier
 example = Config
         { signature = read "[(a,0),(b,0),(f,1),(g,2)]"
-        , variables = read "[X,Y,Z]"
+        , Rewriting.Roller.variables = read "[X,Y,Z]"
         , num_rules = 3
         , max_size  = 8
         , num_vars  = 2

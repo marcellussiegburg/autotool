@@ -1,4 +1,5 @@
 -- module Main where
+module Main where
 
 import qualified Scorer.Aufgabe
 import Scorer.Compute
@@ -13,11 +14,12 @@ import Autolib.ToDoc
 import Autolib.Output ( Output )
 import qualified Autolib.Output as O
 import qualified Autolib.Multilingual
-import qualified Text.XHtml
+import qualified Text.Blaze.Html
 
 import Autolib.FiniteMap
 import Control.Monad ( guard, when, forM )
 import Data.Maybe
+import qualified Data.Text as T
 
 import System.Environment
 
@@ -26,7 +28,7 @@ import System.Environment
 main :: IO ()
 main = do
     t <- zeit    
-    let header = O.Text $ "autotool -- Top Ten Scores, Stand von: " ++ t        
+    let header = O.Text $ T.pack $ "autotool -- Top Ten Scores, Stand von: " ++ t        
     schulen <- U.get
     outss <- forM schulen $ \ schule -> do
             sems <- E.get_at_school $ U.unr schule 
@@ -44,6 +46,6 @@ main = do
             forM (filter ( \ (vor,def) -> not $ isEmptyFM def ) $ concat table) $ compute schule
     let out = O.lead header $ O.Itemize $ concat outss >>= maybeToList
     print $ Autolib.Multilingual.specialize Autolib.Multilingual.DE
-          $ ( O.render out :: Autolib.Multilingual.Type Text.XHtml.Html )
+          $ ( O.render out :: Autolib.Multilingual.Type Text.Blaze.Html.Html )
     
 

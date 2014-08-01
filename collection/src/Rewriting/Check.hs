@@ -39,7 +39,7 @@ instance(Symbol c, Symbol v) => C.Check Check ( TRS v c ) where
     check Left_Linear trs = do
         inform $ text "Das System soll links-linear sein."
         sequence_ $ do
-            ( k, rule ) <- zip [0..] $ regeln trs
+            ( k, rule ) <- zip [0..] $ rules trs
             return $ do
                 inform $ text "prüfe Regel" <+> toDoc rule 
                 linear ( text "linke Seite der Regel" ) ( lhs rule )
@@ -47,7 +47,7 @@ instance(Symbol c, Symbol v) => C.Check Check ( TRS v c ) where
     check Linear trs = do
         inform $ text "Das System soll linear sein."
         sequence_ $ do
-            ( k, rule ) <- zip [0..] $ regeln trs
+            ( k, rule ) <- zip [0..] $ rules trs
             return $ do
                 inform $ text "prüfe Regel" <+> toDoc rule 
                 linear ( text "linke  Seite der Regel" ) ( lhs rule )
@@ -58,7 +58,7 @@ instance(Symbol c, Symbol v) => C.Check Check ( TRS v c ) where
                     ( text "Menge der Variablen in der linken Seite:", lvs )
 
     check ( Max_Rules n ) trs = 
-        bounder ( text "Anzahl der Regeln" ) n ( length $ regeln trs )
+        bounder ( text "Anzahl der Regeln" ) n ( length $ rules trs )
     check ( Max_Size n ) trs = 
         bounder ( text "Größe einer Regelseite" ) n 
             ( maximum $ 0 : map size ( terms trs ) )
@@ -100,7 +100,7 @@ linear name t = do
         , nest 4 $ toDoc vs
         ]
  
-terms trs = do rule <- regeln trs ; [ lhs rule, rhs rule ]
+terms trs = do rule <- rules trs ; [ lhs rule, rhs rule ]
 
 derives [makeReader,makeToDoc] [''Check]
 

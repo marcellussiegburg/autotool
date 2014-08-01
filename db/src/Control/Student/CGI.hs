@@ -247,8 +247,6 @@ edit_create (Just u) ms = do
     edit_create_continue u ms
 
 edit_create Nothing ms = do
-
-    open btable
     
     us <- io $ Control.Schule.get 
 
@@ -266,6 +264,8 @@ edit_create Nothing ms = do
 
 
 edit_create_continue u ms = do
+
+    open btable
 
     plain $ toString $ U.name u
 
