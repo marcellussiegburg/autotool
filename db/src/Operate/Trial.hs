@@ -52,7 +52,7 @@ import qualified Network.CGI
 
 import Control.Types 
     ( toString, fromCGI, Name, Typ , Remark, HiLo (..), Status (..)
-    , Oks (..), Nos (..), Time , Wert (..), MNr, SNr, VNr, ANr, UNr
+    , Oks (..), Nos (..), Time , Wert (..), MNr, SNr, VNr, ANr (..), UNr
     , TimeStatus (..)
     )
 
@@ -241,13 +241,13 @@ common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf server mk type_click = do
     hr
 
     case mauf of
-      Nothing -> return ()
-      Just auf -> do
+      Just auf | A.anr auf' /= ANr 0 -> do
         plain "Link zu dieser Aufgabeninstanz:"
         let problem = "Trial.cgi?problem=" 
                     ++ Control.Types.toString ( A.anr auf' )
         html $ specialize Autolib.Multilingual.DE  
 	     $ ( O.render $ O.Link $ problem :: H.Html )
+      _ -> return ()
 
     footer scores
 

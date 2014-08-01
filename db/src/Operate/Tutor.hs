@@ -17,7 +17,7 @@ import qualified Control.Student as S
 import Challenger.Partial
 import Control.Types 
     ( toString, fromCGI, Name, Typ , Remark, HiLo (..), Status (..)
-    , Oks (..), Nos (..), Time , Wert (..), MNr, SNr, VNr, ANr, UNr
+    , Oks (..), Nos (..), Time , Wert (..), MNr, SNr, VNr, ANr(..), UNr
     , TimeStatus (..)
     )
 import Control.Time
@@ -121,7 +121,7 @@ edit_aufgabe_extra _ mk mauf vnr manr type_click prop = case mk of
                 ( task, CString conf ) = contents signed_conf
 
             return $ A.Aufgabe 
-		               { A.anr = error "Super.anr" -- intentionally
+		               { A.anr = ANr 0 -- error "Super.anr" -- intentionally
 			       , A.vnr = vnr
 			       , A.name = name
                                , A.server = fromCGI server
