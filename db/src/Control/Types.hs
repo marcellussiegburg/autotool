@@ -495,12 +495,7 @@ instance ToString VNr where
 instance FromCGI VNr where
     fromCGI cs = VNr $ read cs
 instance Hashable VNr where
-<<<<<<< HEAD
     hashWithSalt s ( VNr x ) = hashWithSalt s ( 17 :: Int , x )
-=======
-    hashWithSalt s (VNr x) = hashWithSalt s x
-    hash ( VNr x ) = hash ( 17 :: Int , x )
->>>>>>> 0bfffccc1ca2f2b11055743cfb6a9ad8d28b5d00
 
 -- | OK-Bewertung (Anzahl)
 

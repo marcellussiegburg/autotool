@@ -58,7 +58,7 @@ solution vnr  manr stud auf = do
     parameter_table auf
 
     h3 $ specialize lang 
-       $ make [(DE, "Aufgabenstellung"), (UK, "Problem")]
+       $ M.make [(DE, "Aufgabenstellung"), (UK, "Problem")]
     html $ specialize lang ( Autolib.Output.render icom :: H.Html)
 
     when ( not $ A.current auf ) vorbei

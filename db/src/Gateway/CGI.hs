@@ -582,14 +582,6 @@ path_tree_choice path top = do
         Left sub -> path_tree_choice ( drop 1 path ) sub
         Right x    -> return x
 
-<<<<<<< HEAD
-
-=======
-{-instance Typeable a => Typeable ( Tree a )  where
-    typeOf ( t :: Tree a ) = mkTyConApp ( mkTyCon "Data.Tree.Tree" )
-                                         [ typeOf ( undefined :: a ) ]
--}
->>>>>>> 0bfffccc1ca2f2b11055743cfb6a9ad8d28b5d00
 ----------------------------------------------------------------------
 
 fromdyn :: forall m a
