@@ -1,5 +1,5 @@
 module Service.GetTaskInstanceOrFail (
-    get_task_instance_or_fail
+    get_task_instance_or_fail,     get_task_instance_or_fail_localized
 ) where
 
 import Util.Sign
@@ -23,6 +23,7 @@ import Inter.Types as IT
 import Autolib.Reporter.IO.Type
 import Autolib.Reader
 import qualified Autolib.ToDoc as AT
+import Autolib.Multilingual hiding (Make)
 import Challenger.Partial as CP
 
 import Text.ParserCombinators.Parsec
@@ -41,7 +42,14 @@ get_task_instance_or_fail
     :: TT (Signed (Task, Config)) -> TT Seed
     -> IO (TT (Either Description
                  (Signed (Task, Instance), Description, Documented Solution)))
-get_task_instance_or_fail  (TT sconf) (TT seed) = fmap TT $ runErrorT $ do
+get_task_instance_or_fail c s = 
+    get_task_instance_or_fail_localized c s (TT DE)
+
+get_task_instance_or_fail_localized
+    :: TT (Signed (Task, Config)) -> TT Seed -> TT Language
+    -> IO (TT (Either Description
+                 (Signed (Task, Instance), Description, Documented Solution)))
+get_task_instance_or_fail_localized  (TT sconf) (TT seed) (TT lang) = fmap TT $ runErrorT $ do
 
     liftIO $ appendFile "/tmp/autotool.cgi" "get_task_instance_or_fail"
 
@@ -78,6 +86,6 @@ get_task_instance_or_fail  (TT sconf) (TT seed) = fmap TT $ runErrorT $ do
                                 AT.render $ AT.toDoc i
                             })
            , descr
-           , Documented { D.contents = SString . AT.render . AT.toDoc $ b,
+           , Documented { D.contents = SString . AT.render_for lang . AT.toDoc $ b,
                           D.documentation = doc }
            )

@@ -1,5 +1,5 @@
 module Service.GradeTaskSolution (
-    grade_task_solution
+    grade_task_solution,     grade_task_solution_localized
 ) where
 
 import Util.Sign
@@ -19,6 +19,7 @@ import Inter.Types
 import Inter.Evaluate
 import Autolib.Reporter.IO.Type
 import Autolib.ToDoc ( hsep, text )
+import Autolib.Multilingual hiding ( Make )
 import qualified Autolib.Reporter.Classic.Type
 import Inter.Wert (is_okay, size)
 
@@ -28,7 +29,13 @@ import qualified Control.Exception as CE
 grade_task_solution
     :: TT (Signed (Task, Instance)) -> TT Solution
     -> IO (TT (Either Description (Documented Double)))
-grade_task_solution (TT sTaskInst) (TT (SString solution))
+grade_task_solution i s = 
+    grade_task_solution_localized i s (TT DE)
+
+grade_task_solution_localized
+    :: TT (Signed (Task, Instance)) -> TT Solution -> TT Language
+    -> IO (TT (Either Description (Documented Double)))
+grade_task_solution_localized (TT sTaskInst) (TT (SString solution)) (TT lang)
     = withTimeout . fmap TT . runErrorT $ do
         (task, inst) <- verifyM sTaskInst
         Make p _ maker0 _ _ <- lookupTaskM task

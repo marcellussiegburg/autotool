@@ -1,5 +1,5 @@
 module Service.GetTaskInstance (
-    get_task_instance
+    get_task_instance,     get_task_instance_localized
 ) where
 
 import Util.Sign
@@ -26,6 +26,8 @@ import qualified Autolib.Reader as AR
 import qualified Autolib.ToDoc as AT
 import Challenger.Partial as CP
 
+import Autolib.Multilingual hiding (Make)
+
 import Text.ParserCombinators.Parsec
 import Control.Monad.Error
 
@@ -41,7 +43,13 @@ nocache _ = id
 get_task_instance
     :: TT (Signed (Task, Config)) -> TT Seed
     -> IO (TT (Signed (Task, Instance), Description, Documented Solution))
-get_task_instance  (TT sconf) (TT seed) = withTimeout $ fmap TT $ do
+get_task_instance  (TT sconf) (TT seed) = 
+    get_task_instance_localized  (TT sconf) (TT seed) (TT DE)
+
+get_task_instance_localized
+    :: TT (Signed (Task, Config)) -> TT Seed -> TT Language
+    -> IO (TT (Signed (Task, Instance), Description, Documented Solution))
+get_task_instance_localized  (TT sconf) (TT seed) (TT lang) = withTimeout $ fmap TT $ do
 
     (task, CString config) <- verifyM sconf
     Make _ _ maker0 _ _ <- lookupTaskM task
@@ -69,9 +77,9 @@ get_task_instance  (TT sconf) (TT seed) = withTimeout $ fmap TT $ do
     let st = sign (task,
                    Instance { I.tag = IT.tag maker,
                               I.contents = -- AT.showDoc . AT.toDoc $ i
-                                AT.render $ AT.toDoc i
+                                AT.render_for lang $ AT.toDoc i
                             })
-        docked = Documented { D.contents = SString . AT.render . AT.toDoc $ b,
+        docked = Documented { D.contents = SString . AT.render_for lang . AT.toDoc $ b,
                           D.documentation = doc }
         result = ( st
            , descr

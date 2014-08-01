@@ -38,6 +38,11 @@ proto = [
     ("get_task_instance", fun get_task_instance),
     ("get_task_instance_or_fail", fun get_task_instance_or_fail),
     ("grade_task_solution", fun grade_task_solution),
+    ("get_task_description_localized", fun get_task_description_localized),
+    ("verify_task_config_localized", fun verify_task_config_localized),
+    ("get_task_instance_localized", fun get_task_instance_localized),
+    ("get_task_instance_or_fail_localized", fun get_task_instance_or_fail_localized),
+    ("grade_task_solution_localized", fun grade_task_solution_localized),
     ("ping", fun ping)
     ]
 
