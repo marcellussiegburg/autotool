@@ -751,3 +751,7 @@ radio_score sauf stud = do
 			)
     return $ concat $ maybeToList p
 
+btabled :: Monad m => Form m a -> Form m a
+btabled = bracketed btable
+
+bracketed b action = do open b; x <- action ; close ; return x
