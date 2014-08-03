@@ -57,7 +57,7 @@ solution vnr  manr stud auf = do
     parameter_table auf
 
     h3 $ specialize lang 
-       $ M.make [(DE, "Aufgabenstellung"), (UK, "Problem")]
+       $ M.make [(DE, "Aufgabe"), (UK, "Problem")]
     html $ specialize lang ( Autolib.Output.render icom :: H.Html)
 
     when ( not $ A.current auf ) vorbei
@@ -66,7 +66,8 @@ solution vnr  manr stud auf = do
     html $ Gateway.Html.anchor Gateway.Html.! [ Gateway.Html.name "hotspot" ]
          Gateway.Html.<< ""
 
-    h3 "Neue Einsendung"
+    h3 $ specialize lang
+       $ M.make [(DE, "Lösung"), (UK, "Solution")]
 
     open table
     method <- click_choice_with_default 0 "Eingabe-Methode"
@@ -75,8 +76,14 @@ solution vnr  manr stud auf = do
 
     mcs <- case method of
         Textarea -> do
-	    ex    <- submit "Beispiel laden"
-	    prev  <- submit "vorige Einsendung laden"
+	    ex    <- submit $ specialize lang
+	    	     	    $ M.make [(DE, "Beispiel laden")
+			      	     ,(UK, "load example")
+				     ]
+	    prev  <- submit $ specialize lang
+	    	     	    $ M.make [(DE, "vorige Einsendung laden")
+			      	     ,(UK, "load previous solution")
+				     ]
 	    -- esub  <- submit "Textfeld absenden"
 	    br
 	    when ( ex || prev ) blank
@@ -89,7 +96,10 @@ solution vnr  manr stud auf = do
 	    open table
 	    open row
             sol <- textarea def
-	    esub  <- submit "Textfeld absenden"
+	    esub  <- submit $ specialize lang
+			    $ M.make [(DE, "Textfeld absenden")
+				     ,(UK, "submit textarea")
+				     ]
 	    close -- row
 	    open row
 {-            
@@ -109,14 +119,23 @@ solution vnr  manr stud auf = do
             return sol
 
 	Upload -> do
-            plain "Datei auswählen:"
+            plain $ specialize lang
+		  $ M.make [(DE, "Datei auswählen:")
+			   ,(UK, "choose file:")
+			   ]
             up <- file undefined
-	    fsub  <- submit "Datei absenden"
+	    fsub  <- submit $ specialize lang
+			    $ M.make [(DE, "Datei absenden")
+				     ,(UK, "submit file")
+				     ]
             when ( not fsub ) $ mzero -- break
 	    return up
 
     Just cs <- return mcs
-    hr ; h3 "Neue Bewertung"
+    hr ; h3 $ specialize lang
+	    $ M.make [(DE, "Bewertung")
+		     ,(UK, "Evaluation")
+		     ]
     -- (res, o ) <- io $ run $ evaluate p i cs
     (res, o ) <- io $ evaluate auf sti cs lang
     
@@ -125,7 +144,9 @@ solution vnr  manr stud auf = do
     return ( Just icom, Just cs, fromMaybe No res, Just com )
 
 parameter_table auf = do
-    h3 $ unwords [ "Aufgabe", toString $ A.name auf ]
+    h3 $ unwords [ specialize lang 
+		   ( M.make [(DE, "Aufgabe"), (UK, "Problem")]
+		 , toString $ A.name auf ]
     
     io $ logged $ unlines
       [ unwords [ "plain", toString $ A.remark auf ]
@@ -133,7 +154,7 @@ parameter_table auf = do
       -- , unwords [ "dec"  , CBUS.decodeString $   toString $ A.remark auf ]        
       ]
         
-    above ( plain "Hinweise" )
+    above ( plain $ specialize lang $ M.make [(DE, "Hinweise"), (UK, "Remark")] )
 	            ( pre $ toString $ A.remark auf )
 
 
