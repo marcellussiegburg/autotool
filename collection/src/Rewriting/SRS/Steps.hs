@@ -37,34 +37,55 @@ exec ::  ( Symbol c )
      -> Reporter [ c ]
 exec srs w step = do
     inform $ vcat
-           [ text "Anwenden des Ersetzungsschrittes"
+           [ multitext [(DE, "Anwenden des Ersetzungsschrittes")
+		       ,(UK, "apply step")
+		       ]
            , nest 4 $ toDoc step
-           , text "auf das Wort"
+           , multitext [(DE, "auf das Wort")
+		       ,(UK, "to word")
+		       ]
            , nest 4 $ toDoc w
            ]
     let k = rule_number step
-    inform $ text "die Regel Nummer" <+> toDoc k
+    inform $ multitext [(DE, "die Regel Nummer")
+		       ,(UK, "the rule number")
+		       ] 
+	   <+> toDoc k
     rule <- if k < length ( regeln srs )
          then do
              let rule = regeln srs !! k
-             inform $ text "ist" <+> toDoc rule
+             inform $ multitext [(DE, "ist"), (UK, "is")] 
+		    <+> toDoc rule
              return rule
-         else reject $ text "existiert nicht."
+         else reject $ multitext [(DE, "existiert nicht.")
+				 ,(UK, "does not exist.")
+				 ]
 
     let p = position step
         ( pre, midpost ) = splitAt p w
-    inform $ text "das Teilwort an Position" <+> toDoc p 
+    inform $ multitext [(DE, "das Teilwort an Position")
+		       ,(UK, "the subword at position")
+		       ] 
+	   <+> toDoc p 
     if p > length w 
-         then reject $ text "existiert nicht"
-         else inform  $ text "ist" <+> toDoc midpost
+         then reject $ multitext [(DE, "existiert nicht")
+				 ,(UK, "does not exist")
+				 ]
+         else inform  $ multitext [(DE, "ist"), (UK, "is")] 
+		      <+> toDoc midpost
 
     let ( mid, post ) = splitAt ( length $ lhs rule ) midpost
     assert ( mid == lhs rule )
-           $ text "linke Regelseite ist Präfix des Teilwortes an Position?"
-    inform $ text "Suffix ist" <+> toDoc post
+           $ multitext [(DE, "linke Regelseite ist Präfix des Teilwortes an Position?")
+		       ,(UK, "lhs is prefix of subword at position?")
+		       ]
+    inform $ multitext [(DE, "Suffix ist"), (UK, "suffix is")] 
+	   <+> toDoc post
 
     let res = pre ++ rhs rule ++ post
-    inform $ text "resultierendes Wort ist" 
+    inform $ multitext [(DE, "resultierendes Wort ist")
+		       ,(UK, "the resulting word is")
+		       ] 
            $$ ( nest 4 $ toDoc res )
 
     return res
