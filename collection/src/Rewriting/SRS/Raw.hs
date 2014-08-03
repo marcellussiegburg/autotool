@@ -15,12 +15,12 @@ import Data.Typeable
 
 
 data ( Symbol c ) => SRS c = 
-     SRS { regeln :: [ Rule [c] ]
+     SRS { rules :: [ Rule [c] ]
          }
     deriving ( Eq, Ord, Typeable )
 
 example :: SRS Identifier
-example = read "SRS { regeln = [ a b -> b a ] }"
+example = read "SRS { rules = [ a b -> b a ] }"
 
 $(derives [makeReader, makeToDoc] [''SRS])
 
