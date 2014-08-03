@@ -21,7 +21,7 @@ steps :: (  Symbol c )
       -> [ Step c ]
 steps rs w = do
     ( p, rest ) <- zip [0..] $ tails w
-    ( k, r ) <- zip [ 0 .. ] $ regeln rs
+    ( k, r ) <- zip [ 0 .. ] $ rules rs
     let ( pre, post ) = splitAt ( length $ lhs r ) rest
     guard $ lhs r == pre
     return $ Step
@@ -52,9 +52,9 @@ exec srs w step = do
 		       ,(UK, "the rule number")
 		       ] 
 	   <+> toDoc k
-    rule <- if k < length ( regeln srs )
+    rule <- if k < length ( rules srs )
          then do
-             let rule = regeln srs !! k
+             let rule = rules srs !! k
              inform $ multitext [(DE, "ist"), (UK, "is")] 
 		    <+> toDoc rule
              return rule
