@@ -1,4 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# language DatatypeContexts #-}
+{-# language DeriveDataTypeable #-}
+
 
 module Rewriting.TRS.Raw where
 
