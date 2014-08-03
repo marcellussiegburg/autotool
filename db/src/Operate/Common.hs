@@ -25,6 +25,7 @@ import Data.ByteString ( ByteString )
 import Data.Digest.CRC32
 -- import Data.Text 
 
+import qualified Autolib.Multilingual as M
 -- import qualified Text.XHtml
 import qualified Autolib.Multilingual.Html as Html
 
@@ -77,8 +78,15 @@ punkte tutor stud auf ( minst, mcs, mres, com ) =
 
 
 vorbei = do
-    h3 "Einsendeschluß dieser Aufgabe ist überschritten"
-    plain "Einsendung wird nicht gespeichert, Bewertung wird ignoriert."
+    lang <- get_preferred_language
+    h3 $ specialize lang
+       $ M.make [(DE, "Einsendeschluß dieser Aufgabe ist überschritten")
+		,(UK, "submission deadline has passed")
+		]
+    plain $ specialize lang
+	  $ M.make [(DE, "Einsendung wird nicht gespeichert, Bewertung wird ignoriert.")
+		   ,(UK, "submission is not saved, evaluation is ignored.")
+		   ]
 
 pure_punkte tutor stud auf ( minst, mcs, mres, com ) = 
      when ( tutor || A.current auf ) $ do
