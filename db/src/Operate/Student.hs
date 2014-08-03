@@ -144,6 +144,7 @@ solution vnr  manr stud auf = do
     return ( Just icom, Just cs, fromMaybe No res, Just com )
 
 parameter_table auf = do
+    lang <- get_preferred_language
     h3 $ unwords [ specialize lang 
 		   $ M.make [(DE, "Aufgabe"), (UK, "Problem")]
 		 , toString $ A.name auf 
