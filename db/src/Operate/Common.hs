@@ -79,13 +79,13 @@ punkte tutor stud auf ( minst, mcs, mres, com ) =
 
 vorbei = do
     lang <- get_preferred_language
-    h3 $ specialize lang
-       $ M.make [(DE, "Einsendeschluß dieser Aufgabe ist überschritten")
-		,(UK, "submission deadline has passed")
+    h3 $ M.specialize lang
+       $ M.make [(M.DE, "Einsendeschluß dieser Aufgabe ist überschritten")
+		,(M.UK, "submission deadline has passed")
 		]
-    plain $ specialize lang
-	  $ M.make [(DE, "Einsendung wird nicht gespeichert, Bewertung wird ignoriert.")
-		   ,(UK, "submission is not saved, evaluation is ignored.")
+    plain $ M.specialize lang
+	  $ M.make [(M.DE, "Einsendung wird nicht gespeichert, Bewertung wird ignoriert.")
+		   ,(M.UK, "submission is not saved, evaluation is ignored.")
 		   ]
 
 pure_punkte tutor stud auf ( minst, mcs, mres, com ) = 
