@@ -8,6 +8,7 @@ import Autolib.Symbol
 
 import Autolib.Reporter
 import Autolib.ToDoc
+import Autolib.Multilingual
 
 import Data.List ( inits, tails )
 import Data.Maybe
