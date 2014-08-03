@@ -145,8 +145,9 @@ solution vnr  manr stud auf = do
 
 parameter_table auf = do
     h3 $ unwords [ specialize lang 
-		   ( M.make [(DE, "Aufgabe"), (UK, "Problem")]
-		 , toString $ A.name auf ]
+		   $ M.make [(DE, "Aufgabe"), (UK, "Problem")]
+		 , toString $ A.name auf 
+		 ]
     
     io $ logged $ unlines
       [ unwords [ "plain", toString $ A.remark auf ]
