@@ -1,10 +1,12 @@
 {-# language DatatypeContexts #-}
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
+{-# language FlexibleContexts #-}
 
 module Rewriting.Termination where
 
 import Rewriting.Termination.Semiring
+import Rewriting.Termination.Interpretation
 
 import Autolib.Symbol
 import Autolib.Reader
@@ -24,24 +26,17 @@ data Restriction = None
 
 derives [makeReader, makeToDoc] [''Restriction]
 
-data Problem v c = 
-     Problem { system :: TRS v c
+data Symbol c => Problem c = 
+     Problem { system :: TRS c c
              , restriction :: Restriction
              }
     deriving ( Eq, Ord, Typeable )
 
 derives [makeReader, makeToDoc] [''Problem]
 
-data Multilinear d = 
-     Multilinear { absolute :: Vector d, linear :: [Matrix d] }
-    deriving ( Eq, Ord, Typeable )
-
 data Order c 
     = Empty
-    | Matrix_Natural (FiniteMap c (Multilinear Natural))
-    | Matrix_Arctic (FiniteMap c (Multilinear Arctic))
-    | Matrix_Tropical (FiniteMap c (Multilinear Tropical))
-    | Matrix_Fuzzy (FiniteMap c (Multilinear Fuzzy))
+    | Interpretation c
     | Lexicographcic [ Order c ]
     deriving ( Eq, Ord, Typeable )
 

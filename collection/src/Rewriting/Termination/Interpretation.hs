@@ -1,0 +1,132 @@
+{-# language DatatypeContexts #-}
+{-# language TemplateHaskell #-}
+{-# language DeriveDataTypeable #-}
+{-# language ScopedTypeVariables #-}
+
+module Rewriting.Termination.Interpretation where
+
+import Rewriting.Termination.Semiring
+import qualified Rewriting.Termination.Domains as D
+import Rewriting.Termination.Multilinear 
+import Rewriting.TRS
+
+import Autolib.Reader
+import Autolib.ToDoc
+import Autolib.Reporter
+
+import Control.Monad ( when, forM )
+import Control.Applicative ( (<$>) )
+import Data.Typeable
+import Data.List ( transpose )
+
+import Autolib.FiniteMap
+import qualified Data.Map as M
+import qualified Data.Set as S
+
+data Domain = Natural | Arctic | Tropical | Fuzzy 
+    deriving (Eq, Typeable)
+
+derives [makeReader, makeToDoc] [''Domain]
+
+type Inter c d = M.Map c (Multilinear d)
+
+data (Symbol c, Ord c) => Interpretation c 
+    = Matrix_Interpretation_Natural (Inter c D.Natural)
+    | Matrix_Interpretation_Arctic (Inter c D.Arctic)
+    | Matrix_Interpretation_Tropical (Inter c D.Tropical)
+    | Matrix_Interpretation_Fuzzy (Inter c D.Fuzzy)
+    deriving (Eq, Typeable)
+
+derives [makeToDoc] [''Interpretation]
+
+instance (Ord c, Symbol c, Reader c) => Reader (Interpretation c) where
+    reader = 
+            do my_reserved "Matrix_Interpretation_Natural" 
+               Matrix_Interpretation_Natural <$> reader
+        <|> do my_reserved "Matrix_Interpretation_Arctic" 
+               Matrix_Interpretation_Arctic <$> reader
+        <|> do my_reserved "Matrix_Interpretation_Tropical" 
+               Matrix_Interpretation_Tropical <$> reader
+        <|> do my_reserved "Matrix_Interpretation_Fuzzy" 
+               Matrix_Interpretation_Fuzzy <$> reader
+
+data Comparison = Greater | Greater_Equal | Other
+    deriving (Eq, Typeable )
+
+derives [makeReader, makeToDoc] [''Comparison]
+
+-- | applied to a term where variables are renamed to [1,2..from]
+inter :: (Symbol c, Ord c, Semiring d, ToDoc d)
+      => Inter c d -> Int -> Int 
+      -> Term Int c -> Reporter (Multilinear d)
+inter int from dim t = explained t $ case t of
+    Var to -> return $ projection from to dim
+    Node f args -> case M.lookup f int of
+        Nothing -> reject $ vcat 
+            [ text "missing interpretation for symbol" <+> toDoc f
+            ]
+        Just fun -> do
+            let syn = length args
+                sem = length (coefficients fun)
+            when ( syn /= sem ) $ reject $ vcat 
+                    [ text "arity mismatch for symbol" <+> toDoc f
+                    , text "arity of symbol is" <+> toDoc syn
+                    , text "arity of interpretation of symbol is" <+> toDoc sem
+                    ]
+            gs <- forM args $ inter int from dim
+            return $ substitute fun gs
+
+explained t action = do
+    inform $ text "compute interpretation of" <+> toDoc t
+    i <- nested 4 action
+    inform $ vcat 
+        [ text "interpretation of" <+> toDoc t <+> text "is"
+        , toDoc i
+        ]
+    return i
+
+must_be_monotone dom (int :: Inter c d) = forM (M.toList int) $ \ (f, m) -> do
+    inform $ vcat [ text "check monotonicity for"
+                  , text "symbol" <+> toDoc f
+                  , text "interpreted by" <+> toDoc m
+                  ]
+    forM (coefficients m) $ \ c ->
+        when (not $ positive c) $ reject $ vcat
+             [ text "is not monotone since coefficient" 
+             , toDoc c
+             , text "is not positive"
+             ]
+    when (not (strict_addition ( undefined :: d))) $ do
+        when (not $ is_zero $ absolute m) $ reject $ vcat
+                [ text "interpretation is not monotone"
+                , text "since semiring addition is not monotone"
+                , text "and absolute part is non-zero"
+                ]
+        when (length ( coefficients m ) > 1) $ reject $ vcat
+                [ text "interpretation is not monotone"
+                , text "since semiring addition is not monotone"
+                , text "and function has more than one argument"
+                ] 
+
+order :: (Symbol c, Ord v, Semiring d, ToDoc d )
+      => Domain -> Inter c d -> Int -> Int 
+      -> Rule (Term v c) -> Reporter Comparison
+order dom (int :: Inter c d) from dim u = do
+    let l = lhs u ; r = rhs u
+        vs = S.union (vars l) (vars r)
+        m = M.fromList $ zip ( S.toList vs) [1..]
+        rename = vmap (m M.!) 
+    ml <- inter int from dim $ rename l
+    mr <- inter int from dim $ rename r
+    if and $ zipWith weakly_greater 
+        (absolute ml : coefficients ml) 
+        (absolute mr : coefficients mr)
+    then if ( if strict_addition (undefined :: d) 
+              then strictly_greater (absolute ml) (absolute mr)
+              else and $ zipWith strictly_greater 
+                  (absolute ml : coefficients ml) 
+                  (absolute mr : coefficients mr)
+            ) 
+         then return Greater 
+         else return Greater_Equal
+    else return Other
