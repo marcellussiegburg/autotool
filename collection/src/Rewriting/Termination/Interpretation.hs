@@ -2,12 +2,14 @@
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
 {-# language ScopedTypeVariables #-}
+{-# language DoAndIfThenElse #-}
 
 module Rewriting.Termination.Interpretation where
 
 import Rewriting.Termination.Semiring
 import qualified Rewriting.Termination.Domains as D
 import Rewriting.Termination.Multilinear 
+import Rewriting.Termination.Matrix (contents)
 import Rewriting.TRS
 
 import Autolib.Reader
@@ -22,6 +24,7 @@ import Data.List ( transpose )
 import Autolib.FiniteMap
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Autolib.Size
 
 data Domain = Natural | Arctic | Tropical | Fuzzy 
     deriving (Eq, Typeable)
@@ -36,6 +39,19 @@ data (Symbol c, Ord c) => Interpretation c
     | Matrix_Interpretation_Tropical (Inter c D.Tropical)
     | Matrix_Interpretation_Fuzzy (Inter c D.Fuzzy)
     deriving (Eq, Typeable)
+
+instance Symbol c => Size (Interpretation c) where
+    size i = case i of
+        Matrix_Interpretation_Natural m -> nonzeroes m
+        Matrix_Interpretation_Arctic m -> nonzeroes m
+        Matrix_Interpretation_Tropical m -> nonzeroes m
+        Matrix_Interpretation_Fuzzy m -> nonzeroes m
+        
+nonzeroes m = sum $ do 
+    (k,v) <- M.toList m 
+    a <- absolute v : coefficients v
+    x <- concat $ contents a
+    return $ if is_zero x then 0 else 1
 
 derives [makeToDoc] [''Interpretation]
 
@@ -85,7 +101,13 @@ explained t action = do
         ]
     return i
 
-must_be_monotone dom (int :: Inter c d) = forM (M.toList int) $ \ (f, m) -> do
+check_monotone i = case i of
+    Matrix_Interpretation_Natural i -> must_be_monotone i
+    Matrix_Interpretation_Arctic i -> must_be_monotone i
+    Matrix_Interpretation_Tropical i -> must_be_monotone i
+    Matrix_Interpretation_Fuzzy i -> must_be_monotone i
+
+must_be_monotone (int :: Inter c d) = forM_ (M.toList int) $ \ (f, m) -> do
     inform $ vcat [ text "check monotonicity for"
                   , text "symbol" <+> toDoc f
                   , text "interpreted by" <+> toDoc m
@@ -108,13 +130,20 @@ must_be_monotone dom (int :: Inter c d) = forM (M.toList int) $ \ (f, m) -> do
                 , text "and function has more than one argument"
                 ] 
 
+compute_order i = case i of
+    Matrix_Interpretation_Natural i -> order i
+    Matrix_Interpretation_Arctic i -> order i
+    Matrix_Interpretation_Tropical i -> order i
+    Matrix_Interpretation_Fuzzy i -> order i
+
 order :: (Symbol c, Ord v, Semiring d, ToDoc d )
-      => Domain -> Inter c d -> Int -> Int 
+      => Inter c d -> Int 
       -> Rule (Term v c) -> Reporter Comparison
-order dom (int :: Inter c d) from dim u = do
+order (int :: Inter c d) dim u = do
     let l = lhs u ; r = rhs u
         vs = S.union (vars l) (vars r)
         m = M.fromList $ zip ( S.toList vs) [1..]
+        from = M.size m
         rename = vmap (m M.!) 
     ml <- inter int from dim $ rename l
     mr <- inter int from dim $ rename r

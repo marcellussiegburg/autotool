@@ -190,6 +190,7 @@ import qualified Rewriting.TRS.Derive as RD
 import qualified Rewriting.TRS.Numerical
 
 import qualified Rewriting.Derive
+import qualified Rewriting.Termination
 import qualified Rewriting.TRS.Apply
 import qualified Rewriting.SRS.Apply
 import qualified Lambda.Apply

@@ -1,4 +1,5 @@
 {-# language DeriveDataTypeable #-}
+{-# language DoAndIfThenElse #-}
 
 module Rewriting.Termination.Matrix where
 
