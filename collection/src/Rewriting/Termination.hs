@@ -4,6 +4,8 @@
 
 module Rewriting.Termination where
 
+import Rewriting.Termination.Semiring
+
 import Autolib.Symbol
 import Autolib.Reader
 import Autolib.ToDoc
@@ -43,5 +45,5 @@ data Order c
     | Lexicographcic [ Order c ]
     deriving ( Eq, Ord, Typeable )
 
-derives [makeReader, makeToDoc] [''Problem]
+derives [makeReader, makeToDoc] [''Order]
 
