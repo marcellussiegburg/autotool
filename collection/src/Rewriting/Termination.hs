@@ -44,6 +44,12 @@ data Symbol c => Problem c =
              }
     deriving ( Eq, Typeable )
 
+problem0 :: Problem Identifier
+problem0 = Problem 
+    { system = read "TRS { variables = [x, y] , rules = [ f(x,y) -> f(y,x) ] }"
+    , restriction = And [ No_Lexicographic_Combination ]
+    }
+
 derives [makeReader, makeToDoc] [''Problem]
 
 data Symbol c => Order c 
@@ -61,10 +67,14 @@ instance Symbol c => Size (Order c) where
 derives [makeReader, makeToDoc] [''Order]
 
 data Rewriting_Termination = Rewriting_Termination
+    deriving Typeable
 
 derives [makeReader, makeToDoc] [''Rewriting_Termination]
 
 instance Show Rewriting_Termination where show = render . toDoc
+
+instance OrderScore Rewriting_Termination where
+    scoringOrder _ = Increasing
 
 instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
     describe _ p = vcat
@@ -82,6 +92,9 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
         check_restriction (restriction p) o
     total _ p o = do
         compatible o $ system p
+
+make_fixed :: Make
+make_fixed = direct Rewriting_Termination problem0
 
 check_restriction r o = case r of
     And rs -> forM_ rs $ \ r -> check_restriction r o

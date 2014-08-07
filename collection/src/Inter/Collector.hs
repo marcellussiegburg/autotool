@@ -473,6 +473,7 @@ tmakers =
                         [ item $ Rewriting.Derive.make_fixed Rewriting.TRS.Apply.For_TRS
                         , item RD.make_quiz
                         , item Rewriting.TRS.Numerical.make
+                        , item Rewriting.Termination.make_fixed 
                         ]
                 , heading "Lambda-Kalkül"
                         [ item $ Rewriting.Derive.make_fixed Lambda.Apply.For_Lambda
