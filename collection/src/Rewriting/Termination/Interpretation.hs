@@ -9,7 +9,7 @@ module Rewriting.Termination.Interpretation where
 import Rewriting.Termination.Semiring
 import qualified Rewriting.Termination.Domains as D
 import Rewriting.Termination.Multilinear 
-import Rewriting.Termination.Matrix (contents)
+import Rewriting.Termination.Matrix (contents, dim)
 import Rewriting.TRS
 
 import Autolib.Reader
@@ -159,3 +159,18 @@ order (int :: Inter c d) dim u = do
          then return Greater 
          else return Greater_Equal
     else return Other
+
+check_dimension dim i = case i of
+    Matrix_Interpretation_Natural i -> must_be_dimension dim i
+    Matrix_Interpretation_Arctic i -> must_be_dimension dim i
+    Matrix_Interpretation_Tropical i -> must_be_dimension dim i
+    Matrix_Interpretation_Fuzzy i -> must_be_dimension dim i
+
+must_be_dimension d m = forM_ (M.toList m) $ \ (k,v) -> do
+    let check msg want m = when (want /= dim m) $ reject $ vcat 
+            [ text msg <+> toDoc m
+            , text "must have dimension" <+> toDoc want
+            ]
+    check "absolute part" (d,1) $ absolute v
+    forM_ (coefficients v) $ check "coefficient" (d,d)
+    
