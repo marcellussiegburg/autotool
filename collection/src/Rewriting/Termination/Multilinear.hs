@@ -26,7 +26,9 @@ substitute f gs =
     Multilinear { absolute = foldr mplus (absolute f) 
        $ zipWith mtimes (coefficients f) (map absolute gs)
                 , coefficients = map ( foldr1 mplus )
-                           $ transpose $ map coefficients gs
+                           $ transpose 
+                           $ map (zipWith mtimes (coefficients f)) 
+                           $ map coefficients gs
                 }
 
 projection :: Semiring d 
