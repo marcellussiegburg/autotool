@@ -54,8 +54,8 @@ zero_matrix (h,w) =
            }
 
 unit_matrix d = 
-    Matrix { contents = for [0..d] $ \ x -> 
-                        for [0..d] $ \ y -> 
+    Matrix { contents = for [1..d] $ \ x -> 
+                        for [1..d] $ \ y -> 
                         if x==y then one else zero
            , dim = (d,d)
            }

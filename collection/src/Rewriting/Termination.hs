@@ -46,7 +46,7 @@ data Symbol c => Problem c =
 
 problem0 :: Problem Identifier
 problem0 = Problem 
-    { system = read "TRS { variables = [x, y] , rules = [ f(x,y) -> f(y,x) ] }"
+    { system = read "TRS { variables = [x] , rules = [ a(b(x)) -> b(a(x)) ] }"
     , restriction = And [ No_Lexicographic_Combination ]
     }
 
