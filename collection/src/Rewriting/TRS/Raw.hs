@@ -28,9 +28,5 @@ data ( Symbol c, Symbol v ) => TRS v c =
 
 
 
-$(derives [makeReader, makeToDoc] [''TRS])
+derives [makeReader, makeToDoc] [''TRS]
 
-
--- local variables:
--- mode: haskell
--- end;

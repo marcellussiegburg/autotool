@@ -27,6 +27,8 @@ import Autolib.Reader
 import Autolib.Multilingual
 
 import Data.Typeable
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 data ( Symbol c, Symbol v ) => TRS v c = 
      TRS { variables :: [ v ]
@@ -64,13 +66,27 @@ patch trs = do
                                <+> toDoc t
               else do
                    ys <- mapM handle xs
-                   return $ Node f ys
+                   let ar = length xs
+                   return $ Node ( set_arity ar f ) ys
     rs <- sequence $ do
         rule <- Raw.rules trs
         return $ do
             ll <- handle $ lhs rule
             rr <- handle $ rhs rule
             return $ rule { lhs = ll, rhs = rr }
+    let wrong = M.fromListWith S.union $ do
+            r <- rs ; t <- [lhs r, rhs r]
+            s @ ( Node f args ) <- subterms t
+            let ar = length args
+            guard $ arity f /= ar
+            return (f, S.singleton s)
+    forM_ (M.toList wrong) $ \ (f, ss) -> 
+        forM (S.toList ss) $ \ s -> fail $ unlines
+            [ unwords [ "symbol", show f, "of arity", show (arity f) ]
+            , "occurs with different arity"
+            , unwords [ "at root of subterm", show s ]
+            ]
+    
     return $ TRS { variables = Raw.variables trs
                  , rules = rs 
                  }   
