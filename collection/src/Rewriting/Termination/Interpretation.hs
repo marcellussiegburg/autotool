@@ -166,13 +166,20 @@ check_dimension dim i = case i of
     Matrix_Interpretation_Tropical i -> must_be_dimension dim i
     Matrix_Interpretation_Fuzzy i -> must_be_dimension dim i
 
+check_arities sig m = forM_ (S.toList sig) $ \ k -> 
+    case M.lookup sig m of
+        Nothing -> reject $ text "symbol" <+> toDoc k <+> text "is missing from interpretation"
+        Just v -> do
+            let ar = length $ coefficients v
+            when (arity k /= ar ) $ reject $ vcat 
+               [ text "symbol" <+> toDoc k
+               , text "has arity" <+> toDoc (arity k)
+               , text "but its interpretation has arity" <+> toDoc ar
+               ]
+
+    
+
 must_be_dimension d m = forM_ (M.toList m) $ \ (k,v) -> do
-    let ar = length $ coefficients v
-    when (arity k /= ar ) $ reject $ vcat 
-        [ text "interpretation of symbol" <+> toDoc k
-        , text "has arity" <+> toDoc ar
-        , text "but symbol has arity" <+> toDoc (arity k)
-        ]
     let check msg want m = when (want /= dim m) $ reject $ vcat 
             [ text "interpretation of symbol" <+> toDoc k
             , text msg <+> toDoc m
