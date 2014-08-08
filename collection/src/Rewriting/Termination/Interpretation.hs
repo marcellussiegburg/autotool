@@ -167,8 +167,15 @@ check_dimension dim i = case i of
     Matrix_Interpretation_Fuzzy i -> must_be_dimension dim i
 
 must_be_dimension d m = forM_ (M.toList m) $ \ (k,v) -> do
+    let ar = length $ coefficients v
+    when (arity k /= ar ) $ reject $ vcat 
+        [ text "interpretation of symbol" <+> toDoc k
+        , text "has arity" <+> toDoc ar
+        , text "but symbol has arity" <+> toDoc (arity k)
+        ]
     let check msg want m = when (want /= dim m) $ reject $ vcat 
-            [ text msg <+> toDoc m
+            [ text "interpretation of symbol" <+> toDoc k
+            , text msg <+> toDoc m
             , text "must have dimension" <+> toDoc want
             ]
     check "absolute part" (d,1) $ absolute v
