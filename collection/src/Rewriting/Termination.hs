@@ -84,6 +84,7 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
         , text "--"
         , text "matrix syntax: unit 3, zero (2,1), row [4,5,6], column [1,2,3], matrix [[1,2],[3,4]]"
         , text "semiring elements: -inf, 0, 1, .. , +inf"
+        , text "domains: _Natural, _Arctic, _Tropical, _Fuzzy"
         ]
     initial _ p = Interpretation 2 
         $ Matrix_Interpretation_Natural
