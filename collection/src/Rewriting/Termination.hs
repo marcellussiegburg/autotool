@@ -81,12 +81,15 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
         [ text "give a rewrite order"
         , text "that is compatible with" <+> toDoc (system p)
         , text "and conforms to" <+> toDoc (restriction p)
+        , text "--"
+        , text "matrix syntax: unit 3, zero (2,1), row [4,5,6], column [1,2,3], matrix [[1,2],[3,4]]"
+        , text "semiring elements: -inf, 0, 1, .. , +inf"
         ]
     initial _ p = Interpretation 2 
         $ Matrix_Interpretation_Natural
-        $ M.fromList 
-        $ zip (S.toList $ signature $ system p)
-        $ repeat $ projection 3 2 2
+        $ M.fromList $ do 
+            (k,f) <- zip [1..] $ S.toList $ signature $ system p
+            return ( f, projection (arity f) (succ $ k `mod` arity f) 2 )
     partial _ p o = do
         check_dimensions o
         everything_monotone o

@@ -5,7 +5,7 @@ module Rewriting.Termination.Semiring where
 
 import Rewriting.Termination.Domains
 
-class Semiring s where
+class (Eq s) => Semiring s where
     strict_addition :: s -> Bool -- ^ with dummy argument
     zero :: s
     one :: s

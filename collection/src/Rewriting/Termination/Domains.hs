@@ -50,6 +50,4 @@ instance Reader Natural where
         when (i < 0) $ fail "number cannot be negative"
         return $ Natural i
 
-type Vector d = [d]
-type Matrix d = [[d]]
 

@@ -62,18 +62,41 @@ unit_matrix d =
 
 for = flip map
 
-instance ToDoc d => ToDoc (Matrix d) where
-    toDoc = toDoc . contents
+instance (Semiring d, ToDoc d) => ToDoc (Matrix d) where
+    toDoc m 
+        | is_zero_matrix m = text "zero" <+> toDoc (dim m)
+        | Just d <- is_unit_matrix m = text "unit" <+> toDoc d
+        | otherwise = case dim m of
+            (1,1) -> text "scalar" <+> toDoc (contents m !! 0 !! 0)
+            (1,d) -> text "row" <+> toDoc (contents m !! 0)
+            (d,1) -> text "column" <+> toDoc (map (!! 0) $ contents m)
+            _ -> text "matrix" <+> toDoc (contents m)
+
+is_unit_matrix :: (Semiring d) => Matrix d -> Maybe Int
+is_unit_matrix m = do
+    let (r,c) = dim m
+    guard $ r == c
+    guard $ m == unit_matrix r
+    return r
+
 instance (Semiring d, Reader d) => Reader (Matrix d) where
     reader = 
             do my_reserved "zero" ; zero_matrix <$> reader
         <|> do my_reserved "unit" ; unit_matrix <$> reader
-        <|> do my_reserved "vector" ; xs <- reader
+        <|> do my_reserved "scalar" ; x <- reader 
+               return $ Matrix { contents = [[x]] , dim = (1,1) }
+        <|> do my_reserved "column" ; xs <- reader
                return $ Matrix 
                    { contents = map return xs
                    , dim = (length xs, 1)
                    }
-        <|> do xss <- reader
+        <|> do my_reserved "row" ; xs <- reader
+               return $ Matrix 
+                   { contents = return xs
+                   , dim = (1, length xs)
+                   }
+        <|> do my_reserved "matrix" 
+               xss <- reader
                if null xss then fail "matrix height cannot be zero"
                else do let ls = map length xss
                            (lo,hi) = (minimum ls, maximum ls)
