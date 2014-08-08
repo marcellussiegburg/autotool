@@ -160,14 +160,27 @@ order (int :: Inter c d) dim u = do
          else return Greater_Equal
     else return Other
 
-check_dimension dim i = case i of
-    Matrix_Interpretation_Natural i -> must_be_dimension dim i
-    Matrix_Interpretation_Arctic i -> must_be_dimension dim i
-    Matrix_Interpretation_Tropical i -> must_be_dimension dim i
-    Matrix_Interpretation_Fuzzy i -> must_be_dimension dim i
+check_dimension sig dim i = case i of
+    Matrix_Interpretation_Natural i -> check_arity_dimension sig dim i
+    Matrix_Interpretation_Arctic i -> check_arity_dimension sig dim i
+    Matrix_Interpretation_Tropical i -> check_arity_dimension sig dim i
+    Matrix_Interpretation_Fuzzy i -> check_arity_dimension sig dim i
 
+check_arity_dimension sig dim i = do
+    check_arities sig i
+    must_be_dimension dim i
+
+must_be_dimension d m = forM_ (M.toList m) $ \ (k,v) -> do
+    let check msg want m = when (want /= dim m) $ reject $ vcat 
+            [ text "interpretation of symbol" <+> toDoc k
+            , text msg <+> toDoc m
+            , text "must have dimension" <+> toDoc want
+            ]
+    check "absolute part" (d,1) $ absolute v
+    forM_ (coefficients v) $ check "coefficient" (d,d)
+    
 check_arities sig m = forM_ (S.toList sig) $ \ k -> 
-    case M.lookup sig m of
+    case M.lookup k m of
         Nothing -> reject $ text "symbol" <+> toDoc k <+> text "is missing from interpretation"
         Just v -> do
             let ar = length $ coefficients v
@@ -179,12 +192,3 @@ check_arities sig m = forM_ (S.toList sig) $ \ k ->
 
     
 
-must_be_dimension d m = forM_ (M.toList m) $ \ (k,v) -> do
-    let check msg want m = when (want /= dim m) $ reject $ vcat 
-            [ text "interpretation of symbol" <+> toDoc k
-            , text msg <+> toDoc m
-            , text "must have dimension" <+> toDoc want
-            ]
-    check "absolute part" (d,1) $ absolute v
-    forM_ (coefficients v) $ check "coefficient" (d,d)
-    

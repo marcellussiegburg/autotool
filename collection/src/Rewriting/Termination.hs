@@ -92,7 +92,7 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
             (k,f) <- zip [1..] $ S.toList $ signature $ system p
             return ( f, projection (arity f) (succ $ k `mod` arity f) 2 )
     partial _ p o = do
-        check_dimensions o
+        check_dimensions (signature $ system p) o
         everything_monotone o
         check_restriction (restriction p) o
     total _ p o = do
@@ -113,10 +113,10 @@ everything_monotone o = case o of
     Interpretation {} -> check_monotone $ values o
     Lexicographic ords -> forM_ ords everything_monotone
 
-check_dimensions o = case o of
+check_dimensions sig o = case o of
     Empty -> return ()
-    Lexicographic ords -> forM_ ords check_dimensions
-    Interpretation {} -> check_dimension (dim o) (values o)
+    Lexicographic ords -> forM_ ords $ check_dimensions sig
+    Interpretation {} ->  check_dimension sig (dim o) (values o)
         
 
 
