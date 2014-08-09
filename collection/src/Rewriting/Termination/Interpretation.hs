@@ -119,10 +119,11 @@ must_be_monotone (int :: Inter c d) = forM_ (M.toList int) $ \ (f, m) -> do
              , text "is not positive"
              ]
     when (not (strict_addition ( undefined :: d))) $ do
-        when (not $ is_zero $ absolute m) $ reject $ vcat
+        when (not (null $ coefficients m) && not (is_zero $ absolute m)) $ reject $ vcat
                 [ text "interpretation is not monotone"
                 , text "since semiring addition is not monotone"
                 , text "and absolute part is non-zero"
+                , text "and function has at least one argument"
                 ]
         when (length ( coefficients m ) > 1) $ reject $ vcat
                 [ text "interpretation is not monotone"

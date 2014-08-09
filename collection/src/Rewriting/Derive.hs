@@ -1,4 +1,10 @@
 {-# language UndecidableInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language FlexibleInstances #-}
+{-# language DeriveDataTypeable #-}
+{-# language GeneralizedNewtypeDeriving #-}
+
+
 -- | this is the general module (top module after refactoring)
 
 module Rewriting.Derive where
@@ -18,6 +24,7 @@ import Autolib.ToDoc
 import Autolib.Multilingual
 import Autolib.Reader
 import Autolib.FiniteMap
+import Autolib.Size
 
 import Challenger.Partial
 import Inter.Types
@@ -49,11 +56,17 @@ instance Reader tag => Reader ( Derive tag ) where
 class ( Reader x, ToDoc x, Typeable x ) => RDT x
 instance ( Reader x, ToDoc x, Typeable x ) => RDT x
 
+newtype Solution o a = Solution (o,[a])
+    deriving (Reader, ToDoc, Typeable)
+
+instance Size ( Solution o a )  where
+    size (Solution (p,xs)) = length xs
+
 instance ( RDT tag, RDT action, RDT object , RDT system
          , Eq object
          , Apply tag system object action 
          )
-    => Partial ( Derive tag ) ( Instance system object ) [ action ] where
+    => Partial ( Derive tag ) ( Instance system object ) (Solution object action) where
 
     report ( Derive tag ) inst = do 
         inform $ vcat
@@ -61,32 +74,30 @@ instance ( RDT tag, RDT action, RDT object , RDT system
 	      		,(UK, "for the system")
 			]
             , nest 4 $ toDoc $ system inst
-            , multitext [(DE, "eine Folge von Schritten, die")
-	      		,(UK, "give a sequence of steps from")
+            , multitext [(DE, "eine Folge von Schritten")
+	      		,(UK, "give a sequence of steps")
 			]
-            , nest 4 $ toDoc $ from inst
-            , multitext [(DE, "überführt in")
-	      		,(UK, "to")
-			]
-            , nest 4 $ toDoc $ to inst
+            , nice $ derivation_restriction inst
+            , multitext [(DE,"von"),(UK,"from")] <+> nice ( from inst )
+            , multitext [(DE, "nach"),(UK,"to")] <+> nice ( to inst )
             ]
-        -- peng $ from inst
-        -- peng $ to inst
-        
 
-    initial ( Derive tag ) inst = 
-        take 1 $ actions tag ( system inst ) ( from inst ) 
+    initial ( Derive tag ) inst =
+        let p = case from inst of Fixed o -> o ; Sized _ s -> example_object_of_size tag s 
+        in  Solution ( p , take 2 $ actions tag ( system inst ) p  )
 
-    total ( Derive tag ) inst steps = do
+    total ( Derive tag ) inst (Solution (start,steps)) = do
+        check_object_restriction (multitext [(DE,"Start-Objekt"),(UK,"start object")])
+            (from inst) start
+
         let sys = system inst
-        t <- foldM ( apply tag sys ) ( from inst ) steps
-        assert ( t == to inst )
-               $ multitext [(DE, "stimmt mit Ziel überein?")
-	       	 	   ,(UK, "agrees with target?")
-			   ]
+        end <- foldM ( apply tag sys ) start steps
 
-instance Measure ( Derive tag ) ( Instance system object ) [ action ] where
-    measure ( Derive tag ) inst actions = fromIntegral $ length actions
+        check_object_restriction (multitext [(DE,"Ziel-Objekt"),(UK,"final object")])
+            (to inst) end
+        
+        check_derivation_restriction (multitext [(DE,"Ableitung"),(UK,"derivation")])
+            (derivation_restriction inst) (length steps)
 
 
 make_fixed :: ( RDT tag, RDT action, RDT object , RDT system

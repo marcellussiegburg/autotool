@@ -35,8 +35,9 @@ instance  A.Apply For_Lambda Lambda_Calculus
       let sii = Apply ( Apply s i ) i
       in  Instance
         { system = Lambda_Calculus
-        , from = Apply sii sii
-        , to   = Apply ( Apply i sii) sii
+        , from = Fixed $ Apply sii sii
+        , to   = Fixed $ Apply ( Apply i sii) sii
+        , derivation_restriction = Length GT 0 
         }
     apply tag system object action = do
         single_derivation object action

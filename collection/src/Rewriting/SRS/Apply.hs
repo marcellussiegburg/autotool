@@ -26,16 +26,17 @@ $(derives [makeReader, makeToDoc ] [''For_SRS])
 instance  A.Apply For_SRS ( SRS Identifier ) 
                        [ Identifier ]
                        ( Step Identifier ) where
+    example_object_of_size tag s = 
+        take s $ concat $ repeat $ read "[a,b,c]"
     example tag = Instance
         { system = Rewriting.SRS.Raw.example
-        , from = read "[a,a,b,b]"
-        , to   = read "[b,b,a,a]"
+        , derivation_restriction = Length GT 2
+        , from = Fixed $ read "[a,a,b,b]"
+        , to   = Sized GT 0
         }
     apply tag system object action = do
         exec system object action
     actions tag system object = 
         steps system object
 
--- local variables:
--- mode: haskell
--- end:
+

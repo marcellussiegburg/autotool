@@ -25,7 +25,7 @@ instance Semiring Fuzzy where
     is_zero f = f == FuzzyPinf
     positive f = f /= FuzzyPinf
     strictly_greater = (>)
-    weakly_greater = (>)
+    weakly_greater x y =  (x == FuzzyPinf &&  y == FuzzyPinf ) || x > y || (x == FuzzyMinf &&  y == FuzzyMinf )
 
 instance Semiring Tropical where
     strict_addition _ = False

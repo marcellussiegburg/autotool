@@ -38,10 +38,13 @@ $(derives [makeReader, makeToDoc ] [''For_TRS])
 instance  A.Apply For_TRS ( TRS Identifier Identifier ) 
                        ( Term Identifier Identifier ) 
                        ( Step Identifier Identifier ) where
+    example_object_of_size tag s = 
+        read "f(a,f(a,b))" -- FIXME
     example tag = Instance
         { system = Rewriting.TRS.example
-        , from = read "f(a,f(a,b))"
-        , to = read "f(f(b,a),a)"
+        , derivation_restriction = Length GT 2
+        , from = Sized GT 0
+        , to = Fixed $ read "f(f(b,a),a)"
         }
     apply tag system object action = do
         exec system object action
