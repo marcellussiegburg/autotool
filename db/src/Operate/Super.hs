@@ -27,6 +27,8 @@ import Gateway.Help
 import Autolib.Set
 import qualified Autolib.Output
 
+import qualified Autolib.Multilingual as M
+
 import Control.Types 
     ( toString, fromCGI, Name, Typ , Remark, HiLo (..), Status (..)
     , Oks (..), Nos (..), Time , Wert (..), MNr, SNr, VNr, ANr, UNr
@@ -187,26 +189,39 @@ waisenkinder u = do
 -- one-click für verlassen\/besuchen 
 veranstaltungen :: ( S.Student , V.Vorlesung , Bool ) -> Form IO ()
 veranstaltungen ( stud , vor, False ) = do
+    lang <- get_preferred_language 
+
     h3 "Einschreibung"
 
     -- dieser student für diese Vorlesung
     ags <- io $ G.get_attended ( V.vnr vor ) ( S.snr stud )
 
     case ags of
-        [] -> plain "Sie sind in keine Übungsgruppe eingeschrieben."
-        _  -> show_gruppen "Sie sind eingeschrieben in Übungsgruppe:" ags
+        [] -> plain $ M.specialize lang
+                    $ M.make [ (M.DE, "Sie sind in keine Übungsgruppe eingeschrieben.")
+                             , (M.UK, "You are not enrolled in a class.")
+                             ]
+        _  -> show_gruppen (M.specialize lang $ M.make
+               [(M.DE,"Sie sind eingeschrieben in Übungsgruppe:")
+              , (M.UK,"You are enrolled in class") ] )  ags
 
     -- alle Gruppen für diese Vorlesung
     gs <- io $ G.get_this $ V.vnr vor
-    show_gruppen "alle Übungsgruppen zu dieser Vorlesung:" gs
+    show_gruppen (M.specialize lang $ M.make [ (M.DE,"alle Übungsgruppen zu dieser Vorlesung:")
+                                             , (M.UK,"all classes for this lecture") ]) gs
 
     when ( Control.Types.Current /= V.einschreib vor ) $ do
          br
-	 plain $ unlines [ "Das Ein/Ausschreiben ist"
+	 plain $ M.specialize lang
+               $ M.make [ (M.DE, unlines [ "Das Ein/Ausschreiben ist"
 			 , "nur von " ++ show ( V.einschreibVon vor )
 			 , "bis " ++ show ( V.einschreibBis vor )
 			 , "möglich."
-			 ]
+			 ] )
+                        , (M.UK, unlines [ "You can only enroll"
+			 , "from " ++ show ( V.einschreibVon vor )
+			 , "to " ++ show ( V.einschreibBis vor )
+			 ] ) ]
 	 mzero
     opts <- sequence $ do
         g <- gs
@@ -215,22 +230,29 @@ veranstaltungen ( stud , vor, False ) = do
 	    let here = G.gnr g `elem` map G.gnr ags
 		msg  = toString ( G.name g )
                      ++ " "
-		     ++ if here then "verlassen" else "besuchen"
+		     ++ M.specialize lang
+                     ( M.make [(M.DE, if here then "verlassen" else "besuchen")
+                              ,(M.UK, if here then "leave" else "enroll")])
 	    return ( msg , ( G.gnr g, here, att >= G.maxStudents g ) )
     open btable 
-    ( g, here, full ) <- click_choice "Gruppe" $ opts
+    ( g, here, full ) <- click_choice 
+        (M.specialize lang $ M.make [(M.DE, "Gruppe"),(M.UK,"class")] ) $ opts
     close -- btable
     if here 
        then do 
            par
-	   plain $ "click auf besuchte Gruppe: abmelden"
+	   plain $ M.specialize lang 
+                 $ M.make [(M.DE, "click auf besuchte Gruppe: abmelden")
+                          ,(M.UK, "you were enrolled in this class and now you left it")]
            io $ SG.delete ( S.snr stud ) ( g )
        else do
            par
-           plain $ "click auf nicht besuchte Gruppe: anmelden"
-	   
+           plain $ M.specialize lang
+                 $ M.make [(M.DE, "click auf nicht besuchte Gruppe: anmelden")
+                          ,(M.UK, "you are now enrolled in this class")]
 	   when full $ do
-	        plain $ "Diese Gruppe ist voll."
+	        plain $ M.specialize lang
+                      $ M.make [(M.DE, "Diese Gruppe ist voll."),(M.UK, "there are no more seats in this class")]
 		mzero
            io $ SG.insert ( S.snr stud ) ( g )
            sequence_ $ do
@@ -302,6 +324,8 @@ show_gruppen header gs = do
 ----------------------------------------------------------------------------
 
 aufgaben server ( stud, vnr, tutor ) = do
+    lang <- get_preferred_language 
+
     h3 "Aufgaben"
 
     -- let mks = do Right mk <- flatten tmk ; return mk
@@ -467,6 +491,7 @@ fix_input vnr mks stud auf sa = case  SA.input sa of
 fix_instant vnr mks stud auf sa = case SA.instant sa of
    Just file -> return $ Just file
    Nothing -> do
+                lang <- get_preferred_language 
        -- transitional:
        -- (try to) re-generate previous instance
                 ( _, _, com ) <- make_instant 
@@ -488,14 +513,16 @@ fix_instant vnr mks stud auf sa = case SA.instant sa of
 
 -- | TODO: possibly with edit (for tutor)
 show_previous edit vnr mks stud auf sa0 = do
-
+    lang <- get_preferred_language 
     inf <- fix_input vnr mks stud auf sa0
     ins <- fix_instant vnr mks stud auf sa0
     let sa = sa0 { SA.input = inf, SA.instant = ins }
 
-    hr ;  h3 "Vorige Einsendung und Bewertung zu dieser Aufgabe"
+    hr ;  h3 $ M.specialize lang 
+             $ M.make [(M.DE,"Vorige Einsendung und Bewertung zu dieser Aufgabe")
+                      ,(M.UK,"Previous submission and evaluation for this problem")]
     -- pre $ show sa
-    br ; plain "Aufgabenstellung:"
+    br ; plain $ M.specialize lang $ M.make [(M.DE,"Aufgabenstellung:"),(M.UK,"Problem")]
     case SA.instant sa of
         Just file -> do
             cs <- io $ logged "Super.view" 
@@ -503,7 +530,7 @@ show_previous edit vnr mks stud auf sa0 = do
     	    html $ Html.primHtml cs
         Nothing -> do
 	    plain "(keine Aufgabe)"
-    br ; plain "Einsendung:"
+    br ; plain $ M.specialize lang $ M.make [(M.DE,"Einsendung:"),(M.UK,"Submission:")]
     case SA.input sa of
         Just file -> do
             cs <- io $ logged "Super.view" 
@@ -573,8 +600,10 @@ data Action = Solve  -- ^ neue Lösung bearbeiten
 -- für Tutor: kann Aufgabenlösung sehen und (nach-)korrigieren
 -- mit aufgabenauswahl
 statistik tutor stud aufs = do
+    lang <- get_preferred_language 
     hr 
-    h3 "Punktestand und Aufgaben-Auswahl"
+    h3 $ M.specialize lang
+       $ M.make [(M.DE, "Punktestand und Aufgaben-Auswahl") ,(M.UK, "Exercises and Scores") ]
     -- daten holen
     score <- io $ sequence $ do
         auf <- aufs
@@ -587,9 +616,15 @@ statistik tutor stud aufs = do
 	    return ( auf, stat, okno )
 
     open btable
-    disp <- click_choice_with_default 0 "Aufgaben anzeigen:"
-	      [ ( "nur aktuelle", [ Current ] )
-	      , ( "alle"   , [ Late, Current , Early ] )
+    disp <- click_choice_with_default 0 
+         ( M.specialize lang
+         $ M.make [(M.DE,"Aufgaben anzeigen:") ,(M.UK,"show exercises:") ] )
+	      [ ( M.specialize lang     
+                $ M.make [(M.DE,"nur aktuelle"),(M.UK,"current only")]
+                , [ Current ] )
+	      , ( M.specialize lang
+                $ M.make [(M.DE,"alle"),(M.UK,"all")]
+                , [ Late, Current , Early ] )
 	      ]
     close -- btable
     br
@@ -599,9 +634,13 @@ statistik tutor stud aufs = do
 	    begin -- mutex
             open btable
             open row
-            plain "Aufgabe" ; plain "Status" ; plain "Highscore"
-            plain "Bearbeitungszeit"
-            plain "vorige Bewertung" ; plain "Gesamt-Wertungen"
+            M.specialize lang 
+                $ M.make [(M.DE, do plain "Aufgabe" ; plain "Status" ; plain "Highscore"
+                                    plain "Bearbeitungszeit"
+                                    plain "vorige Bewertung" ; plain "Gesamt-Wertungen" )
+                         ,(M.UK, do plain "problem" ; plain "status"; plain "highscore"
+                                    plain "available" ; plain "previous evaluation" ; plain "total evaluations" )
+                         ]
             close -- row
             sequence_ $ do 
                 ( auf, _ , ( ok, no, mres ) ) <- score
@@ -618,10 +657,16 @@ statistik tutor stud aufs = do
                     farbe col $ toString $ A.name auf
                     farbe col $ toString $ A.status auf
                     farbe col $ toString $ A.highscore auf
-                    farbe col $ case A.timeStatus auf of
-                        Early -> "erst ab " ++ toString ( A.von auf )
-                        Current -> "noch bis " ++ toString ( A.bis auf )
-                        Late -> "vorbei seit " ++  toString ( A.bis auf )
+                    farbe col $ M.specialize lang $ M.make
+                        [(M.DE, case A.timeStatus auf of
+                            Early -> "erst ab " ++ toString ( A.von auf )
+                            Current -> "noch bis " ++ toString ( A.bis auf )
+                            Late -> "vorbei seit " ++  toString ( A.bis auf ) )
+                        ,(M.UK, case A.timeStatus auf of
+                            Early -> "from " ++ toString ( A.von auf )
+                            Current -> "until " ++ toString ( A.bis auf )
+                            Late -> "expired " ++  toString ( A.bis auf ) )
+                        ]
                     farbe col $ case mres of
 				  Just res -> show res
 				  Nothing  -> ""
@@ -648,11 +693,18 @@ statistik tutor stud aufs = do
         percent = ( 100 * done ) `div` goal
         -- anzeigen
         aus = when ( goal > 0 ) $ do
-	    plain $ unwords 
+	    plain $ M.specialize lang $ M.make
+                [ (M.DE, unwords 
                   [ "Von", show goal, "Pflicht-Aufgaben" 
 		  , "haben Sie bis jetzt", show done, "erledigt."
 		  , "Das sind", show percent, "Prozent." 
-		  ]
+		  ] )
+                , (M.UK, unwords 
+                  [ "of", show goal, "mandatory exercises" 
+		  , "you have already solved", show done, "."
+		  , "this is", show percent, "percent." 
+		  ] )
+                ]
 
     ( ch, auf ) <- dat ; br ; aus
     return ( ch, auf )
