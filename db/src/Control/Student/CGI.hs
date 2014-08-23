@@ -466,7 +466,7 @@ pwmail stud = do
             , "und diese Mail ignorieren."
             ])
           ,(M.UK,
-            [ "You (or someone on your behalf) have requested a fresh password"
+            [ "You, or someone acting as you, have requested a fresh password"
             , "for the autotool E-Learning system."
             , unwords [ "account:", m, "password:", p ]
             , "It will be activated by its first use."
