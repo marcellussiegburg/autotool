@@ -126,14 +126,14 @@ bestmatch name = do
 
 -- iface :: Tree ( Either String Make ) -> Form IO ()
 iface mschool server = do
-  
+    lang <- get_preferred_language   
     case mschool of
       Just u | U.use_shibboleth u -> use_account mschool server
       _ -> do
 
         new <- click_choice_with_default 0 "Aktion" 
-            [ ( "Account benutzen", False ) 
-            , ( "Account anlegen", True )
+            [ ( M.specialize lang $ M.make [(M.DE, "Account benutzen"),(M.UK, "use account")] , False ) 
+            , ( M.specialize lang $ M.make [(M.DE, "Account anlegen") ,(M.UK, "create account")] , True )
             ]
         
         if new 
@@ -145,6 +145,7 @@ data Code = Stat | Auf | Einsch
 
 
 use_account mschool server = do
+    lang <- get_preferred_language   
 
     h3 "Login"
     -- für Student und Tutor gleicher Start
@@ -167,19 +168,24 @@ use_account mschool server = do
 
     open btable
     aktion <- click_choice_with_default 0 "Aktion" $
-           [ ("Aufgaben",  aufgaben server ( stud, V.vnr vor, tutor )  ) 
+           [ (multi lang [(M.DE, "Aufgaben"),(M.UK, "Exercises")],  aufgaben server ( stud, V.vnr vor, tutor )  ) 
                  | attends || tutor ]
-	++ [ ("Einschreibung", veranstaltungen ( stud, vor, tutor )  ) ]
-        ++ [ ("Statistiken",   Operate.Statistik.main svt  ) | tutor ]
-        ++ [ ("Waisenkinder", waisenkinder $ S.unr stud ) | tutor ]
+	++ [ (multi lang [(M.DE, "Einschreibung"),(M.UK, "Registration")], veranstaltungen ( stud, vor, tutor )  ) ]
+        ++ [ (multi lang [(M.DE, "Statistiken"),(M.UK, "Statistics")],   Operate.Statistik.main svt  ) | tutor ]
+        ++ [ (multi lang [(M.DE, "Waisenkinder"),(M.UK, "repair registration")], waisenkinder $ S.unr stud ) | tutor ]
     close -- btable 
     aktion
+
+multi lang opts = M.specialize lang $ M.make opts
 
 -- | Studenten behandeln, die in keiner Übungsgruppe sind
 waisenkinder :: UNr -> Form IO ()
 waisenkinder u = do
-    h3 $ "Waisenkinder"
-    plain $  "Studenten Ihrer Schule, die keine Übungsgruppe gewählt haben"
+    lang <- get_preferred_language   
+    h3 $ multi lang [(M.DE, "Waisenkinder"), (M.UK, "repair registrations")]
+    plain $  multi lang [ (M.DE, "Studenten Ihrer Schule, die keine Übungsgruppe gewählt haben")
+                   , (M.UK, "students of your school that did not choose a class")
+                   ]
     studs <- io $ S.orphans $ u
     open btable
     Operate.Statistik.edit_studenten studs
@@ -191,7 +197,15 @@ veranstaltungen :: ( S.Student , V.Vorlesung , Bool ) -> Form IO ()
 veranstaltungen ( stud , vor, False ) = do
     lang <- get_preferred_language 
 
-    h3 "Einschreibung"
+    h3 $ multi lang [ (M.DE, "Einschreibung"), (M.UK, "Enrollment")]
+
+    plain $ multi lang [(M.DE, unlines [ "Um die Aufgaben für eine Vorlesung zu bearbeiten,"
+                                       , "müssen Sie sich in einer Übungsgruppe dieser Vorlesung einschreiben."
+                                       ])
+                       ,(M.UK, unlines [ "To work on the exercises for a lecture"
+                                       , "you need to enroll for a class associated to the lecture."
+                                       ])
+                       ]
 
     -- dieser student für diese Vorlesung
     ags <- io $ G.get_attended ( V.vnr vor ) ( S.snr stud )
@@ -326,7 +340,7 @@ show_gruppen header gs = do
 aufgaben server ( stud, vnr, tutor ) = do
     lang <- get_preferred_language 
 
-    h3 "Aufgaben"
+    h3 $ multi lang [(M.DE, "Aufgaben"), (M.UK, "Exercises")]
 
     -- let mks = do Right mk <- flatten tmk ; return mk
 
