@@ -17,9 +17,12 @@ import Autolib.Util.Zufall
 import qualified Debug
 import qualified Local
 
+import qualified Autolib.Multilingual as M
 
 login :: Maybe Schule -> Form IO Student
 login mschool = do
+    lang <- get_preferred_language 
+
     -- click    <- submit    "Login:"
 
     open btable
@@ -39,12 +42,18 @@ login mschool = do
        else login_via_stored_password u
 
 login_via_stored_password u = do
+    lang <- get_preferred_language 
+
     mnr <- defaulted_textfield "Matrikel" ""
     pwd <- defaulted_password  "Passwort" ""
 
     change <- click_choice "Aktion"
            [ ("Login", False)
-           , ( "persönliche Daten ändern", True) 
+           , (   M.specialize lang
+               $ M.make [(M.DE, "persönliche Daten ändern")
+                        ,(M.UK, "update account information")
+                        ]
+             , True) 
            ]
 
     close -- btable
@@ -62,7 +71,10 @@ login_via_stored_password u = do
                 else wrong_password stud
 
          [ ] -> do
-             plain "Account existiert nicht."
+             plain $ M.specialize lang
+                   $ M.make [ (M.DE,"Account existiert nicht.")
+                            , (M.UK,"no such account")
+                            ]
              mzero
 
          xs -> do
@@ -159,34 +171,57 @@ use_first_passwort stud =
     if ( Operate.Crypt.is_empty $ next_passwort stud ) 
     then return stud -- ändert sich nichts
     else do
-        plain $ unlines 
-              [ "Sie hatten eine Email mit einem neuen Passwort erhalten,"
-              , "aber Sie haben jetzt Ihr altes Passwort benutzt."
-              , "Das Passwort aus der Email wird dadurch ungültig,"
-              , "Ihr bestehendes (jetzt benutztes) Passwort bleibt gültig."
+        lang <- get_preferred_language 
+        plain $ M.specialize lang
+              $ M.make 
+              [ (M.DE, unlines [ "Sie hatten eine Email mit einem neuen Passwort erhalten,"
+                               , "aber Sie haben jetzt Ihr altes Passwort benutzt."
+                               , "Das Passwort aus der Email wird dadurch ungültig,"
+                               , "Ihr bestehendes (jetzt benutztes) Passwort bleibt gültig."
+                               ] )
+              , (M.UK, unlines [ "You have received an email with a fresh password"
+                               , "but you used your previous password."
+                               , "Now the password from the email is invalid"
+                               , "and your previous password (that you just used) remains valid."
+                               ] )
               ]
         let neu = stud { T.next_passwort = Operate.Crypt.empty }
         io $ Control.Student.DB.put ( Just $ T.snr stud ) neu
         return neu
 
 use_next_passwort alt = do
-    plain "Sie haben Ihr neues Passwort verwendet."
+    lang <- get_preferred_language 
+    plain $ M.specialize lang
+          $ M.make [ (M.DE, "Sie haben Ihr neues Passwort verwendet.")
+                   , (M.UK, "You used your new password.")
+                   ]
     let neu = alt { T.passwort = T.next_passwort alt
                   , T.next_passwort = Operate.Crypt.empty
                   }
     io $ Control.Student.DB.put ( Just $ T.snr alt ) neu
-    plain "Das vorherige ist damit ungültig."
+    plain $ M.specialize lang
+          $ M.make [(M.DE, "Das vorherige ist damit ungültig.")
+                   ,(M.UK, "Your previous password is now invalid.")
+                   ]
     return neu
 
 wrong_password stud = do
-    plain "Passwort falsch."
+    lang <- get_preferred_language 
+    plain $ M.specialize lang
+          $ M.make [ (M.DE, "Passwort falsch."), (M.UK, "wrong password")]
     par 
     if ( Operate.Crypt.is_empty $ next_passwort stud )
        then ask_pwmail stud
-       else plain $ unlines
-                  [ "Sie haben eine Email mit einem neuen Passwort erhalten,"
-                  , "aber Sie haben dieses neue Passwort noch nicht benutzt."
-                  ]
+       else plain $ M.specialize lang
+                  $ M.make [ (M.DE, unlines
+                                    [ "Sie haben eine Email mit einem neuen Passwort erhalten,"
+                                    , "aber Sie haben dieses neue Passwort noch nicht benutzt."
+                                    ])
+                           , (M.UK, unlines
+                                    [ "You received an email with a fresh password"
+                                    , "but you never used it."
+                                    ]) 
+                           ]
     mzero
 
 -----------------------------------------------------------------------
@@ -235,7 +270,7 @@ complain css = do
     close -- row
     open row
     blank
-    submit "absenden"
+    submit "submit"
     close -- row
     mzero    
 
@@ -264,6 +299,7 @@ edit_create Nothing ms = do
 
 
 edit_create_continue u ms = do
+    lang <- get_preferred_language 
 
     open btable
 
@@ -321,7 +357,7 @@ edit_create_continue u ms = do
         Nothing -> do -- neuer Account: passwort würfeln und mailen,
             open row
             submit "Account ..."
-            click <- submit "... anlegen?"
+            click <- submit "... create?"
             close -- row
             close -- table
             when click $ do
@@ -348,7 +384,7 @@ edit_create_continue u ms = do
                    $ stud { T.passwort = c
                           , T.next_passwort = Operate.Crypt.empty
                           }
-                plain "update ausgeführt"
+                plain "update done"
 
     close -- btable
 
@@ -383,12 +419,18 @@ generator0 must = do
 -- if yes, then generate and mail,
 -- then stop
 ask_pwmail stud = do
+    lang <- get_preferred_language 
     open row
-    plain $ unlines
-          [ "Ein neues Passwort erzeugen und per email zustellen?"
-          -- , toString $ email stud
-          ]
-    click <- submit "Ja."
+    plain $ M.specialize lang
+          $ M.make [(M.DE, unlines
+                           [ "Ein neues Passwort erzeugen und per email zustellen?"
+                           -- , toString $ email stud
+                           ])
+                   ,(M.UK, unlines
+                           [ "generate new password and send to known email address?"
+                           ])
+                   ]
+    click <- submit $ M.specialize lang $ M.make [(M.DE, "Ja."), (M.UK, "Yes")]
     close -- row
     when click $ pwmail stud
     mzero
@@ -398,6 +440,7 @@ ask_pwmail stud = do
 -- send plaintext to known email address
 -- be very very careful not to allow shell code injection
 pwmail stud = do
+    lang <- get_preferred_language 
     let e = toString $ email stud
     is_an_email "Email" e
     let m = toString $ mnr stud
@@ -409,7 +452,8 @@ pwmail stud = do
     io $ Control.Student.DB.put ( Just $ T.snr stud )
        $ stud { T.next_passwort = c }
 
-    let echo = texter
+    let echo = texter $ M.specialize lang $ M.make
+          [(M.DE, 
             [ "Sie haben ein neues Passwort"
             -- , "für das E-Learning-System autotool angefordert."
             , "fuer das E-Learning-System autotool angefordert."
@@ -420,13 +464,23 @@ pwmail stud = do
             -- , "Sie können aber auch Ihr bisheriges Passwort weiter benutzen"
             , "Sie koennen aber auch Ihr bisheriges Passwort weiter benutzen"
             , "und diese Mail ignorieren."
-            ]
+            ])
+          ,(M.UK,
+            [ "You (or someone on your behalf) have requested a fresh password"
+            , "for the autotool E-Learning system."
+            , unwords [ "account:", m, "password:", p ]
+            , "It will be activated by its first use."
+            , "You can change it afterwards."
+            , "Alternatively, if you already had a password, you may continue to use it"
+            , "and ignore this email."
+            ])
+          ]
 
     let cmd = unwords
            [ echo
            , "|"
            , "/usr/bin/mail"
-           , "-s", show "neues autotool-passwort"
+           , "-s", show $ M.specialize lang $ M.make [ (M.DE, "neues autotool-passwort"), (M.UK, "new autotool password")]
            , "-a", show "From: autotool"
            , e
            ]
@@ -434,12 +488,17 @@ pwmail stud = do
     res <- io $ Debug.system cmd
     io $ Debug.debug $ "Exit code: " ++ show res
 
-    pre $ unwords
-        [ "Ein neues Passwort wurde an Ihre Mail-Adresse"
-        -- , e
-        , "gesendet."
+    pre $ M.specialize lang $ M.make
+        [ (M.DE, unwords
+                [ "Ein neues Passwort wurde an Ihre Mail-Adresse"
+                -- , e
+                , "gesendet."
+                ])
+        , (M.DE, unwords
+                [ "A new password has been sent to your email address."
+                -- , e
+                ])
         ]
-
     return ()
 
 -- | writes text using echo shell commands (ugly ugly)
