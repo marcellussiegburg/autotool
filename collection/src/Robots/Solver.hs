@@ -1,3 +1,5 @@
+{-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
 {-# language PatternSignatures #-}
 
 module Robots.Solver where

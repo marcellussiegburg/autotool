@@ -1,3 +1,5 @@
+{-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
 {-# language PatternSignatures #-}
 
 module PL.Reader where

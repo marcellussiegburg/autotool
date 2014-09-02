@@ -1,3 +1,6 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
+
 module Algebraic2.Class 
 
 ( Algebraic (..)
@@ -9,6 +12,7 @@ module Algebraic2.Class
 where
 
 import Algebraic2.Instance as AI
+import Algebraic2.Config as AC
 
 import Condition
 import Expression.Op
@@ -45,6 +49,8 @@ class (      Typeable tag
 
     equivalent       :: tag -> a -> a -> Reporter Bool
     some_formula     :: tag -> AI.Type context a -> Exp a
+    roll_value       :: tag -> AC.Type context restrict a -> IO a
+    
     default_context :: tag -> context
     default_operators :: tag -> B.Binu ( Op a )
     default_predefined :: tag -> Belegung a

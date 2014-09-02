@@ -1,4 +1,6 @@
 {-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
 
 module Lambda.Quiz (generator) where
 

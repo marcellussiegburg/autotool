@@ -1,3 +1,8 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Algebraic.Relation where
 
 import Algebraic.Relation.Restriction
@@ -5,6 +10,7 @@ import PL.Struktur ( Predicate (..) )
 
 import Algebraic2.Class
 import Algebraic2.Instance as AI
+import qualified Algebraic2.Config as AC
 import Condition
 
 import qualified Autolib.Relation as R
@@ -12,15 +18,22 @@ import qualified Autolib.TES.Binu as B
 
 import Autolib.ToDoc
 import Autolib.Choose
+import Autolib.Pick (permutations)
 import Autolib.Reader
 import Autolib.Size
 import Autolib.Set
+import qualified Data.Set as S
 import Autolib.FiniteMap
 
 import qualified Autolib.Reporter.Set
 
+import System.Random
 import Data.Typeable
 import Data.Ix
+
+data Algebraic_Relation = Algebraic_Relation deriving ( Read, Show, Typeable )
+
+derives [makeReader][''Algebraic_Relation]
 
 instance ( Ord a, ToDoc a ) 
          => Condition Restriction ( Re a ) where
@@ -29,7 +42,6 @@ instance ( Ord a, ToDoc a )
 	    assert ( inRange rng $ size s )
 		   $ text "Größe im erlaubten Bereich" <+> toDoc rng
 
-data Algebraic_Relation = Algebraic_Relation deriving ( Read, Show, Typeable )
 
 ---------------------------------------------------------------------------
 
@@ -60,15 +72,15 @@ instance (ToDoc a, Ord a ) => Ops ( Re a )  where
     bops = B.Binu
 	 { B.nullary = []
 	 , B.unary = 
-            [ Op { name = "inv", arity = 1
+            [ Op { name = "inverse", arity = 1
 		 , precedence = Nothing, assoc = AssocNone
 		 , inter = lift1R $ R.inverse
 		 }
-	    ,  Op { name = "tcl", arity = 1
+	    ,  Op { name = "transitive_cl", arity = 1
 		 , precedence = Nothing, assoc = AssocNone
 		 , inter = lift1R $ R.trans
 		 }
-	    ,  Op { name = "rcl", arity = 1
+	    ,  Op { name = "reflexive_cl", arity = 1
 		 , precedence = Nothing, assoc = AssocNone
 		 , inter = lift1R $ R.reflex
 		 }
@@ -86,7 +98,7 @@ instance (ToDoc a, Ord a ) => Ops ( Re a )  where
 		 , precedence = Just 6, assoc = AssocLeft
 		 , inter = lift2R $ R.intersection
 		 }
-	    ,  Op { name = "*", arity = 2
+	    ,  Op { name = ".", arity = 2
 		 , precedence = Just 6, assoc = AssocLeft
 		 , inter = lift2R $ R.times
 		 }
@@ -129,9 +141,22 @@ instance Algebraic Algebraic_Relation
 
 
     -- some_formula     :: tag -> Algebraic.Instance.Type a -> Exp a
-    some_formula tag i = read "R * S + S"
+    some_formula tag i = read "R . S + S"
 
-    default_context tag = mkSet [ 1 .. 10 ]
+    default_context tag = mkSet [ 1 .. 5 ]
+
+    roll_value tag c = do
+        let perms [] = return []
+            perms xs = do
+              i <- randomRIO (0, length xs-1)
+              let (pre, y : post) = splitAt i xs
+              ys <- perms $ pre ++ post
+              return $ y : ys
+        p <- perms $ do
+            x <- S.toList $ AC.context c
+            y <- S.toList $ AC.context c
+            return (x,y)
+        return $ Re $ R.make_on (AC.context c, AC.context c) $ take (S.size $ AC.context c) p
 
     -- default_instance :: tag -> Algebraic.Instance.Type a
     default_instance tag = AI.Make

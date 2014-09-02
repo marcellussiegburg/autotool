@@ -1,3 +1,6 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Algebraic.Nested.Op where
 
 import Algebraic.Nested.Type
@@ -10,7 +13,8 @@ import qualified Autolib.TES.Binu as B
 
 instance Ops ( Type Integer ) where 
     bops = B.Binu
-	 { B.nullary =  map zahl [ 0 .. 9 ]	
+	 { B.nullary = [] -- map zahl [ 0 .. 9 ]
+         -- no nullaries since notation is wrong ( reads "3", means "{3}" )              
 	 , B.unary = [ 
 	     Op { name = "pow", arity = 1
 		, precedence = Nothing, assoc = AssocNone

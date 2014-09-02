@@ -1,3 +1,5 @@
+{-# LANGUAGE DatatypeContexts #-}
+{-# LANGUAGE DatatypeContexts #-}
 {-# language FlexibleInstances #-}
 {-# language FlexibleContexts #-}
 {-# language MultiParamTypeClasses #-}

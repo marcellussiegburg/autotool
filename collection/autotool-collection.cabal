@@ -120,6 +120,7 @@ Library
                  Algebraic.Graph,
                  Algebraic.Nested.Type,
                  Algebraic.Nested.Op,
+                 Algebraic.Nested.Roll,
                  Algebraic.Nested.Restriction,
                  Algebraic.Quiz,
                  Resolution.Roll,

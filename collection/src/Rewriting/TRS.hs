@@ -1,3 +1,5 @@
+{-# LANGUAGE DatatypeContexts #-}
+{-# LANGUAGE DatatypeContexts #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# language DatatypeContexts #-}
 {-# language FlexibleInstances #-}

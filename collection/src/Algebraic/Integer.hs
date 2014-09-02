@@ -1,5 +1,10 @@
 -- | demonstration module: how to use the Algebraic.Class
 
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Algebraic.Integer where
 
 import qualified Autolib.TES.Binu as B
@@ -18,6 +23,8 @@ import Autolib.Size
 import Data.Typeable
 
 data Algebraic_Integer = Algebraic_Integer deriving ( Read, Show, Typeable )
+
+derives [makeReader][''Algebraic_Integer]
 
 functions :: [ Op Integer ]
 functions = 

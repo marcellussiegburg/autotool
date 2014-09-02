@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DatatypeContexts #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Algebraic2.Instance where
 
@@ -23,8 +25,5 @@ data Ops a => Type c a =
 	  }
      deriving ( Typeable )
 
-$(derives [makeReader, makeToDoc] [''Type])
+derives [makeReader, makeToDoc] [''Type]
 
--- local variables:
--- mode: haskell
--- end;

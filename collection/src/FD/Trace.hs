@@ -1,3 +1,5 @@
+{-# LANGUAGE DatatypeContexts #-}
+{-# LANGUAGE DatatypeContexts #-}
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
 {-# language DatatypeContexts #-}

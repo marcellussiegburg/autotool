@@ -1,3 +1,5 @@
+{-# LANGUAGE DatatypeContexts #-}
+{-# LANGUAGE DatatypeContexts #-}
 -- | state transitions systems
 
 {-# language DeriveDataTypeable #-}

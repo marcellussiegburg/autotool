@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Algebraic.Nested 
 
 ( Type , unit, empty

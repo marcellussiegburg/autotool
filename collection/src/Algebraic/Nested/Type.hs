@@ -1,8 +1,11 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Algebraic.Nested.Type 
 
 
 where
 
+  
 import Autolib.ToDoc hiding ( empty )
 import Autolib.Reader
 
@@ -10,12 +13,12 @@ import qualified Autolib.Set as S
 
 import Autolib.Size
 import Autolib.Depth
+import Autolib.Choose
 
 import Data.Typeable
 
 example :: Type Integer
 example = read "{ 2, {}, {3, {4}}}"
-
 
 data Type a = Make ( S.Set ( Item a ))
     deriving ( Eq, Ord, Typeable )

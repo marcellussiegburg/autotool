@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
+{-# language DatatypeContexts #-}
 
 module PL.Struktur where
 

@@ -1,11 +1,18 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Algebraic.Set where
 
 
+import           Algebraic.Nested.Op
+import           Algebraic.Nested.Roll (roll)
+import           Algebraic.Nested.Restriction
 import qualified Algebraic.Nested.Type as Nested
-import Algebraic.Nested.Op 
-import Algebraic.Nested.Restriction
+import qualified Autolib.TES.Binu as B
 
-import Algebraic2.Class
+import           Algebraic2.Class
 import Algebraic2.Instance as AI
 import Condition
 
@@ -20,6 +27,8 @@ import qualified Autolib.Reporter.Set
 import Data.Typeable
 
 data Algebraic_Set = Algebraic_Set deriving ( Read, Show, Typeable )
+
+derives [makeReader][''Algebraic_Set]
 
 instance Algebraic Algebraic_Set () ( Nested.Type Integer ) where
     -- evaluate         :: tag -> Exp a -> Reporter a
@@ -38,29 +47,31 @@ instance Algebraic Algebraic_Set () ( Nested.Type Integer ) where
 	    err = union ab ba
         let ok = is_empty err 
 	when ( not ok ) $ reject $ vcat 
-             [ text "Nein, diese Elemente kommen nur in jeweils einer der Mengen vor:"
+             [ text "Nein, die symmetrische Differenzmenge ist"
 	     , nest 4 $ toDoc err
 	     ]
 	return ok
 
 
     -- some_formula     :: tag -> Algebraic.Instance.Type a -> Exp a
-    some_formula tag i = read "pow (1 + pow (2)) "
+    some_formula tag i = read "pow (A + pow (B)) "
+
+    roll_value tag i = roll [1..5] 3
 
     default_context tag = ()
 
     -- default_instance :: tag -> Algebraic.Instance.Type a
     default_instance tag = AI.Make
-        { target = Nested.example
+        { target = read "{1,{2}}"
 	, context = ()
           , description = Nothing
 	  , operators = default_operators tag
 	  , predefined = listToFM 
-	      [ (read "A", read "{1,3,5,6}" )
-	      , (read "B", read "{2,3,6,7}" )
+	      [ (read "A", read "{1,3}" )
+	      , (read "B", read "{2,3}" )
 	      ]		  
-          , max_size = 7
+          , max_size = 12
 	}
 
-    default_operators tag = bops
+    default_operators tag = bops 
 
