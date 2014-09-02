@@ -5,12 +5,13 @@ import Graph.Iso
 
 import Autolib.Graph.Basic
 import Autolib.Graph.Ops ( gmap )
-import Autolib.Dot.Dotty ( peng )
+import Autolib.Dot.Dotty 
 import Autolib.Graph.Kneser ( petersen )
 
 import Inter.Types
 import Autolib.ToDoc
 import Autolib.Size
+import Autolib.Informed
 
 import qualified Challenger as C
 
@@ -28,15 +29,15 @@ instance C.Partial Isomorphie ( Graph Int, Graph Int ) ( FiniteMap Int Int ) whe
 
     report p (g,h) = do
         inform $ text "Gesucht ist eine Isomorphie zwischen diesen Graphen:"
-        inform $ toDoc g ; peng g
-        inform $ toDoc h ; peng h
+        inform $ text "G" <+> equals <+> toDoc g ; peng_using Dot g
+        inform $ text "H" <+> equals <+> toDoc h ; peng_using Dot h
 
     initial p (g,h) = listToFM $ zip ( lknoten g ) ( lknoten h )
 
     partial p (g,h) f = return ()
     
     total p (g,h) f = do
-	check_iso f g h
+	check_iso f (informed (text "G") g) (informed (text "H") h)
 
 permute :: Graph Int -> Graph Int
 permute g = 
