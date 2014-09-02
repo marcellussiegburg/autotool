@@ -107,7 +107,6 @@ import Operate.DateTime ( defaults )
 main :: IO ()
 main = Gateway.CGI.execute ( Default.trial_cgi_name ) $ do
    wrap $ do -- FIXME: following code looks ugly
-       btabled $ select_preferred_language 
        mtopic <- look "topic"
        case mtopic of
            Just topic -> fixed_topic Default.server topic
@@ -122,6 +121,7 @@ main = Gateway.CGI.execute ( Default.trial_cgi_name ) $ do
                        Nothing -> free_choice Default.server
 
 free_choice server = do
+       btabled $ select_preferred_language 
        selektor server
        con <- io $ Operate.Motd.contents
        html con
@@ -161,6 +161,7 @@ vor server pack = do
     lecture server vor pack
     
 fixed_lecture server vor = do
+    btabled $ select_preferred_language 
     vs <- io $ V.get_this $ fromCGI vor
     case vs of
         [ v ] -> lecture server v dummy
@@ -187,6 +188,7 @@ lecture server vor pack = do
     common_aufgaben server pack ( Just auf ) conf   
 
 fixed_problem problem = do
+    btabled $ select_preferred_language 
     [ auf ] <- io $ Control.Aufgabe.DB.get_this $ fromCGI problem
     open btable -- ?
     common_aufgaben Default.server dummy ( Just auf ) False
@@ -199,7 +201,7 @@ fixed_topic server topic = do
 	 guard $ doc == topic
 	 return mk
 -}
-  
+    btabled $ select_preferred_language 
     open btable -- ?
     let mk = make server topic
     common_aufgaben_trailer dummy Nothing True server mk False
