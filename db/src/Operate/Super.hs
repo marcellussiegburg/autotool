@@ -110,11 +110,11 @@ main = do
          print e
 
 preface server = do
-    btabled $ select_preferred_language 
     mschool <- look "school"
     school <- bestmatch $ Control.Types.Name $ case mschool of
         Nothing -> "HTWK Leipzig"
         Just school -> school
+    btabled $ select_preferred_language 
     iface (Just school) server
 
 bestmatch name = do
