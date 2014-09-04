@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
 module Operate.Student where

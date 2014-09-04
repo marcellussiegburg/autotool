@@ -1,3 +1,6 @@
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE IncoherentInstances #-}
+{-# LANGUAGE OverlappingInstances #-}
 {-# OPTIONS -fglasgow-exts -fallow-overlapping-instances -fallow-incoherent-instances -fallow-undecidable-instances #-}
 
 {-# language OverloadedStrings #-}

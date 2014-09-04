@@ -3,7 +3,7 @@
 
 -- TODO: hack this module into pieces
 
-{-# language PatternSignatures, DeriveDataTypeable #-}
+{-# LANGUAGE PatternSignatures, DeriveDataTypeable #-}
 
 module Main where
 

@@ -21,7 +21,7 @@ module Codec.Encryption.Utils (
 	      ) where
 
 import Data.Word
-import Data.Bits
+
 
 powersOf n = 1 : (map (*n) (powersOf n))
 
