@@ -12,6 +12,7 @@ module Gateway.CGI
 , runForm
 , io, embed, embed_for, wrap
 , select_preferred_language
+, select_preferred_language_with_default
 , get_preferred_language
 , set_preferred_language
 , gensym
@@ -380,6 +381,14 @@ select_preferred_language :: Monad m => Form m ()
 select_preferred_language = do
     lang <- click_choice_with_default 0 
         "preferred language" [ ("english", UK), ("deutsch", DE) ]
+    set_preferred_language lang
+
+select_preferred_language_with_default :: Monad m => Language -> Form m ()
+select_preferred_language_with_default l = do
+    let languages = [ ("english", UK), ("deutsch", DE) ]
+        i = fst $ head $ filter ( \ (i,(_,s)) -> s == l) $ zip [0..] languages
+    lang <- click_choice_with_default i
+        "preferred language" languages
     set_preferred_language lang
 
 set_preferred_language :: Monad m => Language -> Form m ()

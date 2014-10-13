@@ -36,6 +36,8 @@ import Autolib.Reader
 import Autolib.ToDoc
 import Autolib.Hash
 
+import Autolib.Multilingual (Language(..))
+
 import Control.Time
 
 import Inter.Wert
@@ -165,6 +167,24 @@ instance ToEx Status where
     toEx x = EString $ show x
 
 instance ToString Status where
+    toString = show 
+
+-------------------------------------------------------------
+    
+derives [makeReader, makeToDoc] [ ''Language ]    
+
+instance SqlBind Language where 
+    fromSqlValue _ s = Just 
+        $ fromMaybe DE
+	$ lookup (map toLower s)
+        $ do h <- [ minBound .. maxBound ]
+             return ( map toLower $ show h, h )
+    toSqlValue w = show w
+
+instance ToEx Language where
+    toEx x = EString $ show x
+
+instance ToString Language where
     toString = show 
 
 -------------------------------------------------------------

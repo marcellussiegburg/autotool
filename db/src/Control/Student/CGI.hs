@@ -483,9 +483,13 @@ pwmail stud = do
            , "-s", show $ M.specialize lang $ M.make [ (M.DE, "neues autotool-passwort"), (M.UK, "new autotool password")]
            , "-a", show "From: autotool"
            , e
-           ]
+           , ""
+           ]           
     io $ Debug.debug $ "running: " ++ cmd
+    
     res <- io $ Debug.system cmd
+    io $ appendFile "/tmp/mail.log" cmd
+    
     io $ Debug.debug $ "Exit code: " ++ show res
 
     pre $ M.specialize lang $ M.make

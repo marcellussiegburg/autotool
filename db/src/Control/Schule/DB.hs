@@ -8,6 +8,8 @@ import Control.Schule.Typ
 import qualified Control.Student.Type as CST
 import qualified Control.Student.DB
 
+import Autolib.Multilingual ( Language (..))
+
 import Prelude hiding ( all )
 
 -- | get alle Schulen aus DB
@@ -34,6 +36,7 @@ qq =  Select
 		, "schule.Name as Name"
                 , "schule.Mail_Suffix as Mail_Suffix"
                 , "schule.Use_Shibboleth as Use_Shibboleth"
+                , "schule.Preferred_Language as Preferred_Language"
 		] 
 
 common = collectRows $ \ state -> do
@@ -41,10 +44,12 @@ common = collectRows $ \ state -> do
         g_name <- getFieldValue state "Name"
         g_mail_suffix <- getFieldValue state "Mail_Suffix"
         g_use_shibboleth <- getFieldValue state "Use_Shibboleth"
+        g_preferred_language <- getFieldValue state "Preferred_Language"
         return $ Schule { unr = g_unr
 			 , name = g_name
                          , mail_suffix = g_mail_suffix
                          , use_shibboleth = 0 /= ( g_use_shibboleth :: Int )
+                         , preferred_language = g_preferred_language 
     			 }
 
 -- | put into table:
@@ -56,6 +61,7 @@ put munr vor = do
     let common = [ ( reed "Name", toEx $ name vor )
 		 , ( reed "Mail_Suffix", toEx $ mail_suffix vor )
                  , ( reed "Use_Shibboleth", toEx $ use_shibboleth vor )
+                 , ( reed "Preferred_Language", toEx $ preferred_language vor )
 		 ]
     case munr of
 	 Nothing -> squery conn $ Query
