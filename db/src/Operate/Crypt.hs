@@ -16,7 +16,7 @@ import Codec.Encryption.MD5 ( hash )
 import Codec.Encryption.Utils ( Octet )
 
 import System.Random
-import Data.Word
+
 import Data.Typeable
 import Autolib.Xml
 import Autolib.ToDoc hiding ( empty )

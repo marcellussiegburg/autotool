@@ -1,4 +1,4 @@
-{-# language PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
 
 module Operate.Make where
 
@@ -8,8 +8,9 @@ import Data.Dynamic
 import Data.Maybe
 
 
-import Autolib.ToDoc
+
 import Autolib.Reader
+import Autolib.ToDoc
 
 
 get_boiler :: [ Make ] 
@@ -23,7 +24,7 @@ get_boiler makers configs = do
 	    it <- maybeToList ( fromDynamic dyn :: Maybe conf )
 	    return $ Variant $ fun it
 
--- | für den tutor: präsentiert liste der bekannten maker-typen
+-- | für den tutor: präsentiert liste der bekannten maker-typen
 present :: [ Make ] -> Doc
 present makers = vcat $ do
     maker <- makers

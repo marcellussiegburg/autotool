@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSignatures #-}
 -- | werden von Face.cgi benutzt: login zum aufgabenlösen und scoring
 
 {-# LANGUAGE PatternSignatures #-}

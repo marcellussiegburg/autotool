@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE PatternSignatures #-}
 {-# LANGUAGE DoAndIfThenElse #-}
 
 module Operate.Tutor where
