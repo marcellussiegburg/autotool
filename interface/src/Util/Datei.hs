@@ -94,7 +94,7 @@ sanity d =
            $ "strange zeichen in dateiname: " ++ show d
 
 isok :: Char -> Bool
-isok c = isAlphaNum c || c `elem` "-_"
+isok c = isAlphaNum c || c `elem` "-_,"
 
 
 home :: Datei -> IO FilePath
