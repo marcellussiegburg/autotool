@@ -30,6 +30,7 @@ data Einsendung = Einsendung
 	  , auf	     :: ANr
 	  , vor      :: VNr
 	  , pid	     :: String
+          , visible  :: Bool -- tutor submissions should be invisible
 	  }	deriving (Eq,Ord)
 
 size e = case msize e of
@@ -136,7 +137,8 @@ read_deco deco cs = do
 	      , auf	 = fromCGI a
 	      , vor      = fromCGI v
 	      , pid      = field 8 wl			-- process id
-	      }
+	      , visible  = False
+              }
 	return ( e, rest )
 
 -------------------------------------------------------------------------------

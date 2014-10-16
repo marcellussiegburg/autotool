@@ -47,8 +47,9 @@ compute u ( vor, aufs ) = do
                    $ concat contents
 
     let total = foldl ( update aufs ) emptyFM einsendungen
-    -- pforsicht: hier sind auch die admins (< 1024) drin
-    -- damit wir "best known" anzeigen können
+    -- pforsicht: enthalt alle Einsendungen zu dieser Aufgabe,
+    -- (auch die vom Tutor, der normalerweise nicht eingeschrieben ist)
+    -- Damit wir "best known" anzeigen können
     -- vor der bepunktung müssen die aber raus
 
     emit decorate u vor total

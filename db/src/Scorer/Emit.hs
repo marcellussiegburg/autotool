@@ -39,8 +39,7 @@ emit deco u vor fm0 = do
     let smnrs = mkSet $ map S.mnr studs
     let fm = mapFM ( \ key val -> do
 		  e <- val
-		  guard $ internal ( matrikel e ) `elementOf` smnrs
-		  return e
+		  return ( e { visible = internal ( matrikel e ) `elementOf` smnrs } )
 	      ) fm0
                                   
     if ( 0 < sizeFM fm )
@@ -66,7 +65,7 @@ inform = O.Doc $ text $ unwords
 
 realize :: [ Einsendung ] -> [ Einsendung ]
 realize es = take scoreItems -- genau 10 stück
-	   $ filter ( not . isadmin . matrikel) -- keine admins
+	   $ filter visible
 	   $ es
     
 -- | FIXME: this is badly broken
