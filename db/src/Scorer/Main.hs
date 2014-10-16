@@ -28,7 +28,8 @@ import System.Environment
 main :: IO ()
 main = do
     t <- zeit    
-    let header = O.Text $ T.pack $ "autotool -- Top Ten Scores, Stand von: " ++ t        
+    let charset =  O.Text $ T.pack $ "<head><meta charset=\"UTF-8\"></head>"
+        header = O.Text $ T.pack $ "autotool -- Top Ten Scores, Stand von: " ++ t        
     schulen <- U.get
     outss <- forM schulen $ \ schule -> do
             sems <- E.get_at_school $ U.unr schule 
@@ -44,7 +45,9 @@ main = do
                      return ( vor, def )
                  return info
             forM (filter ( \ (vor,def) -> not $ isEmptyFM def ) $ concat table) $ compute schule
-    let out = O.lead header $ O.Itemize $ concat outss >>= maybeToList
+    let out = O.lead charset
+            $ O.lead header 
+            $ O.Itemize $ concat outss >>= maybeToList
     print $ Autolib.Multilingual.specialize Autolib.Multilingual.DE
           $ ( O.render out :: Autolib.Multilingual.Type Text.Blaze.Html.Html )
     
