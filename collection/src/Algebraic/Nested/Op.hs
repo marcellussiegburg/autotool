@@ -4,6 +4,8 @@
 module Algebraic.Nested.Op where
 
 import Algebraic.Nested.Type
+import Autolib.Reporter
+import Autolib.ToDoc
 
 import Expression.Op
 
@@ -18,7 +20,13 @@ instance Ops ( Type Integer ) where
 	 , B.unary = [ 
 	     Op { name = "pow", arity = 1
 		, precedence = Nothing, assoc = AssocNone
-		, inter = lift1 power
+		, inter = \ [s] -> do
+                      when (top_length s > 6) $ reject $ vcat
+                          [ text "Die Potenzmenge von"
+                          , nest 4 $ toDoc s
+                          , text "hat mehr als 100 Elemente."
+                          ]
+                      lift1 power [s]
 		}
 	     ]
 	 , B.binary = [ 
