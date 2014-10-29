@@ -1,57 +1,74 @@
 {-# language StandaloneDeriving #-}
+{-# language TemplateHaskell #-}
 
 module Polynomial.Data where
 
-import Autolib.ToDoc
-import Autolib.Reader
-
 import qualified Data.Map.Strict as M
+import Control.Lens
+import Control.Monad ( guard )
 
--- | for the moment, this is monomorphic.
--- in theory, coefficient domain should be some ring.
--- invariant: store only monomials with coefficient /= 0
-data Poly v = Poly { unPoly :: M.Map (Mono v) Integer }
+-- * factors (for lack of a better name) like "x^5"
+
+data Factor v = Factor { _var :: v, _expo :: Integer } 
     deriving Show
 
-poly :: Ord v => [(Integer, Mono v)] -> Poly v
-poly cms = Poly 
-    { unPoly = M.fromList $ do
-        (c,m) <- cms 
-        guard $ c /= 0
-        return (m,c)
-    }
+$(makeLenses ''Factor)
 
-terms p = do (m,c) <- M.toList $ unPoly p ; return (c,m)
+deriving instance Eq v => Eq (Factor v)
+deriving instance Ord v => Ord (Factor v)
+
+-- * monomials like "x^5 z^2"
 
 -- | invariant: store only factors with nonzero exponents.
 -- implementation note: total_degree comes first,
 -- and this is used in the derived Ord instance
 -- (which then gives length-lexicographic)
-data Mono v = Mono { total_degree :: Integer
-                   , unMono :: M.Map v Integer 
+data Mono v = Mono { _total_degree :: Integer
+                   , _unMono :: M.Map v Integer 
                    }
     deriving Show 
+
+$(makeLenses ''Mono)
+
+nullMono m = M.null $ m ^. unMono
 
 deriving instance Eq v => Eq (Mono v)
 deriving instance Ord v => Ord (Mono v)
 
 mono :: Ord v => [Factor v] -> Mono v
 mono fs = Mono 
-    { unMono = M.fromList $ do 
+    { _unMono = M.fromListWith (+) $ do 
         f <- fs 
-        guard $ expo f /= 0 
-        return (var f, expo f)
-    , total_degree = sum $ map expo fs
+        guard $ f ^. expo /= 0 
+        return (f ^. var , f ^. expo )
+    , _total_degree = sum $ map ( ^. expo ) fs
     }
 
 factors :: Mono v -> [Factor v]
 factors m = do 
-    (v,e) <- M.toList $ unMono m
-    return $ Factor { var = v, expo = e }
+    (v,e) <- M.toList $ m ^. unMono
+    return $ Factor { _var = v, _expo = e }
 
-data Factor v = Factor { var :: v, expo :: Integer } 
+
+-- * polynomials
+
+-- | for the moment, this is monomorphic.
+-- in theory, coefficient domain should be some ring.
+-- invariant: store only monomials with coefficient /= 0
+data Poly v = Poly { _unPoly :: M.Map (Mono v) Integer }
     deriving Show
 
-deriving instance Eq v => Eq (Factor v)
-deriving instance Ord v => Ord (Factor v)
+$(makeLenses ''Poly)
+
+poly :: Ord v => [(Integer, Mono v)] -> Poly v
+poly cms = Poly 
+    { _unPoly = M.fromListWith (+) $ do
+        (c,m) <- cms 
+        guard $ c /= 0
+        return (m,c)
+    }
+
+terms p = do (m,c) <- M.toList $ p ^. unPoly ; return (c,m)
+
+
 
