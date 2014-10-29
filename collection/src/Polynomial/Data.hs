@@ -37,9 +37,8 @@ deriving instance Ord v => Ord (Mono v)
 
 mono :: Ord v => [Factor v] -> Mono v
 mono fs = Mono 
-    { _unMono = M.fromListWith (+) $ do 
+    { _unMono = M.filter (/= 0) $ M.fromListWith (+) $ do 
         f <- fs 
-        guard $ f ^. expo /= 0 
         return (f ^. var , f ^. expo )
     , _total_degree = sum $ map ( ^. expo ) fs
     }
@@ -62,9 +61,8 @@ $(makeLenses ''Poly)
 
 poly :: Ord v => [(Integer, Mono v)] -> Poly v
 poly cms = Poly 
-    { _unPoly = M.fromListWith (+) $ do
+    { _unPoly = M.filter (/= 0) $ M.fromListWith (+) $ do
         (c,m) <- cms 
-        guard $ c /= 0
         return (m,c)
     }
 
