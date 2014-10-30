@@ -15,6 +15,7 @@ instance Ord v => Num (Poly v) where
         return (c*d, f*g)
 
 instance Ord v => Num (Mono v) where
-    p * q = Mono { _unMono = M.unionWith (+) (p ^. unMono) (q ^. unMono) 
+    p * q = Mono { _unMono = M.filter (/= 0) $ M.unionWith (+) (p ^. unMono) (q ^. unMono) 
                  , _total_degree = p ^. total_degree + q ^. total_degree
                  }
+

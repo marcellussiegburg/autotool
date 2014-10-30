@@ -1,10 +1,12 @@
 {-# language StandaloneDeriving #-}
 {-# language TemplateHaskell #-}
+{-# language TypeFamilies #-}
 
 module Polynomial.Data where
 
 import qualified Data.Map.Strict as M
 import Control.Lens
+import Control.Lens.At
 import Control.Monad ( guard )
 
 -- * factors (for lack of a better name) like "x^5"
@@ -30,6 +32,11 @@ data Mono v = Mono { _total_degree :: Integer
 
 $(makeLenses ''Mono)
 
+type instance IxValue (Mono v) = Integer
+type instance Index (Mono v)  = v
+instance Ord v => Ixed (Mono v) where 
+    ix k = unMono  . ix k 
+
 nullMono m = M.null $ m ^. unMono
 
 deriving instance Eq v => Eq (Mono v)
@@ -43,11 +50,8 @@ mono fs = Mono
     , _total_degree = sum $ map ( ^. expo ) fs
     }
 
-factors :: Mono v -> [Factor v]
-factors m = do 
-    (v,e) <- M.toList $ m ^. unMono
-    return $ Factor { _var = v, _expo = e }
-
+factors :: Mono v -> [ (v,Integer) ]
+factors m =  M.toList $ m ^. unMono
 
 -- * polynomials
 
@@ -55,9 +59,14 @@ factors m = do
 -- in theory, coefficient domain should be some ring.
 -- invariant: store only monomials with coefficient /= 0
 data Poly v = Poly { _unPoly :: M.Map (Mono v) Integer }
-    deriving Show
+    deriving (Show, Eq)
 
 $(makeLenses ''Poly)
+
+type instance IxValue (Poly v) = Integer
+type instance Index (Poly v)  = Mono v
+instance Ord v => Ixed (Poly v) where 
+    ix k = unPoly  . ix k 
 
 poly :: Ord v => [(Integer, Mono v)] -> Poly v
 poly cms = Poly 
@@ -68,5 +77,8 @@ poly cms = Poly
 
 terms p = do (m,c) <- M.toList $ p ^. unPoly ; return (c,m)
 
+nterms p = M.size $ p ^. unPoly
 
+variable v = poly [(1, mono [ Factor {_var=v, _expo=1 } ])]
 
+absolute p = M.findWithDefault 0 ( mono [] ) $ p ^. unPoly

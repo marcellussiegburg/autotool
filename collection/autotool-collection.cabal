@@ -60,7 +60,8 @@ Library
         QuickCheck,
         mueval>=0.8.1.1, hint, haskell-src-exts, syb,
         transformers,
-        logict>=0.6.0.2
+        logict>=0.6.0.2,
+        lens
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -295,7 +296,13 @@ Library
                  Rewriting.Termination.Domains,
                  Rewriting.Termination.Matrix,
                  Rewriting.Termination.Multilinear,
+                 Rewriting.Termination.Polynomial,
                  Rewriting.Termination.Interpretation,
+                 Polynomial.Data
+                 Polynomial.Op
+                 Polynomial.Reader
+                 Polynomial.ToDoc
+                 Polynomial.Type
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,

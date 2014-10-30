@@ -1,8 +1,8 @@
 module Polynomial.Type 
 
-( Poly(), poly 
-, Mono (), mono
-, Factor (..)
+( Poly(), poly, nterms, terms, variable, absolute
+, Mono (), mono, factors
+, Factor (), var, expo
 )
 
 where

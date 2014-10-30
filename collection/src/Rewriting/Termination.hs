@@ -10,6 +10,8 @@ module Rewriting.Termination where
 
 import Rewriting.Termination.Semiring
 import Rewriting.Termination.Multilinear
+import qualified Rewriting.Termination.Polynomial as P
+import qualified Polynomial.Type as P
 import Rewriting.Termination.Interpretation
 import Rewriting.TRS
 
@@ -36,6 +38,7 @@ data Restriction =
      | Matrix_Arctic
      | Matrix_Tropical
      | Matrix_dimension_at_most Int
+     | Polynomial -- TODO: restrict degree
     deriving ( Eq, Ord, Typeable )
 
 derives [makeReader, makeToDoc] [''Restriction]
@@ -50,6 +53,12 @@ problem0 :: Problem Identifier
 problem0 = Problem 
     { system = read "TRS { variables = [x] , rules = [ a(b(x)) -> b(a(x)) ] }"
     , restriction = Or [ Matrix_Natural, Lexicographic_with_children Matrix_Natural ]
+    }
+
+problem1 :: Problem Identifier
+problem1 = Problem 
+    { system = read "TRS { variables = [x] , rules = [ a(b(x)) -> b(a(x)) ] }"
+    , restriction = Polynomial
     }
 
 derives [makeReader, makeToDoc] [''Problem]
@@ -84,11 +93,19 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
         , text "that is compatible with" <+> toDoc (system p)
         , text "and conforms to" <+> toDoc (restriction p)
         , text "--"
+        , text "polynomial interpretation syntax: arguments are x1, x2, .."
+        , text "size (for highscore): total number of monomials"
+        , text "--"
         , text "matrix syntax: scalar 3, row [4,5,6], column [1,2,3], matrix [[1,2],[3,4]], unit 3, zero (2,1)"
         , text "semiring elements: -inf, 0, 1, .. , +inf"
         , text "domains: _Natural, _Arctic, _Tropical, _Fuzzy"
         , text "size (for highscore): total number of nonzero entries"
         ]
+    initial _ p | restriction p == Polynomial = Interpretation 1
+        $ Polynomial_Interpretation
+        $ M.fromList $ do 
+            (k,f) <- zip [1..] $ S.toList $ signature $ system p
+            return ( f, (1 + (P.variable $ P.X  (succ $ k `mod` arity f)))^2 )
     initial _ p = Interpretation 2 
         $ Matrix_Interpretation_Natural
         $ M.fromList $ do 
@@ -102,8 +119,11 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
     total _ p o = do
         compatible o $ system p
 
-make_fixed :: Make
-make_fixed = direct Rewriting_Termination problem0
+make_fixed_matrix :: Make
+make_fixed_matrix = direct Rewriting_Termination problem0
+
+make_fixed_poly :: Make
+make_fixed_poly = direct Rewriting_Termination problem1
 
 compute_restriction r o = case r of
     And rs -> and <$> forM rs ( \ r -> compute_restriction r o )
@@ -117,6 +137,7 @@ compute_restriction r o = case r of
         ( Matrix_Tropical, Interpretation { values = Matrix_Interpretation_Tropical {}} ) -> return True 
         ( Matrix_Fuzzy, Interpretation { values = Matrix_Interpretation_Fuzzy {}} ) -> return True 
         ( Matrix_dimension_at_most d, Interpretation { dim = dim} ) -> return $ d >= dim
+        ( Polynomial, Interpretation { values = Polynomial_Interpretation {}} ) -> return True
         _ -> return False
     
 everything_monotone o = case o of
@@ -129,7 +150,6 @@ check_dimensions sig o = case o of
     Lexicographic ords -> forM_ ords $ check_dimensions sig
     Interpretation {} ->  check_dimension sig (dim o) (values o)
         
-
 
 signature sys = S.unions $ do
     u <- rules sys ; [ syms $ lhs u, syms $ rhs u ]
