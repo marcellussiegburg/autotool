@@ -226,6 +226,7 @@ check_dimension sig dim i = case i of
     Matrix_Interpretation_Arctic i -> check_arity_dimension sig dim i
     Matrix_Interpretation_Tropical i -> check_arity_dimension sig dim i
     Matrix_Interpretation_Fuzzy i -> check_arity_dimension sig dim i
+    Polynomial_Interpretation {} -> return ()
 
 check_arity_dimension sig dim i = do
     check_arities sig i

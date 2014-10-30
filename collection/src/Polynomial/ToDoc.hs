@@ -7,10 +7,11 @@ import Autolib.ToDoc
 instance ToDoc v => ToDoc (Factor v) where
     toDoc f = case f ^. expo of
         1 -> toDoc $ f ^. var
-        _ -> hcat [ toDoc $ f ^. var, text "^", toDoc $ f ^. expo ]
+        _ -> hsep [ toDoc $ f ^. var, text "^", toDoc $ f ^. expo ]
 
 instance ToDoc v => ToDoc (Mono v) where
-    toDoc m = hsep $ punctuate (text " *") $ map toDoc $ factors m
+    toDoc m = hsep $ punctuate (text " *") $ do
+        (v,e) <- factors m ; return $ toDoc $ Factor { _var = v, _expo = e }
 
 instance ToDoc v => ToDoc (Poly v) where
     toDoc p = case terms p of

@@ -19,7 +19,12 @@ import Data.List ( transpose )
 -- | encodes position of argument (starting from 1)
 newtype X = X Int deriving (Eq, Ord, Typeable)
 instance ToDoc X where toDoc (X i) = text "x" <> toDoc i
-instance Reader X where reader = do string "x" ; X <$> reader
+instance Show X where show = render . toDoc 
+instance Reader X where 
+    reader = do 
+        Autolib.Reader.char 'x' ; ds <- many1 digit ; my_whiteSpace
+        return $ X $ read ds
+
 
 substitute :: P.Poly X -> [ P.Poly X ] -> P.Poly X
 substitute f gs = sum $ do
