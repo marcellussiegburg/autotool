@@ -36,10 +36,12 @@ substitute f gs = sum $ do
 projection :: Int -> P.Poly X
 projection to = P.variable $ X to
 
-must_be_monotone arity p = do
+must_be_monotone f arity p = do
     void $ forM ( P.terms p ) $ \ (c,m) -> do
         when (c < 0) $ reject $ hsep
-             [ text "is not monotone since part" 
+             [ text "interpretation of symbol" <+> toDoc f <+> text "of arity" <+> toDoc arity
+             , text "is" <+> toDoc p
+             , text "is not monotone since part" 
              , toDoc (c, m)
              , text "has negative coefficient"
              ]
@@ -49,9 +51,10 @@ must_be_monotone arity p = do
                 return $ case P.factors m of
                     [ (v,e) ] | v  == X i -> True
                     _ -> False
-        when (not occurs_isolated) $ reject $ hsep
-            [ text "cannot prove monotonicity in argument" 
-            , toDoc (X i)
+        when (not occurs_isolated) $ reject $ vcat
+            [ text "interpretation of symbol" <+> toDoc f <+> text "of arity" <+> toDoc arity
+            , text "is" <+> toDoc p
+            , text "cannot prove monotonicity in argument" <+> toDoc (X i)
             , text "since it does not occur isolated in some monomial" 
             ]
 

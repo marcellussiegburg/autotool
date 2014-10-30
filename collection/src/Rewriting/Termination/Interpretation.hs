@@ -123,6 +123,7 @@ inter_poly int t = explained t $ case t of
                     , text "uses non-existing argument" <+> toDoc (P.X i)
                     , toDoc fun
                     ]
+            P.must_be_monotone f syn fun
             gs <- forM args $ inter_poly int 
             return $ P.substitute fun gs
 
@@ -140,7 +141,7 @@ check_monotone i = case i of
     Matrix_Interpretation_Arctic i -> must_be_monotone i
     Matrix_Interpretation_Tropical i -> must_be_monotone i
     Matrix_Interpretation_Fuzzy i -> must_be_monotone i
-    Polynomial_Interpretation i -> must_be_monotone_poly i
+    Polynomial_Interpretation i -> return () -- do this in different place
 
 must_be_monotone (int :: Inter c (Multilinear d)) = forM_ (M.toList int) $ \ (f, m) -> do
     inform $ vcat [ text "check monotonicity for"
@@ -165,13 +166,6 @@ must_be_monotone (int :: Inter c (Multilinear d)) = forM_ (M.toList int) $ \ (f,
                 , text "since semiring addition is not monotone"
                 , text "and function has more than one argument"
                 ] 
-
-must_be_monotone_poly (int :: Inter c (P.Poly P.X)) = forM_ (M.toList int) $ \ (f, p) -> do
-    inform $ vcat [ text "check monotonicity for"
-                  , text "symbol" <+> toDoc f
-                  , text "interpreted by" <+> toDoc p
-                  ]
-    P.must_be_monotone (arity f) p
 
 compute_order i = case i of
     Matrix_Interpretation_Natural i -> order i
