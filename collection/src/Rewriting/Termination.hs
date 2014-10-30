@@ -57,7 +57,7 @@ problem0 = Problem
 
 problem1 :: Problem Identifier
 problem1 = Problem 
-    { system = read "TRS { variables = [x] , rules = [ a(b(x)) -> b(a(x)) ] }"
+    { system = read "TRS { variables = [x,y] , rules = [ f(x,a) -> b(a(x)) ] }"
     , restriction = Polynomial
     }
 

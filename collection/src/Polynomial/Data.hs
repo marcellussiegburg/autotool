@@ -1,6 +1,7 @@
 {-# language StandaloneDeriving #-}
 {-# language TemplateHaskell #-}
 {-# language TypeFamilies #-}
+{-# language DeriveDataTypeable #-}
 
 module Polynomial.Data where
 
@@ -8,11 +9,12 @@ import qualified Data.Map.Strict as M
 import Control.Lens
 import Control.Lens.At
 import Control.Monad ( guard )
+import Data.Typeable
 
 -- * factors (for lack of a better name) like "x^5"
 
 data Factor v = Factor { _var :: v, _expo :: Integer } 
-    deriving Show
+    deriving Typeable
 
 $(makeLenses ''Factor)
 
@@ -28,7 +30,7 @@ deriving instance Ord v => Ord (Factor v)
 data Mono v = Mono { _total_degree :: Integer
                    , _unMono :: M.Map v Integer 
                    }
-    deriving Show 
+    deriving Typeable
 
 $(makeLenses ''Mono)
 
@@ -59,7 +61,7 @@ factors m =  M.toList $ m ^. unMono
 -- in theory, coefficient domain should be some ring.
 -- invariant: store only monomials with coefficient /= 0
 data Poly v = Poly { _unPoly :: M.Map (Mono v) Integer }
-    deriving (Show, Eq)
+    deriving ( Eq, Typeable )
 
 $(makeLenses ''Poly)
 
