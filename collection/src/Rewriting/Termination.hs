@@ -105,7 +105,11 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
         $ Polynomial_Interpretation
         $ M.fromList $ do 
             (k,f) <- zip [1..] $ S.toList $ signature $ system p
-            return ( f, (1 + 2 * (P.variable $ P.X  (succ $ k `mod` arity f))^2))
+            return ( f
+                   , if arity f > 0 
+                     then (1 + 2 * (P.variable $ P.X  (succ $ k `mod` arity f))^2)
+                     else 5
+                   )
     initial _ p = Interpretation 2 
         $ Matrix_Interpretation_Natural
         $ M.fromList $ do 

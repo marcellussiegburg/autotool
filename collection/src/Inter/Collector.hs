@@ -475,7 +475,7 @@ tmakers =
                         , item Rewriting.TRS.Numerical.make
                         , heading "Termination"
                             [ heading "Polynom-Interpretationen" [ item Rewriting.Termination.make_fixed_poly ]
-                            , heading "Matrix-Interpretationen" [ item Rewriting.Termination.make_fixed_matrix ]
+                            -- , heading "Matrix-Interpretationen" [ item Rewriting.Termination.make_fixed_matrix ]
                             ]
                         ]
                 , heading "Lambda-Kalkül"
