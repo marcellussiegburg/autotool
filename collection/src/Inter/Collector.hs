@@ -191,6 +191,7 @@ import qualified Rewriting.TRS.Numerical
 
 import qualified Rewriting.Derive
 import qualified Rewriting.Termination
+import qualified Rewriting.Completion.Improved
 import qualified Rewriting.TRS.Apply
 import qualified Rewriting.SRS.Apply
 import qualified Lambda.Apply
@@ -475,8 +476,9 @@ tmakers =
                         , item Rewriting.TRS.Numerical.make
                         , heading "Termination"
                             [ heading "Polynom-Interpretationen" [ item Rewriting.Termination.make_fixed_poly ]
-                            -- , heading "Matrix-Interpretationen" [ item Rewriting.Termination.make_fixed_matrix ]
+                            , heading "Matrix-Interpretationen" [ item Rewriting.Termination.make_fixed_matrix ]
                             ]
+                        , item Rewriting.Completion.Improved.make_fixed
                         ]
                 , heading "Lambda-Kalkül"
                         [ item $ Rewriting.Derive.make_fixed Lambda.Apply.For_Lambda

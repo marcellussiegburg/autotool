@@ -298,6 +298,9 @@ Library
                  Rewriting.Termination.Multilinear,
                  Rewriting.Termination.Polynomial,
                  Rewriting.Termination.Interpretation,
+                 Rewriting.Completion.CP,
+                 Rewriting.Completion.Simple,
+                 Rewriting.Completion.Improved,
                  Polynomial.Data
                  Polynomial.Op
                  Polynomial.Reader

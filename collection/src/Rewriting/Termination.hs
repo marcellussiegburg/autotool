@@ -115,11 +115,13 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
         $ M.fromList $ do 
             (k,f) <- zip [1..] $ S.toList $ signature $ system p
             return ( f, projection (arity f) (succ $ k `mod` arity f) 2 )
+
     partial _ p o = do
         check_dimensions (signature $ system p) o
         everything_monotone o
         ok <- compute_restriction (restriction p) o
         when (not ok) $ reject $ text "order does not conform to restriction"
+
     total _ p o = do
         compatible o $ system p
 

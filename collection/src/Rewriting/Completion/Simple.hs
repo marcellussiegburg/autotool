@@ -1,3 +1,5 @@
+{-# language DoAndIfThenElse #-}
+
 module Rewriting.Completion.Simple where
 
 import Rewriting.Completion.CP
@@ -103,7 +105,8 @@ run ord step bound rules = do
     if  rules' /= rules
     then run ord (step + 1) bound rules'
     else do
-        inform $ text "system is completed"
+        inform $ text "obtained convergent system"
+               </> toDoc rules
         return $ S.toList rules
 
 orient :: (Ord v, Symbol c, ToDoc v)
