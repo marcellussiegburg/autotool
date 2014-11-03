@@ -7,7 +7,7 @@
 module Rewriting.Completion.Improved where
 
 import Rewriting.Completion.CP
-import Rewriting.Completion.Simple (successors)
+import Rewriting.Completion.Simple (successors, descendants)
 import qualified Rewriting.Termination as T
 import qualified Rewriting.Termination.Interpretation  as T
 import qualified Rewriting.Termination.Polynomial as P
@@ -31,6 +31,7 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 -- import Control.Applicative
 import Data.Typeable
+import Data.Char (isDigit)
 
 data Symbol c => Step v c 
     = Deduce { s :: Term v c, u :: Term v c, t :: Term v c }
@@ -92,7 +93,9 @@ instance Partial Completion (Problem Identifier) (Run Identifier) where
 
     initial _ p = run0
 
-    partial _ p run = do
+    partial _ p0 run0 = do
+        let p = repair_problem p0
+            run = repair_run run0
         let o = order run
             sig = S.fromList 
                 $ do (l,r) <- equations p ; [l,r] >>= symsl
@@ -101,7 +104,9 @@ instance Partial Completion (Problem Identifier) (Run Identifier) where
         ok <- T.compute_restriction (order_restriction p) o
         when (not ok) $ reject $ text "order does not conform to restriction"
 
-    total _ p run = do
+    total _ p0 run0 = do
+        let p = repair_problem p0
+            run = repair_run run0
         let start = ( S.fromList $ equations p
                     , []
                     , S.fromList $ equations p
@@ -118,12 +123,13 @@ instance Partial Completion (Problem Identifier) (Run Identifier) where
 
 check_fairness r es = do
     forM_ (criticalpairs r) $ \ cp -> do
-        let e = normalize $ expand cp
-        when (not $ S.member e es) $ reject $ vcat
+        let (l,r) = normalize $ expand cp
+        when ( S.notMember (l,r) es && S.notMember (r,l) es ) $ reject $ vcat
             [ text "run is not fair:"
             , text "critical pair" </> toDoc cp
-            , text "with expansion" </> toDoc e
-            , text "was never considered as an equation"
+            , text "with expansion" </> toDoc (l,r)
+            , text "and its mirror"
+            , text "were never considered as an equation"
             ]
 
 execute ord (e,r,es) step = do
@@ -137,7 +143,7 @@ execute ord (e,r,es) step = do
         Orient {} -> execute_orient ord (e,r) step
         Delete {} -> execute_delete (e,r) step
         Simplify{}-> execute_simplify (e,r) step
-    return (e', r', S.union e e')
+    return (e', r', S.union es e')
 
 execute_deduce (e,r) (Deduce{s=s,u=u,t=t}) = do
     let sus = successors r u
@@ -163,15 +169,33 @@ execute_delete (e,r) (Delete{s=s}) = do
     return ( S.delete (s,s) e, r )
 
 execute_simplify (e,r) (Simplify{s=s, u=u, t=t}) = do
-    let ss = successors r s
+    let ss = descendants r s
     when ( not $ elem u ss ) $ reject $ vcat
-        [ text "u is not an R-successor of s."
-        , text "R-successors of s are" </> toDoc ss
+        [ text "u is not an R-descendant of s."
+        , text "R-descendants of s are" </> toDoc ss
         ]
-    let ru = Rule { lhs = u, rhs = t, strict = True }
-    return ( S.delete (s,t) $ S.delete (t,s) e
-           , ru : r
+    return ( S.insert (u,t) 
+             $ S.delete (s,t) $ S.delete (t,s) e
+           , r
            )
 
 make_fixed :: Make
 make_fixed = direct Completion problem0
+
+--  SUPER UGLY: the term parser does not know who is variable
+
+repair :: Show c => Term v c -> Term Int c
+repair (Node f args) =
+    if null args && all isDigit (show f) 
+    then Autolib.TES.Var (read $ show f)
+    else Node f (map repair args)
+
+repair_step step = case step of
+    Deduce{s=s,u=u,t=t} -> Deduce{s=repair s,u=repair u,t=repair t}
+    Orient{s=s,t=t} -> Orient{s=repair s,t=repair t}
+    Delete{s=s} -> Delete{s=repair s}
+    Simplify{s=s,u=u,t=t} -> Simplify{s=repair s,u=repair u,t=repair t}
+    
+repair_run run = run { steps = map repair_step $ steps run }
+repair_equations eqs = map (\(l,r) ->(repair l, repair r) ) eqs
+repair_problem p = p { equations = repair_equations $ equations p }

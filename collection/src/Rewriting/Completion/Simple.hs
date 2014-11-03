@@ -20,6 +20,7 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Control.Applicative
+import Data.List ( nub )
 
 check1 = 
     let a x = Node ( mk 1 "a" ) [ x ]
@@ -133,6 +134,15 @@ successors rules t = do
     rule <- rules
     u <- maybeToList $ match (lhs rule) sub
     return $ poke t (p, apply u $ rhs rule)
+
+
+-- | rules must be terminating (this is not checked here)
+descendants :: (Ord u, Ord v, Eq c)
+            => [Rule (Term v c)] 
+            -> Term u c 
+            -> [ Term u c ]
+descendants rules t = nub $
+    t : (successors rules t >>= descendants rules)
 
 -- | rules must be terminating (this is not checked here)
 normalforms :: (Ord u, Ord v, Eq c)
