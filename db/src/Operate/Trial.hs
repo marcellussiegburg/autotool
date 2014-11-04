@@ -216,7 +216,7 @@ common_aufgaben server svt @ ( stud, vnr, tutor ) mauf conf = do
     -- let mks = do Right mk <- flatten tmk ; return mk
     ( mk, type_click ) <- find_mk server conf mauf
     -- if the user chose a new type, ignore any predetermined configuration
-    let conf' = conf || type_click
+    let conf' = type_click
         mauf' = if type_click then Nothing else mauf
     common_aufgaben_trailer svt mauf' conf' server mk type_click
 
