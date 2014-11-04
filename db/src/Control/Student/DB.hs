@@ -5,6 +5,8 @@ import Control.Types
 import Operate.Crypt
 import qualified Control.Student.Type as CST
 import qualified Data.Set as S
+import Data.List ( sortBy )
+import Data.Function (on )
 
 import Prelude hiding ( all )
 
@@ -32,7 +34,12 @@ get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) = do
               ]
     let compat c = compatible mnrs $ digest $ CST.mnr c
         studs = filter compat candidates
-    return studs
+        -- HACK: mehrere bestehende Accounts -> neuester
+        recent = take 1 
+               $ reverse 
+               $ sortBy (Prelude.compare `on` CST.snr )
+               $ studs
+    return recent
 
 digest :: MNr -> S.Set String
 digest = S.fromList . uncomma . toString
