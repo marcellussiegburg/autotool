@@ -24,25 +24,26 @@ get_unr_mnr ( unr , mnr ) =
 -- extra basteleien wegen
 -- http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=360
 get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) = do
-    let mnrs = uncomma mnr
+    let mnrs = digest mnr
     candidates <- get_where $ ands $
               [ equals ( reed "student.UNr" ) ( toEx unr )
               , equals ( reed "student.Name") (toEx sn)
               , equals ( reed "student.Vorname") (toEx gn) 
               ]
-    let compat c = compatible mnrs 
-                 $ uncomma $ toString $ CST.mnr c
+    let compat c = compatible mnrs $ digest $ CST.mnr c
         studs = filter compat candidates
     return studs
 
-compatible :: [String] -> [String] -> Bool
+digest :: MNr -> S.Set String
+digest = S.fromList . uncomma . toString
+
+compatible :: S.Set String -> S.Set String -> Bool
 compatible sent stored = 
-    if null sent 
+    if S.null sent 
     then -- für Mitarbeiter (haben keine MNr)
-         null stored
+         S.null stored
     else -- für Studenten (haben wenigstens eine)
-         not $ S.null $ S.intersection ( S.fromList sent )
-                                       ( S.fromList stored )
+         not $ S.null $ S.intersection sent stored
 
 uncomma :: String -> [String]
 uncomma s = if null s then [] else
