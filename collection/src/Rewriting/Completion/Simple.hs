@@ -55,6 +55,26 @@ check2 =
             $ M.fromList [ (mk 2 "f", 1 + P.variable (P.X 1) + P.variable (P.X 2) ) ]
     in  complete [ ( f(f x y) (f y z), y) ]   ord 1
 
+check4 = 
+    let f x y = Node ( mk 2 "f" ) [ x,y ]
+        i x = Node ( mk 1 "i") [x]
+        e = Node (mk 0 "e") []
+        x = Var (mk 0 "x")
+        y = Var (mk 0 "y")
+        z = Var (mk 0 "z")
+        v k = P.variable (P.X k)
+        ord = Interpretation 1  
+            $ Polynomial_Interpretation
+            $ M.fromList 
+            [ (mk 2 "f", 1 + v 1 + 3 * v 2 )
+            , (mk 0 "e", 0 )
+            , (mk 1 "i", 1 + v 1)
+            ]
+    in  complete [ ( f x (f  y z) , f (f x y) z )
+                 , ( f e x, x )
+                 , ( f (i x) x, e )
+                 ]   ord 3
+
 complete :: (Ord v, Symbol c)
          => [(Term v c, Term v c)]
          -> Order c
