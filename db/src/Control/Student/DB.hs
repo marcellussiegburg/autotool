@@ -4,6 +4,7 @@ import Control.SQL
 import Control.Types
 import Operate.Crypt
 import qualified Control.Student.Type as CST
+import qualified Data.Set as S
 
 import Prelude hiding ( all )
 
@@ -19,15 +20,35 @@ get_unr_mnr ( unr , mnr ) =
 -- | wenn mnr = "", dann wird diese nicht geprueft,
 -- das ist fuer tutoren, die bisher mnr hatten, 
 -- aber ueber shibboleth keine bekommen.
-get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) =
-    get_where $ ands $
+--
+-- extra basteleien wegen
+-- http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=360
+get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) = do
+    let mnrs = uncomma mnr
+    candidates <- get_where $ ands $
               [ equals ( reed "student.UNr" ) ( toEx unr )
               , equals ( reed "student.Name") (toEx sn)
-              , equals ( reed "student.Vorname") (toEx gn) ]
-          ++  [ equals ( reed "student.MNr" ) ( toEx mnr )
-              | not $ null $ toString mnr 
-	      ]
+              , equals ( reed "student.Vorname") (toEx gn) 
+              ]
+    let compat c = compatible mnrs 
+                 $ uncomma $ toString $ CST.mnr c
+        studs = filter compat candidates
+    return studs
 
+compatible :: [String] -> [String] -> Bool
+compatible sent stored = 
+    if null sent 
+    then -- für Mitarbeiter (haben keine MNr)
+         null stored
+    else -- für Studenten (haben wenigstens eine)
+         not $ S.null $ S.intersection ( S.fromList sent )
+                                       ( S.fromList stored )
+
+uncomma :: String -> [String]
+uncomma s = if null s then [] else
+    let (pre, post) = span (/= ',') s
+    in  pre : case post of [] -> [] ; _ : t -> uncomma t
+    
 
 get_snr  :: SNr -> IO [ CST.Student ]
 get_snr snr = get_where $ equals ( reed "student.SNr" ) ( toEx snr )
