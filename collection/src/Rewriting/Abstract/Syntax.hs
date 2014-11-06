@@ -1,54 +1,10 @@
-{-# language DeriveDataTypeable #-}
-{-# language TemplateHaskell #-}
-{-# language DatatypeContexts #-}
-{-# language MultiParamTypeClasses #-}
-{-# language FlexibleInstances #-}
+module Rewriting.Abstract.Syntax 
 
-module Rewriting.Abstract.Syntax where
+( module Rewriting.Abstract.Data )
 
-import Autolib.TES.Identifier
-import Autolib.ToDoc
-import Autolib.Reader
-import Autolib.Size
+where
 
-import Data.Typeable
-
-data Prop 
-    = And [ Prop ]
-    | Or [ Prop ]
-    | Not Prop
-    | Prop1 Prop1 Exp
-    | Prop2 Prop2 Exp Exp
-    deriving Typeable
-
-data Prop1 
-    = Null | Total
-    | Reflexive | Transitive | Symmetric | Antisymmetric 
-    | Strongly_Normalizing | SN
-    | Weakly_Normalizing | WN
-    | Confluent | CR
-    | Locally_Confluent | WCR
-    | Unique_Normalforms | UN
-    | Unique_Normalforms_wrt_Conversion | UNC
-        deriving Typeable
-
-data Prop2 
-    = Equals | Subsetof | Disjoint
-    deriving Typeable
-
-data Exp = Ref Identifier
-     | Op1 Op1 Exp
-     | Op2 Op2 Exp Exp
-    deriving Typeable
-
-data Op1 = Inverse | Complement
-    | Transitive_Closure 
-    | Transitive_Reflexive_Closure
-        deriving Typeable
-
-data Op2 = Union | Intersection | Difference | Product
-    deriving Typeable
-
-derives [makeReader, makeToDoc] 
-    [ ''Prop, ''Prop1, ''Prop2, ''Exp, ''Op1, ''Op2]
+import Rewriting.Abstract.Data
+import Rewriting.Abstract.Reader
+import Rewriting.Abstract.ToDoc
 
