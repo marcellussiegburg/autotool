@@ -12,6 +12,7 @@ import Rewriting.Abstract.Braced
 
 import Autolib.FiniteMap
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 import Autolib.TES.Identifier
 import Autolib.Reporter
@@ -80,8 +81,7 @@ prop1 p1 r = case p1 of
                  R.null $ R.intersection 
                    (R.flat $ R.source r) (R.trans r)
             WN -> 
-                 R.source r 
-                  == R.pre_simages (R.trans r) ( R.maxima r)
+                 R.source r == R.effective_source (bang r)
             CR -> 
                 let t = R.trans r ; t' = R.inverse t
                 in  R.isSubsetOf ( R.times t' t )
@@ -90,15 +90,23 @@ prop1 p1 r = case p1 of
                 let t = R.trans r ; t' = R.inverse t
                 in  R.isSubsetOf ( R.times (R.inverse r) r )
                                   ( R.times t t' )
--- TODO:
---    | Unique_Normalforms | UN
---    | Unique_Normalforms_wrt_Conversion | UNC
+            UN -> let b = bang r
+                  in  R.diagonal $ R.times (R.inverse b) b
+            UNC -> R.diagonal 
+               $ R.filter (normal r) (normal r)
+               $ R.reflex_trans 
+               $ R.plus r ( R.inverse r )
 
 
 prop2 p2 r s = case p2 of
               Equals -> r == s
               Subsetof -> R.isSubsetOf r s
               Disjoint -> R.null $ R.intersection r s
+
+-- | R^! is R^* with rhs restricted to nfs
+bang r = R.rightfilter ( normal r ) $ R.reflex_trans r
+
+normal r y = S.null $ R.images r y 
 
 ----------------------------------------------------------
 

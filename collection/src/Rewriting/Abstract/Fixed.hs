@@ -81,12 +81,19 @@ instance Partial Abstract_Rewriting Problem Solution where
     describe _ p = vcat
         [ text "Define relations" 
           <+> toDoc (S.toList $ wanted p)
-        , text "on domain [1, 2 .. s] for s"
-          <+> toDoc (domain_size_should_be p)
+        , text "on domain [1, 2 .. domain_size] with domain_size"
+          <+> let (rel,m) = domain_size_should_be p
+              in  text ( case rel of LT -> "<" ; EQ -> "=" ; GT -> ">" ) <+> toDoc m
         , text "such that this property holds:"
           </> toDoc ( property p )
-        , text "where" 
-          </> toDoc ( given p )
+        , text "in this environment:" </> toDoc ( given p )
+
+{-
+          </> vcat ( map ( \(k,v) -> 
+                      hsep [ toDoc k, equals, toDoc v ]
+              ) $ M.toList $ given p )
+-}
+
         ]
 
     initial _ p = solution0

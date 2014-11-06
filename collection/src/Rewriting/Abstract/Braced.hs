@@ -31,3 +31,4 @@ instance (Ord s, Ord t, Reader s, Reader t)
 
 instance Size (Braced s t) where
     size (Braced r) = size r
+

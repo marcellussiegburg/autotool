@@ -25,12 +25,12 @@ data Prop
 data Prop1 
     = Null | Total
     | Reflexive | Transitive | Symmetric | Antisymmetric 
-    | Strongly_Normalizing | SN
-    | Weakly_Normalizing | WN
-    | Confluent | CR
-    | Locally_Confluent | WCR
-    | Unique_Normalforms | UN
-    | Unique_Normalforms_wrt_Conversion | UNC
+    | SN  -- ^ Strongly_Normalizing 
+    | WN -- ^ Weakly_Normalizing 
+    | CR -- ^ Confluent 
+    | WCR -- ^ Locally_Confluent 
+    | UN -- ^  Unique_Normalforms 
+    | UNC -- ^ Unique_Normalforms_wrt_Conversion 
         deriving (Typeable, Show, Enum, Bounded )
 
 data Prop2 
