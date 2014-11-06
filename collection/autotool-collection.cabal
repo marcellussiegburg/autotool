@@ -26,7 +26,7 @@ Library
         autolib-graph,
         autolib-output,
         autolib-reader,
-        autolib-relation,
+        autolib-relation >= 1.2,
         autolib-reporter,
         autolib-rewriting,
         autolib-logic,
@@ -301,6 +301,10 @@ Library
                  Rewriting.Completion.CP,
                  Rewriting.Completion.Simple,
                  Rewriting.Completion.Improved,
+                 Rewriting.Abstract.Syntax,
+                 Rewriting.Abstract.Semantics,
+                 Rewriting.Abstract.Fixed,
+                 Rewriting.Abstract.Braced,
                  Polynomial.Data
                  Polynomial.Op
                  Polynomial.Reader

@@ -192,6 +192,7 @@ import qualified Rewriting.TRS.Numerical
 import qualified Rewriting.Derive
 import qualified Rewriting.Termination
 import qualified Rewriting.Completion.Improved
+import qualified Rewriting.Abstract.Fixed
 import qualified Rewriting.TRS.Apply
 import qualified Rewriting.SRS.Apply
 import qualified Lambda.Apply
@@ -467,7 +468,10 @@ tmakers =
                    ]
              ]  
          , heading "Terme, Ersetzungssysteme"
-                [ heading "Wortersetzung"
+                [ heading "Abstract Rewriting"
+                        [ item $ Rewriting.Abstract.Fixed.make
+                        ]
+                , heading "Wortersetzung"
                         [ item $ Rewriting.Derive.make_fixed Rewriting.SRS.Apply.For_SRS
                         ]
                 , heading "Termersetzung"
