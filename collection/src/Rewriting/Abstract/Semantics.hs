@@ -3,6 +3,7 @@
 {-# language DatatypeContexts #-}
 {-# language MultiParamTypeClasses #-}
 {-# language FlexibleInstances #-}
+{-# language EmptyCase #-}
 
 module Rewriting.Abstract.Semantics where
 
@@ -33,81 +34,92 @@ prop0 =
             , Not (Prop1 Transitive (Op2 Product s r))
             ]
 
-traced a m = do
-    v <- m
-    inform $ vcat [ text "value of" </> toDoc a 
-                  , text "is" </> toDoc v
-                  ]
-    return v
+nodeN name f args = 
+    let v = f $ map fst args
+    in  ( v, hsep [ text "label:", text name <> comma
+                  , text "value:", oneLine $ toDoc v ] 
+             </> vcat (map snd args)
+        )
 
-prop :: Ord dom 
-     => Env dom -> Prop -> Reporter Bool
+oneLine = text . unwords . words . render
+
+node0 name f = nodeN name ( \ [] -> f ) []
+node1 name f x = nodeN name ( \ [x] -> f x ) [ x ]
+node2 name f x y = nodeN name ( \ [x,y] -> f x y ) [x,y]
+
+node0R name f = 
+   let (Braced v, d) = nodeN name ( \ [] -> Braced $ f ) []
+   in  (v, d)
+node1R name f x = 
+   let (Braced v, d) = nodeN name ( \ [x] -> Braced $ f x ) [ x ]
+   in  (v, d)
+node2R name f x y = 
+   let (Braced v, d) = nodeN name ( \ [x,y] -> Braced $ f x y ) [x,y]
+   in  (v, d)
+
+prop :: (Ord dom , ToDoc dom)
+     => Env dom -> Prop -> Reporter (Bool, Doc)
 prop env p = case p of
-    And bs -> and <$> forM bs ( prop env )
-    Or  bs -> or  <$> forM bs ( prop env )
-    Not b  -> not <$> prop env b    
-    Prop1 p1 x -> traced p $ do
-        r <- exp env x
-        case p1 of
-            Null -> 
-                return $ R.null r
-            Total ->
-                return $ R.null $ R.complement r
-            Reflexive -> 
-                return $ R.reflexive r
-            Transitive ->
-                return $ R.transitive r
-            Symmetric ->
-                return $ R.symmetric r
-            Antisymmetric ->
-                return $ R.antisymmetric r 
-            SN -> do
-                return $ R.null $ R.intersection 
+    And bs -> nodeN "And" and <$> forM bs ( prop env )
+    Or  bs -> nodeN "Or"  or  <$> forM bs ( prop env )
+    Not b  -> node1 "Not" not <$> prop env b    
+    Prop1 p1 x -> 
+        node1 (show p1) (prop1 p1) <$> exp env x
+    Prop2 p2 x y -> 
+        node2 (show p2) (prop2 p2) <$> exp env x <*> exp env y
+
+
+prop1 p1 r = case p1 of
+            Null -> R.null r
+            Total -> R.null $ R.complement r
+            Reflexive -> R.reflexive r
+            Transitive -> R.transitive r
+            Symmetric -> R.symmetric r
+            Antisymmetric -> R.antisymmetric r 
+            SN -> 
+                 R.null $ R.intersection 
                    (R.flat $ R.source r) (R.trans r)
-            WN -> do
-                return $ R.source r 
+            WN -> 
+                 R.source r 
                   == R.pre_simages (R.trans r) ( R.maxima r)
-            CR -> do
+            CR -> 
                 let t = R.trans r ; t' = R.inverse t
-                return $ R.isSubsetOf ( R.times t' t )
+                in  R.isSubsetOf ( R.times t' t )
                                   ( R.times t t' )
-            WCR -> do
+            WCR ->
                 let t = R.trans r ; t' = R.inverse t
-                return $ R.isSubsetOf ( R.times (R.inverse r) r )
+                in  R.isSubsetOf ( R.times (R.inverse r) r )
                                   ( R.times t t' )
 -- TODO:
 --    | Unique_Normalforms | UN
 --    | Unique_Normalforms_wrt_Conversion | UNC
 
-    Prop2 p2 x y -> traced p $ do
-         r <- exp env x ; s <- exp env y
-         case p2 of
-              Equals -> 
-                  return $ r == s
-              Subsetof -> 
-                  return $ R.isSubsetOf r s
-              Disjoint -> 
-                  return $ R.null $ R.intersection r s
 
-exp :: Ord dom 
-    => Env dom -> Exp -> Reporter (R.Type dom dom)
+prop2 p2 r s = case p2 of
+              Equals -> r == s
+              Subsetof -> R.isSubsetOf r s
+              Disjoint -> R.null $ R.intersection r s
+
+----------------------------------------------------------
+
+exp :: (Ord dom , ToDoc dom)
+    => Env dom -> Exp -> Reporter (R.Type dom dom, Doc)
 exp env x = case x of
-    Ref i -> case M.lookup i env of
-        Nothing -> reject $ text "not bound"
+    Ref i -> node0R (show i) <$> case M.lookup i env of
+        Nothing -> reject $ text "identifier not bound"
         Just v -> return v
-    Op1 o x -> do
-        r <- exp env x
-        case o of
-            Inverse -> return $ R.inverse r
-            Complement -> return $ R.complement r
-            Transitive_Closure -> return $ R.trans r
-            Transitive_Reflexive_Closure -> 
-                return $ R.reflex_trans r
-    Op2 o x y -> do
-        r <- exp env x ; s <- exp env y
-        case o of
-            Union -> return $ R.plus r s
-            Intersection -> return $ R.intersection r s
-            Difference -> return $ R.difference r s
-            Product -> return $ R.times r s
+    Op1 o x -> node1R (show o) (op1 o) <$> exp env x
+    Op2 o x y -> node2R (show o) (op2 o) <$> exp env x <*> exp env y
+
+op1 o = case o of
+            Inverse -> R.inverse 
+            Complement -> R.complement 
+            Transitive_Closure -> R.trans 
+            Transitive_Reflexive_Closure -> R.reflex_trans 
+
+op2 o = case o of
+            Union -> R.plus 
+            Intersection -> R.intersection 
+            Difference -> R.difference 
+            Product -> R.times 
 

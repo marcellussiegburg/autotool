@@ -47,10 +47,10 @@ data Op1 = Inverse
      | Complement
     | Transitive_Closure 
     | Transitive_Reflexive_Closure
-        deriving Typeable
+        deriving (Typeable, Show)
 
 data Op2 = Union | Intersection | Difference | Product
-    deriving Typeable
+    deriving (Typeable, Show )
 
 
 

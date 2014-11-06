@@ -103,7 +103,8 @@ instance Partial Abstract_Rewriting Problem Solution where
                 $ M.union -- Note: left-biased, so student
                  -- cannot override what is given
                   (given p) (assignment s)
-        ok <- prop env ( property p )
+        (ok, doc) <- prop env ( property p )
+        inform doc
         when (not ok) $ reject 
             $ text "The stated property does not hold."
 
