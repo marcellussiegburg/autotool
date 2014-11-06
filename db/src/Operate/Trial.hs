@@ -216,15 +216,21 @@ common_aufgaben server svt @ ( stud, vnr, tutor ) mauf conf = do
     -- let mks = do Right mk <- flatten tmk ; return mk
     ( mk, type_click ) <- find_mk server conf mauf
     -- if the user chose a new type, ignore any predetermined configuration
-    let conf' = type_click
-        mauf' = if type_click then Nothing else mauf
-    common_aufgaben_trailer svt mauf' conf' server mk type_click
+    let mauf' = if type_click then Nothing else mauf
+    common_aufgaben_trailer svt mauf' conf server mk type_click
 
+-- | three use cases:
+-- "solve": task type and task instance is known. (mauf = Just .., conf = True)
+-- "select": task type is unknown (type_click = True)
+-- "config and solve": task type is known, task instances is unknown (conf = True)
 common_aufgaben_trailer ( stud, vnr, tutor ) mauf conf server mk type_click = do
     -- plain $ "common_aufgaben_trailer.conf: " ++ show conf
     -- plain $ "common_aufgaben_trailer.type_click: " ++ show type_click
     auf' <- case ( mauf, conf ) of
-	 ( Just auf, False ) -> return auf
+	 ( Just auf, False ) | not type_click -> return auf
+         ( Just auf, True ) -> 
+              edit_aufgabe_extra server mk mauf    vnr Nothing type_click
+                                 ( \ a -> Early /= A.timeStatus a )
 	 _ -> edit_aufgabe_extra server mk Nothing vnr Nothing type_click
                                  ( \ a -> Early /= A.timeStatus a )
     stud' <- get_stud tutor stud

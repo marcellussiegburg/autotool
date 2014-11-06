@@ -96,7 +96,7 @@ edit_aufgabe_extra _ mk mauf vnr manr type_click prop = case mk of
 
             moth <- 
                 click_choice_with_default 0 "importiere Konfiguration" 
-                     $  ("(default)", mauf) : do
+                     $  ("(previous/default)", mauf) : do
                            oth <- others
                            return ( toString $ A.name oth , Just oth )
 
