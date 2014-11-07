@@ -15,7 +15,7 @@ instance Reader Prop where
             <|> prop1 
             <|> prop2
           conj = And <$> sepBy1 atomic (my_symbol "&&")
-          disj = Or  <$> sepBy1 atomic (my_symbol "||")
+          disj = Or  <$> sepBy1 conj   (my_symbol "||")
       in  disj
 
 prop1 = 
