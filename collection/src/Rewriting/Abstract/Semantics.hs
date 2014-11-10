@@ -16,7 +16,7 @@ import qualified Data.Set as S
 
 import Autolib.TES.Identifier
 import Autolib.Reporter
-import Autolib.ToDoc
+import Autolib.ToDoc hiding ( Full) 
 
 import qualified Autolib.Relation as R
 import qualified Autolib.Relation.Prop as R
@@ -72,11 +72,14 @@ prop env p = case p of
 
 prop1 p1 r = case p1 of
             Null -> R.null r
-            Total -> R.null $ R.complement r
+            Full -> R.full r
             Reflexive -> R.reflexive r
+            Irreflexive -> R.irreflexive r
             Transitive -> R.transitive r
             Symmetric -> R.symmetric r
+            Asymmetric -> R.asymmetric r 
             Antisymmetric -> R.antisymmetric r 
+            Total -> R.total r
             SN -> 
                  R.null $ R.intersection 
                    (R.flat $ R.source r) (R.trans r)

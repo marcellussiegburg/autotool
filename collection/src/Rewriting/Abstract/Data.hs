@@ -23,8 +23,11 @@ data Prop
     deriving Typeable
 
 data Prop1 
-    = Null | Total
-    | Reflexive | Transitive | Symmetric | Antisymmetric 
+    = Null | Full
+    | Reflexive | Irreflexive
+    | Transitive 
+    | Symmetric | Antisymmetric | Asymmetric
+    | Total
     | SN  -- ^ Strongly_Normalizing 
     | WN -- ^ Weakly_Normalizing 
     | CR -- ^ Confluent 
