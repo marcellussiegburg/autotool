@@ -61,7 +61,7 @@ e << d = e $ toHtml d
 -- (!) :: Html -> [H.Attribute] -> Html
 d ! attrs = foldl (H.!) d attrs
 d +++ e = d >> e
-primHtml = toHtml
+primHtml = preEscapedToHtml -- toHtml
 color s = bgcolor ( fromString s )
 thetype s = type_ ( fromString s )
 thestyle s = A.style ( fromString s )
