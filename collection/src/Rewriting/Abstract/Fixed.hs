@@ -102,10 +102,20 @@ instance Partial Abstract_Rewriting Problem Solution where
         let (cmp, t) = domain_size_should_be p
         when ( not $ cmp == compare (domain_size s) t ) 
             $ reject $ text "invalid domain size"
+        let dom = S.fromList [ 1 .. domain_size s ]
+        void $ forM ( M.toList $ assignment ) $ \ (k,Braced r) -> do
+            let wrong = do 
+                    p @ (x,y) <- R.toList r; e <- [x,y] 
+                    guard $ S.notMember e dom
+                    return p
+            when (not $ null wrong) $ reject $ vcat
+                [ text "relation" <+> toDoc k 
+                , text "uses elements from outside the domain" </> toDoc wrong
+                ]
 
     total _ p s = do
         let d = S.fromList [ 1 .. domain_size s ]
-            rel (Braced r) = R.make_on (d,d) $ R.toList r
+        let rel (Braced r) = R.make_on (d,d) $ R.toList r
             env = M.map rel
                 $ M.union -- Note: left-biased, so student
                  -- cannot override what is given
