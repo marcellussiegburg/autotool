@@ -61,7 +61,9 @@ node2R name f x y =
 prop :: (Ord dom , ToDoc dom)
      => Env dom -> Prop -> Reporter (Bool, Doc)
 prop env p = case p of
+    And [b] -> prop env b
     And bs -> nodeN "And" and <$> forM bs ( prop env )
+    Or  [b] -> prop env b
     Or  bs -> nodeN "Or"  or  <$> forM bs ( prop env )
     Not b  -> node1 "Not" not <$> prop env b    
     Prop1 p1 x -> 
