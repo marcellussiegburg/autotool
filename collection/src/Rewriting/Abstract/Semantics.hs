@@ -88,11 +88,11 @@ prop1 p1 r = case p1 of
             WN -> 
                  R.source r == R.effective_source (bang r)
             CR -> 
-                let t = R.trans r ; t' = R.inverse t
+                let t = R.reflex_trans r ; t' = R.inverse t
                 in  R.isSubsetOf ( R.times t' t )
                                   ( R.times t t' )
             WCR ->
-                let t = R.trans r ; t' = R.inverse t
+                let t = R.reflex_trans r ; t' = R.inverse t
                 in  R.isSubsetOf ( R.times (R.inverse r) r )
                                   ( R.times t t' )
             UN -> let b = bang r
@@ -119,7 +119,7 @@ exp :: (Ord dom , ToDoc dom)
     => Env dom -> Exp -> Reporter (R.Type dom dom, Doc)
 exp env x = case x of
     Ref i -> node0R (show i) <$> case M.lookup i env of
-        Nothing -> reject $ text "identifier not bound"
+        Nothing -> reject $ text "identifier" <+> toDoc i <+> text "not bound"
         Just v -> return v
     Op1 o x -> node1R (show o) (op1 o) <$> exp env x
     Op2 o x y -> node2R (show o) (op2 o) <$> exp env x <*> exp env y
