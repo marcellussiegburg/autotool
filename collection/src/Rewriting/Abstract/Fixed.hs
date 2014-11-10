@@ -103,7 +103,7 @@ instance Partial Abstract_Rewriting Problem Solution where
         when ( not $ cmp == compare (domain_size s) t ) 
             $ reject $ text "invalid domain size"
         let dom = S.fromList [ 1 .. domain_size s ]
-        void $ forM ( M.toList $ assignment ) $ \ (k,Braced r) -> do
+        void $ forM ( M.toList $ assignment s ) $ \ (k,Braced r) -> do
             let wrong = do 
                     p @ (x,y) <- R.toList r; e <- [x,y] 
                     guard $ S.notMember e dom
