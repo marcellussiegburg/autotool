@@ -61,7 +61,8 @@ Library
         mueval>=0.8.1.1, hint, haskell-src-exts, syb,
         transformers,
         logict>=0.6.0.2,
-        lens
+        lens,
+        hashable
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -946,4 +947,5 @@ Library
                  FD.Trace
                  FD.Solve
                  FD.Roll
+                 Lattice.Reduce
                  

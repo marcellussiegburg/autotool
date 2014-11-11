@@ -251,6 +251,8 @@ import qualified FD.Top
 
 import qualified SOS
 
+import qualified Lattice.Reduce
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -688,7 +690,10 @@ tmakers =
                 , item Graph.EDS.Central.make_fixed
                 , item Graph.EDS.Central.make_quiz
                 ]
-
+          , heading "Symbolisches Rechnen"
+                [ item Lattice.Reduce.make_fixed
+                , item Lattice.Reduce.make_quiz
+                ]
 	  , heading "experimentell"
 	        [ item $ Algebraic2.Central.make Algebraic_Integer
 	        , item $ Algebraic2.Quiz.make Algebraic_Integer
