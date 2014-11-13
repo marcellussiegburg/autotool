@@ -14,6 +14,8 @@
 
 module Lattice.Reduce where
 
+import qualified Lattice.LLL as L
+
 import Autolib.ToDoc hiding ( char )
 import Autolib.Reader
 import Autolib.Reporter
@@ -167,12 +169,12 @@ data Config = Config
     deriving Typeable
 
 config0 = Config
-    { number_of_vectors = 5
-    , length_of_vectors = 5
+    { number_of_vectors = 4
+    , length_of_vectors = 4
     , short_vector_norm_at_most = 0.2
     , other_vectors_norm_at_least = 100
-    , num_steps = 10
-    , factor_size = 10
+    , num_steps = 25
+    , factor_size = 5
     }
 
 derives [makeReader, makeToDoc] [''Config]
@@ -203,8 +205,20 @@ roll conf = do
            , bound = 2 * norm short
            }
 
+-- TODO: roll several times, 
+-- take p with largest min of norms
+roll_interesting conf = do
+        p <- roll conf
+        let r = L.size_reduce $ L.make 
+              $ map (map (fromRational . toRational)) $ base p
+            ns = map L.norm $ L.base r
+        if  any (< bound p) ns 
+            then do putStrLn "again"
+                    roll_interesting conf
+            else return p
+
 instance Generator Lattice_Reduce Config Problem where
-    generator p conf key = roll conf
+    generator p conf key = roll_interesting conf
         
 instance Project Lattice_Reduce Problem Problem where
     project _ p = p
