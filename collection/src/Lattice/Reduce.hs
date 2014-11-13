@@ -209,10 +209,9 @@ roll conf = do
 -- take p with largest min of norms
 roll_interesting conf = do
         p <- roll conf
-        let r = L.size_reduce $ L.make 
-              $ map (map (fromRational . toRational)) $ base p
+        let r = L.fully_reduce $ L.make $ base p
             ns = map L.norm $ L.base r
-        if  any (< bound p) ns 
+        if  any (\ n -> toRational n < toRational (bound p)) ns 
             then do putStrLn "again"
                     roll_interesting conf
             else return p
