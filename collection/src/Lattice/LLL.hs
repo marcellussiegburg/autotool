@@ -14,8 +14,10 @@ import qualified Data.Set as S
 class M a b where 
     (*>) :: a -> b -> b
 
-instance HasResolution r => M Integer (Fixed r) where a *> b = fromInteger a * b
-instance HasResolution r => M (Fixed r) (Fixed r) where a *> b = a * b
+instance HasResolution r => M Integer (Fixed r) where 
+    a *> b = fromInteger a * b
+instance HasResolution r => M (Fixed r) (Fixed r) where 
+    a *> b = a * b
 instance M Integer Double where a *> b = fromInteger a * b
 instance M Integer Integer where a *> b = a * b
 instance M Double Double where a *> b = a * b
@@ -198,8 +200,19 @@ b6 = [[-2,-6,-3],[-4,-4,4],[10,1,-7 :: Integer]]
 b7 = [[-74,63,-33],[97,35,-36],[-35,-28,41 :: Integer]]
 
 
+run2 dim bnd = do
+    let handle top = do
+            b <- forM [ 1 .. dim ] $ \ _ -> 
+                 forM [ 1 .. dim ] $ \ _ -> 
+                 randomRIO (negate bnd , bnd ::Integer)
+            let s = fully_reduce $ make b
+            when ( nsteps s > top ) $ do
+                print s
+            handle $ max (nsteps s) top
+    handle 0
 
-run dim bnd = do
+
+run1 dim bnd = do
     b <- forM [ 1 .. dim ] $ \ _ -> forM [ 1 .. dim ] $ \ _ -> do
          randomRIO (negate bnd , bnd ::Integer)
     -- print b
