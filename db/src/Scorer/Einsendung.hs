@@ -13,6 +13,12 @@ where
 {- so sehen die dinger aus: (3: VNR, 11: ANr)
 
 Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7 
+
+-- oder auch (siehe http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=365)
+
+Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO 
+Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3 
+
 -}
 
 import Scorer.Util hiding ( size )
@@ -20,6 +26,14 @@ import Scorer.Util hiding ( size )
 import Autolib.FiniteMap
 import Control.Monad ( guard )
 import Data.Maybe ( isJust )
+
+import Text.Parsec
+import Text.Parsec.String
+import Text.Parsec.Char
+import qualified Text.Parsec.Token as P
+import Text.Parsec.Language (emptyDef)
+import Control.Applicative ((<$>))
+import Data.List (intersperse)
 
 -- | das ist die information zu jeweils einer studentischen einsendung
 data Einsendung = Einsendung
@@ -100,8 +114,56 @@ slurp = slurp_deco True
 slurp_deco :: Bool -> String -> [ Einsendung ]
 slurp_deco deco cs = do
     z <- lines cs
-    ( e, _ ) <- read_deco deco z
-    return e
+    case parse (entry deco) "<>" z of
+        Right e -> return e
+        Left err -> fail "no parse"
+
+{-
+Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7 
+Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO 
+Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3 
+-}
+
+entry :: Bool -> Parser Einsendung
+entry deco = do
+    let l = P.makeTokenParser emptyDef
+    weekday <- P.identifier l
+    month <- P.identifier l
+    date <- nat l
+    h <- nat l ; P.reservedOp l ":"
+    m <- nat l ; P.reservedOp l ":"
+    s <- nat l 
+    tz <- P.identifier l
+    year <- nat l
+    p <- P.parens l $ nat l    
+    string "cgi-" ; matrikelnr
+    mnr <- P.parens l $ matrikelnr
+    v <- nat l ; string "-" 
+    a <- nat l ; P.reservedOp l ":"
+    res <- do P.reserved l "NO" ; return Nothing
+       <|> do P.reserved l "OK" ; P.reservedOp l "#"
+              P.reserved l "Size" ; P.reservedOp l ":"
+              Just <$> nat l
+    return $ Einsendung
+	      {	time = concat
+                     $ intersperse ":" 
+                     $ map show [ h,m,s]
+              , date = [ year, monthNum month, date
+                       , h, m, s ]
+	      , msize     = res 
+	      , matrikel = ( if deco then obfuscate else nobfuscate ) mnr
+	      , auf	 = fromCGI $ show a
+	      , vor      = fromCGI $ show v
+	      , pid      = show p
+	      , visible  = False
+              }
+
+nat l = fromInteger <$> P.natural l
+
+matrikelnr = do
+    s <- option "0" $ many1 (digit <|> char ':')
+    spaces
+    return $ fromCGI s
 
 -- instance Read Einsendung where 
 --    readsPrec p cs = do
