@@ -161,7 +161,7 @@ entry deco = do
 nat l = fromInteger <$> P.natural l
 
 matrikelnr = do
-    s <- option "0" $ many1 (digit <|> char ':')
+    s <- option "0" $ many1 (digit <|> char ',')
     spaces
     return $ fromCGI s
 
