@@ -1,14 +1,14 @@
+{-# language OverloadedStrings #-}
+
 module Scorer.Einsendung 
 
 ( Einsendung (..), size, Scorer.Einsendung.okay
 , Obfuscated (..)
 , SE (..)
-, slurp, slurp_deco -- datei-inhalt verarbeiten
+, slurp_deco -- datei-inhalt verarbeiten
 )
 
 where
-
---   $Id$
 
 {- so sehen die dinger aus: (3: VNR, 11: ANr)
 
@@ -27,12 +27,15 @@ import Autolib.FiniteMap
 import Control.Monad ( guard )
 import Data.Maybe ( isJust )
 
-import Text.Parsec
-import Text.Parsec.String
-import Text.Parsec.Char
-import qualified Text.Parsec.Token as P
-import Text.Parsec.Language (emptyDef)
-import Control.Applicative ((<$>))
+-- import Text.Parsec
+-- import Text.Parsec.String
+-- import Text.Parsec.Char
+-- import qualified Text.Parsec.Token as P
+-- import Text.Parsec.Language (emptyDef)
+
+import qualified Data.Attoparsec.ByteString.Char8 as A
+
+import Control.Applicative ((<$>), (<*), (*>) )
 import Data.List (intersperse)
 
 -- | das ist die information zu jeweils einer studentischen einsendung
@@ -108,15 +111,17 @@ spaci n = stretch n
 nulli :: Show a => Int -> a -> String
 nulli n = stretchWith '0' n . show
 
--- | alle lesbaren Zeilen
-slurp = slurp_deco True
 
+{-
 slurp_deco :: Bool -> String -> [ Einsendung ]
 slurp_deco deco cs = do
     z <- lines cs
     case parse (entry deco) "<>" z of
         Right e -> return e
         Left err -> fail "no parse"
+-}
+
+slurp_deco deco = A.many' ( entry deco <* A.endOfLine )
 
 {-
 Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7 
@@ -124,26 +129,32 @@ Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO
 Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3 
 -}
 
-entry :: Bool -> Parser Einsendung
+spaces = A.many' A.space
+identifier = A.many1' A.letter_ascii <* spaces
+reserved s = A.string s <* spaces
+natural = A.decimal
+parens p = reserved "(" *> p <* reserved ")"
+p <|> q = A.choice [p,q]
+
+entry :: Bool -> A.Parser Einsendung
 entry deco = do
-    let l = P.makeTokenParser emptyDef
-    weekday <- P.identifier l
-    month <- P.identifier l
-    date <- nat l
-    h <- nat l ; P.reservedOp l ":"
-    m <- nat l ; P.reservedOp l ":"
-    s <- nat l 
-    tz <- P.identifier l
-    year <- nat l
-    p <- P.parens l $ nat l    
-    string "cgi-" ; matrikelnr
-    mnr <- P.parens l $ matrikelnr
-    v <- nat l ; string "-" 
-    a <- nat l ; P.reservedOp l ":"
-    res <- do P.reserved l "NO" ; return Nothing
-       <|> do P.reserved l "OK" ; P.reservedOp l "#"
-              P.reserved l "Size" ; P.reservedOp l ":"
-              Just <$> nat l
+    weekday <- identifier 
+    month <- identifier 
+    date <- natural
+    h <- natural ; A.char ':'
+    m <- natural ; A.char ':'
+    s <- natural  
+    tz <- identifier 
+    year <- natural
+    p <- parens $ natural
+    A.string "cgi-" ; matrikelnr
+    mnr <- parens  $ matrikelnr
+    v <- natural ; A.string "-" 
+    a <- natural ; reserved ":"
+    res <- do reserved "NO" ; return Nothing
+       <|> do reserved "OK" ; reserved "#"
+              reserved "Size" ; reserved ":"
+              Just <$> natural
     return $ Einsendung
 	      {	time = concat
                      $ intersperse ":" 
@@ -158,10 +169,9 @@ entry deco = do
 	      , visible  = False
               }
 
-nat l = fromInteger <$> P.natural l
-
 matrikelnr = do
-    s <- option "0" $ many1 (digit <|> char ',')
+    s <- A.option "0" 
+         $ A.many1 $ A.choice [ A.digit, A.char ',' ]
     spaces
     return $ fromCGI s
 
