@@ -37,14 +37,14 @@ import Data.List (intersperse)
 
 -- | das ist die information zu jeweils einer studentischen einsendung
 data Einsendung = Einsendung
-          { msize     :: Maybe Int
-	  , date     :: [Int]
-	  , time     :: String -- ^ original time entry
-	  , matrikel :: Obfuscated MNr -- ^ Datenschutz
-	  , auf	     :: ANr
-	  , vor      :: VNr
-	  , pid	     :: String
-          , visible  :: Bool -- tutor submissions should be invisible
+          { msize     :: ! (Maybe Int)
+	  , date     :: ! [Int]
+	  , time     :: ! String -- ^ original time entry
+	  , matrikel :: ! (Obfuscated MNr) -- ^ Datenschutz
+	  , auf	     :: ! ANr
+	  , vor      :: ! VNr
+	  , pid	     :: ! String
+          , visible  :: ! Bool -- tutor submissions should be invisible
 	  }	deriving (Eq,Ord)
 
 size e = case msize e of
@@ -55,8 +55,8 @@ okay :: Einsendung -> Bool
 okay = isJust . msize
 
 data Obfuscated a = Obfuscated 
-        { internal :: a
-        , external :: String
+        { internal :: ! a
+        , external :: ! String
         } deriving ( Eq, Ord, Show )
 
 nobfuscate :: MNr -> Obfuscated MNr
@@ -75,7 +75,7 @@ obfuscate mnr = Obfuscated
 instance ToString ( Obfuscated a ) where
     toString = external
 
-data SE = SE SNr Einsendung
+data SE = SE !SNr !Einsendung
 
 instance Show SE where 
     show ( SE s i ) = unwords 
