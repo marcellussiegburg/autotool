@@ -34,9 +34,11 @@ import Data.Maybe ( isJust )
 -- import Text.Parsec.Language (emptyDef)
 
 import qualified Data.Attoparsec.ByteString.Char8 as A
+import qualified Data.ByteString as BS
 
-import Control.Applicative ((<$>), (<*), (*>) )
+import Control.Applicative ((<$>), (<*>), (<*), (*>) )
 import Data.List (intersperse)
+
 
 -- | das ist die information zu jeweils einer studentischen einsendung
 data Einsendung = Einsendung
@@ -129,12 +131,12 @@ Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO
 Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3 
 -}
 
-spaces = A.many' A.space
-identifier = A.many1' (A.satisfy A.isAlpha_ascii) <* spaces
-reserved s = A.string s <* spaces
-natural = A.decimal
-parens p = reserved "(" *> p <* reserved ")"
-p <|> q = A.choice [p,q]
+test1, test2, test3 :: BS.ByteString
+test1 = "Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7"
+test2 = "Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO"
+test3 = "Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3"
+
+
 
 entry :: Bool -> A.Parser Einsendung
 entry deco = do
@@ -173,6 +175,14 @@ matrikelnr = do
     s <- A.option "0" $ A.many1' $ A.digit <|> A.char ','
     spaces
     return $ fromCGI s
+
+spaces = A.many' A.space
+identifier = A.many1' (A.satisfy A.isAlpha_ascii) <* spaces
+reserved s = A.string s <* spaces
+natural = A.decimal <* spaces
+parens p = reserved "(" *> p <* reserved ")"
+p <|> q = A.choice [p,q]
+
 
 -- instance Read Einsendung where 
 --    readsPrec p cs = do
