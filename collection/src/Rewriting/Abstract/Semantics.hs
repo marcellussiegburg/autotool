@@ -61,6 +61,7 @@ node2R name f x y =
 prop :: (Ord dom , ToDoc dom)
      => Env dom -> Prop -> Reporter (Bool, Doc)
 prop env p = case p of
+    PropParens p -> prop env p
     And [b] -> prop env b
     And bs -> nodeN "And" and <$> forM bs ( prop env )
     Or  [b] -> prop env b
@@ -118,6 +119,7 @@ normal r y = S.null $ R.images r y
 exp :: (Ord dom , ToDoc dom)
     => Env dom -> Exp -> Reporter (R.Type dom dom, Doc)
 exp env x = case x of
+    ExpParens x -> exp env x
     Ref i -> node0R (show i) <$> case M.lookup i env of
         Nothing -> reject $ text "identifier" <+> toDoc i <+> text "not bound"
         Just v -> return v
