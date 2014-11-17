@@ -130,7 +130,7 @@ Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3
 -}
 
 spaces = A.many' A.space
-identifier = A.many1' A.letter_ascii <* spaces
+identifier = A.many1' (A.satisfy A.isAlpha_ascii) <* spaces
 reserved s = A.string s <* spaces
 natural = A.decimal
 parens p = reserved "(" *> p <* reserved ")"
@@ -170,8 +170,7 @@ entry deco = do
               }
 
 matrikelnr = do
-    s <- A.option "0" 
-         $ A.many1 $ A.choice [ A.digit, A.char ',' ]
+    s <- A.option "0" $ A.many1' $ A.digit <|> A.char ','
     spaces
     return $ fromCGI s
 

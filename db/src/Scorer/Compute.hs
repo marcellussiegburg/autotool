@@ -23,7 +23,6 @@ import Control.Monad ( guard )
 import System.Environment ( getArgs )
 
 import qualified Data.Attoparsec.ByteString as A
-import Control.Concurrent.STM
 import qualified Data.ByteString as BS
 import Control.Applicative ((<$>),(<*))
 import Control.Monad ( forM)
@@ -54,7 +53,9 @@ compute u ( vor, aufs ) = do
          case A.parseOnly 
                 ( slurp_deco decorate <* A.endOfInput ) s of
              Right es -> return es
-             Left err -> return []
+             Left err -> do
+               hPutStrLn stderr err
+               return []
 
     let einsendungen = 
             filter Scorer.Einsendung.okay 
