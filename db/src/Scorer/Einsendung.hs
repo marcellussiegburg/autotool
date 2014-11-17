@@ -176,7 +176,7 @@ matrikelnr = do
     spaces
     return $ fromCGI s
 
-spaces = A.many' A.space
+spaces = A.many' $ A.char ' '
 identifier = A.many1' (A.satisfy A.isAlpha_ascii) <* spaces
 reserved s = A.string s <* spaces
 natural = A.decimal <* spaces
