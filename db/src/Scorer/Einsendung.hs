@@ -123,7 +123,7 @@ slurp_deco deco cs = do
         Left err -> fail "no parse"
 -}
 
-slurp_deco deco = A.many' ( entry deco <* A.endOfLine )
+slurp_deco deco = A.many' ( entry deco )
 
 {-
 Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7 
@@ -155,8 +155,11 @@ entry deco = do
     a <- natural ; reserved ":"
     res <- do reserved "NO" ; return Nothing
        <|> do reserved "OK" ; reserved "#"
-              reserved "Size" ; reserved ":"
-              Just <$> natural
+              reserved "Size" ; reserved ":" ; s <- natural
+              reserved "Punkte" ; reserved ":" ; p <- natural
+              return $ Just s
+
+    A.endOfLine
     return $ Einsendung
 	      {	time = concat
                      $ intersperse ":" 

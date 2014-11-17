@@ -50,17 +50,13 @@ compute u ( vor, aufs ) = do
 
     contents <- forM fileargs $ \ f -> do
          s <- BS.readFile f
-         case A.parseOnly 
-                ( slurp_deco decorate <* A.endOfInput ) s of
-             Right es -> return es
+         case A.parseOnly ( slurp_deco decorate  ) s of
+             Right es -> return $ filter Scorer.Einsendung.okay es
              Left err -> do
                hPutStrLn stderr err
                return []
 
-    let einsendungen = 
-            filter Scorer.Einsendung.okay 
-                 -- $ slurp_deco decorate 
-                 $ concat contents
+    let einsendungen = concat contents
 
     let total = foldl ( update aufs ) emptyFM einsendungen
     -- pforsicht: enthalt alle Einsendungen zu dieser Aufgabe,
