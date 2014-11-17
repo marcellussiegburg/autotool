@@ -29,6 +29,9 @@ main :: IO ()
 main = do
     t <- zeit    
     let header = O.Text $ T.pack $ "autotool -- Top Ten Scores, Stand von: " ++ t        
+
+    de @ (decorate, einsendungen) <- precompute
+
     schulen <- U.get
     outss <- forM schulen $ \ schule -> do
             sems <- E.get_at_school $ U.unr schule 
@@ -43,7 +46,7 @@ main = do
                              $ aufs
                      return ( vor, def )
                  return info
-            forM (filter ( \ (vor,def) -> not $ isEmptyFM def ) $ concat table) $ compute schule
+            forM (filter ( \ (vor,def) -> not $ isEmptyFM def ) $ concat table) $ compute de schule
     let out = O.lead header 
             $ O.Itemize $ concat outss >>= maybeToList
     putStrLn "<head><meta charset=\"UTF-8\"></head>"

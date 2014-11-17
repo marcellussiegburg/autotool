@@ -29,16 +29,9 @@ import Control.Monad ( forM)
 
 import System.IO (hPutStrLn, stderr)
 
--- | in fm steht abbildung von aufgabe(name) auf inhalt (z. b. direction)
-compute :: U.Schule -> ( V.Vorlesung, ScoreDefFM ) -> IO ( Maybe Output )
-compute u ( vor, aufs ) = do
-  
-    hPutStrLn stderr $ unwords [ "compute", show $ toDoc u, show vor, show $ toDoc aufs ]
-
-    -- wir lesen die logfiles für jede vorlesung komplett neu ein,
-    -- damit wir die entries, die wir nicht brauchen, 
-    -- gleich wieder weghauen können
-
+-- | read all log file data 
+precompute :: IO (Bool, [ Einsendung ])
+precompute = do
     args <- getArgs
 
     let (decorate,fileargs) = if null args then (False,[])
@@ -56,13 +49,27 @@ compute u ( vor, aufs ) = do
                hPutStrLn stderr err
                return []
 
-    let einsendungen = concat contents
+    return (decorate, concat contents)
 
-    let total = foldl ( update aufs ) emptyFM einsendungen
+
+-- | in fm steht abbildung von aufgabe(name) auf inhalt (z. b. direction)
+compute :: (Bool, [ Einsendung ])
+        -> U.Schule -> ( V.Vorlesung, ScoreDefFM ) 
+        -> IO ( Maybe Output )
+compute (decorate, einsendungen) u ( vor, aufs ) = do
+  
+    hPutStrLn stderr $ unwords [ "compute", show $ toDoc u, show vor, show $ toDoc aufs ]
+
+    -- wir lesen die logfiles für jede vorlesung komplett neu ein,
+    -- damit wir die entries, die wir nicht brauchen, 
+    -- gleich wieder weghauen können
+
     -- pforsicht: enthalt alle Einsendungen zu dieser Aufgabe,
     -- (auch die vom Tutor, der normalerweise nicht eingeschrieben ist)
     -- Damit wir "best known" anzeigen können
     -- vor der bepunktung müssen die aber raus
+
+    let total = foldl ( update aufs ) emptyFM einsendungen
 
     emit decorate u vor total
 
