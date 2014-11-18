@@ -8,36 +8,49 @@ import qualified Control.Aufgabe.DB
 
 import Autolib.ToDoc
 
+import Network.URL
+import System.FilePath
 import Network.CGI
 import Text.XML
 import Text.Hamlet.XML
 import qualified Data.Map as M
--- import Text.XML.Cursor
 import qualified Codec.Archive.Zip as Zip
 import qualified Data.ByteString.Lazy as BS
 import Data.String
+import Control.Monad ( when )
 
 main :: IO ()
 main = runCGI $ do
-    Just (a :: Int) <- readInput "task-config"
-    -- [ auf ] <- liftIO $ Control.Aufgabe.DB.get_this $ ANr a
-
-    let auf = take 10 [ 1 :: Int .. ]
-        foo = "foo"
-        s = show $ toDoc auf
+    Just (a :: Int) <- readInput "problem"
+    [ auf ] <- liftIO $ Control.Aufgabe.DB.get_this $ ANr a
+    when ( A.timeStatus auf == Early ) $ error "too early"
+    
+    -- default output method for all components, exceptions see below
+    let out x = fromString $ toString x
+                   
+    let Just u = importURL $ toString $ A.server auf
+        p = url_path u
+        (dir,file) = splitFileName p
+        (name,ext) = splitExtension file
+        version = reverse $ takeWhile ( /= '-' ) $ reverse name
+    
+    let scoring = case A.highscore auf of
+            Keine -> "?" ; High -> "i" ; Low -> "d"
     
     let root = Element "autotoolnode" M.empty [xml|
-    <task type_name="#{foo}" type_scoring="i">
-    <tasconfiguration is_altered="false">
+    <tasktype type_name="#{out $ A.typ auf}" type_scoring="#{scoring}">
+    <taskconfiguration is_altered="false">
     <auth_comment>
-    <conf_text>#{fromString s}
-    <doc_text>what
-    <signature>#{"12334"}
-    <description>what
+    <conf_text>#{out $ A.config auf}
+    <doc_text>(missing)
+    <signature>#{out $ A.signature auf}
+    <description>#{out $ A.remark auf}
     <configuration>
         <scorepoints>20,15,10,7,6,5,4,3,2,1
-    <server_conn name="what" version="0.8.0">
+    <server_conn name="Autotool Server HTWK Leipzig" version="#{fromString version}" url="#{out $ A.server auf}">
 |]
+
+    -- FIXME: server_conn should have this url attribute (but currently hasn't)
 
     let doc = Document (Prologue [] Nothing []) root []
         ent = Zip.toEntry ("task-config/" ++ show a) 0 $ renderLBS def doc

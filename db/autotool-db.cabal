@@ -42,7 +42,7 @@ Executable autotool-Dump
   Main-is: src/Operate/Dump.hs
   Build-Depends: base, containers, bytestring,
     autotool-db, autolib-todoc,
-    cgi, zip-archive, xml-conduit, xml-hamlet
+    cgi, zip-archive, xml-conduit, xml-hamlet, url, filepath
 
 Library
   Build-Depends:

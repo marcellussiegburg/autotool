@@ -185,6 +185,9 @@ lecture server vor pack = do
 		plain $ toString $ A.typ  auf
 		click ( "solve" , ( False, auf ) )
 		click ( "config and solve", ( True, auf ) )
+                let  dump = "Dump.cgi?problem=" ++ Control.Types.toString (A.anr auf)
+                html $ specialize Autolib.Multilingual.DE
+                     $ ( O.render $ O.Link dump :: H.Html )
     common_aufgaben server pack ( Just auf ) conf   
 
 fixed_problem problem = do
