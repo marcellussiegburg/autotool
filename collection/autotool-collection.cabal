@@ -948,4 +948,6 @@ Library
                  FD.Solve
                  FD.Roll
                  Lattice.Reduce
+                 Lattice.LLL
+
                  
