@@ -9,7 +9,7 @@ module Rewriting.Abstract.Fixed where
 import Rewriting.Abstract.Syntax
 import Rewriting.Abstract.Semantics
 import Rewriting.Abstract.Braced
-
+import Rewriting.Abstract.Problem
 
 import Autolib.ToDoc
 import Autolib.Reader
@@ -29,49 +29,7 @@ import Inter.Types
 import Data.Typeable
 import Control.Monad ( when )
 
-data Problem = 
-     Problem { property :: Prop
-             , domain_size_should_be :: (Ordering, Int)
-             , given :: M.Map Identifier (Braced Int Int)
-             , wanted :: S.Set Identifier
-             }
-    deriving Typeable
 
-problem0 :: Problem
-problem0 = Problem
-    { domain_size_should_be = (EQ, 3)
-    , given = M.fromList 
-        [(mk 0 "R", Braced (R.make [(1,2), (2,3)])) ]
-    , wanted = S.fromList [ mk 0 "S" ]
-    , property = prop0
-    }
-
-data Solution = 
-     Solution { domain_size :: Int
-              , assignment :: M.Map Identifier (Braced Int Int)
-              }
-    deriving Typeable
-
--- | this is arbitrary: the sum of the numbers
--- of edges of the relations.
-instance Size Solution where 
-    size s = sum $ map size $ M.elems $ assignment s
-
-solution0 :: Solution
-solution0 = Solution
-    { domain_size = 3
-    , assignment = M.fromList
-        [(mk 0 "S", Braced (R.make [(3,2)]))]
-    }
-
-data Abstract_Rewriting = Abstract_Rewriting 
-    deriving Typeable
-
-derives [makeReader, makeToDoc] 
-        [''Problem, ''Solution, ''Abstract_Rewriting ]
-derives [makeReader] [''Ordering]
-
-instance Show Abstract_Rewriting where show = render . toDoc
 
 instance OrderScore Abstract_Rewriting where
     scoringOrder _ = Increasing
@@ -127,3 +85,5 @@ instance Partial Abstract_Rewriting Problem Solution where
 
 make :: Make
 make = direct Abstract_Rewriting problem0
+
+

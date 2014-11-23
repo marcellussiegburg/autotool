@@ -62,7 +62,8 @@ Library
         transformers,
         logict>=0.6.0.2,
         lens,
-        hashable
+        hashable,
+        stm
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -304,11 +305,14 @@ Library
                  Rewriting.Completion.Improved,
                  Rewriting.Abstract.Syntax,
                  Rewriting.Abstract.Data,
+                 Rewriting.Abstract.Problem,
                  Rewriting.Abstract.Reader,
                  Rewriting.Abstract.ToDoc,
-                 Rewriting.Abstract.Semantics,
-                 Rewriting.Abstract.Fixed,
                  Rewriting.Abstract.Braced,
+                 Rewriting.Abstract.Semantics,
+                 Rewriting.Abstract.Solve,
+                 Rewriting.Abstract.Fixed,
+                 Rewriting.Abstract.Quiz,
                  Polynomial.Data
                  Polynomial.Op
                  Polynomial.Reader

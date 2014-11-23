@@ -27,13 +27,6 @@ import Prelude hiding ( exp )
 
 type Env dom = M.Map Identifier ( R.Type dom dom )
 
-prop0 :: Prop
-prop0 = 
-    let r = Ref $ mk 0 "R" ; s = Ref $ mk 0 "S"
-    in  And [ Prop2 Disjoint r s
-            , Prop1 Transitive (Op2 Product r s)
-            , Not (Prop1 Transitive (Op2 Product s r))
-            ]
 
 nodeN name f args = 
     let v = f $ map fst args

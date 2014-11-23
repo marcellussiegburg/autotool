@@ -13,6 +13,14 @@ import Autolib.Size
 
 import Data.Typeable
 
+prop0 :: Prop
+prop0 = 
+    let r = Ref $ mk 0 "R" ; s = Ref $ mk 0 "S"
+    in  And [ Prop2 Disjoint r s
+            , Prop1 Transitive (Op2 Product r s)
+            , Not (Prop1 Transitive (Op2 Product s r))
+            ]
+
 data Prop 
     = And [ Prop ]
     | Or [ Prop ]

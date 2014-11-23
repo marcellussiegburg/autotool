@@ -193,6 +193,7 @@ import qualified Rewriting.Derive
 import qualified Rewriting.Termination
 import qualified Rewriting.Completion.Improved
 import qualified Rewriting.Abstract.Fixed
+import qualified Rewriting.Abstract.Quiz
 import qualified Rewriting.TRS.Apply
 import qualified Rewriting.SRS.Apply
 import qualified Lambda.Apply
@@ -472,6 +473,7 @@ tmakers =
          , heading "Terme, Ersetzungssysteme"
                 [ heading "Abstract Rewriting"
                         [ item $ Rewriting.Abstract.Fixed.make
+                        , item $ Rewriting.Abstract.Quiz.make
                         ]
                 , heading "Wortersetzung"
                         [ item $ Rewriting.Derive.make_fixed Rewriting.SRS.Apply.For_SRS

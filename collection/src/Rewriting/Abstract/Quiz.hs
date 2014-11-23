@@ -1,11 +1,15 @@
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
-
+{-# language MultiParamTypeClasses #-}
+{-# language BangPatterns #-}
 
 module Rewriting.Abstract.Quiz where
 
 import Rewriting.Abstract.Data
+import Rewriting.Abstract.Problem
 import Rewriting.Abstract.ToDoc
+import Rewriting.Abstract.Braced
+import Rewriting.Abstract.Fixed () -- instances only
 import qualified Rewriting.Abstract.Solve as S
 import Autolib.TES.Identifier
 import Autolib.ToDoc
@@ -13,50 +17,50 @@ import Autolib.Reader
 import Autolib.Size
 import qualified Autolib.Util.Zufall as Z
 
+import Inter.Quiz
+import Inter.Types
+
+import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Typeable
-import Control.Monad ( forM, replicateM )
+import Control.Monad ( forM, replicateM, forever )
 import Control.Applicative ( (<$>) )
 import Data.List ( maximumBy )
 import Data.Function (on )
 
-data Config =
-     Config { unknowns :: [ Identifier ]
-            , unary_operators :: [ Op1 ]
-            , unary_properties :: [ Prop1 ]
-            , clauses :: Int
-            , max_domain_size :: Int
-            , candidates :: Int
-            }
-    deriving Typeable
+import Control.Concurrent
+import Control.Concurrent.STM
+import System.IO
+import System.Timeout
 
-config0 :: Config
-config0 = Config 
-        { unknowns = [ read "R" ]
-        , unary_operators = 
-              [ Inverse, Complement 
-              , Transitive_Closure
-              , Transitive_Reflexive_Closure
-              ]
-        , unary_properties = 
-              [ Transitive
-              , Reflexive, Irreflexive
-              , Symmetric, Asymmetric, Antisymmetric
-              , SN, WN
-              -- , UN, UNC, CR, WCR 
-              ]
-        , clauses = 3
-        , max_domain_size = 4
-        , candidates = 1000
-        }
 
-derives [makeReader,makeToDoc] [''Config]
+{-
+
+the generator creates problem instances and solves them,
+for domain sizes @[1, 2 .. max_domain_size  conf]@
+for @generator_timeout_seconds conf@ time.
+It picks an instance that maximizes the minimal domain size.
+
+-}
 
 -- roll :: Config -> IO Prop
 roll conf = do
-    ps <- forM [ 1 .. candidates conf ] $ \ i -> do
-        p <- prop conf
-        return (p, smallest_solution_size conf p, size p)
-    return $ maximumBy (compare `on` \ (p,s,z) -> (s,negate z)) ps
+    let exec = do 
+             p <- prop conf 
+             let s = smallest_solution_size conf p
+             s `seq` return (p, s)
+        cmp = compare `on` \ (p,s) -> (s, negate $ size p)
+    start <- exec    
+    best <- atomically $ newTVar start
+    timeout (generator_timeout_seconds conf * 10^6) $ forever $ do
+        this@(p,s) <- exec
+        -- hPutStrLn stderr $ show $ toDoc this
+        case s of
+            Nothing -> return ()
+            Just {} -> atomically 
+                $ modifyTVar' best $ \ prev -> 
+                  if cmp this prev >= EQ then this else prev
+    atomically $ readTVar best
 
 prop :: Config -> IO Prop
 prop conf = And <$> replicateM (clauses conf) (clause conf)
@@ -79,3 +83,19 @@ smallest_solution_size conf prop =
             then Just dom else handle $ succ dom
     in  handle 1
            
+instance Generator Abstract_Rewriting Config Problem where
+    generator _ conf key = do
+        (p,_) <- roll conf
+        return $ Problem
+               { property = p
+               , domain_size_should_be = (GT, 0)
+               , given = M.empty
+               , wanted = S.fromList $ unknowns conf
+               }
+
+instance Project Abstract_Rewriting Problem Problem where
+    project _ p = p
+
+make :: Make
+make = quiz Abstract_Rewriting config0
+
