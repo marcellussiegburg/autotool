@@ -7,7 +7,7 @@
 module Rewriting.Abstract.Data where
 
 import Autolib.TES.Identifier
-import Autolib.ToDoc
+import Autolib.ToDoc hiding ( Full )
 import Autolib.Reader
 import Autolib.Size
 
@@ -21,6 +21,15 @@ data Prop
     | Prop2 Prop2 Exp Exp
     | PropParens Prop
     deriving Typeable
+
+instance Size Prop where
+    size p = case p of
+        And ps -> succ $ sum $ map size ps
+        Or  ps -> succ $ sum $ map size ps
+        Not p -> succ $ size p
+        PropParens p -> size p
+        Prop1 _ p -> succ $ sum $ map size [p]
+        Prop2 _ p q -> succ $ sum $ map size [p,q]
 
 data Prop1 
     = Null | Full
@@ -46,6 +55,13 @@ data Exp = Ref Identifier
      | ExpParens Exp
     deriving Typeable
 
+instance Size Exp where
+    size x = case x of
+        ExpParens x -> size x
+        Ref _ -> 1
+        Op1 _ x -> succ $ size x
+        Op2 _ x y -> succ $ sum $ map size [x,y]
+
 data Op1 = Inverse 
      | Complement
     | Transitive_Closure 
@@ -55,5 +71,6 @@ data Op1 = Inverse
 data Op2 = Union | Intersection | Difference | Product
     deriving (Typeable, Show )
 
+derives [makeReader,makeToDoc] [''Prop1, ''Prop2, ''Op1, ''Op2]
 
 
