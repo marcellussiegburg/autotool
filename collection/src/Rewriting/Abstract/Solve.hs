@@ -261,7 +261,7 @@ wn r =
     let ((a0,b0),(a1,b1)) = bounds r
         b = bang r
     in  O.and $ for (A.range(a0,a1)) $ \ i -> 
-            O.or $ for (A.range(b0,b1))  $ \ j -> get r (i,j)
+            O.or $ for (A.range(b0,b1))  $ \ j -> get b (i,j)
 
 un r = let b = bang r  in diagonal $ times (inverse b) b
 

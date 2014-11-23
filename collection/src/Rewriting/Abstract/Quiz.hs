@@ -41,12 +41,12 @@ config0 = Config
               [ Transitive
               , Reflexive, Irreflexive
               , Symmetric, Asymmetric, Antisymmetric
-              -- , SN, WN
+              , SN, WN
               -- , UN, UNC, CR, WCR 
               ]
         , clauses = 3
-        , max_domain_size = 5
-        , candidates = 100
+        , max_domain_size = 4
+        , candidates = 1000
         }
 
 derives [makeReader,makeToDoc] [''Config]
