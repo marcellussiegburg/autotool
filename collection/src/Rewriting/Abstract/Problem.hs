@@ -65,6 +65,7 @@ data Config =
             , unary_properties :: [ Prop1 ]
             , clauses :: Int
             , max_domain_size :: Int
+            , candidates :: Int
             , generator_timeout_seconds :: Int -- ^ seconds
             }
     deriving Typeable
@@ -88,6 +89,7 @@ config0 = Config
               ]
         , clauses = 3
         , max_domain_size = 4
+        , candidates = 100
         , generator_timeout_seconds = 5
         }
 

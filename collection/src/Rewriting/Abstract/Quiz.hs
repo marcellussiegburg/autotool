@@ -23,7 +23,7 @@ import Inter.Types
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Typeable
-import Control.Monad ( forM, replicateM, forever )
+import Control.Monad ( forM, replicateM, forever, when )
 import Control.Applicative ( (<$>) )
 import Data.List ( maximumBy )
 import Data.Function (on )
@@ -48,18 +48,17 @@ roll conf = do
     let exec = do 
              p <- prop conf 
              let s = smallest_solution_size conf p
-             s `seq` return (p, s)
+             return (p, s)
         cmp = compare `on` \ (p,s) -> (s, negate $ size p)
     start <- exec    
     best <- atomically $ newTVar start
-    timeout (generator_timeout_seconds conf * 10^6) $ forever $ do
+    timeout (generator_timeout_seconds conf * 10^6) 
+        $ replicateM (candidates conf) $ do
         this@(p,s) <- exec
+        prev <- atomically $ readTVar best
         -- hPutStrLn stderr $ show $ toDoc this
-        case s of
-            Nothing -> return ()
-            Just {} -> atomically 
-                $ modifyTVar' best $ \ prev -> 
-                  if cmp this prev >= EQ then this else prev
+        when (cmp this prev >= EQ) $ atomically 
+             $ writeTVar best this
     atomically $ readTVar best
 
 prop :: Config -> IO Prop
