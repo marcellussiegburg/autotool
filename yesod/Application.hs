@@ -20,6 +20,7 @@ import Data.Default (def)
 import Yesod.Core.Types (loggerSet, Logger (Logger))
 
 import Handler.Home
+import Handler.Aufgabe
 
 mkYesodDispatch "Autotool" resourcesAutotool
 

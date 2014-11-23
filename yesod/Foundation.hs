@@ -14,6 +14,8 @@ import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
+import Model
+
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
     , getStatic :: Static
