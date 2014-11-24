@@ -71,7 +71,7 @@ instance Size Exp where
         Op2 _ x y -> succ $ sum $ map size [x,y]
 
 data Op1 = Inverse 
-     | Complement
+    | Complement
     | Transitive_Closure 
     | Transitive_Reflexive_Closure
         deriving (Typeable, Show, Bounded, Enum)
