@@ -7,6 +7,10 @@ module Operate.Student where
 import Operate.Types
 -- import Inter.Evaluate
 
+import Types.Documented as D
+import Types.Solution
+import qualified Util.Xml.Output as UXO
+
 import Operate.Bank
 import Operate.Common
 import qualified Operate.Language
@@ -32,6 +36,7 @@ import Autolib.Reporter.IO.Type hiding ( wrap )
 import Autolib.ToDoc
 import Autolib.Reader
 import qualified Autolib.Output
+import qualified Autolib.Output as O
 import qualified Control.Exception as CE
 
 import Data.Typeable
@@ -49,7 +54,11 @@ data Method = Textarea | Upload
 solution vnr  manr stud auf = do
     lang <- get_preferred_language -- ; plain $ show lang
 
-    ( sti, ini, icom ) <- make_instant vnr manr stud auf
+    ( sti, docsol , icom ) <- make_instant vnr manr stud auf
+    let SString sol = D.contents docsol
+        DString doc = D.documentation docsol
+        out = UXO.xmlStringToOutput doc
+        ini = text sol
 
     let past = mkpar stud auf
 
@@ -95,13 +104,32 @@ solution vnr  manr stud auf = do
                       `CE.catch` \ (CE.SomeException _) -> return b0
 	      else return b0
 	    open table
+
 	    open row
             sol <- textarea def
+            close -- row
+
+            open row 
+            open table
+            open row
+            plain $ specialize lang
+                  $ M.make 
+                  [ (DE, "Der Typ der Lösung ist:" )
+		  , (UK, "solution is of type:")
+	          ]
+            html $ specialize lang 
+                 $ ( O.render :: O.Output -> H.Html )
+                 $ out
+            close ; close ; close
+
+            open row
 	    esub  <- submit $ specialize lang
 			    $ M.make [(DE, "Textfeld absenden")
 				     ,(UK, "submit textarea")
 				     ]
 	    close -- row
+
+
 	    open row
 {-            
             let helper :: Gateway.Html.Html

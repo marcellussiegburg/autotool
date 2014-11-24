@@ -144,7 +144,11 @@ update_signature_if_missing auf =
 generate :: A.Aufgabe 
          -> Integer
          -> CacheFun
-         -> Form IO ( Signed (Task,Instance), Doc, Output )
+         -> Form IO ( Signed (Task,Instance)
+                    -- , Doc
+                    , Documented Solution
+                    , Output 
+                    )
 generate auf seed cache = do
     auf <- update_signature_if_missing auf
 
@@ -157,7 +161,7 @@ generate auf seed cache = do
              lang
     let 
         SString sol = D.contents docsol
-    return ( sti, text sol , descr desc  )
+    return ( sti, docsol {- text sol -} , descr desc  )
     
 {-
 evaluate :: A.Aufgabe    

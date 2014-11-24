@@ -17,7 +17,7 @@ import Control.Types (toString, VNr, ANr)
 import Challenger.Partial
 import Util.Cache (cache)
 import Autolib.Reporter.IO.Type
-import Autolib.ToDoc ( text )
+import Autolib.ToDoc ( text, Doc )
 import Control.Monad ( when )
 
 import Data.String
@@ -54,6 +54,9 @@ make_instant_common_with ( vnr :: VNr ) ( manr :: Maybe ANr ) stud auf seed = do
     let s = crc32 ( fromString ( show vnr ++ show manr ++ k ) :: ByteString )
     (sti, sol, doc ) <- 
         generate auf ( fromIntegral s ) Util.Cache.cache
+
+    -- io $ appendFile "/tmp/tool.log" $ show $ ( O.render doc :: Doc )
+
     -- Just i <- result $ lift g
     -- o <- kommentar $ lift $ report p i
     return ( sti, sol, doc )
