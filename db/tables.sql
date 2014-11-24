@@ -120,6 +120,7 @@ SET character_set_client = utf8;
 CREATE TABLE `schule` (
   `UNr` int(11) NOT NULL default '0',
   `Name` varchar(50) NOT NULL default '',
+  `Preferred_Language` varchar(5) NOT NULL default 'DE',
   `Mail_Suffix` text NOT NULL,
   `Use_Shibboleth` tinyint(1) NOT NULL Default 0
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
