@@ -18,8 +18,10 @@ library
                      Settings
                      Settings.StaticFiles
                      Settings.Development
+                     Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.Schulen
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

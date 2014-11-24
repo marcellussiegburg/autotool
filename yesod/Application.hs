@@ -21,6 +21,7 @@ import Yesod.Core.Types (loggerSet, Logger (Logger))
 
 import Handler.Home
 import Handler.Aufgabe
+import Handler.Schulen
 
 mkYesodDispatch "Autotool" resourcesAutotool
 

@@ -1,0 +1,18 @@
+<h1>
+  _{MsgSchulen}
+<p>
+  _{MsgSchuleWählen}
+<div .list-group>
+  <a href="#" .list-group-item>
+    <h4 .list-group-heading>
+      HTW Dresden
+  <a href="#" .list-group-item>
+    <h4 .list-group-heading>
+      HTWK Leipzig
+  <a href="#" .list-group-item>
+    <h4 .list-group-heading>
+      TU Dresden
+  <a href="#" .list-group-item>
+    <h4 .list-group-heading>
+      Uni Leipzig
+
