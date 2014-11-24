@@ -74,10 +74,10 @@ data Op1 = Inverse
      | Complement
     | Transitive_Closure 
     | Transitive_Reflexive_Closure
-        deriving (Typeable, Show)
+        deriving (Typeable, Show, Bounded, Enum)
 
 data Op2 = Union | Intersection | Difference | Product
-    deriving (Typeable, Show )
+    deriving (Typeable, Show, Bounded, Enum )
 
 derives [makeReader,makeToDoc] [''Prop1, ''Prop2, ''Op1, ''Op2]
 

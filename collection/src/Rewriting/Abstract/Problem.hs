@@ -62,7 +62,9 @@ instance Show Abstract_Rewriting where show = render . toDoc
 data Config =
      Config { unknowns :: [ Identifier ]
             , unary_operators :: [ Op1 ]
+            , binary_operators :: [ Op2 ]
             , unary_properties :: [ Prop1 ]
+            , binary_properties :: [ Prop2 ]
             , clauses :: Int
             , max_domain_size :: Int
             , candidates :: Int
@@ -70,23 +72,13 @@ data Config =
             }
     deriving Typeable
 
-
-
 config0 :: Config
 config0 = Config 
-        { unknowns = [ read "R" ]
-        , unary_operators = 
-              [ Inverse, Complement 
-              , Transitive_Closure
-              , Transitive_Reflexive_Closure
-              ]
-        , unary_properties = 
-              [ Transitive
-              , Reflexive, Irreflexive
-              , Symmetric, Asymmetric, Antisymmetric
-              , SN, WN
-              -- , UN, UNC, CR, WCR 
-              ]
+        { unknowns = [ read "R", read "S" ]
+        , unary_operators = [ minBound .. maxBound ]
+        , binary_operators =  [ minBound .. maxBound ]
+        , unary_properties =  [ minBound .. maxBound ]
+        , binary_properties = [ minBound .. maxBound ]
         , clauses = 3
         , max_domain_size = 4
         , candidates = 100
