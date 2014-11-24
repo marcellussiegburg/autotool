@@ -74,11 +74,11 @@ data Config =
 
 config0 :: Config
 config0 = Config 
-        { unknowns = [ read "R", read "S" ]
+        { unknowns = [ read "R" ]
         , unary_operators = [ minBound .. maxBound ]
-        , binary_operators =  [ minBound .. maxBound ]
-        , unary_properties =  [ minBound .. maxBound ]
-        , binary_properties = [ minBound .. maxBound ]
+        , binary_operators = take 0 [ minBound .. maxBound ]
+        , unary_properties = [ minBound .. maxBound ]
+        , binary_properties = take 0 [ minBound .. maxBound ]
         , clauses = 3
         , max_domain_size = 4
         , candidates = 100
