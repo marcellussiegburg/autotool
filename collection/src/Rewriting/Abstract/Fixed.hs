@@ -45,9 +45,12 @@ instance Partial Abstract_Rewriting Problem Solution where
                     ,(DE,"auf dem Bereich [1, 2 .. domain_size] mit domain_size")]
           <+> let (rel,m) = domain_size_should_be p
               in  text ( case rel of LT -> "<" ; EQ -> "=" ; GT -> ">" ) <+> toDoc m
-        , text "such that this property holds:"
+        , multitext [(UK, "such that this property holds:")
+                    ,(DE, "mit den folgenden Eigenschaften:")]
           </> toDoc ( property p )
-        , text "in this environment:" </> toDoc ( given p )
+        , multitext [(UK, "in this environment:")
+                    ,(DE, "mit den folgenden Vorgaben:")]
+          </> toDoc ( given p )
 
 {-
           </> vcat ( map ( \(k,v) -> 
@@ -62,7 +65,8 @@ instance Partial Abstract_Rewriting Problem Solution where
     partial _ p s = do
         let (cmp, t) = domain_size_should_be p
         when ( not $ cmp == compare (domain_size s) t ) 
-            $ reject $ text "invalid domain size"
+            $ reject $ multitext [(UK,  "invalid domain size")
+                                  ,(DE, "falscher Grundbereich")]
         let dom = S.fromList [ 1 .. domain_size s ]
         void $ forM ( M.toList $ assignment s ) $ \ (k,Braced r) -> do
             let wrong = do 
@@ -70,8 +74,10 @@ instance Partial Abstract_Rewriting Problem Solution where
                     guard $ S.notMember e dom
                     return p
             when (not $ null wrong) $ reject $ vcat
-                [ text "relation" <+> toDoc k 
-                , text "uses elements from outside the domain" </> toDoc wrong
+                [ multitext [(UK,  "relation"),(DE, "Relation")] <+> toDoc k 
+                , multitext [(UK, "uses elements from outside the domain")
+                            ,(DE, "enthält Elemente außerhalb des Grundbereiches")] 
+                </> toDoc wrong
                 ]
 
     total _ p s = do
@@ -84,7 +90,8 @@ instance Partial Abstract_Rewriting Problem Solution where
         (ok, doc) <- prop env ( property p )
         inform doc
         when (not ok) $ reject 
-            $ text "The stated property does not hold."
+            $ multitext [(UK, "The stated property does not hold.")
+                        ,(DE, "Die angegebenen Eigenschaften gelten nicht.")]
 
 make :: Make
 make = direct Abstract_Rewriting problem0
