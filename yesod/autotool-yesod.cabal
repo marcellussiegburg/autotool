@@ -22,6 +22,7 @@ library
                      Handler.Home
                      Handler.Aufgabe
                      Handler.Schulen
+                     Handler.Waisenkinder
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

@@ -1,0 +1,45 @@
+<h1>
+  _{MsgWaisenkinder}
+<p>
+  _{MsgWaisenkinderBeschreibung}
+<table .table .table-striped .table-hover>
+  <thead>
+    <tr>
+      <th>
+        _{MsgMatrikelnummer}
+      <th>
+        _{MsgVorname}
+      <th>
+        _{MsgName}
+      <th>
+  <tbody>
+    <tr>
+      <td>
+        1234
+      <td>
+        Mark
+      <td>
+        Otto
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+    <tr>
+      <td>
+        2454
+      <td>
+        Jacob
+      <td>
+        Thornton
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+    <tr>
+      <td>
+        5332
+      <td>
+        Larry
+      <td>
+        Müller
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}

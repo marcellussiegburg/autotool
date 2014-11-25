@@ -5,4 +5,5 @@
 
 / HomeR GET POST
 /schulen SchulenR GET
+/schule/#SchuleId/waisenkinder WaisenkinderR GET
 /aufgabe/#AufgabeId AufgabeR GET POST
