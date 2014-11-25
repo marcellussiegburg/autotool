@@ -76,7 +76,7 @@ instance Partial Abstract_Rewriting Problem Solution where
             when (not $ null wrong) $ reject $ vcat
                 [ multitext [(UK,  "relation"),(DE, "Relation")] <+> toDoc k 
                 , multitext [(UK, "uses elements from outside the domain")
-                            ,(DE, "enthält Elemente außerhalb des Grundbereiches")] 
+                            ,(DE, "verwendet Elemente außerhalb des Grundbereiches")] 
                 </> toDoc wrong
                 ]
 
