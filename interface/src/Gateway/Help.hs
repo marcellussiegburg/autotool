@@ -10,6 +10,7 @@ import Autolib.Output
 
 import Data.Typeable
 import Data.List ( intersperse, isPrefixOf )
+import Data.Char (isDigit)
 
 class ( Typeable a ) => Help a where
       help :: a -> Output
@@ -42,9 +43,12 @@ tycon_link tyc =
        hackage = "http://hackage.haskell.org/package/"
        ty = tyConName tyc
        mod = redot $ undot $ tyConModule tyc
-       pack = tyConPackage tyc
+       pack = unversion $ tyConPackage tyc
+       unversion = reverse
+           . dropWhile ( \ c -> isDigit c || c == '.' || c == '-' )
+           . reverse
    in  Named_Link ( show tyc ) 
-       $ if isPrefixOf "autotool" pack
+       $ if isPrefixOf "autotool" pack || isPrefixOf "autolib" pack
          then local ++ pack ++ "/" ++ mod ++ ".html#t:" ++ ty
          else hackage ++ pack ++ "/docs/" ++ mod ++ ".html#t:" ++ ty
 
