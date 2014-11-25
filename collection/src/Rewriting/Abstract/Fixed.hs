@@ -91,7 +91,7 @@ instance Partial Abstract_Rewriting Problem Solution where
         inform doc
         when (not ok) $ reject 
             $ multitext [(UK, "The stated property does not hold.")
-                        ,(DE, "Die angegebenen Eigenschaften gelten nicht.")]
+                        ,(DE, "Die geforderte Eigenschaft ist nicht erfüllt.")]
 
 make :: Make
 make = direct Abstract_Rewriting problem0
