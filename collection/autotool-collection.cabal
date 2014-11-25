@@ -58,7 +58,9 @@ Library
         -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
         -- QuickCheck < 2.6,
         QuickCheck,
-        mueval>=0.8.1.1, hint, haskell-src-exts, syb,
+        mueval>=0.8.1.1, hint, 
+        haskell-src-exts==1.15.*, 
+        syb,
         transformers,
         logict>=0.6.0.2,
         lens,
