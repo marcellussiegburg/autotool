@@ -12,6 +12,7 @@ import Rewriting.Abstract.Braced
 import Rewriting.Abstract.Problem
 
 import Autolib.ToDoc
+import Autolib.Multilingual
 import Autolib.Reader
 import Autolib.Reporter
 import Autolib.Size
@@ -37,9 +38,11 @@ instance OrderScore Abstract_Rewriting where
 instance Partial Abstract_Rewriting Problem Solution where
     
     describe _ p = vcat
-        [ text "Define relations" 
+        [ multitext [(UK,"Define relations")
+                    ,(DE,"Definieren Sie Relationen")]
           <+> toDoc (S.toList $ wanted p)
-        , text "on domain [1, 2 .. domain_size] with domain_size"
+        , multitext [(UK,"on domain [1, 2 .. domain_size] with domain_size")
+                    ,(DE,"auf dem Bereich [1, 2 .. domain_size] mit domain_size")]
           <+> let (rel,m) = domain_size_should_be p
               in  text ( case rel of LT -> "<" ; EQ -> "=" ; GT -> ">" ) <+> toDoc m
         , text "such that this property holds:"
