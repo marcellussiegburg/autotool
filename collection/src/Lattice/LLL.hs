@@ -3,7 +3,8 @@
 
 module Lattice.LLL where
 
-import Data.List ( sortBy, transpose, tails, minimumBy )
+import Data.List ( sort, sortBy, transpose, tails, minimumBy )
+import Data.Ratio
 import Data.Function ( on )
 import Control.Monad ( guard, forM, forM_, when, forever )
 import Data.Fixed
@@ -14,14 +15,11 @@ import qualified Data.Set as S
 class M a b where 
     (*>) :: a -> b -> b
 
-instance HasResolution r => M Integer (Fixed r) where 
-    a *> b = fromInteger a * b
-instance HasResolution r => M (Fixed r) (Fixed r) where 
-    a *> b = a * b
+instance HasResolution r => M Integer (Fixed r) where a *> b = fromInteger a * b
+instance HasResolution r => M (Fixed r) (Fixed r) where a *> b = a * b
 instance M Integer Double where a *> b = fromInteger a * b
 instance M Integer Integer where a *> b = a * b
 instance M Double Double where a *> b = a * b
-
 
 dot xs ys = sum $ zipWith (*>) xs ys
 ddot xs ys = fromRational $ toRational $ dot xs ys
@@ -38,16 +36,6 @@ type Matrix e = [Vector e]
 type Base = Matrix Double
 
 
-b0 :: Base
-b0 = 
-    [ [ 41510.633096 , 39145.275121 , 27701.435729 , 2533.148154 , 11181.680102 ]
-    , [ 4116.295922 , 3878.627857 , 2764.660511 , 290.28102 , 1153.834423 ]
-    , [ 2393.482234 , 2457.216087 , 457.625776 , 2641.923659 , 2418.560096 ]
-    , [ 8639.279815 , 8040.600185 , 5637.630487 , 451.01875 , 2128.060412 ]
-    , [ 41873.275037 , 38973.133269 , 27325.72408 , 2185.419842 , 10315.19886 ]
-    ]
-
-s0 = make b0
 
 -- | invariants:
 -- times (transform s) (back_transform s) == unit s
@@ -142,18 +130,21 @@ subtract s = do
     i <- range s ; k <- range s
     guard $ not $ all (== 0) $ base s !! k
     guard $ i /= k
-    let m = round $ mu s !! i !! k 
-    guard $ m /= 0
-    return $ apply (Reduce {target=i,factor=signum m, using=k}) s
+    let m = mu s !! i !! k 
+    guard $ abs m > 1%2
+    let f = if m > 0 then 1 else -1
+    return $ apply (Reduce {target=i,factor=f, using=k}) s
 
 -- | do subtraction by the best multiple 
 divide s = do
     i <- range s ; k <- range s
     guard $ not $ all (== 0) $ base s !! k
     guard $ i /= k
-    let m = round $ mu s !! i !! k 
-    guard $ m /= 0
-    return $ apply (Reduce {target=i,factor= m, using=k}) s
+    let m = mu s !! i !! k 
+    guard $ abs m > 1%2
+    let f = if m > 0 then truncate (m+1%2)
+            else truncate (m-1%2)
+    return $ apply (Reduce {target=i,factor= f, using=k}) s
 
 -- | do subtraction by the best multiple 
 ordered_divide s = do
