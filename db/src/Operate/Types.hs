@@ -14,6 +14,7 @@ import Types.TaskDescription
 import Types.Config
 import Types.Instance as I
 import Types.Solution
+import qualified Util.Xml.Output as UXO
 
 import qualified Service.Interface as SI
 
@@ -26,7 +27,7 @@ import Control.Applicative
 import Data.Tree
 import Data.Typeable
 
-import Gateway.CGI ( embed, io, open, close, row, plain, textarea, submit, html, Form, get_preferred_language  )
+import Gateway.CGI ( embed, io, open, close, table, row, plain, textarea, submit, html, Form, get_preferred_language  )
 import Autolib.ToDoc ( ToDoc, toDoc, text, Doc, vcat )
 import Autolib.Reporter.IO.Type ( inform, reject )
 import Autolib.Output as O
@@ -83,7 +84,8 @@ get_task_config mk lang = do
       $ SI.get_task_description_localized ( server mk ) ( task mk ) lang
   let conf = task_sample_config td
   -- embed $ inform $ toDoc $ D.documentation conf
-  return $ D.contents conf
+  -- return $ D.contents conf
+  return conf
   
 
 verify_task_config mk conf lang = do
@@ -96,12 +98,38 @@ task_config_editor title mk mauf = do
     lang <- get_preferred_language 
     open row
     plain title
-    CString conf <- case mauf of
+    docconf <- case mauf of
         Nothing  -> get_task_config mk lang
-        Just auf -> 
-            return $ CString $ toString $ A.config auf
+        Just auf -> do
+            -- ugly: since we do not put documentation in DB
+            -- we have to ask the server again
+            docco <- get_task_config mk lang
+            return $ docco 
+              { D.contents = CString 
+                         $ toString $ A.config auf }
+    let CString conf = D.contents docconf
+        DString doc = D.documentation docconf
+        out = UXO.xmlStringToOutput doc
+
+    open table
+    open row
     ms <- textarea $ conf
+    close -- row
+    open row ; open table ; open row
+    plain $ M.specialize lang
+                  $ M.make 
+                  [ (M.DE, "Der Typ der Konfiguration ist:" )
+		  , (M.UK, "configuration is of type:")
+	          ]
+    html $ M.specialize lang 
+                 $ ( O.render :: O.Output -> H.Html )
+                 $ out
+    close ; close ; close
+    open row   
     sconf <- submit "submit"
+    close -- row
+    close -- table
+
     close -- row
     ver <- safe_io "verify_task_config.1" $ verify_task_config mk ( CString $ case ms of
          Nothing -> conf
