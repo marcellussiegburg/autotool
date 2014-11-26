@@ -12,6 +12,7 @@ import Settings.StaticFiles
 import Settings (widgetFile, Extra (..))
 import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
+import Data.Text (Text)
 import Yesod.Core.Types (Logger)
 
 import Model

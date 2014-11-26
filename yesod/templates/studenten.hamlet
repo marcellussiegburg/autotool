@@ -1,0 +1,94 @@
+<h1>
+  _{MsgStudentenVorlesung "Beispielvorlesung"}
+<h2>
+  _{MsgGruppen}
+<table .table .table-striped .table-hover>
+  <thead>
+    <tr>
+      <th>
+        _{MsgGruppennummer}
+      <th>
+        _{MsgBezeichnung}
+      <th>
+        _{MsgReferent}
+      <th>
+  <tbody>
+    <tr>
+      <td>
+        1
+      <td>
+        14INB-1
+      <td>
+        Herr Müller
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+    <tr>
+      <td>
+        2
+      <td>
+        14INB-2
+      <td>
+        Herr Meyer
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+<h2>
+  _{MsgStudenten}
+<table .table .table-striped .table-hover>
+  <thead>
+    <tr>
+      <th>
+        _{MsgMatrikelnummer}
+      <th>
+        _{MsgVorname}
+      <th>
+        _{MsgName}
+      <th>
+        _{MsgGruppennummer}
+      <th>
+        _{MsgGesamtpunktzahl}
+      <th>
+  <tbody>
+    <tr>
+      <td>
+        1234
+      <td>
+        Mark
+      <td>
+        Otto
+      <td>
+        1
+      <td>
+        0
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+    <tr>
+      <td>
+        2454
+      <td>
+        Jacob
+      <td>
+        Thornton
+      <td>
+        2
+      <td>
+        0
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+    <tr>
+      <td>
+        5332
+      <td>
+        Larry
+      <td>
+        Müller
+      <td>
+        1
+      <td>
+        0
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
