@@ -2,9 +2,10 @@ module Model where
 
 import Data.Int (Int)
 import Data.Text (Text)
-import Data.Tree (Tree)
+import Data.Maybe (Maybe)
 
-import Yesod (Route)
+data StudentListe = StudentEintrag Text Text Text Int Int [Ergebnis]
+type Ergebnis = Maybe (Int, Int)
 
 type SchuleId = Int
 type SemesterId = Int

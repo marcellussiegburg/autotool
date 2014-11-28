@@ -3,12 +3,12 @@ module Import
     ) where
 
 import Prelude as Import hiding (head, init, last, readFile, tail, writeFile)
-import Yesod as Import hiding (Route (..))
+import Yesod as Import
 import Yesod.Form.Bootstrap3 as Import (BootstrapFormLayout (..), BootstrapGridOptions (..), BootstrapSubmit (BootstrapSubmit), bfs, bootstrapSubmit, renderBootstrap3, withAutofocus)
 import Text.Shakespeare.Text as Import (toText)
 
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))
-import Data.Text as Import (Text)
+import Data.Text as Import (Text, pack, unpack)
 import Data.Text.Lazy.Builder as Import (toLazyText)
 
 import Foundation as Import 

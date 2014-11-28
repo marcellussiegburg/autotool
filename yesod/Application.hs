@@ -23,6 +23,8 @@ import Handler.Home
 import Handler.Aufgabe
 import Handler.Schulen
 import Handler.Studenten
+import Handler.Resultate
+import Handler.ResultatePflicht
 import Handler.Waisenkinder
 
 mkYesodDispatch "Autotool" resourcesAutotool

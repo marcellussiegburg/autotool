@@ -1,5 +1,5 @@
 <h1>
-  _{MsgStudentenVorlesung "Beispielvorlesung"}
+  _{titel}
 <h2>
   _{MsgGruppen}
 <table .table .table-striped .table-hover>
@@ -35,60 +35,62 @@
           _{MsgBearbeiten}
 <h2>
   _{MsgStudenten}
-<table .table .table-striped .table-hover>
-  <thead>
-    <tr>
-      <th>
-        _{MsgMatrikelnummer}
-      <th>
-        _{MsgVorname}
-      <th>
-        _{MsgName}
-      <th>
-        _{MsgGruppennummer}
-      <th>
-        _{MsgGesamtpunktzahl}
-      <th>
-  <tbody>
-    <tr>
-      <td>
-        1234
-      <td>
-        Mark
-      <td>
-        Otto
-      <td>
-        1
-      <td>
-        0
-      <td>
-        <a href="#" .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
-    <tr>
-      <td>
-        2454
-      <td>
-        Jacob
-      <td>
-        Thornton
-      <td>
-        2
-      <td>
-        0
-      <td>
-        <a href="#" .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
-    <tr>
-      <td>
-        5332
-      <td>
-        Larry
-      <td>
-        Müller
-      <td>
-        1
-      <td>
-        0
-      <td>
-        <a href="#" .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
+$if null studenten
+  <p>
+    Keine Studenten
+$else
+  <table .table .table-striped .table-hover>
+    <thead>
+      <tr>
+        <th>
+          _{MsgMatrikelnummer}
+        <th>
+          _{MsgVorname}
+        <th>
+          _{MsgName}
+        <th>
+          _{MsgGruppennummer}
+        <th>
+          _{MsgGesamtpunktzahl}
+        $if null aufgaben
+          <th>
+        $else
+          $forall aufgabe <- aufgaben
+            <th colspan=2>
+              #{aufgabe}
+    <tbody>
+      $forall StudentEintrag mnr vorname name gruppe punkte ergebnisse <- studenten
+        <tr>
+          <td>
+            #{mnr}
+          <td>
+            #{vorname}
+          <td>
+            #{name}
+          <td>
+            #{gruppe}
+          <td>
+            #{punkte}
+          $if null ergebnisse
+            <td>
+              <a href="#" .btn .btn-primary .btn-block role="button">
+                _{MsgBearbeiten}
+          $else
+            $forall ergebnis <- ergebnisse
+              $maybe (ok, nein) <- ergebnis
+                <td .success>
+                  #{ok}
+                <td .danger>
+                  #{nein}
+              $nothing
+                <td .warning colspan=2>
+<nav>
+  <ul .pager>
+    <li .previous>
+      <a href=@{fst $ fst $ links vorlesung}>
+        <span aria-hidden="true">&larr;
+        _{snd $ fst $ links vorlesung}
+    <li .next>
+      <a href=@{fst $ snd $ links vorlesung}>
+        _{snd $ snd $ links vorlesung}
+        <span aria-hidden="true">&rarr;

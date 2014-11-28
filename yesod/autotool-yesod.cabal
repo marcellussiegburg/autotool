@@ -21,6 +21,8 @@ library
                      Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.Resultate
+                     Handler.ResultatePflicht
                      Handler.Schulen
                      Handler.Studenten
                      Handler.Waisenkinder

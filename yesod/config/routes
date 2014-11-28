@@ -7,4 +7,6 @@
 /schulen SchulenR GET
 /schule/#SchuleId/waisenkinder WaisenkinderR GET
 /vorlesung/#VorlesungId/studenten StudentenR GET
+/vorlesung/#VorlesungId/resultate ResultateR GET
+/vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR GET
 /aufgabe/#AufgabeId AufgabeR GET POST

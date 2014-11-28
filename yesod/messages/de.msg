@@ -1,3 +1,4 @@
+AlleResultate: Alle Resultate
 Bearbeiten: Bearbeiten
 BeispielLaden: Beispiel laden
 Bezeichnung: Bezeichnung
@@ -8,10 +9,10 @@ LösungAbsenden: Lösung absenden
 Matrikelnummer: Matrikelnummer
 Name: Name
 Referent: Referent
+ResultatePflicht: Resultate der Pflichtaufgaben
 Schulen: Schulen
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Studenten: Studenten
-StudentenVorlesung vorlesung@Text: Studenten der Vorlesung #{vorlesung}
 VorherigeEinsendungLaden: Vorherige Einsendung laden
 Vorname: Vorname
 Waisenkinder: Waisenkinder
