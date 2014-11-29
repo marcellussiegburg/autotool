@@ -2,6 +2,9 @@ module Handler.Studenten where
 
 import Import
 
+data StudentListe = StudentEintrag Text Text Text Int Int [Ergebnis]
+type Ergebnis = Maybe (Int, Int)
+
 titel :: AutotoolMessage
 titel = MsgStudenten
 

@@ -1,6 +1,7 @@
 module Handler.ResultatePflicht where
 
-import Import
+import Import 
+import Handler.Studenten (StudentListe(..))
 
 titel :: AutotoolMessage
 titel = MsgResultatePflicht

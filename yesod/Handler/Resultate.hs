@@ -1,6 +1,7 @@
 module Handler.Resultate where
 
 import Import
+import Handler.Studenten (StudentListe(..))
 
 titel :: AutotoolMessage
 titel = MsgAlleResultate
