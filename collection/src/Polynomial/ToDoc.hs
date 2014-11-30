@@ -1,3 +1,6 @@
+{-# language FlexibleContexts #-}
+{-# language UndecidableInstances #-}
+
 module Polynomial.ToDoc where
 
 import Polynomial.Data
@@ -25,3 +28,6 @@ instance (Num r, Ord r, ToDoc r, ToDoc v)
                       ( _ , False) | c == -1 -> hsep [ text "-", toDoc m ]
                       _ -> hsep [ toDoc c, text "*", toDoc m ]
               in  hsep $ term t : map ( \ t @(c,m) -> if c < 0 then term t else text "+" <+>  term t) ts
+
+instance ToDoc (Poly r v) => Show (Poly r v) where
+    show = render . toDoc 

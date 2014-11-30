@@ -42,6 +42,14 @@ instance Ord v => Ixed (Mono v) where
 
 nullMono m = M.null $ m ^. unMono
 
+divMono :: Ord v => Mono v -> Mono v -> Mono v
+divMono m n =
+    let d = M.unionWith (+) (m ^. unMono)
+          $ M.map negate (n ^. unMono)
+    in  if M.null $ M.filter (< 0) d
+        then mono $ map (\(k,v) -> Factor k v) $ M.toList d
+        else error "Polynomial.data.divMono: exponent<0"
+
 deriving instance Eq v => Eq (Mono v)
 deriving instance Ord v => Ord (Mono v)
 
@@ -84,9 +92,10 @@ terms p = do (m,c) <- M.toList $ p ^. unPoly ; return (c,m)
 nterms p = M.size $ p ^. unPoly
 
 variable v = poly [(1, mono [ Factor {_var=v, _expo=1 } ])]
+constant c = poly [(c, mono[])]
 
 absolute p = M.findWithDefault 0 ( mono [] ) $ p ^. unPoly
-
+null = M.null . ( ^. unPoly )
 
 -- | leading term
 lt :: Poly r v -> Maybe (Mono v)
@@ -106,4 +115,9 @@ lm p = case M.maxViewWithKey $ p ^. unPoly of
 red p = case M.maxViewWithKey $ p ^. unPoly of 
     Nothing -> Nothing
     Just ((k,v), q) -> Just $ Poly { _unPoly = q }
+
+lmRed :: Poly r v -> Maybe ((r, Mono v), Poly r v)
+lmRed p = case M.maxViewWithKey $ p ^. unPoly of 
+    Nothing -> Nothing
+    Just ((k,v), q) -> Just ((v,k), Poly { _unPoly = q })
 
