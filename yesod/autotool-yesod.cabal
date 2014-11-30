@@ -24,6 +24,7 @@ library
                      Handler.Resultate
                      Handler.ResultatePflicht
                      Handler.Schulen
+                     Handler.Statistik
                      Handler.Studenten
                      Handler.Waisenkinder
 

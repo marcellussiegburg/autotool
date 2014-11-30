@@ -1,0 +1,89 @@
+<h1>
+  Statistik
+$if null ergebnisse
+  <p>
+    Keine Studenten
+$else
+  <table .table .table-striped .table-hover>
+    <thead>
+      <tr>
+        <th>
+          _{MsgMatrikelnummer}
+        <th>
+          _{MsgVorname}
+        <th>
+          _{MsgName}
+        <th>
+          _{MsgOkays}
+        <th>
+          _{MsgNeins}
+        <th>
+          _{MsgPunkte}
+        <th>
+          _{MsgGröße}
+        <th colspan=3>
+        <th>
+          _{MsgBehalten}
+        <th>
+          _{MsgNein}
+        <th>
+          1
+        <th>
+          2
+        <th>
+          3
+        <th>
+          4
+        <th>
+          5
+    <tbody>
+      $forall ErgebnisEintrag mnr vorname name okays neins ergebnis <- ergebnisse
+        <tr>
+          <td>
+            #{mnr}
+          <td>
+            #{vorname}
+          <td>
+            #{name}
+          <td>
+            #{show okays}
+          <td>
+            #{show neins}
+          $maybe erg <- ergebnis
+            $case erg
+              $of Okay punkte größe
+                <td .success>
+                  #{show punkte}
+                <td .success>
+                  #{show größe}
+              $of Nein
+                <td .danger colspan=2>
+                  _{MsgNein}
+              $of Ausstehend
+                <td .warning colspan=2>
+                  _{MsgAusstehend}
+          $nothing
+            <td .warning colspan=2>
+          <td>
+            <a href="#" .btn .btn-primary .btn-block role="button">
+              _{MsgAnzeigen}
+          <td>
+            <a href="#" .btn .btn-primary .btn-block role="button">
+              _{MsgBearbeiten}
+          <td>
+            <a href="#" .btn .btn-primary .btn-block role="button">
+              _{MsgCacheLöschen}
+          <td>
+            <input type="checkbox">
+          <td>
+            <input type="checkbox">
+          <td>
+            <input type="checkbox">
+          <td>
+            <input type="checkbox">
+          <td>
+            <input type="checkbox">
+          <td>
+            <input type="checkbox">
+          <td>
+            <input type="checkbox">

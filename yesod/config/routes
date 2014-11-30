@@ -10,3 +10,4 @@
 /vorlesung/#VorlesungId/resultate ResultateR GET
 /vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR GET
 /aufgabe/#AufgabeId AufgabeR GET POST
+/aufgabe/#AufgabeId/statistik StatistikR GET POST
