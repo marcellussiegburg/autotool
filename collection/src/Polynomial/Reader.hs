@@ -10,7 +10,8 @@ import Control.Applicative ((<$>),(<*>))
 
 import qualified Text.Parsec.Expr as E
 
-instance (Ord v, Reader v) => Reader (Poly v) where reader =  expr
+instance (Num r, Eq r, Reader r, Ord v, Reader v) 
+    => Reader (Poly r v) where reader =  expr
 
 expr = E.buildExpressionParser table term
 

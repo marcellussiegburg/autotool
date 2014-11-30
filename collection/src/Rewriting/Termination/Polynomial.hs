@@ -26,14 +26,15 @@ instance Reader X where
         return $ X $ read ds
 
 
-substitute :: P.Poly X -> [ P.Poly X ] -> P.Poly X
+substitute :: P.Poly Integer X -> [ P.Poly Integer X ] 
+           -> P.Poly Integer X
 substitute f gs = sum $ do
     (c,m) <- P.terms f
     return $ product $ fromInteger c : do
         (X i,e) <- P.factors m
         return $ (gs !! pred i) ^ e
     
-projection :: Int -> P.Poly X
+projection :: Int -> P.Poly Integer X
 projection to = P.variable $ X to
 
 must_be_monotone f arity p = do

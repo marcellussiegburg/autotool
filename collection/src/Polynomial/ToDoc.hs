@@ -13,7 +13,8 @@ instance ToDoc v => ToDoc (Mono v) where
     toDoc m = hsep $ punctuate (text " *") $ do
         (v,e) <- factors m ; return $ toDoc $ Factor { _var = v, _expo = e }
 
-instance ToDoc v => ToDoc (Poly v) where
+instance (Num r, Ord r, ToDoc r, ToDoc v) 
+         => ToDoc (Poly r v) where
     toDoc p = case terms p of
         [] -> text "0"
         t : ts -> 

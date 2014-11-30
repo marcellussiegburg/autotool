@@ -6,8 +6,8 @@ import Control.Lens
 import qualified Data.Map.Strict as M
 
 -- actually this should be Ring, not Num
-instance Ord v => Num (Poly v) where
-    fromInteger i = poly [ (i, mono [] ) ]
+instance (Num r, Eq r, Ord v) => Num (Poly r v) where
+    fromInteger i = poly [ (fromInteger i, mono [] ) ]
     negate p = Poly { _unPoly = M.map negate $ p ^. unPoly }
     p + q = Poly { _unPoly = M.filter (/= 0) $ M.unionWith (+) (p ^. unPoly) (q ^.unPoly) }
     p * q = poly $ do
@@ -19,3 +19,5 @@ instance Ord v => Num (Mono v) where
                  , _total_degree = p ^. total_degree + q ^. total_degree
                  }
 
+divMod :: Poly r v -> Poly r v -> ( Poly r v, Poly r v )
+divMod a b = undefined 
