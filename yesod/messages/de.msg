@@ -6,10 +6,12 @@ Behalten: Behalten
 BeispielLaden: Beispiel laden
 Bezeichnung: Bezeichnung
 CacheLöschen: Cache Löschen
+Email: E-Mail
 Gesamtpunktzahl: Total
 Größe: Größe
 Gruppen: Gruppen
 Gruppennummer: Gruppennummer
+Identifikationsnummer: ID
 LösungAbsenden: Lösung absenden
 Matrikelnummer: Matrikelnummer
 Name: Name
@@ -22,6 +24,8 @@ ResultatePflicht: Resultate der Pflichtaufgaben
 Schulen: Schulen
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Studenten: Studenten
+Tutoren: Tutoren
+TutorAbsetzen: Tutor absetzen
 VorherigeEinsendungLaden: Vorherige Einsendung laden
 Vorname: Vorname
 Waisenkinder: Waisenkinder

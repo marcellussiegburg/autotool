@@ -1,0 +1,36 @@
+<h1>
+  _{MsgTutoren}
+$if null tutoren
+  <p>
+    Keine tutoren
+$else
+  <table .table .table-striped .table-hover>
+    <thead>
+      <tr>
+        <th>
+          _{MsgIdentifikationsnummer}
+        <th>
+          _{MsgMatrikelnummer}
+        <th>
+          _{MsgVorname}
+        <th>
+          _{MsgName}
+        <th>
+          _{MsgEmail}
+        <th>
+    <tbody>
+      $forall TutorEintrag id mnr vorname name email <- tutoren
+        <tr>
+          <td>
+            #{show id}
+          <td>
+            #{mnr}
+          <td>
+            #{vorname}
+          <td>
+            #{name}
+          <td>
+            #{email}
+          <td>
+            <a href="#" .btn .btn-danger .btn-block role="button">
+              _{MsgTutorAbsetzen}

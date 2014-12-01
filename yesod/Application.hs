@@ -21,11 +21,12 @@ import Yesod.Core.Types (loggerSet, Logger (Logger))
 
 import Handler.Home
 import Handler.Aufgabe
+import Handler.Resultate
+import Handler.ResultatePflicht
 import Handler.Schulen
 import Handler.Statistik
 import Handler.Studenten
-import Handler.Resultate
-import Handler.ResultatePflicht
+import Handler.Tutoren
 import Handler.Waisenkinder
 
 mkYesodDispatch "Autotool" resourcesAutotool

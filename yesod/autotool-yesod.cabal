@@ -26,6 +26,7 @@ library
                      Handler.Schulen
                      Handler.Statistik
                      Handler.Studenten
+                     Handler.Tutoren
                      Handler.Waisenkinder
 
     if flag(dev) || flag(library-only)
