@@ -321,6 +321,8 @@ Library
                  Polynomial.Reader
                  Polynomial.ToDoc
                  Polynomial.Type
+                 Polynomial.Euclid
+                 Polynomial.Pattern
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,

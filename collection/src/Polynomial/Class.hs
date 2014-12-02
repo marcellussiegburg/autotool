@@ -1,9 +1,17 @@
 {-# language FlexibleInstances #-}
 {-# language NoMonomorphismRestriction #-}
+{-# language DeriveDataTypeable #-}
 
 module Polynomial.Class where
 
 import qualified Prelude
+import Prelude (($))
+
+import Autolib.ToDoc
+import Autolib.Reader
+
+import Control.Applicative ((<$>), (<*>), (<*), (*>))
+import Data.Typeable
 
 infixl 7  *, /
 infixl 6  +, -
@@ -36,9 +44,14 @@ instance Ring Integer where
     fromInteger i = i
 
 data Ratio z = z :% z 
-     deriving (Prelude.Eq, Prelude.Ord, Prelude.Show)
+     deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 
 type Rational = Ratio Integer
+
+instance ToDoc z => ToDoc (Ratio z) where
+    toDoc (a :% b) = parens $ hsep [ toDoc a, text ":%", toDoc b ]
+instance (Normalize_Fraction z, Reader z) => Reader (Ratio z) where
+    reader = my_parens $ (%) <$> reader <* my_reservedOp ":%" <*> reader 
 
 class Normalize_Fraction z where
     (%) :: z -> z -> Ratio z
@@ -57,7 +70,12 @@ instance ( Normalize_Fraction z, Ring z )
     fromInteger i = fromInteger i % one
 
 data Complex r = r :+ r
-     deriving (Prelude.Eq, Prelude.Ord, Prelude.Show)
+     deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
+
+instance ToDoc r => ToDoc (Complex r) where
+    toDoc (a :+ b) = parens $ hsep [ toDoc a, text ":+", toDoc b ]
+instance (Reader r) => Reader (Complex r) where
+    reader = my_parens $ (:+) <$> reader <* my_reservedOp ":+" <*> reader 
 
 instance Ring r => Ring ( Complex r ) where
     zero = zero :+ zero

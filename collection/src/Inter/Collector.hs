@@ -254,6 +254,8 @@ import qualified SOS
 
 import qualified Lattice.Reduce
 
+import qualified Polynomial.Euclid
+
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
 
@@ -693,7 +695,9 @@ tmakers =
                 , item Graph.EDS.Central.make_quiz
                 ]
           , heading "Symbolisches Rechnen"
-                [ item Lattice.Reduce.make_fixed
+                [ item Polynomial.Euclid.make_fixed_integer
+                , item Polynomial.Euclid.make_fixed_gauss
+                , item Lattice.Reduce.make_fixed
                 , item Lattice.Reduce.make_quiz
                 ]
 	  , heading "experimentell"
