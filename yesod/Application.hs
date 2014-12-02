@@ -27,6 +27,7 @@ import Handler.Schulen
 import Handler.Statistik
 import Handler.Studenten
 import Handler.Tutoren
+import Handler.TutorErnennen
 import Handler.Waisenkinder
 
 mkYesodDispatch "Autotool" resourcesAutotool

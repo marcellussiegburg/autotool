@@ -27,6 +27,7 @@ library
                      Handler.Statistik
                      Handler.Studenten
                      Handler.Tutoren
+                     Handler.TutorErnennen
                      Handler.Waisenkinder
 
     if flag(dev) || flag(library-only)

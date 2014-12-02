@@ -24,8 +24,10 @@ ResultatePflicht: Resultate der Pflichtaufgaben
 Schulen: Schulen
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Studenten: Studenten
+Tutor: Tutor ernennen
 Tutoren: Tutoren
 TutorAbsetzen: Tutor absetzen
+TutorErnennen: Tutor ernennen
 VorherigeEinsendungLaden: Vorherige Einsendung laden
 Vorname: Vorname
 Waisenkinder: Waisenkinder

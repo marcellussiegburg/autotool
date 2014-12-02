@@ -1,5 +1,5 @@
 <h1>
-  _{MsgTutoren}
+  _{title}
 $if null tutoren
   <p>
     Keine tutoren
@@ -32,5 +32,9 @@ $else
           <td>
             #{email}
           <td>
-            <a href="#" .btn .btn-danger .btn-block role="button">
-              _{MsgTutorAbsetzen}
+            $if ernennen == True
+              <a href="#" .btn .btn-danger .btn-block role="button">
+                _{MsgTutorAbsetzen}
+            $else
+              <a href="#" .btn .btn-success .btn-block role="button">
+                _{MsgTutorErnennen}
