@@ -5,6 +5,11 @@ module Rewriting.Termination.Polynomial where
 
 import qualified Polynomial.Type as P
 
+import Polynomial.Class
+import qualified Prelude
+import Prelude hiding 
+    ( Num (..), sum, product, (^), (/), Integer, null, gcd, divMod, div, mod )
+
 import Autolib.Reader
 import Autolib.ToDoc
 import Autolib.Reporter

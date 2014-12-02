@@ -5,6 +5,9 @@
 
 module Polynomial.Data where
 
+import Polynomial.Class
+import Prelude hiding ( Num (..), Integer, sum)
+
 import qualified Data.Map.Strict as M
 import Control.Lens
 import Control.Lens.At
@@ -79,10 +82,10 @@ type instance Index (Poly r v)  = Mono v
 instance Ord v => Ixed (Poly r v) where 
     ix k = unPoly  . ix k 
 
-poly :: (Num r, Eq r, Ord v) 
+poly :: (Ring r, Eq r, Ord v) 
      => [(r, Mono v)] -> Poly r v
 poly cms = Poly 
-    { _unPoly = M.filter (/= 0) $ M.fromListWith (+) $ do
+    { _unPoly = M.filter (/= zero) $ M.fromListWith (+) $ do
         (c,m) <- cms 
         return (m,c)
     }

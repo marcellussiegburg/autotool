@@ -2,6 +2,9 @@
 
 module Polynomial.Reader where
 
+import Polynomial.Class
+import qualified Prelude
+import Prelude ( return, ($), Eq, Ord, read )
 import Polynomial.Data
 import Polynomial.Op
 
@@ -10,14 +13,14 @@ import Control.Applicative ((<$>),(<*>))
 
 import qualified Text.Parsec.Expr as E
 
-instance (Num r, Eq r, Reader r, Ord v, Reader v) 
+instance (Ring r, Reader r, Ord v, Reader v) 
     => Reader (Poly r v) where reader =  expr
 
 expr = E.buildExpressionParser table term
 
 term    =  my_parens expr 
           <|> ( fromInteger <$> natural )
-         <|> do f <- reader ; return $ poly [(1,mono [f])]
+         <|> do f <- reader ; return $ poly [(one,mono [f])]
 
 table   = [ [prefix "-" negate  ]
             , [binary "*" (*) E.AssocLeft ]

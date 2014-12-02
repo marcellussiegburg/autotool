@@ -9,9 +9,11 @@ module Polynomial.Type
 
 where
 
+import Polynomial.Class
 import Polynomial.Data
 import Polynomial.ToDoc
 import Polynomial.Reader
 import Polynomial.Op
 import Autolib.TES.Identifier
-import Prelude hiding ( null, divMod, gcd )
+import qualified Prelude
+
