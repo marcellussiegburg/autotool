@@ -315,6 +315,7 @@ Library
                  Rewriting.Abstract.Solve,
                  Rewriting.Abstract.Fixed,
                  Rewriting.Abstract.Quiz,
+                 Polynomial.Class,
                  Polynomial.Data
                  Polynomial.Op
                  Polynomial.Reader
