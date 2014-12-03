@@ -1,0 +1,51 @@
+<h1>
+  _{MsgGruppen}
+<table .table .table-striped .table-hover>
+  <thead>
+    <tr>
+      <th>
+        _{MsgGruppenname}
+      <th>
+        _{MsgReferent}
+      <th>
+        _{MsgStudentenEingeschrieben}
+      <th>
+        _{MsgStudentenMaximal}
+      <th>
+      <th>
+      <th>
+  <tbody>
+    <tr>
+      <td>
+        14INB-1
+      <td>
+        Herr Müller
+      <td>
+        11
+      <td>
+        30
+      <td>
+        <a href="#" .btn .btn-success .btn-block role="button">
+          _{MsgEinschreiben}
+      <td>
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}
+    <tr>
+      <td>
+        14INB-2
+      <td>
+        Herr Meyer
+      <td>
+        3
+      <td>
+        15
+      <td>
+        <a href="#" .btn .btn-danger .btn-block role="button">
+          _{MsgAustragen}
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBesuchen}
+      <td>
+        <a href="#" .btn .btn-primary .btn-block role="button">
+          _{MsgBearbeiten}

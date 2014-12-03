@@ -21,6 +21,7 @@ library
                      Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.Gruppen
                      Handler.Resultate
                      Handler.ResultatePflicht
                      Handler.Schulen

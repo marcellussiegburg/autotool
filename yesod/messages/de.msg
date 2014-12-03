@@ -1,15 +1,18 @@
 AlleResultate: Alle Resultate
 Anzeigen: Anzeigen
 Ausstehend: Ausstehend
+Austragen: Austragen
 Bearbeiten: Bearbeiten
 Behalten: Behalten
 BeispielLaden: Beispiel laden
-Bezeichnung: Bezeichnung
+Besuchen: Besuchen
 CacheLöschen: Cache Löschen
+Einschreiben: Einschreiben
 Email: E-Mail
 Gesamtpunktzahl: Total
 Größe: Größe
 Gruppen: Gruppen
+Gruppenname: Gruppenname
 Gruppennummer: Gruppennummer
 Identifikationsnummer: ID
 LösungAbsenden: Lösung absenden
@@ -24,6 +27,8 @@ ResultatePflicht: Resultate der Pflichtaufgaben
 Schulen: Schulen
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Studenten: Studenten
+StudentenEingeschrieben: Eingeschriebene Studenten
+StudentenMaximal: Maximale Einschreibungen
 Tutor: Tutor ernennen
 Tutoren: Tutoren
 TutorAbsetzen: Tutor absetzen
