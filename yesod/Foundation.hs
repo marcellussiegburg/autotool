@@ -5,6 +5,8 @@ import Yesod
 import Yesod.Static
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
+import Yesod.Form.I18n.English
+import Yesod.Form.I18n.German
 import Network.HTTP.Client.Conduit (Manager, HasHttpManager (getHttpManager))
 import qualified Settings
 import Settings.Development (development)
@@ -12,7 +14,6 @@ import Settings.StaticFiles
 import Settings (widgetFile, Extra (..))
 import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
-import Data.Text (Text)
 import Yesod.Core.Types (Logger)
 
 import Model
@@ -83,7 +84,10 @@ instance Yesod Autotool where
     makeLogger = return . appLogger
 
 instance RenderMessage Autotool FormMessage where
-    renderMessage _ _ = defaultFormMessage
+    renderMessage _ ("de":_) = germanFormMessage
+    renderMessage _ ("en":_) = englishFormMessage
+    renderMessage master (_:langs) = renderMessage master langs
+    renderMessage _ [] = defaultFormMessage
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
