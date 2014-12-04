@@ -1,0 +1,3 @@
+<h1>_{MsgGruppeAnlegen}
+<form role="form" action=@{GruppeAnlegenR vorlesung} method="post" enctype=#{formEnctype}>
+  ^{formWidget}

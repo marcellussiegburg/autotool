@@ -11,9 +11,10 @@ Einschreiben: Einschreiben
 Email: E-Mail
 Gesamtpunktzahl: Total
 Größe: Größe
+GruppeAnlegen: Gruppe Anlegen
 Gruppen: Gruppen
-Gruppenname: Gruppenname
-Gruppennummer: Gruppennummer
+GruppeName: Gruppenname
+GruppeNummer: Gruppennummer
 Identifikationsnummer: ID
 LösungAbsenden: Lösung absenden
 Matrikelnummer: Matrikelnummer
@@ -21,6 +22,7 @@ Name: Name
 Nein: Nein
 Neins: Nein
 Okays: Okay
+Plätze: Plätze
 Punkte: Punkte
 Referent: Referent
 ResultatePflicht: Resultate der Pflichtaufgaben

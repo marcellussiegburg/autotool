@@ -6,9 +6,9 @@
   <thead>
     <tr>
       <th>
-        _{MsgGruppennummer}
+        _{MsgGruppeNummer}
       <th>
-        _{MsgGruppenname}
+        _{MsgGruppeName}
       <th>
         _{MsgReferent}
       <th>
@@ -49,7 +49,7 @@ $else
         <th>
           _{MsgName}
         <th>
-          _{MsgGruppennummer}
+          _{MsgGruppeNummer}
         <th>
           _{MsgGesamtpunktzahl}
         $if null aufgaben
