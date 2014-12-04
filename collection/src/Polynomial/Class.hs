@@ -1,17 +1,24 @@
 {-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
 {-# language NoMonomorphismRestriction #-}
 {-# language DeriveDataTypeable #-}
 {-# language TemplateHaskell #-}
+{-# language ScopedTypeVariables #-}
 
 module Polynomial.Class where
 
-import Prelude hiding (Num(..), (/), (^), div, divMod, mod
+import Prelude hiding (Num(..), (/), (^)
+       , div, divMod, mod, gcd
        , Integer, Rational)
 import qualified Prelude
 
 import Autolib.ToDoc
 import Autolib.Reader
 
+import Test.Hspec
+import Test.Hspec.Runner
+import Test.Hspec.SmallCheck
+import Test.SmallCheck.Series
 import Control.Applicative ((<$>), (<*>), (<*), (*>))
 import Data.Typeable
 
@@ -25,6 +32,37 @@ class Prelude.Eq r => Ring r where
     one :: r
     (*) :: r -> r -> r
     fromInteger :: Prelude.Integer -> r
+
+associative f a b c = f (f a b) c == f a (f b c)
+commutative f a b = f a b == f b a
+left_distributive f g a b c = 
+    f (g a c) (g b c) == g (f a b) c
+right_distributive f g a b c = 
+    f (g a b) (g a c) == g a (f b c)
+
+ring_spec (_ :: r ) = describe "Ring properties" $ do
+  describe "addition" $ do
+    it "left-zero" $ property $ \ a -> zero + (a ::r) == a
+    it "right-zero" $ property $ \ a -> (a ::r) + zero == a
+    it "is associative" $ property 
+       $ associative ((+) :: r -> r -> r)
+    it "is commutative" 
+       $ property $ commutative ((+) :: r -> r -> r)
+  describe "subtraction" $ do
+    it "inverse" $ property $ \ a -> (a :: r) - a == zero
+  describe "multiplication" $ do
+    it "left-one" $ property $ \ a -> one * (a ::r) == a
+    it "right-one" $ property $ \ a -> (a ::r) * one == a
+    it "is associative" $ property 
+       $ associative ((*) :: r -> r -> r)
+  describe "addition/multiplication" $ do
+    it "left-distributes" $ property 
+        $ left_distributive ((+)::r->r->r) ((*)::r->r->r)
+    it "right-distributes" $ property 
+        $ right_distributive ((+)::r->r->r) ((*)::r->r->r)
+
+spec d = hspecWith 
+    $ defaultConfig { configSmallCheckDepth = d }
 
 a - b = a + negate b
 
@@ -48,6 +86,12 @@ instance Ring Integer where
 data Ratio z = z :% z 
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 
+instance (Serial m z, Ring z, Normalize_Fraction z ) 
+         => Serial m (Ratio z) where
+    series = (%) 
+        <$> series 
+        <~> ((\ x -> if x == zero then one else x)<$> series)
+
 type Rational = Ratio Integer
 
 instance ToDoc z => ToDoc (Ratio z) where
@@ -59,8 +103,10 @@ class Normalize_Fraction z where
     (%) :: z -> z -> Ratio z
 
 instance Normalize_Fraction Integer where
-    p % q = let g = Prelude.gcd p q 
-            in Prelude.div p g :% Prelude.div q g
+    p % q = 
+        if q < 0 then negate p % negate q
+        else let g = Prelude.gcd p q 
+             in Prelude.div p g :% Prelude.div q g
 
 instance ( Normalize_Fraction z, Ring z ) 
          => Ring (Ratio z) where
@@ -74,8 +120,13 @@ instance ( Normalize_Fraction z, Ring z )
 data Complex r = r :+ r
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 
+instance (Serial m z ) 
+         => Serial m (Complex z) where
+    series = (:+) <$> series <~> series
+
 instance ToDoc r => ToDoc (Complex r) where
-    toDoc (a :+ b) = parens $ hsep [ toDoc a, text ":+", toDoc b ]
+    toDoc (a :+ b) = 
+        parens $ hsep [ toDoc a, text ":+", toDoc b ]
 instance (Reader r) => Reader (Complex r) where
     reader = my_parens $ (:+) <$> reader <* my_reservedOp ":+" <*> reader 
 
@@ -109,6 +160,13 @@ instance Euclidean_Ring (Complex Integer) where
                      in  div e d
         in  near s :+ near t
 
+euclidean_spec (_ :: r ) = 
+  describe "Euclidean Ring properties" $ do
+    it "norm/remainder" $ property $ \ p q ->
+        if q /= (zero :: r) 
+        then norm ( mod p q ) < norm q else True
+
+
 class Ring r => Field r where
     (/) :: r -> r -> r
 
@@ -137,13 +195,22 @@ gcd_steps a b =
     : Step { quotient = zero , remainder = b }
     : helper a b
 
-gcd a b = let (g,p,q) = egcd a b in (p,q)
+gcd_steps_spec (_ :: r) = 
+    it "gcd_steps_spec" $ property $ \ a b -> 
+        let ss = gcd_steps a (b  :: r)
+        in  remainder ( last $ init ss ) == gcd a b
+
+gcd a b = let (g,p,q) = egcd a b in g
 
 egcd a b =
-    if b Prelude.== 0 then (a, 1, 0)
+    if b Prelude.== zero then (a, one, zero)
     else let (d, m) = divMod a b
              (g, p', q') = egcd b m
          -- p' * b + q' * m = g
          -- p' * b + q' * (a - d*b)
          -- q'*a + (p'- q'* d) b 
          in  (g, q', p' - q' * d )
+
+egcd_spec (_ :: r ) = 
+    it "extended euclidean" $ property $ \ a b ->
+        let (g, p, q) = egcd a b in (g :: r) == a * p + b * q

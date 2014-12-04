@@ -9,8 +9,7 @@ import Polynomial.Class
 import Polynomial.Patch
 import qualified Prelude
 import Prelude ( return, ($), Eq, Ord, read )
-import Polynomial.Unary
-import Polynomial.Op
+import Polynomial.Unary.Data
 
 import Autolib.Reader
 import Control.Applicative ((<$>),(<*>), (<*), (*>) )
