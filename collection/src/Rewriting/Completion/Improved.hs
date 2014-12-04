@@ -13,7 +13,7 @@ import qualified Rewriting.Termination.Interpretation  as T
 import qualified Rewriting.Termination.Polynomial as P
 import qualified Polynomial.Type as P
 
-import Polynomial.Class
+import Polynomial.Class hiding ( Step )
 import qualified Prelude
 import Prelude hiding 
     ( Num (..), (/), Integer, null, gcd, divMod, div, mod )
