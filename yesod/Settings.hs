@@ -40,7 +40,7 @@ staticRoot conf = [st|#{appRoot conf}/static|]
 widgetFileSettings :: WidgetFileSettings
 widgetFileSettings = def
     { wfsHamletSettings = defaultHamletSettings
-        { hamletNewlines = AlwaysNewlines
+        { hamletNewlines = NoNewlines
         }
     }
 
