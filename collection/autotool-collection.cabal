@@ -323,6 +323,10 @@ Library
                  Polynomial.Type
                  Polynomial.Euclid
                  Polynomial.Pattern
+                 Polynomial.Patch
+                 Polynomial.Unary
+                 Polynomial.Unary.Reader
+                 Polynomial.Unary.ToDoc
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,

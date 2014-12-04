@@ -97,8 +97,13 @@ nterms p = M.size $ p ^. unPoly
 variable v = poly [(1, mono [ Factor {_var=v, _expo=1 } ])]
 constant c = poly [(c, mono[])]
 
-absolute p = M.findWithDefault 0 ( mono [] ) $ p ^. unPoly
+absolute p = M.findWithDefault zero ( mono [] ) $ p ^. unPoly
 null = M.null . ( ^. unPoly )
+
+splitAbsolute :: (Ring r, Ord v) 
+              => Poly r v -> ( r, Poly r v )
+splitAbsolute p = 
+    ( absolute p, over unPoly (M.delete (mono [])) p )
 
 -- | leading term
 lt :: Poly r v -> Maybe (Mono v)

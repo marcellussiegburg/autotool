@@ -696,7 +696,9 @@ tmakers =
                 ]
           , heading "Symbolisches Rechnen"
                 [ item Polynomial.Euclid.make_fixed_integer
+                , item Polynomial.Euclid.make_quiz_integer
                 , item Polynomial.Euclid.make_fixed_gauss
+                , item Polynomial.Euclid.make_quiz_gauss
                 , item Lattice.Reduce.make_fixed
                 , item Lattice.Reduce.make_quiz
                 ]

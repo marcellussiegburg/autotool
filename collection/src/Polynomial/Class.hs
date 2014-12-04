@@ -1,11 +1,13 @@
 {-# language FlexibleInstances #-}
 {-# language NoMonomorphismRestriction #-}
 {-# language DeriveDataTypeable #-}
+{-# language TemplateHaskell #-}
 
 module Polynomial.Class where
 
+import Prelude hiding (Num(..), (/), (^), div, divMod, mod
+       , Integer, Rational)
 import qualified Prelude
-import Prelude (($))
 
 import Autolib.ToDoc
 import Autolib.Reader
@@ -120,6 +122,20 @@ instance Field a => Field (Complex a) where
             n = c * c + d * d
         in  (p / n) :+ (q / n)
 
+data Step r = Step { quotient :: r, remainder :: r }
+    deriving Typeable
+
+derives [makeReader, makeToDoc] [''Step]
+
+gcd_steps a b = 
+    let helper a b = 
+            if b Prelude.== zero then []
+            else let (d, m) = divMod a b
+            in Step { quotient = d, remainder = m }
+               :  helper b m
+    in  Step { quotient = zero , remainder = a }
+    : Step { quotient = zero , remainder = b }
+    : helper a b
 
 gcd a b = let (g,p,q) = egcd a b in (p,q)
 

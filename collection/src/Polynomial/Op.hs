@@ -26,17 +26,6 @@ monoMult p q = Mono
                  , _total_degree = p ^. total_degree + q ^. total_degree
                  }
 
--- | somewhat risky (we don't check the variable)
-instance (Field r, Ord v ) => Euclidean_Ring (Poly r v) where
-    norm p = ( ^. total_degree ) <$> lt p 
-    div a b = case lmRed b of
-      Nothing -> error "Polynomial.op.divMod: divide by 0"
-      Just ((lcb,ltb),redb) -> case lmRed a of
-        Just ((lca, lta),reda) 
-          | lta ^. total_degree >= ltb ^. total_degree 
-          ->
-            let t = poly [(lca / lcb, divMono lta ltb)]
-                q  = div (reda - t * redb) b
-            in  t + q
-        _ -> zero
-
+divF :: Field f => Poly f v -> f -> Poly f v
+divF p f = Poly { _unPoly = M.map (\ c -> c / f)
+                          $ p ^. unPoly }

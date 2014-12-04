@@ -9,9 +9,14 @@
 
 module Polynomial.Euclid where
 
+import Polynomial.Patch
 import Polynomial.Pattern
 import Polynomial.Type
 import Polynomial.Class
+
+import qualified Polynomial.Unary as U
+import qualified Polynomial.Unary.Reader 
+import qualified Polynomial.Unary.ToDoc
 
 import qualified Prelude
 import Prelude hiding 
@@ -25,17 +30,19 @@ import Autolib.Size
 
 import Challenger.Partial
 import Inter.Types
+import Inter.Quiz
 
 import Data.Typeable
 import Data.Maybe
 import Data.List ( tails )
 import Control.Applicative ((<$>),(<*>))
+import System.Random
 
 data Euclid_Sudoku dom = Euclid_Sudoku dom deriving Typeable
 
 instance Dom d => Show (Euclid_Sudoku d) where
     show (e :: Euclid_Sudoku d) = 
-        "Euclid_Sudoku" ++ name (undefined :: d)
+        "Euclid_Sudoku-" ++ name (undefined :: d)
 
 instance Read (Euclid_Sudoku dom)
 
@@ -60,19 +67,15 @@ instance Dom (Complex Integer) where
         , text "norm: a^2 + b^2"
         ]
 
-instance Dom (Poly Rational Identifier) where
+instance Dom (U.Poly Rational) where
     name _ = "poly"
     explain _  = vcat
         [ text "domain: polynomials Q[x]"
         , text "norm: degree"
         ]
 
-data Step r = Step { quotient :: r, remainder :: r }
-    deriving Typeable
-
 instance Size (Step r) where size _ = 1
 
-derives [makeReader, makeToDoc] [''Step]
 
 instance (Dom v, Euclidean_Ring v, Pattern (Step p)
    , Base (Step p) ~ (Step v), Reader v, Reader p, ToDoc v, ToDoc p ) 
@@ -85,7 +88,7 @@ instance (Dom v, Euclidean_Ring v, Pattern (Step p)
         , toDoc ps
         ]
 
-    initial _ ps = ps >>= ( maybeToList . base )
+    initial _ ps = map base ps
 
     partial _ ps vs = do
         forM_ (zip [0 :: Int ..] $ tails vs) $ \ (i, t) -> case t of
@@ -128,9 +131,10 @@ instance Pattern p => Pattern (Step p) where
     type Base (Step p) = Step (Base p)
     match s v = match (quotient s) (quotient v)
             &&  match (remainder s) (remainder v)
-    base s = Step <$> (base $ quotient s) 
-                  <*> (base $ remainder s)
-
+    base s = Step (base $ quotient s) (base $ remainder s)
+    robfuscate s = Step <$> robfuscate (quotient s)
+                        <*> robfuscate (remainder s)
+    inject s = Step (inject $ quotient s) (inject $ remainder s)
 
 make_fixed_integer :: Make
 make_fixed_integer = 
@@ -151,3 +155,98 @@ make_fixed_gauss =
         , Step { quotient = This (Any :+ This 1), remainder = This  (This 0 :+ This 0) }
         ] :: [ Step (Patch (Complex(Patch Integer) )) ] )
 
+{-
+make_fixed_upoly :: Make
+make_fixed_upoly = 
+    direct (Euclid_Sudoku (undefined:: U.Poly Rational)) 
+      ( [ ] :: [ Step (PP (Patch (Ratio (Patch Integer)))) ] )
+-}
+
+data Config p = Config 
+    { number_range :: (Integer, Integer)
+    , max_degree :: Integer -- ^ only for polynomial domain
+    , num_terms :: Int -- ^ only for polynomial domain
+    , num_steps :: Int
+    , take_best_of :: Int
+    } deriving Typeable
+
+derives [makeReader, makeToDoc] [''Config]
+
+class Gen p where gen :: Config a -> IO p
+
+instance Gen Integer where 
+    gen conf = randomRIO $ number_range conf
+instance Gen (Complex Integer) where
+    gen conf = (:+) 
+           <$> (randomRIO $ number_range conf)  
+           <*> (randomRIO $ number_range conf)
+instance Gen Rational where
+    gen conf = (%)
+           <$> (randomRIO $ number_range conf) 
+           <*> (Prelude.succ <$> Prelude.abs <$> randomRIO ( number_range conf) )
+
+instance Gen (U.Poly Rational) where
+    gen conf = U.poly <$> replicateM (num_terms conf) 
+        ( (,) <$> gen conf <*> randomRIO (0, max_degree conf)  )
+
+ci :: Config (Patch Integer)
+ci = Config 
+   { number_range = (10, 1000) , max_degree = 0, num_terms = 0 
+   , num_steps = 5 
+   , take_best_of = 1000 
+   }
+
+cg :: Config (Patch (Complex (Patch Integer)))
+cg = Config 
+   { number_range = (-100, 100) , max_degree = 0, num_terms = 0 
+   , num_steps = 5 
+   , take_best_of = 100
+   }
+
+
+cp :: Config (PP (Patch (Ratio (Patch Integer))))
+cp = Config 
+   { number_range = (-10, 10) , max_degree = 10, num_terms = 3
+   , num_steps = 5 
+   , take_best_of = 100
+   }
+
+
+roll_best :: Int -> (a -> Int)  -> (IO a) -> IO a
+roll_best k f gen = do
+    let h best todo = 
+            if todo > 0 then do 
+                x <- gen 
+                h (if f x < f best then x else best) (pred todo)
+            else return best
+    x <- gen ; h x k
+
+instance ( Base (Step p) ~ Step v, Gen v, Reader p, Reader v 
+         , ToDoc p, ToDoc v, Euclidean_Ring v, Pattern p
+         ) => Generator (Euclid_Sudoku v) (Config p) ([ Step p ],[Step v ]) where
+    generator _ conf key = roll_best (take_best_of conf) 
+        ( \ (ps,ss) -> Prelude.abs (length ss Prelude.- num_steps conf) )
+        $ do
+            a <- gen conf ; b <- gen conf
+            let s : ss = gcd_steps a b
+            ps <- (inject s : ) <$> forM ss robfuscate
+            return (ps, ss)
+
+instance Project (Euclid_Sudoku dome) (a,b) a where
+    project _ (a,b) = a
+
+make_quiz_integer :: Make
+make_quiz_integer = 
+    quiz (Euclid_Sudoku (undefined::Integer)) ci
+
+make_quiz_gauss :: Make
+make_quiz_gauss = 
+    quiz (Euclid_Sudoku (undefined::Complex Integer)) cg
+
+{-
+
+make_quiz_upoly :: Make
+make_quiz_upoly = 
+    quiz (Euclid_Sudoku (undefined::U.Poly Rational)) cp
+
+-}
