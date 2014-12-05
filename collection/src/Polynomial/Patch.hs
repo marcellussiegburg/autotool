@@ -15,6 +15,13 @@ class Pattern p where
      base :: p -> Base p
      -- | randomly obfuscate
      robfuscate :: Base p -> IO p
+
+     -- | with dummy argument
+     default_ :: p -> Base p
+
+     -- any attempt to call this function
+     -- will give "type function not injective"
+     -- default_ :: Base p
      
 
 data Patch v = Any | This v deriving Typeable

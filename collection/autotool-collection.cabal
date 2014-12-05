@@ -58,6 +58,7 @@ Library
         -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
         -- QuickCheck < 2.6,
         QuickCheck,
+        hspec, hspec-smallcheck,
         mueval>=0.8.1.1, hint, 
         haskell-src-exts==1.15.*, 
         syb,
@@ -327,6 +328,8 @@ Library
                  Polynomial.Unary
                  Polynomial.Unary.Reader
                  Polynomial.Unary.ToDoc
+                 Polynomial.Unary.Data
+                 Polynomial.Unary.Op
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,

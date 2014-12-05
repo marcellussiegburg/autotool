@@ -15,8 +15,6 @@ import Polynomial.Type
 import Polynomial.Class
 
 import qualified Polynomial.Unary as U
-import qualified Polynomial.Unary.Reader 
-import qualified Polynomial.Unary.ToDoc
 
 import qualified Prelude
 import Prelude hiding 
@@ -77,9 +75,9 @@ instance Dom (U.Poly Rational) where
 instance Size (Step r) where size _ = 1
 
 
-instance (Dom v, Euclidean_Ring v, Pattern (Step p)
-   , Base (Step p) ~ (Step v), Reader v, Reader p, ToDoc v, ToDoc p ) 
-    => Partial (Euclid_Sudoku v) [Step p] [Step v] where
+instance (Dom d, Euclidean_Ring d, Pattern p
+   , Base p ~ d, Reader d, Reader p, ToDoc d, ToDoc p ) 
+    => Partial (Euclid_Sudoku d) [Step p] [Step d] where
 
     describe (_ :: Euclid_Sudoku v) ps = vcat
         [ text "Fill in all the holes (_) to obtain"
@@ -132,9 +130,13 @@ instance Pattern p => Pattern (Step p) where
     match s v = match (quotient s) (quotient v)
             &&  match (remainder s) (remainder v)
     base s = Step (base $ quotient s) (base $ remainder s)
+    default_ (s :: Step p) = 
+        Step (default_ (undefined :: p))
+             (default_ (undefined :: p))
     robfuscate s = Step <$> robfuscate (quotient s)
                         <*> robfuscate (remainder s)
-    inject s = Step (inject $ quotient s) (inject $ remainder s)
+    inject s = Step (inject $ quotient s) 
+                    (inject $ remainder s)
 
 make_fixed_integer :: Make
 make_fixed_integer = 
@@ -149,17 +151,17 @@ make_fixed_integer =
 make_fixed_gauss :: Make
 make_fixed_gauss = 
     direct (Euclid_Sudoku (undefined::Complex Integer)) 
-      ( [ Step { quotient = This (This 0 :+ This 0), remainder = This (This 21 :+ This 11) }
-        , Step { quotient = This (This 0 :+ This 0), remainder = Any     }
+      ( [ Step { quotient = inject zero, remainder = This (This 21 :+ This 11) }
+        , Step { quotient = inject zero, remainder = Any     }
         , Step { quotient = Any   , remainder = Any }
-        , Step { quotient = This (Any :+ This 1), remainder = This  (This 0 :+ This 0) }
-        ] :: [ Step (Patch (Complex(Patch Integer) )) ] )
+        , Step { quotient = This (Any :+ This (1::Integer)), remainder = inject zero }
+        ] )
 
 {-
 make_fixed_upoly :: Make
 make_fixed_upoly = 
     direct (Euclid_Sudoku (undefined:: U.Poly Rational)) 
-      ( [ ] :: [ Step (PP (Patch (Ratio (Patch Integer)))) ] )
+      ( [ ] :: [ Step (Patch (U.P (Patch (Ratio (Patch Integer))) (Patch Integer))) ] )
 -}
 
 data Config p = Config 
@@ -221,7 +223,7 @@ roll_best k f gen = do
             else return best
     x <- gen ; h x k
 
-instance ( Base (Step p) ~ Step v, Gen v, Reader p, Reader v 
+instance ( Base p ~ v, Gen v, Reader p, Reader v 
          , ToDoc p, ToDoc v, Euclidean_Ring v, Pattern p
          ) => Generator (Euclid_Sudoku v) (Config p) ([ Step p ],[Step v ]) where
     generator _ conf key = roll_best (take_best_of conf) 
