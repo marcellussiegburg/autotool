@@ -11,8 +11,9 @@ Einschreiben: Einschreiben
 Email: E-Mail
 Gesamtpunktzahl: Total
 Größe: Größe
-GruppeAnlegen: Gruppe Anlegen
-Gruppen: Gruppen
+GruppeAnlegen: Übungsgruppe anlegen
+GruppeBearbeiten: Übungsgruppe bearbeiten
+Gruppen: Übungsgruppen
 GruppeName: Gruppenname
 GruppeNummer: Gruppennummer
 Identifikationsnummer: ID

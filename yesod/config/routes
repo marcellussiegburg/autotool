@@ -11,6 +11,7 @@
 /vorlesung/#VorlesungId/studenten StudentenR GET
 /vorlesung/#VorlesungId/resultate ResultateR GET
 /vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR GET
+/gruppe/#GruppeId GruppeR GET POST
 /gruppe/#GruppeId/tutor TutorErnennenR GET
 /gruppe/#GruppeId/tutoren TutorenR GET POST
 /aufgabe/#AufgabeId AufgabeR GET POST

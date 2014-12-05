@@ -21,6 +21,7 @@ library
                      Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.Gruppe
                      Handler.GruppeAnlegen
                      Handler.Gruppen
                      Handler.Resultate
