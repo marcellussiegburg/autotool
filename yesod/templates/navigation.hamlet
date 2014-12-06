@@ -1,0 +1,89 @@
+<ul .nav .navbar-nav>
+  <li .dropdown>
+    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgSchule}
+      <b .caret>
+    <ul .dropdown-menu>
+      <li .dropdown-header>Schulname
+      <li>
+        <a href=#>_{MsgStudentAnlegen}
+      <li>
+        <a href=#>_{MsgBearbeiten}
+      <li>
+        <a href=@{WaisenkinderR 1}>_{MsgWaisenkinder}
+      <li>
+        <a href=#>_{MsgDirektoren}
+      <li>
+        <a href=#>_{MsgDirektorErnennen}
+      <li>
+        <a href=#>_{MsgSemester}
+      <li>
+        <a href=#>_{MsgSemesterAnlegen}
+      <li .divider>
+      <li .dropdown-header>Semestername
+      <li>
+        <a href=#>_{MsgSemesterBearbeiten}
+      <li>
+        <a href=#>_{MsgVorlesungAnlegen}
+      <li>
+        <a href=#>_{MsgVorlesungen}
+      <li .divider>
+      <li>
+        <a href=#>_{MsgSchulen}
+       <li>
+        <a href=#>_{MsgSchuleAnlegen}
+       <li>
+        <a href=#>_{MsgHighscoreAnzeigen}
+  <li .dropdown>
+    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgVorlesung}
+      <b .caret>
+    <ul .dropdown-menu>
+      <li .dropdown-header>Vorlesungsname
+      <li>
+        <a href=#>_{MsgBearbeiten}
+      <li>
+        <a href=@{StudentenR 1}>_{MsgStudenten}
+      <li>
+        <a href=@{ResultateR 1}>_{MsgAlleResultate}
+      <li>
+        <a href=@{ResultatePflichtR 1}>_{MsgResultatePflicht}
+      <li>
+        <a href=@{GruppeAnlegenR 1}>_{MsgGruppeAnlegen}
+      <li>
+        <a href=@{GruppenR 1}>_{MsgGruppen}
+  <li .dropdown>
+    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgGruppe}
+      <b .caret>
+    <ul .dropdown-menu>
+      <li .dropdown-header>Übungsgruppenname
+      <li>
+        <a href=@{GruppeR 1}>_{MsgBearbeiten}
+      <li>
+        <a href=@{TutorErnennenR 1}>_{MsgTutor}
+      <li>
+        <a href=@{TutorenR 1}>_{MsgTutoren}
+      <li>
+        <a href=#>_{MsgAufgabeAnlegen}
+      <li>
+        <a href=#>_{MsgAufgaben}
+  <li .dropdown>
+    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgAufgabe}
+      <b .caret>
+    <ul .dropdown-menu>
+      <li .dropdown-header>Aufgabenname
+      <li>
+        <a href=@{AufgabeR 1}>_{MsgLösen}
+      <li>
+        <a href=#>_{MsgBearbeiten}
+      <li>
+        <a href=@{StatistikR 1}>_{MsgStatistikAnzeigen}
+      <li .divider>
+      <li>
+        <a href=#>(_{MsgServerErstellen})
+      <li>
+        <a href=#>_{MsgServers}
+      <li .divider>
+      <li .dropdown-header>Aufgabenservername
+      <li>
+        <a href=#>_{MsgAufgabeKonfigurieren}
+      <li>
+        <a href=#>_{MsgAufgabeTesten}

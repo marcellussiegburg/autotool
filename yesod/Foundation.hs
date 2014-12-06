@@ -56,6 +56,7 @@ instance Yesod Autotool where
                 [ js_jquery_min_js
                 , js_bootstrap_js
                 ])
+            let navigation = $(widgetFile "navigation")
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 

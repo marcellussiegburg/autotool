@@ -9,14 +9,7 @@
           <span .icon-bar>
         <a .navbar-brand href=@{HomeR}>Autotool
       <div .navbar-collapse .collapse in>
-        <ul .nav .navbar-nav>
-          <li .dropdown>
-            <a data-toggle=dropdown .dropdown-toogle href=@{HomeR}>Schule
-              <b .caret>
-            <ul .dropdown-menu>
-              <li .dropdown-header>Schulname
-              <li>
-                <a href=@{HomeR}>bearbeiten
+        ^{navigation}
         <ul .nav .navbar-nav .navbar-right>
           <li>
             <form .navbar-form role="form" method="get">
