@@ -21,6 +21,8 @@ library
                      Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.Direktoren
+                     Handler.DirektorErnennen
                      Handler.Gruppe
                      Handler.GruppeAnlegen
                      Handler.Gruppen

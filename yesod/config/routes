@@ -5,6 +5,8 @@
 
 / HomeR GET POST
 /schulen SchulenR GET
+/schule/#SchuleId/direktoren DirektorenR GET POST
+/schule/#SchuleId/direktor DirektorErnennenR GET POST
 /schule/#SchuleId/waisenkinder WaisenkinderR GET
 /vorlesung/#VorlesungId/gruppe GruppeAnlegenR GET POST
 /vorlesung/#VorlesungId/gruppen GruppenR GET POST

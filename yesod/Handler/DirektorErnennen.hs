@@ -1,24 +1,24 @@
-module Handler.TutorErnennen where
+module Handler.DirektorErnennen where
 
 import Import
 import Prelude (undefined)
 import Handler.Tutoren (StudentListe (StudentEintrag))
 
 title :: AutotoolMessage
-title = MsgTutor
+title = MsgDirektorErnennen
 
-getTutorErnennenR :: GruppeId -> Handler Html
-getTutorErnennenR gruppe = do
+getDirektorErnennenR :: GruppeId -> Handler Html
+getDirektorErnennenR gruppe = do
   let studenten = 
         [StudentEintrag 1 "1234" "Mark" "Otto" "mark.otto@schule.de",
          StudentEintrag 10 "2454" "Jacob" "Thornton" "jacob.thornton@schule.de",
          StudentEintrag 75 "5332" "Larry" "Müller" "larry.mueller@schule.de"
         ]
       ernennen = True
-      label = MsgTutorErnennen
+      label = MsgDirektorErnennen
       nullStudenten = MsgKeineStudentenErnennen
   defaultLayout $ do
     $(widgetFile "tutoren")
 
-postTutorErnennenR :: GruppeId -> Handler Html
-postTutorErnennenR gruppe = undefined
+postDirektorErnennenR :: GruppeId -> Handler Html
+postDirektorErnennenR gruppe = undefined

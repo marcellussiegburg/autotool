@@ -21,6 +21,8 @@ import Yesod.Core.Types (loggerSet, Logger (Logger))
 
 import Handler.Home
 import Handler.Aufgabe
+import Handler.Direktoren
+import Handler.DirektorErnennen
 import Handler.Gruppe
 import Handler.GruppeAnlegen
 import Handler.Gruppen

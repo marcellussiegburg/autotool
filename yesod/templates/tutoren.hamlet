@@ -1,8 +1,8 @@
 <h1>
   _{title}
-$if null tutoren
+$if null studenten
   <p>
-    Keine tutoren
+    _{nullStudenten}
 $else
   <table .table .table-striped .table-hover>
     <thead>
@@ -19,7 +19,7 @@ $else
           _{MsgEmail}
         <th>
     <tbody>
-      $forall TutorEintrag id mnr vorname name email <- tutoren
+      $forall StudentEintrag id mnr vorname name email <- studenten
         <tr>
           <td>
             #{show id}
@@ -33,8 +33,8 @@ $else
             #{email}
           <td>
             $if ernennen == True
-              <a href="#" .btn .btn-danger .btn-block role="button">
-                _{MsgTutorAbsetzen}
-            $else
               <a href="#" .btn .btn-success .btn-block role="button">
-                _{MsgTutorErnennen}
+                _{label}
+            $else
+              <a href="#" .btn .btn-danger .btn-block role="button">
+                _{label}

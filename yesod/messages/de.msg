@@ -13,7 +13,8 @@ BeispielLaden: Beispiel laden
 Besuchen: Besuchen
 CacheLöschen: Cache Löschen
 Direktoren: Direktoren
-DirektorErnennen: Direktoren ernennen
+DirektorAbsetzen: Direktor absetzen
+DirektorErnennen: Direktor ernennen
 Einschreiben: Einschreiben
 Email: E-Mail
 Gesamtpunktzahl: Total
@@ -26,6 +27,9 @@ GruppeName: Gruppenname
 GruppeNummer: Gruppennummer
 HighscoreAnzeigen: Highscore
 Identifikationsnummer: ID
+KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
+KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
+KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
 Löschen: Löschen
 Lösen: Lösen
 LösungAbsenden: Lösung absenden

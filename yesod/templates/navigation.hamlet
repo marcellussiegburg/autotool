@@ -11,9 +11,9 @@
       <li>
         <a href=@{WaisenkinderR 1}>_{MsgWaisenkinder}
       <li>
-        <a href=#>_{MsgDirektoren}
+        <a href=@{DirektorenR 1}>_{MsgDirektoren}
       <li>
-        <a href=#>_{MsgDirektorErnennen}
+        <a href=@{DirektorErnennenR 1}>_{MsgDirektorErnennen}
       <li>
         <a href=#>_{MsgSemester}
       <li>
