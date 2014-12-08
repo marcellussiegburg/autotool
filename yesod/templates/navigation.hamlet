@@ -5,8 +5,6 @@
     <ul .dropdown-menu>
       <li .dropdown-header>Schulname
       <li>
-        <a href=#>_{MsgStudentAnlegen}
-      <li>
         <a href=#>_{MsgBearbeiten}
       <li>
         <a href=@{WaisenkinderR 1}>_{MsgWaisenkinder}
@@ -28,7 +26,7 @@
         <a href=#>_{MsgVorlesungen}
       <li .divider>
       <li>
-        <a href=#>_{MsgSchulen}
+        <a href=@{SchulenR}>_{MsgSchulen}
        <li>
         <a href=#>_{MsgSchuleAnlegen}
        <li>

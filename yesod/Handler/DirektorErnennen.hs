@@ -18,7 +18,7 @@ getDirektorErnennenR gruppe = do
       label = MsgDirektorErnennen
       nullStudenten = MsgKeineStudentenErnennen
   defaultLayout $ do
-    $(widgetFile "tutoren")
+    $(widgetFile "studentenFunktion")
 
 postDirektorErnennenR :: GruppeId -> Handler Html
 postDirektorErnennenR gruppe = undefined

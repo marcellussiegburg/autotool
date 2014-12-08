@@ -1,4 +1,5 @@
 AlleResultate: Alle Resultate
+Anmelden: Anmelden
 Anzeigen: Anzeigen
 Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
@@ -41,6 +42,7 @@ Okays: Okay
 Plätze: Plätze
 Punkte: Punkte
 Referent: Referent
+Registrieren: Registrieren
 ResultatePflicht: Resultate der Pflichtaufgaben
 Schule: Schule
 SchuleAnlegen: Schule anlegen
@@ -52,7 +54,6 @@ SemesterBearbeiten: Semester bearbeiten
 ServerErstellen: Server erstellen
 Servers: Server wählen
 StatistikAnzeigen: Statistik anzeigen
-StudentAnlegen: Student anlegen
 Studenten: Studenten
 StudentenEingeschrieben: Eingeschriebene Studenten
 StudentenMaximal: Maximale Einschreibungen

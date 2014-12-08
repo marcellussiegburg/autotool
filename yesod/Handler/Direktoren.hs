@@ -19,7 +19,7 @@ getDirektorenR gruppe = do
       label = MsgDirektorAbsetzen
       nullStudenten = MsgKeineDirektoren
   defaultLayout $ do
-    $(widgetFile "tutoren")
+    $(widgetFile "studentenFunktion")
 
 postDirektorenR :: GruppeId -> Handler Html
 postDirektorenR gruppe = undefined

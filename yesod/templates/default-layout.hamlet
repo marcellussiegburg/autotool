@@ -8,15 +8,15 @@
           <span .icon-bar>
           <span .icon-bar>
         <a .navbar-brand href=@{HomeR}>Autotool
-      <div .navbar-collapse .collapse in>
+      <div .navbar-collapse .collapse>
         ^{navigation}
         <ul .nav .navbar-nav .navbar-right>
           <li>
             <form .navbar-form role="form" method="get">
-              <button type="submit" .btn .btn-primary>Register
+              <button type="submit" .btn .btn-primary>_{MsgRegistrieren}
           <li>
             <form .navbar-form role="form" method="get">
-              <button type="submit" .btn .btn-success>Sign in
+              <button type="submit" .btn .btn-success>_{MsgAnmelden}
           <li>
             <a href="#language" .flagg>
               <img src=@{StaticR img_flags_48_de_png}>

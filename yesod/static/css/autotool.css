@@ -6,8 +6,11 @@
 }
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
-  padding-top: 50px;
   padding-bottom: 20px;
+}
+header > div.navbar-fixed-top {
+  position: relative;
+  margin-bottom: 0;
 }
 .nav > li > a.flagg {
   padding: 7px 0 7px 10px;
