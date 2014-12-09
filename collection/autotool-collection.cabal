@@ -965,5 +965,7 @@ Library
                  FD.Roll
                  Lattice.Reduce
                  Lattice.LLL
+                 Lattice.LLL.Compute
+                 Lattice.LLL.Task
 
                  

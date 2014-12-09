@@ -59,8 +59,8 @@ execute s step = do
                    $ text "using: index in range?"
             assert (t /= u) $ text "target /= using ?"
             let s' = apply step s
-            assert ( sizereductions_check s t u )
-                   $ sizereductions_message s t u
+            assert ( sizereductions_check s' t u )
+                   $ sizereductions_message s' t u
 
         Swap { this = i, that = j } -> silent $ do
             assert (elem i $ range s) $ text "this: index in range?"
@@ -70,3 +70,14 @@ execute s step = do
                    $ shoup_message s i j
             
     return $ apply step s
+
+make_fixed :: Make
+make_fixed = direct Lattice_LLL 
+  ( [ [ 1 , 0 , 0 , 0 , 0 , 0 , 0 , 7253 ]
+    , [ 0 , 1 , 0 , 0 , 0 , 0 , 0 , 20717 ]
+    , [ 0 , 0 , 1 , 0 , 0 , 0 , 0 , 59179 ]
+    , [ 0 , 0 , 0 , 1 , 0 , 0 , 0 , 169045 ]
+    , [ 0 , 0 , 0 , 0 , 1 , 0 , 0 , 482872 ]
+    , [ 0 , 0 , 0 , 0 , 0 , 1 , 0 , 1379306 ]
+    , [ 0 , 0 , 0 , 0 , 0 , 0 , 1 , 3939938 ]
+    ] :: [[Integer]] )

@@ -253,6 +253,7 @@ import qualified FD.Top
 import qualified SOS
 
 import qualified Lattice.Reduce
+import qualified Lattice.LLL.Task
 
 import qualified Polynomial.Euclid
 
@@ -703,6 +704,7 @@ tmakers =
                 , item Polynomial.Euclid.make_quiz_upoly
                 , item Lattice.Reduce.make_fixed
                 , item Lattice.Reduce.make_quiz
+                , item Lattice.LLL.Task.make_fixed
                 ]
 	  , heading "experimentell"
 	        [ item $ Algebraic2.Central.make Algebraic_Integer
