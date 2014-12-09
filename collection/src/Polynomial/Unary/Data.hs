@@ -1,5 +1,6 @@
 {-# language FlexibleInstances #-}
 {-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
 
 module Polynomial.Unary.Data where
 
@@ -17,14 +18,15 @@ import qualified Data.Map.Strict as M
 import Test.SmallCheck.Series
 import Test.SmallCheck
 import Control.Applicative
+import Data.Typeable
 
-data P c e = P [(c, e)]
+data P c e = P [(c, e)] deriving Typeable
 
 instance (Serial m c) => Serial m (P c Integer) where
     series = fmap ( \ (P ces) -> P $ map ( \(c,e) ->(c, Prelude.abs e)) ces ) $ newtypeCons P
 
 data Poly c = Poly { coeff :: M.Map Integer c }
-    deriving Eq
+    deriving (Eq, Typeable )
 
 instance (Ring c, Serial m c) => Serial m (Poly c) where
     series =  ( \ (P ces) -> poly ces ) <$> series

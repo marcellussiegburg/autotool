@@ -8,16 +8,20 @@ module Polynomial.Unary.Reader where
 import Polynomial.Class
 import Polynomial.Patch
 import qualified Prelude
-import Prelude ( return, ($), Eq, Ord, read )
+import Prelude ( return, ($), Eq, Ord, read, Bool(..) )
 import Polynomial.Unary.Data
 
 import Autolib.Reader
 import Control.Applicative ((<$>),(<*>), (<*), (*>) )
 import Control.Lens (over)
+import Control.Monad ( mzero )
 
 import qualified Text.Parsec.Expr as E
 
-instance ( Ring c , Reader c  ) => Reader (P c Integer) where
+instance (Reader c, Ring c) => Reader (Poly c) where
+    reader = poly <$> reader
+
+instance (Ring c , Reader c) => Reader (P c Integer) where
     reader = do
         t <- factorI ; ts <- many $ opI <*> factorI
         return $ P $ t : ts
@@ -34,24 +38,36 @@ factorI = do
     return (f,e)
 
 
-instance (Base (Patch c) ~ c, Pattern (Patch c), Ring c, Reader c) => Reader (P (Patch c) (Patch Integer)) where
+instance (Pattern c,  Reader c, Ring (Base c)
+         , Pattern e, Base e ~ Integer, Reader e) 
+         => Reader (P c e) where
     reader = do
         t <- factorP ; ts <- many $ opP <*> factorP
         return $ P $ t : ts
 
+-- | this parses "+" / "-" and returns id / negate function
 opP =   do my_reservedOp "+" ; return $ Prelude.id
    <|> do my_reservedOp "-" 
-          return $ \ (c,e) -> 
-            ( case c of
-                This i -> This $ negate i
-                Any -> Any
-            , e )
+          return $ \ (c,e) -> (pmap negate c, e)
 
--- factorP :: ( Reader c) => Parser (c, Patch Integer)
+-- | this parses  c * x ^ e
+-- where "x" is fixed (the name of the (single) variable)
+-- "c *" is optional (if missing, then c = one)
+-- "^ e" is optional (if missing, then e = 1)
+-- "* x ^ e" is optinal (if missine, then e = 0)
 factorP = do
-    f <- option (inject one) $ reader <* my_reservedOp "*"
-    e <- option (This 0) $ my_reserved "x" *> option (This 1) ( my_reservedOp "^" *> reader )
-    return (f,e)
+    (cpresent, c) <- option (False, inject one)
+        $  (,) True <$> reader 
+    spresent <- option False 
+        $  my_reservedOp "*" *> return True
+    let xe = my_reserved "x" 
+          *> option (inject 1) (my_reservedOp "^" *> reader )
+        cont = case (cpresent, spresent) of
+            (True, False) -> return $ inject 0
+            (True, True) -> xe
+            (False, False) -> xe
+            (False, True) -> mzero
+    (,) c <$> cont
 
 natural :: Parser Integer
 natural = do

@@ -699,6 +699,8 @@ tmakers =
                 , item Polynomial.Euclid.make_quiz_integer
                 , item Polynomial.Euclid.make_fixed_gauss
                 , item Polynomial.Euclid.make_quiz_gauss
+                , item Polynomial.Euclid.make_fixed_upoly
+                , item Polynomial.Euclid.make_quiz_upoly
                 , item Lattice.Reduce.make_fixed
                 , item Lattice.Reduce.make_quiz
                 ]

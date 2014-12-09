@@ -157,12 +157,11 @@ make_fixed_gauss =
         , Step { quotient = This (Any :+ This (1::Integer)), remainder = inject zero }
         ] )
 
-{-
 make_fixed_upoly :: Make
 make_fixed_upoly = 
     direct (Euclid_Sudoku (undefined:: U.Poly Rational)) 
-      ( [ ] :: [ Step (Patch (U.P (Patch (Ratio (Patch Integer))) (Patch Integer))) ] )
--}
+      ( [ ] :: [ Step ( (U.P ( Patch (Ratio Integer))
+                             ( Patch Integer))) ] )
 
 data Config p = Config 
     { number_range :: (Integer, Integer)
@@ -206,9 +205,11 @@ cg = Config
    }
 
 
-cp :: Config (PP (Patch (Ratio (Patch Integer))))
+cp :: Config (U.P (Patch (Ratio  Integer)) 
+                  (Patch Integer))
 cp = Config 
-   { number_range = (-10, 10) , max_degree = 10, num_terms = 3
+   { number_range = (-2, 2) , max_degree = 10
+   , num_terms = 4
    , num_steps = 5 
    , take_best_of = 100
    }
@@ -230,8 +231,8 @@ instance ( Base p ~ v, Gen v, Reader p, Reader v
         ( \ (ps,ss) -> Prelude.abs (length ss Prelude.- num_steps conf) )
         $ do
             a <- gen conf ; b <- gen conf
-            let s : ss = gcd_steps a b
-            ps <- (inject s : ) <$> forM ss robfuscate
+            let ss = gcd_steps a b
+            ps <- forM ss robfuscate
             return (ps, ss)
 
 instance Project (Euclid_Sudoku dome) (a,b) a where
@@ -245,10 +246,7 @@ make_quiz_gauss :: Make
 make_quiz_gauss = 
     quiz (Euclid_Sudoku (undefined::Complex Integer)) cg
 
-{-
-
 make_quiz_upoly :: Make
 make_quiz_upoly = 
     quiz (Euclid_Sudoku (undefined::U.Poly Rational)) cp
 
--}
