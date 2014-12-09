@@ -4,7 +4,9 @@
 /robots.txt RobotsR GET
 
 / HomeR GET POST
+/schule SchuleAnlegenR GET POST
 /schulen SchulenR GET
+/schule/#SchuleId SchuleR GET POST
 /schule/#SchuleId/direktoren DirektorenR GET POST
 /schule/#SchuleId/direktor DirektorErnennenR GET POST
 /schule/#SchuleId/waisenkinder WaisenkinderR GET

@@ -28,6 +28,8 @@ library
                      Handler.Gruppen
                      Handler.Resultate
                      Handler.ResultatePflicht
+                     Handler.Schule
+                     Handler.SchuleAnlegen
                      Handler.Schulen
                      Handler.Statistik
                      Handler.Studenten

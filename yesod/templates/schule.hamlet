@@ -1,0 +1,3 @@
+<h1>_{MsgSchuleBearbeiten}
+<form role="form" action=@{SchuleAnlegenR} method="post" enctype=#{formEnctype}>
+  ^{formWidget}

@@ -46,7 +46,10 @@ Registrieren: Registrieren
 ResultatePflicht: Resultate der Pflichtaufgaben
 Schule: Schule
 SchuleAnlegen: Schule anlegen
+SchuleBearbeiten: Schule bearbeiten
 Schulen: Schulen
+SchuleName: Schulname
+SchuleSuffix: E-Mail-Suffix
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Semester: Semester
 SemesterAnlegen: Semester anlegen

@@ -5,7 +5,7 @@
     <ul .dropdown-menu>
       <li .dropdown-header>Schulname
       <li>
-        <a href=#>_{MsgBearbeiten}
+        <a href=@{SchuleR 1}>_{MsgBearbeiten}
       <li>
         <a href=@{WaisenkinderR 1}>_{MsgWaisenkinder}
       <li>
@@ -28,7 +28,7 @@
       <li>
         <a href=@{SchulenR}>_{MsgSchulen}
        <li>
-        <a href=#>_{MsgSchuleAnlegen}
+        <a href=@{SchuleAnlegenR}>_{MsgSchuleAnlegen}
        <li>
         <a href=#>_{MsgHighscoreAnzeigen}
   <li .dropdown>
