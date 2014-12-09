@@ -10,6 +10,4 @@ import Polynomial.Unary.Op
 import Polynomial.Unary.Reader
 import Polynomial.Unary.ToDoc
 
-
-
     

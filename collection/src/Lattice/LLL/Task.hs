@@ -15,6 +15,7 @@ import Challenger.Partial
 import Inter.Types
 
 import Data.Typeable
+import Data.Ratio
 
 data Lattice_LLL = Lattice_LLL 
     deriving (Typeable, Read, Show)
@@ -57,10 +58,15 @@ execute s step = do
             assert (elem u $ range s)
                    $ text "using: index in range?"
             assert (t /= u) $ text "target /= using ?"
+            let s' = apply step s
+            assert ( sizereductions_check s t u )
+                   $ sizereductions_message s t u
+
         Swap { this = i, that = j } -> silent $ do
             assert (elem i $ range s) $ text "this: index in range?"
             assert (elem j $ range s) $ text "that: index in range?"
-            assert (i /= j) $ text "this /= that ?"
-        
+            assert (j == i+1) $ text "this + 1 == that ?"
+            assert ( shoup_check s i j ) 
+                   $ shoup_message s i j
             
     return $ apply step s

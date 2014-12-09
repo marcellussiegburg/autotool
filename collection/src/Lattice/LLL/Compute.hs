@@ -167,33 +167,49 @@ reduce_matrix range (Reduce{target=i,factor=m,using=k}) =
 
 sizereductions s = do
     i <- range s ; j <- range s ; guard $ j < i
-    let m = mu s !! i !! j
-    guard $ abs m > 1%2
-    return ( Reduce {target=i, factor=round m, using=j}
-           , vcat [ text "b_" <> toDoc i <+> equals
-                    <+> oneline ( toDoc $ current s !! i)
-                  , text "is not size-reduced w.r.t."
-                  , text "b_" <> toDoc j <+> equals
-                    <+> oneline ( toDoc $ current s !! j)
-                  , text "which has orthogonal part"
-                  , text "b_" <> toDoc j <> text "^*" <+> equals
-                    <+> oneline ( toDoc $ orthogonal s !! j)
-                  ]
+    guard $ not $ sizereductions_check s i j
+    return ( Reduce {target=i, factor=round $ mu s !! i !! j
+                    , using=j}
+           , sizereductions_message s i j
            )
+
+sizereductions_check s i j = 
+    let m = mu s !! i !! j
+    in  abs m <= 1%2
+
+sizereductions_message s i j = vcat 
+    [ text "b_" <> toDoc i <+> equals
+                    <+> oneline ( toDoc $ current s !! i)
+    , text "is not size-reduced w.r.t."
+    , text "b_" <> toDoc j <+> equals
+                    <+> oneline ( toDoc $ current s !! j)
+    , text "which has orthogonal part"
+    , text "b_" <> toDoc j <> text "^*" <+> equals
+                    <+> oneline ( toDoc $ orthogonal s !! j)
+    ]
 
 swaps s = do
     i <- range s ; let { i' = succ i } ; guard $ i' < dim s
+    guard $ not $ shoup_check s i i'
+    return ( Swap { this = i, that = i' }
+           , shoup_message s i i'
+           )
+
+shoup_check s i i' = 
     let bin = norm2 (orthogonal s !! i)
         bi'n = norm2 (orthogonal s !! i')
-    guard $ not $ bin <= 2 * bi'n
-    return ( Swap { this = i, that = i' }
-           , vcat [ text "Shoup condition does not hold:"
-                  , text "|b_" <> toDoc i <> text "^*|^2"
+    in  bin <= 2 * bi'n
+
+shoup_message s i i' = 
+    let bin  = norm2 (orthogonal s !! i)
+        bi'n = norm2 (orthogonal s !! i')
+    in  vcat 
+    [ text "Shoup condition does not hold:"
+    , text "|b_" <> toDoc i <> text "^*|^2"
                     <+> equals <+> toDoc bin
-                  , text "|b_" <> toDoc i' <> text "^*|^2"
+    , text "|b_" <> toDoc i' <> text "^*|^2"
                     <+> equals <+> toDoc bi'n
-                  ]
-           )
+    ]
 
 oneline = text . unwords . words . render
 

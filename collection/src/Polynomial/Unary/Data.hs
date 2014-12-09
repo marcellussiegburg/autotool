@@ -20,7 +20,7 @@ import Test.SmallCheck
 import Control.Applicative
 import Data.Typeable
 
-data P c e = P [(c, e)] deriving Typeable
+data P c e = P { unP :: [(c, e)] } deriving Typeable
 
 instance (Serial m c) => Serial m (P c Integer) where
     series = fmap ( \ (P ces) -> P $ map ( \(c,e) ->(c, Prelude.abs e)) ces ) $ newtypeCons P

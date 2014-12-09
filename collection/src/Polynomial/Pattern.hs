@@ -24,7 +24,6 @@ import Control.Applicative ((<$>),(<*>))
 import Control.Monad (forM)
 import Data.Typeable
 
-
 instance Pattern Integer where
     type Base Integer = Integer
     inject i = i

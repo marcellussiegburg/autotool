@@ -7,8 +7,9 @@ module Polynomial.Unary.Reader where
 
 import Polynomial.Class
 import Polynomial.Patch
+
 import qualified Prelude
-import Prelude ( return, ($), Eq, Ord, read, Bool(..) )
+import Prelude ( return, ($), (.), Eq, Ord, read, Bool(..) )
 import Polynomial.Unary.Data
 
 import Autolib.Reader
@@ -19,7 +20,11 @@ import Control.Monad ( mzero )
 import qualified Text.Parsec.Expr as E
 
 instance (Reader c, Ring c) => Reader (Poly c) where
-    reader = poly <$> reader
+    reader = ( poly . Prelude.map (\(Id c,Id e) -> (c,e)) . unP ) 
+           <$> reader 
+
+
+{-
 
 instance (Ring c , Reader c) => Reader (P c Integer) where
     reader = do
@@ -37,6 +42,7 @@ factorI = do
     e <- option 0 $ my_reserved "x" *> option 1 ( my_reservedOp "^" *> reader )
     return (f,e)
 
+-}
 
 instance (Pattern c,  Reader c, Ring (Base c)
          , Pattern e, Base e ~ Integer, Reader e) 
@@ -61,9 +67,9 @@ factorP = do
     spresent <- option False 
         $  my_reservedOp "*" *> return True
     let xe = my_reserved "x" 
-          *> option (inject 1) (my_reservedOp "^" *> reader )
+          *> option (inject one) (my_reservedOp "^" *> reader )
         cont = case (cpresent, spresent) of
-            (True, False) -> return $ inject 0
+            (True, False) -> return $ inject zero
             (True, True) -> xe
             (False, False) -> xe
             (False, True) -> mzero

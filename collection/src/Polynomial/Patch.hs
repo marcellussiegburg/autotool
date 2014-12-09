@@ -1,5 +1,6 @@
 {-# language DeriveDataTypeable #-}
 {-# language TypeFamilies #-}
+{-# language GeneralizedNewtypeDeriving #-}
 
 module Polynomial.Patch where
 
@@ -46,4 +47,17 @@ instance ToDoc v => ToDoc (Patch v) where
 instance Reader v => Reader (Patch v) where
     reader = do my_reservedOp "_" ; return Any
         <|> ( This <$> reader )
+
+newtype Id a = Id {unId :: a}
+    deriving  (Reader, ToDoc)
+
+instance Eq a => Pattern (Id a) where
+    type Base (Id a) = a
+    inject = Id
+    match (Id p) v = p == v
+    -- pmap = id
+    base (Id p) = p
+    default_ _ = undefined
+    robfuscate x = return $ Id x
+
 
