@@ -4,7 +4,7 @@
 {-# language TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
 
-module Lattice.LLL where
+module Lattice.LLL.Compute where
 
 import Data.List ( sort, sortBy, transpose, tails, minimumBy )
 import Data.Ratio
@@ -17,6 +17,7 @@ import qualified Data.Set as S
 
 import Autolib.ToDoc
 import Autolib.Reader
+import Autolib.Size
 
 class M a b where 
     (.*) :: a -> b -> b
@@ -132,6 +133,7 @@ data Step = Reduce { target :: Int
 
 derives [makeReader, makeToDoc] [''Step, ''State]
 
+instance Size Step where size _ = 1
 
 apply p s = 
     let (t, t') = case p of
@@ -179,7 +181,7 @@ sizereductions s = do
                   ]
            )
 
-shoup s = do
+swaps s = do
     i <- range s ; let { i' = succ i } ; guard $ i' < dim s
     let bin = norm2 (orthogonal s !! i)
         bi'n = norm2 (orthogonal s !! i')
@@ -195,3 +197,8 @@ shoup s = do
 
 oneline = text . unwords . words . render
 
+newtype Oneline a = Oneline a
+
+instance ToDoc a => ToDoc (Oneline a) where
+    toDoc (Oneline a) = oneline $ toDoc a
+    
