@@ -14,9 +14,11 @@ import Data.Typeable
 import System.Random
 import System.IO
 import qualified Data.Set as S
+import Data.Fixed
+import Data.List ( inits )
 
 import Autolib.ToDoc
-import Autolib.Reader
+import Autolib.Reader hiding ( Line )
 import Autolib.Size
 
 class M a b where 
@@ -31,7 +33,6 @@ instance M Integer Rational where a .* b = fromInteger a * b
 instance M Rational Rational where a .* b = a * b
 
 dot xs ys = sum $ zipWith (.*) xs ys
--- ddot xs ys = fromRational $ toRational $ dot xs ys
 norm2 xs = dot xs xs
 norm xs = sqrt $ norm2 xs
 plus xs ys = zipWith (+) xs ys
@@ -109,6 +110,9 @@ ortho s = let o =  gso $ current s
               dot bi bjo / dot bjo bjo
     }
 
+variant s = product 
+          $ for (inits $ map norm2 $ orthogonal s) product
+
 gso :: [[Integer]] -> [[Rational]]
 gso b = 
     let run b = case b of 
@@ -179,13 +183,13 @@ sizereductions_check s i j =
 
 sizereductions_message s i j = vcat 
     [ text "b_" <> toDoc i <+> equals
-                    <+> oneline ( toDoc $ current s !! i)
+           <+> toDoc (V $ current s !! i)
     , text "is not size-reduced w.r.t."
     , text "b_" <> toDoc j <+> equals
-                    <+> oneline ( toDoc $ current s !! j)
+           <+> toDoc (V $ current s !! j)
     , text "which has orthogonal part"
     , text "b_" <> toDoc j <> text "^*" <+> equals
-                    <+> oneline ( toDoc $ orthogonal s !! j)
+           <+> toDoc (V $ orthogonal s !! j)
     ]
 
 swaps s = do
@@ -206,15 +210,52 @@ shoup_message s i i' =
     in  vcat 
     [ text "Shoup condition does not hold:"
     , text "|b_" <> toDoc i <> text "^*|^2"
-                    <+> equals <+> toDoc bin
+                    <+> equals <+> toDoc (centi bin)
     , text "|b_" <> toDoc i' <> text "^*|^2"
-                    <+> equals <+> toDoc bi'n
+                    <+> equals <+> toDoc (centi bi'n)
     ]
 
-oneline = text . unwords . words . render
+-- * for display
 
-newtype Oneline a = Oneline a
+instance HasResolution r 
+    => ToDoc (Fixed r) where toDoc = text . show
 
-instance ToDoc a => ToDoc (Oneline a) where
-    toDoc (Oneline a) = oneline $ toDoc a
+centi :: Rational -> Centi
+centi = fromRational
+
+vcent = map centi
+mcent = map vcent
+
+newtype Line a = Line { unLine :: a }
+line = text . unwords . words . render
+instance ToDoc a => ToDoc (Line a) where 
+    toDoc = line . toDoc . unLine
+
+newtype Lines a = Lines { unLines :: [a] }
+instance ToDoc a => ToDoc (Lines a) where
+    toDoc = toDoc . map Line . unLines
     
+data V a = V [a]
+
+instance ToDoc (V Integer) where
+    toDoc (V xs) = text $ unwords 
+       [ show xs, "with norm"
+       , show $ centi $ toRational $ sqrt $ fromInteger $ sum $ map (^2) xs
+       ]
+
+instance ToDoc (V Rational) where
+    toDoc (V xs) = text $ unwords 
+       [ show $ map centi xs, "with norm"
+       , show $ centi $ toRational $ sqrt $ fromRational $ sum $ map (^2) xs
+       ]
+
+instance Nice State where
+    nice s = text "State" <+> dutch_set 
+        [ text "dim" <+> equals <+> toDoc (dim s)
+        , text "current base" <+> equals
+          </> toDoc (map V $ current s)
+        , text "orthogonally reduced base" <+> equals
+          </> toDoc (map V $ orthogonal s)
+        , text "variant (for termination)" <+> equals
+          </> toDoc (centi $ variant s)
+        ]
