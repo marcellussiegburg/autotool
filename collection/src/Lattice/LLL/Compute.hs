@@ -87,6 +87,9 @@ q2 = [ [ 1 , 0 , 0 , 0 , 0 , 0 , 0 , 7253 ]
     , [ 0 , 0 , 0 , 0 , 0 , 0 , 1 , 3939938 ]
     ]
 
+q3 = [[12,2],[13,4]] -- vzG Table 16.4
+q4 = [[1,1,1],[-1,0,2],[3,5,6]] -- vzG Table 16.6
+
 -- * construct initial base
 
 start b = ortho s where 
@@ -171,6 +174,8 @@ reduce_matrix range (Reduce{target=i,factor=m,using=k}) =
 lll base = 
     let work s = case sizereductions s of
             (step,_):_rest -> step : work (apply step s)
+            -- actually vzG (Alg 16.10) will swap earlier
+            -- (right after I decreases in following loop)
             [] -> case swaps s of
                 (step,_) : rest -> step : work (apply step s)
                 [] -> []
@@ -179,7 +184,10 @@ lll base =
 -- * checking reduction conditions
 
 sizereductions s = do
-    i <- range s ; j <- range s ; guard $ j < i
+    -- i <- range s ; j <- range s 
+    -- this is the version of vzG (Alg 16.10):
+    i <- reverse $ range s ; j <- reverse $ range s 
+    guard $ j < i
     guard $ not $ sizereductions_check s i j
     return ( Reduce {target=i, factor=round $ mu s !! i !! j
                     , using=j}
@@ -265,6 +273,8 @@ instance Nice State where
           </> toDoc (map V $ current s)
         , text "orthogonally reduced base" <+> equals
           </> toDoc (map V $ orthogonal s)
+        , text "mu" <+> equals
+          </> toDoc (map V $ mu s)
         , text "variant (for termination)" <+> equals
           </> toDoc (centi $ variant s)
         ]
