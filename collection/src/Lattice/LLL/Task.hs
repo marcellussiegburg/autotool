@@ -44,6 +44,7 @@ instance Partial Lattice_LLL [[Integer]] [Step] where
 
     total _ base steps = do
         result <- silent $ foldM execute (start base) steps
+        inform $ nice result
         case sizereductions result of
              [] -> inform $ text "base is size-reduced"
              (_,msg):_ -> reject msg

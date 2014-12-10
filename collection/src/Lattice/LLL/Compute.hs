@@ -126,7 +126,6 @@ reduceOrtho_by this that =
         q = dot this that / dot that that 
     in  minus this $ scale q that
 
-
 -- * elementary operations on the base
 
 data Step = Reduce { target :: Int
@@ -166,6 +165,16 @@ reduce_matrix range (Reduce{target=i,factor=m,using=k}) =
     for range $ \ x -> for range $ \ y ->
                 if x == y then 1 else
                 if x == i && y == k then negate m else 0
+
+-- * actual LLL algorithm
+
+lll base = 
+    let work s = case sizereductions s of
+            (step,_):_rest -> step : work (apply step s)
+            [] -> case swaps s of
+                (step,_) : rest -> step : work (apply step s)
+                [] -> []
+    in  work $ start base
 
 -- * checking reduction conditions
 
