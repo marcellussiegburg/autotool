@@ -45,6 +45,7 @@ instance Yesod Autotool where
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage
+        lang <- fmap (\langs -> if langs == [] then "de" else head langs) languages
         pc <- widgetToPageContent $ do
             addStylesheet $ StaticR css_bootstrap_css
             $(combineStylesheets 'StaticR
