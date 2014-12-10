@@ -10,6 +10,8 @@
 /schule/#SchuleId/direktoren DirektorenR GET POST
 /schule/#SchuleId/direktor DirektorErnennenR GET POST
 /schule/#SchuleId/waisenkinder WaisenkinderR GET
+/schule/#SchuleId/semester SemesterAnlegenR GET POST
+/semester/#SemesterId SemesterR GET POST
 /vorlesung/#VorlesungId/gruppe GruppeAnlegenR GET POST
 /vorlesung/#VorlesungId/gruppen GruppenR GET POST
 /vorlesung/#VorlesungId/studenten StudentenR GET

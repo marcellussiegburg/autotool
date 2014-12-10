@@ -10,6 +10,7 @@ import Text.Shakespeare.Text as Import (toText)
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))
 import Data.Text as Import (Text, pack, unpack)
 import Data.Text.Lazy.Builder as Import (toLazyText)
+import Data.Time as Import (Day, TimeOfDay, fromGregorian, midnight)
 
 import Foundation as Import 
 import Model as Import
@@ -26,3 +27,6 @@ infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
 #endif
+
+bfsFormControl :: RenderMessage master msg => msg -> FieldSettings master
+bfsFormControl msg = (bfs msg) {fsAttrs = [("class", "form-control")]}

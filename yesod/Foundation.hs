@@ -7,6 +7,7 @@ import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Form.I18n.English
 import Yesod.Form.I18n.German
+import Yesod.Form.Jquery
 import Network.HTTP.Client.Conduit (Manager, HasHttpManager (getHttpManager))
 import qualified Settings
 import Settings.Development (development)
@@ -89,6 +90,8 @@ instance RenderMessage Autotool FormMessage where
     renderMessage _ ("en":_) = englishFormMessage
     renderMessage master (_:langs) = renderMessage master langs
     renderMessage _ [] = defaultFormMessage
+
+instance YesodJquery Autotool where
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra

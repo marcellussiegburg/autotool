@@ -54,6 +54,11 @@ SchuleWählen: Bitte wählen Sie ihre Schule!
 Semester: Semester
 SemesterAnlegen: Semester anlegen
 SemesterBearbeiten: Semester bearbeiten
+SemesterBeginnDatum: Semesterbeginn (Datum)
+SemesterBeginnZeit: Semesterbeginn (Uhrzeit)
+SemesterEndeDatum: Semesterende (Datum)
+SemesterEndeZeit: Semesterende (Uhrzeit)
+SemesterName: Bezeichnung
 ServerErstellen: Server erstellen
 Servers: Server wählen
 StatistikAnzeigen: Statistik anzeigen
