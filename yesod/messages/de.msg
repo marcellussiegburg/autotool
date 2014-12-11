@@ -43,6 +43,7 @@ Name: Name
 Nein: Nein
 Neins: Nein
 Okays: Okay
+PersönlicheDaten: Persönliche Daten
 Plätze: Plätze
 Punkte: Punkte
 Referent: Referent
@@ -56,6 +57,7 @@ SchuleName: Schulname
 SchuleSuffix: E-Mail-Suffix
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Semester: Semester
+Semesters: Semester
 SemesterAnlegen: Semester anlegen
 SemesterBearbeiten: Semester bearbeiten
 SemesterBeginnDatum: Semesterbeginn (Datum)

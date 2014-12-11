@@ -13,24 +13,29 @@
       <li>
         <a href=@{DirektorErnennenR 1}>_{MsgDirektorErnennen}
       <li>
-        <a href=#>_{MsgSemester}
+        <a href=#>_{MsgSemesters}
       <li>
         <a href=@{SemesterAnlegenR 1}>_{MsgSemesterAnlegen}
-      <li .divider>
-      <li .dropdown-header>Semestername
-      <li>
-        <a href=@{SemesterR 1}>_{MsgSemesterBearbeiten}
-      <li>
-        <a href=@{VorlesungAnlegenR 1}>_{MsgVorlesungAnlegen}
-      <li>
-        <a href=#>_{MsgVorlesungen}
       <li .divider>
       <li>
         <a href=@{SchulenR}>_{MsgSchulen}
        <li>
         <a href=@{SchuleAnlegenR}>_{MsgSchuleAnlegen}
        <li>
+        <a href=#>_{MsgPersönlicheDaten}
+       <li>
         <a href=#>_{MsgHighscoreAnzeigen}
+  <li .dropdown>
+    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgSemester}
+      <b .caret>
+    <ul .dropdown-menu>
+      <li .dropdown-header>Semestername
+      <li>
+        <a href=@{SemesterR 1}>_{MsgBearbeiten}
+      <li>
+        <a href=#>_{MsgVorlesungen}
+      <li>
+        <a href=@{VorlesungAnlegenR 1}>_{MsgVorlesungAnlegen}
   <li .dropdown>
     <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgVorlesung}
       <b .caret>
@@ -45,9 +50,9 @@
       <li>
         <a href=@{ResultatePflichtR 1}>_{MsgResultatePflicht}
       <li>
-        <a href=@{GruppeAnlegenR 1}>_{MsgGruppeAnlegen}
-      <li>
         <a href=@{GruppenR 1}>_{MsgGruppen}
+      <li>
+        <a href=@{GruppeAnlegenR 1}>_{MsgGruppeAnlegen}
   <li .dropdown>
     <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgGruppe}
       <b .caret>
@@ -60,18 +65,18 @@
       <li>
         <a href=@{TutorenR 1}>_{MsgTutoren}
       <li>
-        <a href=#>_{MsgAufgabeAnlegen}
-      <li>
         <a href=#>_{MsgAufgaben}
+      <li>
+        <a href=#>_{MsgAufgabeAnlegen}
   <li .dropdown>
     <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgAufgabe}
       <b .caret>
     <ul .dropdown-menu>
       <li .dropdown-header>Aufgabenname
       <li>
-        <a href=@{AufgabeR 1}>_{MsgLösen}
-      <li>
         <a href=#>_{MsgBearbeiten}
+      <li>
+        <a href=@{AufgabeR 1}>_{MsgLösen}
       <li>
         <a href=@{StatistikR 1}>_{MsgStatistikAnzeigen}
       <li .divider>
