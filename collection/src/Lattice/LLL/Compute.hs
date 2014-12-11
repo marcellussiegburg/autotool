@@ -255,15 +255,15 @@ instance ToDoc a => ToDoc (Lines a) where
 data V a = V [a]
 
 instance ToDoc (V Integer) where
-    toDoc (V xs) = text $ unwords 
-       [ show xs, "with norm"
-       , show $ centi $ toRational $ sqrt $ fromInteger $ sum $ map (^2) xs
+    toDoc (V xs) = hsep 
+       [ toDoc $ Line xs, text "with norm"
+       , toDoc $ centi $ toRational $ sqrt $ fromInteger $ sum $ map (^2) xs
        ]
 
 instance ToDoc (V Rational) where
-    toDoc (V xs) = text $ unwords 
-       [ show $ map centi xs, "with norm"
-       , show $ centi $ toRational $ sqrt $ fromRational $ sum $ map (^2) xs
+    toDoc (V xs) = hsep
+       [ toDoc $ Line $ map centi xs, text "with norm"
+       , toDoc $ centi $ toRational $ sqrt $ fromRational $ sum $ map (^2) xs
        ]
 
 instance Nice State where
@@ -274,7 +274,7 @@ instance Nice State where
         , text "orthogonally reduced base" <+> equals
           </> toDoc (map V $ orthogonal s)
         , text "mu" <+> equals
-          </> toDoc (map V $ mu s)
+          </> toDoc (Lines $ map (map centi) $ mu s)
         , text "variant (for termination)" <+> equals
           </> toDoc (centi $ variant s)
         ]
