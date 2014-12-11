@@ -6,6 +6,8 @@ module Lattice.LLL.Task where
 
 import Lattice.LLL.Compute
 
+import qualified Lattice.Reduce as LR
+
 import Autolib.Reporter hiding ( run, execute )
 import Autolib.ToDoc
 import Autolib.Reader
@@ -13,9 +15,11 @@ import Autolib.Size
 
 import Challenger.Partial
 import Inter.Types
+import Inter.Quiz
 
 import Data.Typeable
 import Data.Ratio
+import Control.Applicative
 
 data Lattice_LLL = Lattice_LLL 
     deriving (Typeable, Read, Show)
@@ -47,10 +51,11 @@ instance Partial Lattice_LLL [[Integer]] [Step] where
         inform $ nice result
         case sizereductions result of
              [] -> inform $ text "base is size-reduced"
-             (_,msg):_ -> reject msg
+             r:_ -> reject $ sizereductions_message result 
+                       (target r) (using r)
         case swaps result of
              [] -> inform $ text "base is Shoup-reduced"
-             (_,msg):_ -> reject msg
+             s:_ -> reject $ shoup_message result s
 
 execute s step = do
     inform $ vcat [ nice s, toDoc step ]
@@ -74,8 +79,13 @@ execute s step = do
             assert (elem i $ range s) $ text "this: index in range?"
             assert (elem j $ range s) $ text "that: index in range?"
             assert (j == i+1) $ text "this + 1 == that ?"
-            assert ( not $ shoup_check s i j ) 
-                   $ shoup_message s i j
+            when (not $ sizereductions_check s j i )
+                 $ reject $ vcat
+                 [ text "vectors to swap must be size-reduced, but"
+                 , sizereductions_message s j i
+                 ]
+            assert ( not $ shoup_check s j ) 
+                   $ shoup_message s step
             
     return $ apply step s
 
@@ -89,3 +99,8 @@ make_fixed = direct Lattice_LLL
     , [ 0 , 0 , 0 , 0 , 0 , 1 , 0 , 1379306 ]
     , [ 0 , 0 , 0 , 0 , 0 , 0 , 1 , 3939938 ]
     ] :: [[Integer]] )
+
+
+roll :: LR.Config -> IO [[Integer]]
+roll c = LR.base <$> LR.roll c
+

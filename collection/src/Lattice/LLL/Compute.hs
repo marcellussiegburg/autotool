@@ -171,28 +171,32 @@ reduce_matrix range (Reduce{target=i,factor=m,using=k}) =
 
 -- * actual LLL algorithm
 
+candidates s = do
+    i <- -- reverse $ -- vzG 16.10 would have reverse here
+         range s 
+    j <- reverse $ range s
+    guard $ j < i
+    if not $ sizereductions_check s i j
+       then [ Reduce {target=i,factor=round $ mu s !! i !! j
+                   ,using = j} ]
+       else if j == i-1 && not (shoup_check s i)
+            then [ Swap { this = j, that = i } ]
+            else []
+    
 lll base = 
-    let work s = case sizereductions s of
-            (step,_):_rest -> step : work (apply step s)
-            -- actually vzG (Alg 16.10) will swap earlier
-            -- (right after I decreases in following loop)
-            [] -> case swaps s of
-                (step,_) : rest -> step : work (apply step s)
-                [] -> []
+    let work s = case candidates s of
+            [] -> []
+            step : _  -> step : work (apply step s)
     in  work $ start base
 
 -- * checking reduction conditions
 
 sizereductions s = do
-    -- i <- range s ; j <- range s 
-    -- this is the version of vzG (Alg 16.10):
-    i <- reverse $ range s ; j <- reverse $ range s 
+    i <- range s ; j <- range s 
     guard $ j < i
     guard $ not $ sizereductions_check s i j
-    return ( Reduce {target=i, factor=round $ mu s !! i !! j
+    return $ Reduce {target=i, factor=round $ mu s !! i !! j
                     , using=j}
-           , sizereductions_message s i j
-           )
 
 sizereductions_check s i j = 
     let m = mu s !! i !! j
@@ -210,27 +214,28 @@ sizereductions_message s i j = vcat
     ]
 
 swaps s = do
-    i <- range s ; let { i' = succ i } ; guard $ i' < dim s
-    guard $ not $ shoup_check s i i'
-    return ( Swap { this = i, that = i' }
-           , shoup_message s i i'
-           )
+    i <- range s ; guard $ 0 < i
+    guard $ not $ shoup_check s i 
+    return $ Swap { this = i - 1, that = i }
 
-shoup_check s i i' = 
-    let bin = norm2 (orthogonal s !! i)
-        bi'n = norm2 (orthogonal s !! i')
+shoup_check s i = 
+    let bin = norm2 (orthogonal s !! (i-1))
+        bi'n = norm2 (orthogonal s !! i)
     in  bin <= 2 * bi'n
 
-shoup_message s i i' = 
-    let bin  = norm2 (orthogonal s !! i)
-        bi'n = norm2 (orthogonal s !! i')
+shoup_message s (Swap {this=i,that=j}) = 
+    let bin  = norm2 (orthogonal s !! (i-1))
+        bi'n = norm2 (orthogonal s !! i)
     in  vcat 
     [ text "Shoup condition does not hold:"
-    , text "|b_" <> toDoc i <> text "^*|^2"
+    , text "|b_" <> toDoc (i-1) <> text "^*|^2"
                     <+> equals <+> toDoc (centi bin)
-    , text "|b_" <> toDoc i' <> text "^*|^2"
+    , text "|b_" <> toDoc i <> text "^*|^2"
                     <+> equals <+> toDoc (centi bi'n)
     ]
+
+can_swap s i  = 
+    sizereductions_check s i (i-1) && not (shoup_check s i)
 
 -- * for display
 

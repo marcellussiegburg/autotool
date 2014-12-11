@@ -967,5 +967,6 @@ Library
                  Lattice.LLL
                  Lattice.LLL.Compute
                  Lattice.LLL.Task
+                 Lattice.LLL.Inverse
 
                  
