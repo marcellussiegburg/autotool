@@ -12,6 +12,8 @@
 /schule/#SchuleId/waisenkinder WaisenkinderR GET
 /schule/#SchuleId/semester SemesterAnlegenR GET POST
 /semester/#SemesterId SemesterR GET POST
+/semester/#SemesterId/vorlesung VorlesungAnlegenR GET POST
+/vorlesung/#VorlesungId VorlesungR GET POST
 /vorlesung/#VorlesungId/gruppe GruppeAnlegenR GET POST
 /vorlesung/#VorlesungId/gruppen GruppenR GET POST
 /vorlesung/#VorlesungId/studenten StudentenR GET

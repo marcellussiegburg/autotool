@@ -1,0 +1,3 @@
+<h1>_{MsgVorlesungBearbeiten}
+<form role="form" action=@{VorlesungAnlegenR 1} method="post" enctype=#{formEnctype}>
+  ^{formWidget}

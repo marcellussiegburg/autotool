@@ -5,6 +5,7 @@ module Import
 import Prelude as Import hiding (head, init, last, readFile, tail, writeFile)
 import Yesod as Import
 import Yesod.Form.Bootstrap3 as Import (BootstrapFormLayout (..), BootstrapGridOptions (..), BootstrapSubmit (BootstrapSubmit), bfs, bootstrapSubmit, renderBootstrap3, withAutofocus)
+import Yesod.Form.Jquery as Import (jqueryDayField, def)
 import Text.Shakespeare.Text as Import (toText)
 
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))

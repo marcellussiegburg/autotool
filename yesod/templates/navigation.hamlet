@@ -21,7 +21,7 @@
       <li>
         <a href=@{SemesterR 1}>_{MsgSemesterBearbeiten}
       <li>
-        <a href=#>_{MsgVorlesungAnlegen}
+        <a href=@{VorlesungAnlegenR 1}>_{MsgVorlesungAnlegen}
       <li>
         <a href=#>_{MsgVorlesungen}
       <li .divider>
@@ -37,7 +37,7 @@
     <ul .dropdown-menu>
       <li .dropdown-header>Vorlesungsname
       <li>
-        <a href=#>_{MsgBearbeiten}
+        <a href=@{VorlesungR 1}>_{MsgBearbeiten}
       <li>
         <a href=@{StudentenR 1}>_{MsgStudenten}
       <li>

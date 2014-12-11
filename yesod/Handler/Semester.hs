@@ -2,7 +2,6 @@
 module Handler.Semester where
 
 import Import
-import Yesod.Form.Jquery (jqueryDayField, def)
 
 data SemesterForm = SemesterForm {
     name :: Text,

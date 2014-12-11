@@ -17,6 +17,10 @@ Direktoren: Direktoren
 DirektorAbsetzen: Direktor absetzen
 DirektorErnennen: Direktor ernennen
 Einschreiben: Einschreiben
+EinschreibungBeginnDatum: Beginn der Einschreibung (Datum)
+EinschreibungBeginnZeit: Beginn der Einschreibung (Datum)
+EinschreibungEndeDatum: Ende der Einschreibung (Datum)
+EinschreibungEndeZeit: Ende der Einschreibung (Datum)
 Email: E-Mail
 Gesamtpunktzahl: Total
 Größe: Größe
@@ -65,6 +69,7 @@ StatistikAnzeigen: Statistik anzeigen
 Studenten: Studenten
 StudentenEingeschrieben: Eingeschriebene Studenten
 StudentenMaximal: Maximale Einschreibungen
+TagesNachricht: Mitteilung des Tages
 Tutor: Tutor ernennen
 Tutoren: Tutoren
 TutorAbsetzen: Tutor absetzen
@@ -72,7 +77,9 @@ TutorErnennen: Tutor ernennen
 VorherigeEinsendungLaden: Vorherige Einsendung laden
 Vorlesung: Vorlesung
 VorlesungAnlegen: Vorlesung anlegen
+VorlesungBearbeiten: Vorlesung bearbeiten
 Vorlesungen: Vorlesungen
+VorlesungName: Bezeichnung
 Vorname: Vorname
 Waisenkinder: Waisenkinder
 WaisenkinderBeschreibung: Studenten Ihrer Schule, die keine Übungsgruppe gewählt haben.
