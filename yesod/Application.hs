@@ -33,6 +33,7 @@ import Handler.SchuleAnlegen
 import Handler.Schulen
 import Handler.Semester
 import Handler.SemesterAnlegen
+import Handler.Semesters
 import Handler.Statistik
 import Handler.Studenten
 import Handler.Tutoren

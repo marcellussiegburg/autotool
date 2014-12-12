@@ -62,6 +62,7 @@ SemesterAnlegen: Semester anlegen
 SemesterBearbeiten: Semester bearbeiten
 SemesterBeginnDatum: Semesterbeginn (Datum)
 SemesterBeginnZeit: Semesterbeginn (Uhrzeit)
+SemesterDauer beginn@UTCTime ende@UTCTime: dauert vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr
 SemesterEndeDatum: Semesterende (Datum)
 SemesterEndeZeit: Semesterende (Uhrzeit)
 SemesterName: Bezeichnung

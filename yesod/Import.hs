@@ -11,7 +11,7 @@ import Text.Shakespeare.Text as Import (toText)
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))
 import Data.Text as Import (Text, pack, unpack)
 import Data.Text.Lazy.Builder as Import (toLazyText)
-import Data.Time as Import (Day, TimeOfDay, fromGregorian, midnight)
+import Data.Time as Import (Day, TimeOfDay, UTCTime (UTCTime), fromGregorian, midnight, timeOfDayToTime)
 
 import Foundation as Import 
 import Model as Import

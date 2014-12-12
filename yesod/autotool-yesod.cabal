@@ -33,6 +33,7 @@ library
                      Handler.Schulen
                      Handler.Semester
                      Handler.SemesterAnlegen
+                     Handler.Semesters
                      Handler.Statistik
                      Handler.Studenten
                      Handler.Tutoren
@@ -88,6 +89,7 @@ library
                  , wai-logger                    >= 2.2        && < 2.3
                  , containers
                  , time
+                 , old-locale
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)

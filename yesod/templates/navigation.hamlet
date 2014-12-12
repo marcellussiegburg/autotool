@@ -13,7 +13,7 @@
       <li>
         <a href=@{DirektorErnennenR 1}>_{MsgDirektorErnennen}
       <li>
-        <a href=#>_{MsgSemesters}
+        <a href=@{SemestersR 1}>_{MsgSemesters}
       <li>
         <a href=@{SemesterAnlegenR 1}>_{MsgSemesterAnlegen}
       <li .divider>
