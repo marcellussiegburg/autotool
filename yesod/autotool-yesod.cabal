@@ -40,6 +40,7 @@ library
                      Handler.TutorErnennen
                      Handler.Vorlesung
                      Handler.VorlesungAnlegen
+                     Handler.Vorlesungen
                      Handler.Waisenkinder
 
     if flag(dev) || flag(library-only)

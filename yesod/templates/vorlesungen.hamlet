@@ -1,0 +1,23 @@
+<h1>
+  _{MsgVorlesungen}
+$if null vorlesungen
+  _{MsgKeineVorlesungen}
+$else
+  <ul .list-group>
+    $forall vorlesung <- vorlesungen
+      <li .list-group-item .#{listGroupItemClass $ ende vorlesung}>
+        <a href=@{GruppenR 1} .btn .btn-default .btn-block .fill-width-cell>
+          <h4 .list-group-heading>
+            #{name vorlesung}
+          <p .list-group-item-text>
+            _{MsgEinschreibungDauer (neuesDatum $ beginn vorlesung) $ neuesDatum $ ende vorlesung}
+          $maybe nachricht <- tagesNachricht vorlesung
+            <p .list-group-item-text>
+              _{MsgTagesNachricht}: #{nachricht}
+        <div .cell>
+          <div .table-padding>
+        <div .cell>
+          <a href=@{VorlesungR 1} .btn .btn-primary .btn-block>
+            _{MsgBearbeiten}
+          <a href=@{VorlesungenR 1} .btn .btn-danger .btn-block>
+            _{MsgLöschen}

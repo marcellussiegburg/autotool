@@ -40,6 +40,7 @@ import Handler.Tutoren
 import Handler.TutorErnennen
 import Handler.Vorlesung
 import Handler.VorlesungAnlegen
+import Handler.Vorlesungen
 import Handler.Waisenkinder
 
 mkYesodDispatch "Autotool" resourcesAutotool

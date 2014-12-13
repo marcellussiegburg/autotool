@@ -19,6 +19,7 @@ DirektorErnennen: Direktor ernennen
 Einschreiben: Einschreiben
 EinschreibungBeginnDatum: Beginn der Einschreibung (Datum)
 EinschreibungBeginnZeit: Beginn der Einschreibung (Datum)
+EinschreibungDauer beginn@UTCTime ende@UTCTime: Eine Einschreibung ist im Zeitraum vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr möglich
 EinschreibungEndeDatum: Ende der Einschreibung (Datum)
 EinschreibungEndeZeit: Ende der Einschreibung (Datum)
 Email: E-Mail
@@ -33,8 +34,9 @@ GruppeNummer: Gruppennummer
 HighscoreAnzeigen: Highscore
 Identifikationsnummer: ID
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
-KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
+KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
+KeineVorlesungen: Es gibt leider keine Vorlesungen in diesem Semester.
 Löschen: Löschen
 Lösen: Lösen
 LösungAbsenden: Lösung absenden

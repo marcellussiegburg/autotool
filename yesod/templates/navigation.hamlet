@@ -33,7 +33,7 @@
       <li>
         <a href=@{SemesterR 1}>_{MsgBearbeiten}
       <li>
-        <a href=#>_{MsgVorlesungen}
+        <a href=@{VorlesungenR 1}>_{MsgVorlesungen}
       <li>
         <a href=@{VorlesungAnlegenR 1}>_{MsgVorlesungAnlegen}
   <li .dropdown>
