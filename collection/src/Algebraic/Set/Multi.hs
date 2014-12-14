@@ -73,7 +73,8 @@ union (Multiset a) (Multiset b) =
 
 difference :: Ord a => Multiset a -> Multiset a -> Multiset a
 difference (Multiset a) (Multiset b) = 
-    Multiset $ M.filter (> 0) $ M.unionWith (-) a b
+    Multiset $ M.filter (> 0) 
+    $ M.differenceWith ( \ x y -> Just (x-y) ) a b
 
 symmetric_difference :: Ord a => Multiset a -> Multiset a -> Multiset a
 symmetric_difference (Multiset a) (Multiset b) = 
