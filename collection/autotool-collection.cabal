@@ -117,6 +117,7 @@ Library
                  Algebraic.Relation.Restriction,
                  Algebraic.STGraph,
                  Algebraic.Set,
+                 Algebraic.Multiset,
                  Algebraic.Integer,
                  Algebraic.Central,
                  Algebraic.Class,
@@ -128,6 +129,7 @@ Library
                  Algebraic.Nested.Op,
                  Algebraic.Nested.Roll,
                  Algebraic.Nested.Restriction,
+                 Algebraic.Set.Multi
                  Algebraic.Quiz,
                  Resolution.Roll,
                  Resolution.Enumerate,

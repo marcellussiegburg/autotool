@@ -223,6 +223,7 @@ import qualified Algebraic2.Quiz
 
 import Algebraic.Integer
 import Algebraic.Set
+import Algebraic.Multiset
 import Algebraic.Relation
 
 import qualified Flow.Central
@@ -375,9 +376,11 @@ tmakers =
                     , item FD.Top.make_quiz
 		    ]
 		]
-         , heading "Mengen und Relationen"
+         , heading "(Multi)Mengen und Relationen"
                 [ item $ Algebraic2.Central.make Algebraic_Set
 		, item $ Algebraic2.Quiz.make Algebraic_Set
+		, item $ Algebraic2.Central.make Algebraic_Multiset
+		, item $ Algebraic2.Quiz.make Algebraic_Multiset
 		, item $ Algebraic2.Central.make Algebraic_Relation
 		, item $ Algebraic2.Quiz.make Algebraic_Relation
                 ]
