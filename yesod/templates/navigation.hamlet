@@ -67,6 +67,8 @@
       <li>
         <a href=#>_{MsgAufgaben}
       <li>
+        <a href=#>_{MsgAufgabenAktuell}
+      <li>
         <a href=#>_{MsgAufgabeAnlegen}
   <li .dropdown>
     <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgAufgabe}

@@ -5,6 +5,7 @@ Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
 AufgabeKonfigurieren: Aufgabe konfigurieren
 Aufgaben: Aufgaben
+AufgabenAktuell: Aktuelle Aufgaben
 AufgabeTesten: Aufgabe testen
 Ausstehend: Ausstehend
 Austragen: Austragen
