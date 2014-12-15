@@ -1,0 +1,63 @@
+<h1>
+  _{MsgAufgabenAlle}
+$if null aufgaben
+  <p>
+    _{MsgKeineAufgaben}
+$else
+  <table .table .table-striped .table-hover>
+    <thead>
+      <tr>
+        <th>
+          _{MsgAufgabeName}
+        <th>
+          _{MsgAufgabeStatus}
+        <th>
+          _{MsgAufgabeHighscore}
+        <th>
+          _{MsgAufgabeBearbeitungszeit}
+        <th>
+          _{MsgAufgabeBewertungVorher}
+        <th colspan=2>
+          _{MsgAufgabeGesamtwertung}
+        <th>
+    <tbody>
+      $forall aufgabeEintrag <- aufgaben
+        <tr>
+          <td>
+            #{name aufgabeEintrag}
+          <td>
+            #{status aufgabeEintrag}
+          <td>
+            #{highscore aufgabeEintrag}
+          <td>
+            $if bearbeitungszeit aufgabeEintrag == UTCTime (fromGregorian 2014 12 31) (timeOfDayToTime midnight)
+              _{MsgAufgabeZeitVorher $ bearbeitungszeit aufgabeEintrag}
+            $else
+              _{MsgAufgabeZeitNachher $ bearbeitungszeit aufgabeEintrag}
+          <td>
+            $maybe vorher <- vorherigeBewertung aufgabeEintrag
+              #{vorher}
+          $maybe (ok, nein) <- gesamtBewertung aufgabeEintrag
+            <td .success>
+              #{show ok}
+            <td .danger>
+              #{show nein}
+          $nothing
+            <td .warning colspan=2>
+          <td>
+            $if bearbeitungszeit aufgabeEintrag == UTCTime (fromGregorian 2014 12 31) (timeOfDayToTime midnight)
+              <a href=@{AufgabeR 1} .btn .btn-primary .btn-block role="button">
+                _{MsgLösen}
+            $else
+              <a href=# .btn .btn-primary .btn-block role="button">
+                _{MsgTesten}
+<nav>
+  <ul .pager>
+    <li .previous .disabled>
+      <a href=@{AufgabenR 1}>
+        <span aria-hidden="true">&larr;
+        _{MsgAufgabenAlle}
+    <li .next>
+      <a href=#>
+        _{MsgAufgabenAktuell}
+        <span aria-hidden="true">&rarr;

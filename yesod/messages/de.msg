@@ -3,9 +3,18 @@ Anmelden: Anmelden
 Anzeigen: Anzeigen
 Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
+AufgabeBearbeitungszeit: Bearbeitungszeit
+AufgabeZeitVorher zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
+AufgabeZeitNachher zeit@UTCTime: vorbei seit #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
+AufgabeBewertungVorher: Vorherige Bewertung
+AufgabeGesamtwertung: Gesamtwertung
+AufgabeHighscore: Highscore
 AufgabeKonfigurieren: Aufgabe konfigurieren
 Aufgaben: Aufgaben
 AufgabenAktuell: Aktuelle Aufgaben
+AufgabenAlle: Alle Aufgaben
+AufgabeName: Name
+AufgabeStatus: Status
 AufgabeTesten: Aufgabe testen
 Ausstehend: Ausstehend
 Austragen: Austragen
@@ -34,6 +43,7 @@ GruppeName: Gruppenname
 GruppeNummer: Gruppennummer
 HighscoreAnzeigen: Highscore
 Identifikationsnummer: ID
+KeineAufgaben: Keine passenden Aufgaben gefunden.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
 KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
@@ -76,6 +86,7 @@ Studenten: Studenten
 StudentenEingeschrieben: Eingeschriebene Studenten
 StudentenMaximal: Maximale Einschreibungen
 TagesNachricht: Mitteilung des Tages
+Testen: Testen
 Tutor: Tutor ernennen
 Tutoren: Tutoren
 TutorAbsetzen: Tutor absetzen

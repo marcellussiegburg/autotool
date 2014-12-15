@@ -65,7 +65,7 @@
       <li>
         <a href=@{TutorenR 1}>_{MsgTutoren}
       <li>
-        <a href=#>_{MsgAufgaben}
+        <a href=@{AufgabenR 1}>_{MsgAufgaben}
       <li>
         <a href=#>_{MsgAufgabenAktuell}
       <li>
