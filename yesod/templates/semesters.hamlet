@@ -2,7 +2,7 @@
   _{MsgSemesters}
 <ul .list-group>
   <li .list-group-item .list-group-item-success>
-    <a href=# .btn .btn-default .btn-block .fill-width-cell>
+    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
       <h4 .list-group-heading>
         WS 2014/2015
       <p .list-group-item-text>
@@ -13,7 +13,7 @@
       <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
         _{MsgBearbeiten}
   <li .list-group-item .list-group-item-warning>
-    <a href=# .btn .btn-default .btn-block .fill-width-cell>
+    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
       <h4 .list-group-heading>
         SS 2014
       <p .list-group-item-text>
@@ -24,7 +24,7 @@
       <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
         _{MsgBearbeiten}
   <li .list-group-item .list-group-item-warning>
-    <a href=# .btn .btn-default .btn-block .fill-width-cell>
+    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
       <h4 .list-group-heading>
         WS 2013/2014
       <p .list-group-item-text>
@@ -35,7 +35,7 @@
       <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
         _{MsgBearbeiten}
   <li .list-group-item .list-group-item-warning>
-    <a href=# .btn .btn-default .btn-block .fill-width-cell>
+    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
       <h4 .list-group-heading>
         SS 2013
       <p .list-group-item-text>

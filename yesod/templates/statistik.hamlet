@@ -87,3 +87,5 @@ $else
             <input type="checkbox">
           <td>
             <input type="checkbox">
+  <form role="form" action=@{StatistikR 1} method="post">
+    <button type="submit" .btn .btn-primary>_{MsgBearbeiten}
