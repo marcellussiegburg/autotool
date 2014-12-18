@@ -67,7 +67,7 @@
       <li>
         <a href=@{AufgabenR 1}>_{MsgAufgaben}
       <li>
-        <a href=#>_{MsgAufgabenAktuell}
+        <a href=@{AufgabenAktuellR 1}>_{MsgAufgabenAktuell}
       <li>
         <a href=#>_{MsgAufgabeAnlegen}
   <li .dropdown>

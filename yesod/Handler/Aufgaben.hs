@@ -11,6 +11,10 @@ data AufgabeListe = AufgabeEintrag {
     gesamtBewertung :: Maybe (Int, Int)
 }
 
+titel = MsgAufgabenAlle
+
+aktuell = False
+
 getAufgabenR :: GruppeId -> Handler Html
 getAufgabenR gruppe = do
   let aufgaben =
