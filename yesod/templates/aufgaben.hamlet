@@ -1,5 +1,5 @@
 <h1>
-  _{MsgAufgabenAlle}
+  _{titel}
 $if null aufgaben
   <p>
     _{MsgKeineAufgaben}
@@ -53,11 +53,13 @@ $else
                 _{MsgTesten}
 <nav>
   <ul .pager>
-    <li .previous .disabled>
-      <a href=@{AufgabenR 1}>
-        <span aria-hidden="true">&larr;
-        _{MsgAufgabenAlle}
-    <li .next>
-      <a href=#>
-        _{MsgAufgabenAktuell}
-        <span aria-hidden="true">&rarr;
+    $if aktuell == True
+      <li .previous>
+        <a href=@{AufgabenR 1}>
+          <span aria-hidden="true">&larr;
+          _{MsgAufgabenAlle}
+    $else
+      <li .next>
+        <a href=@{AufgabenAktuellR 1}>
+          _{MsgAufgabenAktuell}
+          <span aria-hidden="true">&rarr;
