@@ -49,7 +49,6 @@ instance Yesod Autotool where
         mmsg <- getMessage
         lang <- fmap (\langs -> if langs == [] then "de" else head langs) languages
         pc <- widgetToPageContent $ do
-            addStylesheet $ StaticR css_bootstrap_css
             $(combineStylesheets 'StaticR
                 [ css_normalize_css
                 , css_bootstrap_min_css
@@ -95,6 +94,10 @@ instance RenderMessage Autotool FormMessage where
     renderMessage _ [] = defaultFormMessage
 
 instance YesodJquery Autotool where
+    urlJqueryJs _ = Left $ StaticR js_jquery_min_js
+    urlJqueryUiJs _ = Left $ StaticR js_jquery_ui_min_js
+    urlJqueryUiCss _ = Left $ StaticR css_jquery_ui_min_css
+    urlJqueryUiDateTimePicker _ = Left $ StaticR js_jquery_ui_datetimepicker_js
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
