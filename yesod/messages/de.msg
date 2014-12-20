@@ -79,8 +79,10 @@ SemesterDauer beginn@UTCTime ende@UTCTime: dauert vom #{formatTime defaultTimeLo
 SemesterEndeDatum: Semesterende (Datum)
 SemesterEndeZeit: Semesterende (Uhrzeit)
 SemesterName: Bezeichnung
+Server: Server
 ServerErstellen: Server erstellen
 Servers: Server wählen
+ServerWählen: Server wählen
 StatistikAnzeigen: Statistik anzeigen
 Studenten: Studenten
 StudentenEingeschrieben: Eingeschriebene Studenten

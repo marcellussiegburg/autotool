@@ -85,7 +85,7 @@
       <li>
         <a href=#>(_{MsgServerErstellen})
       <li>
-        <a href=#>_{MsgServers}
+        <a href=@{ServersR}>_{MsgServers}
       <li .divider>
       <li .dropdown-header>Aufgabenservername
       <li>

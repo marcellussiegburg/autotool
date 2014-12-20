@@ -36,6 +36,7 @@ library
                      Handler.Semester
                      Handler.SemesterAnlegen
                      Handler.Semesters
+                     Handler.Servers
                      Handler.Statistik
                      Handler.Studenten
                      Handler.Tutoren
