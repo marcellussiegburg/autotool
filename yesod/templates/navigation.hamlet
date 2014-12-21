@@ -89,6 +89,8 @@
       <li .divider>
       <li .dropdown-header>Aufgabenservername
       <li>
+        <a href=@{ServerR "http://"}>_{MsgAufgabeTyp}
+      <li>
         <a href=#>_{MsgAufgabeKonfigurieren}
       <li>
         <a href=#>_{MsgAufgabeTesten}

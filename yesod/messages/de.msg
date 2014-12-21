@@ -16,6 +16,7 @@ AufgabenAlle: Alle Aufgaben
 AufgabeName: Name
 AufgabeStatus: Status
 AufgabeTesten: Aufgabe testen
+AufgabeTyp: Aufgabentyp wählen
 Ausstehend: Ausstehend
 Austragen: Austragen
 Bearbeiten: Bearbeiten
@@ -44,6 +45,7 @@ GruppeNummer: Gruppennummer
 HighscoreAnzeigen: Highscore
 Identifikationsnummer: ID
 KeineAufgaben: Keine passenden Aufgaben gefunden.
+KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
 KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.

@@ -1,0 +1,10 @@
+<h1>
+  _{MsgAufgabeTyp}
+$if null aufgabenTypen
+  <p>
+    _{MsgKeineAufgabenTypen}
+$else
+  <div .tree .well>
+    <ul>
+      $forall aufgabenbaum <- aufgabenTypen
+        ^{unterbaum aufgabenbaum}

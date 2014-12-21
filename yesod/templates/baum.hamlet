@@ -1,0 +1,15 @@
+$if null (unterbäume baum)
+  <li>
+    <a href=#>
+      <label>
+        <i .glyphicon .glyphicon-leaf>
+        &nbsp;#{wurzel baum}
+$else
+  <li>
+    <input type="checkbox" id=#{inputId}>
+    <label for=#{inputId}>
+      <i .glyphicon .glyphicon-folder-open>
+      &nbsp;#{wurzel baum}
+    <ul>
+      $forall unterbaum' <- unterbäume baum
+        ^{unterbaum unterbaum'}

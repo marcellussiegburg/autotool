@@ -30,3 +30,4 @@
 /aufgabe/#AufgabeId/statistik StatistikR GET POST
 
 /servers ServersR GET POST
+/server/#Serverurl ServerR GET

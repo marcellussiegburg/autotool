@@ -1,0 +1,90 @@
+.tree {
+  min-height: 20px;
+  padding: 2px;
+  margin-bottom: 20px;
+  background-color: #fbfbfb;
+  border: 1px solid #999;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+.tree > ul > li {
+  margin-left: -45px;
+}
+.tree > ul:first-child {
+  margin-top: -2px;
+}
+.tree > ul:last-child {
+  margin-bottom: 0px;
+}
+.tree li {
+  list-style-type: none;
+  margin: 0;
+  margin-left: calc(-39px);
+  padding: 2px 5px 0 5px;
+  position: relative;
+}
+.tree li::before,
+.tree li::after {
+  content: '';
+  left: calc(1px);
+  position: absolute;
+  right: auto;
+}
+.tree li::before {
+  border-left: 1px solid #999;
+  bottom: 50px;
+  height: 100%;
+  top: 0;
+  width: 1px;
+}
+.tree li::after {
+  border-top: 1px solid #999;
+  height: 10px;
+  top: calc(15px);
+  width: calc(4px);
+}
+.tree > ul > li::before,
+.tree > ul > li::after {
+  border: 0;
+}
+.tree li:last-child::before {
+  height: calc(16px);
+}
+.tree input[type="checkbox"] + label,
+.tree a > label {
+  margin-bottom: 0;
+  font-weight: normal;
+}
+.tree input[type="checkbox"] {
+  appearance: none;
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+.tree li label {
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border: 1px solid #999;
+  border-radius: 5px;
+  display: inline-block;
+  padding: 3px 5px;
+  text-decoration: none;
+}
+.tree input[type="checkbox"] ~ ul > li {
+  display: none;
+}
+.tree input[type="checkbox"] ~ label {
+  cursor: pointer;
+}
+.tree input[type="checkbox"]:checked ~ ul > li {
+  display: block;
+}
+.tree input[type="checkbox"] + label:hover,
+.tree input[type="checkbox"] + label:hover ~ ul label {
+  background: #eee;
+  border: 1px solid #94a0b4;
+}
