@@ -14,8 +14,6 @@ data Value k
     | Line (k,k,k)
     | Function Type [ Type ] ( [Value k] -> Reporter (Value k) )
 
-
-
 data Type = PointT | LineT | FunctionT Type [Type]
     deriving (Eq)
 
@@ -49,6 +47,8 @@ assert_type t action = do
         ]  
     return v
 
+mkEnv kvs = M.fromList kvs
+
 eval :: (ToDoc c, ToDoc d, ToDoc n, Ord n)
      => Env n d -> G.Exp n c -> Reporter (Value d)
 eval env exp = informed exp $ case exp of
@@ -66,7 +66,7 @@ decl env (G.Decl tn Nothing b) = do
 
 decl env (G.Decl tn (Just args) b) = do
     let v = Function (getType tn) (map getType args)
-          $ \ xs -> let env' = M.union (M.fromList $ zip (map getName args) xs) env
+          $ \ xs -> let env' = M.union (mkEnv $ zip (map getName args) xs) env
                     in  eval env' b    
     return $ M.insert (getName tn) v env
     

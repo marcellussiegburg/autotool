@@ -6,7 +6,7 @@ import Geo.Program.AST
 
 import Autolib.ToDoc
 
-instance (ToDoc v, ToDoc c) => ToDoc (Exp v c) where
+instance (ToDoc v) => ToDoc (Exp v) where
     toDoc e = case e of
         Ref n -> toDoc n
         Apply f args ->
@@ -18,7 +18,7 @@ instance (ToDoc v, ToDoc c) => ToDoc (Exp v c) where
 
 derives [makeToDoc] [''Type]
 
-instance (ToDoc v, ToDoc c) => ToDoc (Decl v c) where
+instance (ToDoc v) => ToDoc (Decl v) where
     toDoc (Decl f margs b) =
         toDoc f 
         <+> ( case margs of

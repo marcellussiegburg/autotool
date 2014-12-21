@@ -7,7 +7,7 @@ import Geo.Program.AST
 import Autolib.Reader hiding ((<|>), many)
 import Control.Applicative hiding ( Const )
 
-instance (Reader v, Reader c) => Reader (Exp v c) where
+instance (Reader v) => Reader (Exp v) where
     reader = my_braces ( Block <$> many (reader <* my_semi)
                          <*> (my_reserved "return" *> reader))
          <|> Apply <$> reader <*> my_parens (my_commaSep reader )
@@ -15,7 +15,7 @@ instance (Reader v, Reader c) => Reader (Exp v c) where
 
 derives [makeReader] [''Type]
 
-instance (Reader v, Reader c) => Reader (Decl v c) where
+instance (Reader v) => Reader (Decl v) where
     reader =
         Decl <$> reader <*>
         (     ( my_reservedOp "=" *> return Nothing )
