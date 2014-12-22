@@ -1,9 +1,5 @@
 -- | straightforward problem type for introducing lattice base reduction problems:
 -- just find a short vector  (not checking which algorithm was used, just the result).
--- need to be a bit careful here: cannot use Double because a solution could cheat:
--- multiply everything by really large amounts and get extinction of
--- precision upon subtraction (resulting in a "zero" vector).
--- Hence, use fixed precision numerals (they internally use Integer).
 
 {-# language DeriveDataTypeable #-}
 {-# language TemplateHaskell #-}
@@ -24,9 +20,6 @@ import Autolib.Size
 import Data.Hashable
 import System.Random
 
-import Data.Fixed
-import Data.Char (isDigit)
-
 import Challenger.Partial
 import Inter.Types
 import Inter.Quiz
@@ -34,33 +27,17 @@ import Data.Typeable
 import Control.Monad ( when )
 import Control.Applicative ((<$>))
 
-instance HasResolution p => ToDoc (Fixed p) where
-    toDoc = text . showFixed True
-
-instance HasResolution p => Reader (Fixed p) where
-    reader = do
-        sign <- option '+' ( char '+' <|> char '-' )
-        pre <- many1 digit
-        post <- option "" $ do char '.' ; many1 digit
-        my_whiteSpace 
-        let res = resolution ( undefined :: Fixed p ) 
-            log10 n = if n == 1 then 0 else succ (log10 (div n 10))
-            places = log10 res
-        when ( fromIntegral (length post) > places ) 
-           $ fail "number cannot be represented exactly"
-        let n = read $ pre ++ post ++ replicate (places - length post) '0' 
-        return $ MkFixed n
 
 type Vector a = [ a ]
 
 data Problem = 
-     Problem { base :: [ Vector (Fixed E6) ], bound :: Double }
+     Problem { base :: [ Vector Integer ], bound :: Double }
     deriving Typeable
 
 minpoly scale num x = 
     Problem { base = do
         i <- [ 0 .. num ]
-        return $ (fromRational scale * (fromRational x ^ i )) : do 
+        return $ map round $ scale * x ^ i  : do 
             j <- [ 0 .. num ] ; return $ if i == j then 1 else 0
         , bound = 11
         }
@@ -70,46 +47,43 @@ problem0 = minpoly 12345 4 (toRational $ sqrt(2) + sqrt(3))
 data Solution = Solution { coefficients :: Vector Integer }
     deriving Typeable
 
-combine :: HasResolution p
-        => Vector Integer -> [ Vector (Fixed p) ] 
-        -> Vector (Fixed p)
+combine :: Vector Integer -> [ Vector Integer ] 
+        -> Vector Integer
 combine cs vs = 
     foldr1 add $ zipWith scale cs vs
 
-add :: HasResolution p
-    => Vector (Fixed p) -> Vector (Fixed p) -> Vector (Fixed p) 
+add :: Vector Integer -> Vector Integer -> Vector Integer
 add = zipWith (+)
-scale c = map (fromInteger c *)
+scale :: Integer -> Vector Integer -> Vector Integer
+scale c = map (c *)
 
-norm :: HasResolution p 
-     => Vector (Fixed p) -> Double
+norm :: Vector Integer -> Double
 norm v = sqrt 
-       $ fromRational 
+       $ fromInteger
        $ sum 
-       $ map ( \ x -> toRational x ^ (2 :: Int)) v
+       $ map ( ^ 2 ) v
 
-data Lattice_Reduce = Lattice_Reduce
+data Lattice_SVP = Lattice_SVP
     deriving Typeable
 
-derives [makeReader, makeToDoc] [''Problem, ''Solution, ''Lattice_Reduce]
+derives [makeReader, makeToDoc] [''Problem, ''Solution, ''Lattice_SVP]
 
-instance Show Lattice_Reduce where show = render . toDoc
+instance Show Lattice_SVP where show = render . toDoc
 
-instance OrderScore Lattice_Reduce where scoringOrder _ = Decreasing
+instance OrderScore Lattice_SVP where scoringOrder _ = Decreasing
 
 newtype Oneline a = Oneline a
 instance ToDoc a => ToDoc (Oneline a) where
     toDoc (Oneline a) = text $ unwords $ words $ render $ toDoc a
 
-instance Measure Lattice_Reduce Problem Solution where
+instance Measure Lattice_SVP Problem Solution where
     measure _ p s = 
         let v = combine (coefficients s) (base p)
             n = norm v
-            d = n * fromInteger ( resolution ( undefined :: Fixed E6 ))
-            l = round $ logBase 2 d
+            l = round $ logBase 2 n
         in  if all (== 0) v then 0 else l
 
-instance Partial Lattice_Reduce Problem Solution where
+instance Partial Lattice_SVP Problem Solution where
 
     describe _ p = vcat
         [ text "Find an nonzero integer linear combination of these vectors"
@@ -137,22 +111,20 @@ instance Partial Lattice_Reduce Problem Solution where
     total _ p s = do
         let v = combine (coefficients s) (base p)
             n = norm v
-            d = n * fromInteger ( resolution ( undefined :: Fixed E6 ))
-            l = round $ logBase 2 d
+            l = round $ logBase 2 n
             c = if all (== 0) v then 0 else l :: Int
         inform $ vcat
             [ text "linear combination is" </> toDoc (Oneline v)
-            , text "with Euclidean norm" </> toDoc n
+            , text "with Euclidean norm n = " </> toDoc n
             ]
         when (n > bound p) $ reject 
             $ text "this is larger than the bound" </> toDoc (bound p)
         when (c > 0 ) $ inform $ text "scoring information" </> vcat 
-            [ text "d = norm / resolution = " </> toDoc d
-            , text "log2 d = " </> toDoc l
+            [ text "log2 n = " </> toDoc l
             ]
 
 make_fixed :: Make
-make_fixed = direct Lattice_Reduce problem0
+make_fixed = direct Lattice_SVP problem0
 
 -- | for generating instances: we generatae a base that
 -- has a short vector and then we do @num_steps@ of random row transformations:
@@ -161,20 +133,20 @@ make_fixed = direct Lattice_Reduce problem0
 data Config = Config
         { number_of_vectors :: Int
         , length_of_vectors :: Int
-        , short_vector_norm_at_most :: Double
-        , other_vectors_norm_at_least :: Double
+        , short_vector_component_range :: (Integer,Integer)
+        , other_vectors_component_range :: (Integer,Integer)
         , num_steps :: Int
-        , factor_size :: Integer
+        , factor_range :: (Integer,Integer)
         }
     deriving Typeable
 
 config0 = Config
-    { number_of_vectors = 4
-    , length_of_vectors = 4
-    , short_vector_norm_at_most = 0.2
-    , other_vectors_norm_at_least = 100
+    { number_of_vectors = 5
+    , length_of_vectors = 5
+    , short_vector_component_range = (-5,5)
+    , other_vectors_component_range = (-100,100)
     , num_steps = 25
-    , factor_size = 5
+    , factor_range = (-2,2)
     }
 
 derives [makeReader, makeToDoc] [''Config]
@@ -183,18 +155,15 @@ roll :: Config -> IO Problem
 roll conf = do
     let dim = length_of_vectors conf
         num = number_of_vectors conf
-        sh = short_vector_norm_at_most conf 
-           / sqrt (fromIntegral dim)
-        vector :: Double -> IO (Vector (Fixed E6))
-        vector b = forM [ 1 .. dim ] $ \ _ -> 
-            fromRational <$> toRational <$> ( randomRIO (negate b, b) :: IO Double )
-    short <- vector sh
-    others <- forM [ 2 .. num ] $ \ _ -> vector $ other_vectors_norm_at_least conf
+        vector :: (Integer,Integer) -> IO (Vector Integer)
+        vector rng = forM [ 1 .. dim ] $ \ _ -> randomRIO rng
+    short <- vector $ short_vector_component_range conf
+    others <- forM [ 2 .. num ] $ \ _ -> vector $ other_vectors_component_range conf
     let b0 = short : others
     picks <- forM [ 1 .. num_steps conf ] $ \ i0 -> do
           let i = mod i0 num
           j <- randomRIO (0, num - 2) 
-          f <- randomRIO (negate $ factor_size conf, factor_size conf)
+          f <- randomRIO (factor_range conf)
           return (i, j, f)
     let step b (i,j,f) = 
             let (pre, this: post) = splitAt i b
@@ -202,9 +171,11 @@ roll conf = do
             in  pre ++ add this (scale f that) : post
     return $ Problem
            { base = foldl step b0 picks
-           , bound = 2 * norm short
+           , bound = norm short
            }
 
+
+{-
 -- TODO: roll several times, 
 -- take p with largest min of norms
 roll_interesting conf = do
@@ -212,15 +183,16 @@ roll_interesting conf = do
         let r = L.fully_reduce $ L.make $ base p
             ns = map L.norm $ L.base r
         if  any (\ n -> toRational n < toRational (bound p)) ns 
-            then do putStrLn "again"
+            then do -- putStrLn "again"
                     roll_interesting conf
             else return p
+-}
 
-instance Generator Lattice_Reduce Config Problem where
-    generator p conf key = roll_interesting conf
+instance Generator Lattice_SVP Config Problem where
+    generator p conf key = roll conf
         
-instance Project Lattice_Reduce Problem Problem where
+instance Project Lattice_SVP Problem Problem where
     project _ p = p
 
 make_quiz :: Make
-make_quiz = quiz Lattice_Reduce config0
+make_quiz = quiz Lattice_SVP config0

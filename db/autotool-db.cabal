@@ -1,5 +1,5 @@
 Name:           autotool-db
-Version:        2.2.0
+Version:        2.3.0
 -- License:        GPL
 -- License-File:   LICENSE
 Author:         Johannes Waldmann
@@ -34,9 +34,15 @@ Executable autotool-Super
 Executable autotool-Scorer
   Main-is: src/Scorer/Main.hs
   Build-Depends:
-    base, text, blaze-html,
+    base, text, blaze-html, attoparsec,
     autolib-data, autolib-todoc, autolib-output,
     autotool-db
+
+Executable autotool-Dump
+  Main-is: src/Operate/Dump.hs
+  Build-Depends: base, containers, bytestring,
+    autotool-db, autolib-todoc,
+    cgi, zip-archive, xml-conduit, xml-hamlet, url, filepath
 
 Library
   Build-Depends:
@@ -44,7 +50,7 @@ Library
     autolib-reader, autolib-todoc, autolib-output,
     autolib-reporter, autolib-util, autolib-data,
     base , haxr, random, containers, blaze-html, blaze-markup, cgi, mtl,
-    hsql==1.8.2, hsql-mysql==1.8.2, old-locale, old-time, parsec,
+    hsql==1.8.2, hsql-mysql==1.8.2, old-locale, old-time, parsec, attoparsec,
     directory, digest, bytestring, unix, utf8-string, text,
     process,
     hashable

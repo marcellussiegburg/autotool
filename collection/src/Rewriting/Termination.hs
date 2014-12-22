@@ -15,6 +15,11 @@ import qualified Polynomial.Type as P
 import Rewriting.Termination.Interpretation
 import Rewriting.TRS
 
+import Polynomial.Class
+import qualified Prelude
+import Prelude hiding 
+    ( Num (..), sum, (^), (/), Integer, null, gcd, divMod, div, mod )
+
 import Challenger.Partial
 import Inter.Types
 
@@ -73,7 +78,7 @@ instance Symbol c => Size (Order c) where
    size o = case o of
       Empty -> 0
       Interpretation {} -> size $ values o
-      Lexicographic ords -> sum $ map size ords
+      Lexicographic ords -> Prelude.sum $ map size ords
 
 derives [makeReader, makeToDoc] [''Order]
 
@@ -107,14 +112,14 @@ instance Symbol c => Partial Rewriting_Termination (Problem c) (Order c) where
             (k,f) <- zip [1..] $ S.toList $ signature $ system p
             return ( f
                    , if arity f > 0 
-                     then (1 + 2 * (P.variable $ P.X  (succ $ k `mod` arity f))^2)
-                     else 5
+                     then (fromInteger 1 + fromInteger 2 * (P.variable $ P.X  (succ $ k `Prelude.mod` arity f))^2)
+                     else fromInteger 5
                    )
     initial _ p = Interpretation 2 
         $ Matrix_Interpretation_Natural
         $ M.fromList $ do 
             (k,f) <- zip [1..] $ S.toList $ signature $ system p
-            return ( f, projection (arity f) (succ $ k `mod` arity f) 2 )
+            return ( f, projection (arity f) (succ $ k `Prelude.mod` arity f) 2 )
 
     partial _ p o = do
         check_dimensions (signature $ system p) o

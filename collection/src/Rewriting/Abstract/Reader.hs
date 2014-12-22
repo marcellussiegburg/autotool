@@ -14,8 +14,8 @@ instance Reader Prop where
             <|> ( PropParens <$> my_parens reader )
             <|> prop1 
             <|> prop2
-          conj = And <$> sepBy1 atomic (my_symbol "&&")
-          disj = Or  <$> sepBy1 conj   (my_symbol "||")
+          conj = And <$> sepBy1 atomic (my_reservedOp "&&")
+          disj = Or  <$> sepBy1 conj   (my_reservedOp "||")
       in  disj
 
 prop1 = 
@@ -31,8 +31,8 @@ prop2 =
 
 instance Reader Exp where
     reader = 
-        let unary s f = do my_symbol s ; return $ Op1 f
-            binary s f = do my_symbol s ; return $ Op2 f
+        let unary s f = do my_reservedOp s ; return $ Op1 f
+            binary s f = do my_reservedOp s ; return $ Op2 f
             atomic = ( ExpParens <$> my_parens reader )
                 <|> ( Ref <$> reader )
         in  buildExpressionParser 

@@ -49,7 +49,7 @@ get_task_instance_or_fail_localized
     :: TT (Signed (Task, Config)) -> TT Seed -> TT Language
     -> IO (TT (Either Description
                  (Signed (Task, Instance), Description, Documented Solution)))
-get_task_instance_or_fail_localized  (TT sconf) (TT seed) (TT lang) = fmap TT $ runErrorT $ do
+get_task_instance_or_fail_localized  (TT sconf) (TT seed) (TT lang) = withTimeout $ fmap TT $ runErrorT $ do
 
     liftIO $ appendFile "/tmp/autotool.cgi" "get_task_instance_or_fail"
 
@@ -80,12 +80,16 @@ get_task_instance_or_fail_localized  (TT sconf) (TT seed) (TT lang) = fmap TT $ 
     descr <- liftIO $ fromReport lang $ Autolib.Reporter.IO.Type.lift 
                         $ CP.report (problem maker) i
 
-    return ( sign (task,
+    let st = sign (task,
                    Instance { I.tag = IT.tag maker,
                               I.contents = -- AT.showDoc . AT.toDoc $ i
-                                AT.render $ AT.toDoc i
+                                AT.render_for lang $ AT.toDoc i
                             })
-           , descr
-           , Documented { D.contents = SString . AT.render_for lang . AT.toDoc $ b,
+        docked = Documented { D.contents = SString . AT.render_for lang . AT.toDoc $ b,
                           D.documentation = doc }
+        result = ( st
+           , descr
+           , docked
            )
+
+    i `seq` b `seq` st `seq` return result

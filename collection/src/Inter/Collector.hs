@@ -193,6 +193,7 @@ import qualified Rewriting.Derive
 import qualified Rewriting.Termination
 import qualified Rewriting.Completion.Improved
 import qualified Rewriting.Abstract.Fixed
+import qualified Rewriting.Abstract.Quiz
 import qualified Rewriting.TRS.Apply
 import qualified Rewriting.SRS.Apply
 import qualified Lambda.Apply
@@ -222,6 +223,7 @@ import qualified Algebraic2.Quiz
 
 import Algebraic.Integer
 import Algebraic.Set
+import Algebraic.Multiset
 import Algebraic.Relation
 
 import qualified Flow.Central
@@ -252,6 +254,10 @@ import qualified FD.Top
 import qualified SOS
 
 import qualified Lattice.Reduce
+import qualified Lattice.LLL.Task
+import qualified Lattice.LLL.Inverse
+
+import qualified Polynomial.Euclid
 
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
@@ -370,9 +376,11 @@ tmakers =
                     , item FD.Top.make_quiz
 		    ]
 		]
-         , heading "Mengen und Relationen"
+         , heading "(Multi)Mengen und Relationen"
                 [ item $ Algebraic2.Central.make Algebraic_Set
 		, item $ Algebraic2.Quiz.make Algebraic_Set
+		, item $ Algebraic2.Central.make Algebraic_Multiset
+		, item $ Algebraic2.Quiz.make Algebraic_Multiset
 		, item $ Algebraic2.Central.make Algebraic_Relation
 		, item $ Algebraic2.Quiz.make Algebraic_Relation
                 ]
@@ -472,6 +480,7 @@ tmakers =
          , heading "Terme, Ersetzungssysteme"
                 [ heading "Abstract Rewriting"
                         [ item $ Rewriting.Abstract.Fixed.make
+                        , item $ Rewriting.Abstract.Quiz.make
                         ]
                 , heading "Wortersetzung"
                         [ item $ Rewriting.Derive.make_fixed Rewriting.SRS.Apply.For_SRS
@@ -691,8 +700,17 @@ tmakers =
                 , item Graph.EDS.Central.make_quiz
                 ]
           , heading "Symbolisches Rechnen"
-                [ item Lattice.Reduce.make_fixed
+                [ item Polynomial.Euclid.make_fixed_integer
+                , item Polynomial.Euclid.make_quiz_integer
+                , item Polynomial.Euclid.make_fixed_gauss
+                , item Polynomial.Euclid.make_quiz_gauss
+                , item Polynomial.Euclid.make_fixed_upoly
+                , item Polynomial.Euclid.make_quiz_upoly
+                , item Lattice.Reduce.make_fixed
                 , item Lattice.Reduce.make_quiz
+                , item Lattice.LLL.Task.make_fixed
+                , item Lattice.LLL.Inverse.make_fixed
+                , item Lattice.LLL.Inverse.make_quiz
                 ]
 	  , heading "experimentell"
 	        [ item $ Algebraic2.Central.make Algebraic_Integer

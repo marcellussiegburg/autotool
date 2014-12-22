@@ -7,11 +7,19 @@
 module Rewriting.Abstract.Data where
 
 import Autolib.TES.Identifier
-import Autolib.ToDoc
+import Autolib.ToDoc hiding ( Full )
 import Autolib.Reader
 import Autolib.Size
 
 import Data.Typeable
+
+prop0 :: Prop
+prop0 = 
+    let r = Ref $ mk 0 "R" ; s = Ref $ mk 0 "S"
+    in  And [ Prop2 Disjoint r s
+            , Prop1 Transitive (Op2 Product r s)
+            , Not (Prop1 Transitive (Op2 Product s r))
+            ]
 
 data Prop 
     = And [ Prop ]
@@ -21,6 +29,15 @@ data Prop
     | Prop2 Prop2 Exp Exp
     | PropParens Prop
     deriving Typeable
+
+instance Size Prop where
+    size p = case p of
+        And ps -> succ $ sum $ map size ps
+        Or  ps -> succ $ sum $ map size ps
+        Not p -> succ $ size p
+        PropParens p -> size p
+        Prop1 _ p -> succ $ sum $ map size [p]
+        Prop2 _ p q -> succ $ sum $ map size [p,q]
 
 data Prop1 
     = Null | Full
@@ -46,14 +63,22 @@ data Exp = Ref Identifier
      | ExpParens Exp
     deriving Typeable
 
+instance Size Exp where
+    size x = case x of
+        ExpParens x -> size x
+        Ref _ -> 1
+        Op1 _ x -> succ $ size x
+        Op2 _ x y -> succ $ sum $ map size [x,y]
+
 data Op1 = Inverse 
-     | Complement
+    | Complement
     | Transitive_Closure 
     | Transitive_Reflexive_Closure
-        deriving (Typeable, Show)
+        deriving (Typeable, Show, Bounded, Enum)
 
 data Op2 = Union | Intersection | Difference | Product
-    deriving (Typeable, Show )
+    deriving (Typeable, Show, Bounded, Enum )
 
+derives [makeReader,makeToDoc] [''Prop1, ''Prop2, ''Op1, ''Op2]
 
 

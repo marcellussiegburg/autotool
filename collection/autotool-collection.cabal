@@ -58,11 +58,15 @@ Library
         -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
         -- QuickCheck < 2.6,
         QuickCheck,
-        mueval>=0.8.1.1, hint, haskell-src-exts, syb,
+        hspec, hspec-smallcheck,
+        mueval>=0.8.1.1, hint, 
+        haskell-src-exts==1.15.*, 
+        syb,
         transformers,
         logict>=0.6.0.2,
         lens,
-        hashable
+        hashable,
+        stm
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -113,6 +117,7 @@ Library
                  Algebraic.Relation.Restriction,
                  Algebraic.STGraph,
                  Algebraic.Set,
+                 Algebraic.Multiset,
                  Algebraic.Integer,
                  Algebraic.Central,
                  Algebraic.Class,
@@ -124,6 +129,7 @@ Library
                  Algebraic.Nested.Op,
                  Algebraic.Nested.Roll,
                  Algebraic.Nested.Restriction,
+                 Algebraic.Set.Multi
                  Algebraic.Quiz,
                  Resolution.Roll,
                  Resolution.Enumerate,
@@ -304,16 +310,28 @@ Library
                  Rewriting.Completion.Improved,
                  Rewriting.Abstract.Syntax,
                  Rewriting.Abstract.Data,
+                 Rewriting.Abstract.Problem,
                  Rewriting.Abstract.Reader,
                  Rewriting.Abstract.ToDoc,
-                 Rewriting.Abstract.Semantics,
-                 Rewriting.Abstract.Fixed,
                  Rewriting.Abstract.Braced,
+                 Rewriting.Abstract.Semantics,
+                 Rewriting.Abstract.Solve,
+                 Rewriting.Abstract.Fixed,
+                 Rewriting.Abstract.Quiz,
+                 Polynomial.Class,
                  Polynomial.Data
                  Polynomial.Op
                  Polynomial.Reader
                  Polynomial.ToDoc
                  Polynomial.Type
+                 Polynomial.Euclid
+                 Polynomial.Pattern
+                 Polynomial.Patch
+                 Polynomial.Unary
+                 Polynomial.Unary.Reader
+                 Polynomial.Unary.ToDoc
+                 Polynomial.Unary.Data
+                 Polynomial.Unary.Op
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,
@@ -948,4 +966,9 @@ Library
                  FD.Solve
                  FD.Roll
                  Lattice.Reduce
+                 Lattice.LLL
+                 Lattice.LLL.Compute
+                 Lattice.LLL.Task
+                 Lattice.LLL.Inverse
+
                  

@@ -1,4 +1,4 @@
--- Utility functions for dealing with the conversion of Output to Xml
+-- | Utility functions for dealing with the conversion of Output to Xml
 
 module Util.Xml.Output (
     outputToXmlString,
@@ -44,7 +44,7 @@ outputToXOutput lang o = case o of
         return $ X.OText $ X.Text txt
     O.Text txt ->
         return $ X.OText $ X.Text $ Data.Text.unpack txt
-    O.Image file contents -> do
+    O.Image file (O.Hidden contents) -> do
         let ext = drop 1 $ snd $ splitExtension file
         contents' <- contents
         let (w, h) = case ext of
@@ -85,7 +85,7 @@ xoutputToOutput o = case o of
    X.OPre  (X.Pre  txt) -> O.Pre (D.text txt)
    X.OText (X.Text txt) -> O.String txt
    X.OImage (X.Image _ img) ->
-       O.Image (mkData img) (return $ BB.decodeLenient $ fromString img)
+       O.Image (mkData img) (O.Hidden $ return $ BB.decodeLenient $ fromString img)
    X.OLink (X.Link (X.Link_Attrs { X.linkHref = uri }) txt) ->
        O.Named_Link txt uri
    X.OAbove (X.Above []) -> O.Empty

@@ -8,6 +8,11 @@ import Rewriting.Termination.Interpretation
 import qualified Rewriting.Termination.Polynomial as P
 import qualified Polynomial.Type as P
 
+import Polynomial.Class
+import qualified Prelude
+import Prelude hiding 
+    ( Num (..), (/), Integer, null, gcd, divMod, div, mod )
+
 import Autolib.TES
 import Autolib.TES.Identifier
 import Autolib.TES.Unify 
@@ -28,8 +33,8 @@ check1 =
         x = Var (mk 0 "x")
         ord = Interpretation 1  
             $ Polynomial_Interpretation
-            $ M.fromList [ (mk 1 "a", 1 + P.variable (P.X 1))
-                         , (mk 1 "b", 2 * P.variable (P.X 1))
+            $ M.fromList [ (mk 1 "a", fromInteger 1 + P.variable (P.X 1))
+                         , (mk 1 "b", fromInteger 2 * P.variable (P.X 1))
                          ]
     in  complete [ ( a(b(a(x))), x ) ]   ord 10
 
@@ -40,8 +45,8 @@ check3 =
         x = Var (mk 0 "x")
         ord = Interpretation 1  
             $ Polynomial_Interpretation
-            $ M.fromList [ (mk 1 "a", 1 + P.variable (P.X 1))
-                         , (mk 1 "b", 2 * P.variable (P.X 1))
+            $ M.fromList [ (mk 1 "a", fromInteger 1 + P.variable (P.X 1))
+                         , (mk 1 "b", fromInteger 2 * P.variable (P.X 1))
                          ]
     in  complete [ ( a(b(a(x))), b(x) ) ]   ord 10
 
@@ -52,8 +57,22 @@ check2 =
         z = Var (mk 0 "z")
         ord = Interpretation 1  
             $ Polynomial_Interpretation
-            $ M.fromList [ (mk 2 "f", 1 + P.variable (P.X 1) + P.variable (P.X 2) ) ]
+            $ M.fromList [ (mk 2 "f", fromInteger 1 + P.variable (P.X 1) + P.variable (P.X 2) ) ]
     in  complete [ ( f(f x y) (f y z), y) ]   ord 1
+
+check5 = 
+    let f x y = Node ( mk 2 "f" ) [ x,y ]
+        a = Node ( mk 0 "a" ) []
+        x = Var (mk 0 "x")
+        y = Var (mk 0 "y")
+        z = Var (mk 0 "z")
+        ord = Interpretation 1  
+            $ Polynomial_Interpretation
+            $ M.fromList [ (mk 2 "f", fromInteger 1 + fromInteger 2 * P.variable (P.X 1) + P.variable (P.X 2) ) 
+                         , (mk 0 "a", fromInteger 0 )  ]
+    in  complete [ ( f x (f y z), f (f x y) z)
+                 , ( f a a, a ) 
+                 ]   ord 1
 
 check4 = 
     let f x y = Node ( mk 2 "f" ) [ x,y ]
@@ -66,9 +85,9 @@ check4 =
         ord = Interpretation 1  
             $ Polynomial_Interpretation
             $ M.fromList 
-            [ (mk 2 "f", 1 + v 1 + 3 * v 2 )
-            , (mk 0 "e", 0 )
-            , (mk 1 "i", 1 + v 1)
+            [ (mk 2 "f", fromInteger 1 + v 1 + fromInteger 3 * v 2 )
+            , (mk 0 "e", fromInteger 0 )
+            , (mk 1 "i", fromInteger 1 + v 1)
             ]
     in  complete [ ( f x (f  y z) , f (f x y) z )
                  , ( f e x, x )
@@ -124,7 +143,7 @@ run ord step bound rules = do
                 return [o]
     let rules' = S.union rules $ S.fromList $ concat next
     if  rules' /= rules
-    then run ord (step + 1) bound rules'
+    then run ord (succ step) bound rules'
     else do
         inform $ text "obtained convergent system"
                </> toDoc rules

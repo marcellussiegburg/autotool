@@ -9,7 +9,8 @@ module Gateway.Help (
 import Autolib.Output
 
 import Data.Typeable
-import Data.List ( intersperse )
+import Data.List ( intersperse, isPrefixOf )
+import Data.Char (isDigit)
 
 class ( Typeable a ) => Help a where
       help :: a -> Output
@@ -38,13 +39,18 @@ doc_link t =
 besides = foldr1 Beside
 
 tycon_link tyc = 
-   let archive = "http://autolat.imn.htwk-leipzig.de/haddock/world/"
-       ts = undot $ show tyc
-       mod = init ts
-       mod' | null mod  = builtin (last ts)
-            | otherwise = mod
-       loc = redot mod' ++ ".html#t%3A" ++ last ts
-   in  Named_Link ( show tyc ) ( archive ++ loc )
+   let local = "http://autotool.imn.htwk-leipzig.de/docs/"
+       hackage = "http://hackage.haskell.org/package/"
+       ty = tyConName tyc
+       mod = redot $ undot $ tyConModule tyc
+       pack = unversion $ tyConPackage tyc
+       unversion = reverse
+           . dropWhile ( \ c -> isDigit c || c == '.' || c == '-' )
+           . reverse
+   in  Named_Link ( show tyc ) 
+       $ if isPrefixOf "autotool" pack || isPrefixOf "autolib" pack
+         then local ++ pack ++ "/" ++ mod ++ ".html#t:" ++ ty
+         else hackage ++ pack ++ "/docs/" ++ mod ++ ".html#t:" ++ ty
 
 builtin t = undot $ case t of
     "Int"     -> "GHC.Types"

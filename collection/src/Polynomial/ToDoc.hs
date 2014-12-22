@@ -1,3 +1,6 @@
+{-# language FlexibleContexts #-}
+{-# language UndecidableInstances #-}
+
 module Polynomial.ToDoc where
 
 import Polynomial.Data
@@ -13,7 +16,8 @@ instance ToDoc v => ToDoc (Mono v) where
     toDoc m = hsep $ punctuate (text " *") $ do
         (v,e) <- factors m ; return $ toDoc $ Factor { _var = v, _expo = e }
 
-instance ToDoc v => ToDoc (Poly v) where
+instance (Num r, Ord r, ToDoc r, ToDoc v) 
+         => ToDoc (Poly r v) where
     toDoc p = case terms p of
         [] -> text "0"
         t : ts -> 
@@ -24,3 +28,6 @@ instance ToDoc v => ToDoc (Poly v) where
                       ( _ , False) | c == -1 -> hsep [ text "-", toDoc m ]
                       _ -> hsep [ toDoc c, text "*", toDoc m ]
               in  hsep $ term t : map ( \ t @(c,m) -> if c < 0 then term t else text "+" <+>  term t) ts
+
+instance ToDoc (Poly r v) => Show (Poly r v) where
+    show = render . toDoc 
