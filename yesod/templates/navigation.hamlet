@@ -91,6 +91,6 @@
       <li>
         <a href=@{ServerR "http://"}>_{MsgAufgabeTyp}
       <li>
-        <a href=#>_{MsgAufgabeKonfigurieren}
+        <a href=@{AufgabeVorlagenR "http://" "Unify-Direct-1"}>_{MsgAufgabeVorlagen}
       <li>
         <a href=#>_{MsgAufgabeTesten}

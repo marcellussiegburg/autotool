@@ -1,6 +1,6 @@
 $if null (unterbäume baum)
   <li>
-    <a href=#>
+    <a href=@{AufgabeVorlagenR server (wurzel baum)}>
       <label>
         <i .glyphicon .glyphicon-leaf>
         &nbsp;#{wurzel baum}
@@ -12,4 +12,4 @@ $else
       &nbsp;#{wurzel baum}
     <ul>
       $forall unterbaum' <- unterbäume baum
-        ^{unterbaum unterbaum'}
+        ^{unterbaum server unterbaum'}

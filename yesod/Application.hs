@@ -23,6 +23,7 @@ import Handler.Home
 import Handler.Aufgabe
 import Handler.Aufgaben
 import Handler.AufgabenAktuell
+import Handler.AufgabeVorlagen
 import Handler.Direktoren
 import Handler.DirektorErnennen
 import Handler.Gruppe

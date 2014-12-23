@@ -17,6 +17,8 @@ AufgabeName: Name
 AufgabeStatus: Status
 AufgabeTesten: Aufgabe testen
 AufgabeTyp: Aufgabentyp wählen
+AufgabeVorlagen: Aufgabenvorlage wählen
+AufgabeVorlageStandard: Standardvorlage / letzte Konfiguration
 Ausstehend: Ausstehend
 Austragen: Austragen
 Bearbeiten: Bearbeiten

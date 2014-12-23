@@ -23,6 +23,7 @@ library
                      Handler.Aufgabe
                      Handler.Aufgaben
                      Handler.AufgabenAktuell
+                     Handler.AufgabeVorlagen
                      Handler.Direktoren
                      Handler.DirektorErnennen
                      Handler.Gruppe

@@ -15,7 +15,7 @@ postServersR = do
   defaultLayout $ do
     $(widgetFile "servers")
 
-serversForm :: Form Serverurl
+serversForm :: Form ServerUrl
 serversForm = do
   identifyForm "server" $ renderBootstrap3 BootstrapBasicForm $
     areq textField (withAutofocus $ bfs MsgServer) Nothing

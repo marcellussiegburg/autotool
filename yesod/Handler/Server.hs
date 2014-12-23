@@ -8,7 +8,7 @@ data Baum a = Zweig {
   unterbäume :: [Baum a]
 }
 
-getServerR :: Serverurl -> Handler Html
+getServerR :: ServerUrl -> Handler Html
 getServerR server = do
   let aufgabenTypen =
         [Zweig "Terme, Ersetzungssysteme"
@@ -28,7 +28,7 @@ getServerR server = do
     addStylesheet $ StaticR css_tree_css
     $(widgetFile "server")
 
-unterbaum :: Baum Text -> Widget
-unterbaum baum = do
+unterbaum :: ServerUrl -> Baum Text -> Widget
+unterbaum server baum = do
   inputId <- newIdent
   $(widgetFile "baum")
