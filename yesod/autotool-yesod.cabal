@@ -21,6 +21,7 @@ library
                      Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.AufgabeKonfiguration
                      Handler.Aufgaben
                      Handler.AufgabenAktuell
                      Handler.AufgabeVorlagen
@@ -96,6 +97,7 @@ library
                  , containers
                  , time
                  , old-locale
+                 , blaze-html
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)

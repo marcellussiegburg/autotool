@@ -21,6 +21,7 @@ import Yesod.Core.Types (loggerSet, Logger (Logger))
 
 import Handler.Home
 import Handler.Aufgabe
+import Handler.AufgabeKonfiguration
 import Handler.Aufgaben
 import Handler.AufgabenAktuell
 import Handler.AufgabeVorlagen

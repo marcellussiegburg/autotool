@@ -32,3 +32,4 @@
 /servers ServersR GET POST
 /server/#ServerUrl ServerR GET
 /server/#ServerUrl/aufgabe/#AufgabeTyp AufgabeVorlagenR GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration AufgabeKonfigurationR GET POST

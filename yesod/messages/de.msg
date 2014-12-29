@@ -10,6 +10,7 @@ AufgabeBewertungVorher: Vorherige Bewertung
 AufgabeGesamtwertung: Gesamtwertung
 AufgabeHighscore: Highscore
 AufgabeKonfigurieren: Aufgabe konfigurieren
+AufgabeKonfiguration: Konfiguration
 Aufgaben: Aufgaben
 AufgabenAktuell: Aktuelle Aufgaben
 AufgabenAlle: Alle Aufgaben
