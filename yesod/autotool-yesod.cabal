@@ -24,6 +24,7 @@ library
                      Handler.AufgabeKonfiguration
                      Handler.Aufgaben
                      Handler.AufgabenAktuell
+                     Handler.AufgabeVorlage
                      Handler.AufgabeVorlagen
                      Handler.Direktoren
                      Handler.DirektorErnennen

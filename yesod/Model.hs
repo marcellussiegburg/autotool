@@ -7,6 +7,7 @@ type AufgabeId = Int
 type AufgabeKonfiguration = Text
 type AufgabeTyp = Text
 type GruppeId = Int
+type VorlageName = Text
 type SchuleId = Int
 type SemesterId = Int
 type ServerUrl = Text
