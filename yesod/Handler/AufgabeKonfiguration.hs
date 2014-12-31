@@ -2,7 +2,6 @@
 module Handler.AufgabeKonfiguration where
 
 import Import
-import Text.Blaze.Html
 
 type Konfiguration = Text
 

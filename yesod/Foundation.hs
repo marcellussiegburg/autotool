@@ -18,6 +18,7 @@ import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
 import Data.Time (UTCTime, formatTime)
+import Data.Text (Text)
 import System.Locale (defaultTimeLocale)
 import Model
 

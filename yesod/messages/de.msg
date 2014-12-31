@@ -3,14 +3,22 @@ Anmelden: Anmelden
 Anzeigen: Anzeigen
 Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
+AufgabeAufgabe: Aufgabenstellung
 AufgabeBearbeitungszeit: Bearbeitungszeit
 AufgabeZeitVorher zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 AufgabeZeitNachher zeit@UTCTime: vorbei seit #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 AufgabeBewertungVorher: Vorherige Bewertung
+AufgabeEingeben: Eingeben
 AufgabeGesamtwertung: Gesamtwertung
 AufgabeHighscore: Highscore
+AufgabeHinweis: Hinweis
+AufgabeHochladen: Hochladen
 AufgabeKonfigurieren: Aufgabe konfigurieren
 AufgabeKonfiguration: Konfiguration
+AufgabeKonfigurationTyp: Typ der Konfiguration
+AufgabeLösen aufgabe@Text: Aufgabe #{aufgabe} lösen
+AufgabeLösungEinsenden: Lösung einsenden
+AufgabeLösungTyp: Typ der Lösung
 Aufgaben: Aufgaben
 AufgabenAktuell: Aktuelle Aufgaben
 AufgabenAlle: Alle Aufgaben
@@ -55,6 +63,7 @@ KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
 KeineVorlesungen: Es gibt leider keine Vorlesungen in diesem Semester.
 Löschen: Löschen
 Lösen: Lösen
+Lösung: Lösung
 LösungAbsenden: Lösung absenden
 Matrikelnummer: Matrikelnummer
 Name: Name

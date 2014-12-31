@@ -1,28 +1,23 @@
 $newline always
-<h1>Aufgabe Reconstruct-Direct-1
-<h2>Hinweise
-<p>nock keine Hinweise
-<h2>Aufgabenstellung
-<pre>
-  Gesucht ist ein binärer Baum t mit den Knoten-Reihenfolgen:
-  \    Preorder (t) = [ e , j , b
-  \                   , i , f , m , l , k , d , g , c
-  \                   , a , h ]
-  \    Inorder (t) = [ b , j , i , e
-  \                  , k , l , d , m , g , f , a , c
-  \                  , h ]
-<h2>Lösung einsenden
+<h1>_{MsgAufgabeLösen name}
+<h2>_{MsgAufgabeHinweis}
+<p>#{hinweis}
+<h2>_{MsgAufgabeAufgabe}
+<pre>#{aufgabenstellung}
+<h2>_{MsgAufgabeLösungEinsenden}
 <div .tabs>
   <div #hochladen>
     <div #eingeben>
       <ul .nav .nav-tabs>
         <li>
-          <a href="#eingeben">Eingeben
+          <a href="#eingeben">_{MsgAufgabeEingeben}
         <li>
-          <a href="#hochladen">Hochladen
+          <a href="#hochladen">_{MsgAufgabeHochladen}
       <div .content>
         <form role="form" action=@{AufgabeR aufgabe}#eingeben method="post" enctype=#{formEnctype}>
-        ^{formWidget}
+          <label for="typ">_{MsgAufgabeLösungTyp}
+          <pre #typ>#{typ}
+          ^{formWidget}
     <div .content>
       <form role="form" action=@{AufgabeR aufgabe}#hochladen method="post" enctype=#{formEnctypeUpload}>
         ^{formWidgetUpload}

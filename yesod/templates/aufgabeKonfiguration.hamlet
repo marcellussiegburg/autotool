@@ -1,5 +1,5 @@
 <h1>_{MsgAufgabeKonfigurieren}
-<label for="typ">Typ der Konfiguration
-<p #typ>#{typ}
 <form role="form" action="#" method="post" enctype=#{formEnctype}>
+  <label for="typ">_{MsgAufgabeKonfigurationTyp}
+  <pre #typ>#{typ}
   ^{formWidget}
