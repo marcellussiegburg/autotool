@@ -1,5 +1,8 @@
-$newline always
-<h1>_{MsgAufgabeLösen name}
+$case lösen
+  $of Lösen
+    <h1>_{MsgAufgabeXLösen name}
+  $of Testen
+    <h1>_{MsgAufgabeXTesten name}
 <h2>_{MsgAufgabeHinweis}
 <p>#{hinweis}
 <h2>_{MsgAufgabeAufgabe}
@@ -14,10 +17,13 @@ $newline always
         <li>
           <a href="#hochladen">_{MsgAufgabeHochladen}
       <div .content>
-        <form role="form" action=@{AufgabeR aufgabe}#eingeben method="post" enctype=#{formEnctype}>
+        <form role="form" action=@{zielAdresse}#eingeben method="post" enctype=#{formEnctype}>
           <label for="typ">_{MsgAufgabeLösungTyp}
           <pre #typ>#{typ}
           ^{formWidget}
     <div .content>
-      <form role="form" action=@{AufgabeR aufgabe}#hochladen method="post" enctype=#{formEnctypeUpload}>
+      <form role="form" action=@{zielAdresse}#hochladen method="post" enctype=#{formEnctypeUpload}>
         ^{formWidgetUpload}
+$maybe bewertung <- mbewertung
+  <h2>_{MsgAufgabeBewertung}
+  <pre .alert-danger>#{bewertung}

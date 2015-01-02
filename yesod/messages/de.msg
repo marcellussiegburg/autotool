@@ -16,7 +16,7 @@ AufgabeHochladen: Hochladen
 AufgabeKonfigurieren: Aufgabe konfigurieren
 AufgabeKonfiguration: Konfiguration
 AufgabeKonfigurationTyp: Typ der Konfiguration
-AufgabeLösen aufgabe@Text: Aufgabe #{aufgabe} lösen
+AufgabeXLösen aufgabe@Text: Aufgabe #{aufgabe} lösen
 AufgabeLösungEinsenden: Lösung einsenden
 AufgabeLösungTyp: Typ der Lösung
 Aufgaben: Aufgaben
@@ -24,6 +24,7 @@ AufgabenAktuell: Aktuelle Aufgaben
 AufgabenAlle: Alle Aufgaben
 AufgabeName: Name
 AufgabeStatus: Status
+AufgabeXTesten aufgabe@Text: Aufgabe #{aufgabe} testen
 AufgabeTesten: Aufgabe testen
 AufgabeTyp: Aufgabentyp wählen
 AufgabeVorlagen: Aufgabenvorlage wählen

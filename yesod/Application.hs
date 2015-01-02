@@ -24,6 +24,7 @@ import Handler.Aufgabe
 import Handler.AufgabeKonfiguration
 import Handler.Aufgaben
 import Handler.AufgabenAktuell
+import Handler.AufgabeTesten
 import Handler.AufgabeVorlage
 import Handler.AufgabeVorlagen
 import Handler.Direktoren

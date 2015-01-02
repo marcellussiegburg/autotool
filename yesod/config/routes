@@ -34,3 +34,4 @@
 /server/#ServerUrl/aufgabe/#AufgabeTyp AufgabeVorlagenR GET
 /server/#ServerUrl/aufgabe/#AufgabeTyp/vorlage/#VorlageName AufgabeVorlageR GET
 /server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration AufgabeKonfigurationR GET POST
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/testen AufgabeTestenR GET POST
