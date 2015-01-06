@@ -1,15 +1,15 @@
-$if null (unterbäume baum)
+$if null (subForest baum)
   <li>
-    <a href=@{AufgabeVorlagenR server (wurzel baum)}>
+    <a href=@{AufgabeVorlagenR server (rootLabel baum)}>
       <label>
         <i .glyphicon .glyphicon-leaf>
-        &nbsp;#{wurzel baum}
+        &nbsp;#{rootLabel baum}
 $else
   <li>
     <input type="checkbox" id=#{inputId}>
     <label for=#{inputId}>
       <i .glyphicon .glyphicon-folder-open>
-      &nbsp;#{wurzel baum}
+      &nbsp;#{rootLabel baum}
     <ul>
-      $forall unterbaum' <- unterbäume baum
-        ^{unterbaum server unterbaum'}
+      $forall unterbaum' <- subForest baum
+        ^{unterbaum server unterbaum' mName}

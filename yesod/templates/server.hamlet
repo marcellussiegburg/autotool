@@ -7,4 +7,4 @@ $else
   <div .tree .well>
     <ul>
       $forall aufgabenbaum <- aufgabenTypen
-        ^{unterbaum server aufgabenbaum}
+        ^{unterbaum server aufgabenbaum Nothing}

@@ -3,32 +3,27 @@ module Handler.Server where
 
 import Import
 
-data Baum a = Zweig {
-  wurzel :: a,
-  unterbäume :: [Baum a]
-}
-
 getServerR :: ServerUrl -> Handler Html
 getServerR server = do
   let aufgabenTypen =
-        [Zweig "Terme, Ersetzungssysteme"
-         [Zweig "Unifikation"
-          [Zweig "Unify-Direct-1" []]
-         ,Zweig "Termersetzung"
-          [Zweig "Derive-For_TRS-Direct-1" []
-          ,Zweig "Termination"
-           [Zweig "Matrix-Interpretationen"
-            [Zweig "Rewriting_Termination-Direct" []]
-           ,Zweig "Polynom-Interpretationen"
-            [Zweig "Rewriting_Termination-Direct-1" []]]
-          ,Zweig "Completion-Direct-1" []]]
-        ,Zweig "Mengen und Relationen"
-         [Zweig "Algebraic_Set-Direct-1" []]] :: [Baum Text]
+        [Node "Terme, Ersetzungssysteme"
+         [Node "Unifikation"
+          [Node "Unify-Direct-1" []]
+         ,Node "Termersetzung"
+          [Node "Derive-For_TRS-Direct-1" []
+          ,Node "Termination"
+           [Node "Matrix-Interpretationen"
+            [Node "Rewriting_Termination-Direct" []]
+           ,Node "Polynom-Interpretationen"
+            [Node "Rewriting_Termination-Direct-1" []]]
+          ,Node "Completion-Direct-1" []]]
+        ,Node "Mengen und Relationen"
+         [Node "Algebraic_Set-Direct-1" []]] :: Forest Text
   defaultLayout $ do
     addStylesheet $ StaticR css_tree_css
     $(widgetFile "server")
 
-unterbaum :: ServerUrl -> Baum Text -> Widget
-unterbaum server baum = do
+unterbaum :: ServerUrl -> Tree Text -> Maybe Text -> Widget
+unterbaum server baum mName = do
   inputId <- newIdent
   $(widgetFile "baum")
