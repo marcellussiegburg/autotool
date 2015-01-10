@@ -1,46 +1,52 @@
-{-# language TemplateHaskell #-}
+-- | this is the general evaluation part
+-- that handles bindings and function calls.
+-- geometry specific implementations are elsewhere
+
 
 module Geo.Program.Eval where
 
 import qualified Geo.Program.Type as G
+import Geo.Program.Value
 
 import Autolib.ToDoc
 import Autolib.Reporter
 
 import qualified Data.Map.Strict as M
 
-data Value k
-    = Point (k,k)
-    | Line (k,k,k)
-    | Function Type [ Type ] ( [Value k] -> Reporter (Value k) )
+import Control.Monad.Trans
+import Control.Monad.Writer
 
-data Type = PointT | LineT | FunctionT Type [Type]
-    deriving (Eq)
 
-derives [makeToDoc] [''Value,''Type]
 
 typeOf v = case v of
+    Boolean {} -> BooleanT
+    Number {} -> NumberT
     Point {} -> PointT
     Line {} -> LineT
+    Circle {} -> CircleT
     Function res args _ -> FunctionT res args
 
 liftT t = case t of
-    G.Point -> PointT ; G.Line -> LineT
+    G.Boolean -> BooleanT
+    G.Number -> NumberT
+    G.Point -> PointT
+    G.Line -> LineT
+    G.Circle -> CircleT
 
 getType (G.Typed t n) = liftT t
 getName (G.Typed t n) = n
 
-type Env n d = M.Map n (Value d)
 
 informed exp action = do
-    inform $ text "expression" <+> toDoc exp
-    val <- nested 4 action
-    inform $ text "has value" <+> toDoc val
+    lift $ inform $ text "expression" <+> toDoc exp
+    val <- mapWriterT ( \ act -> nested 4 act ) action
+    lift $ inform $ text "has value" <+> toDoc val
     return val
 
+assert_type :: Type -> Eval (Value d) -> Eval (Value d)
 assert_type t action = do
     v <- action
-    when ( typeOf v /= t ) $ reject $ vcat
+    when ( typeOf v /= t ) $ lift $ reject $ vcat
         [ text "types do not agree:"
         , text "expected:" <+> toDoc t
         , text "but got: " <+> toDoc (typeOf v)
@@ -49,8 +55,8 @@ assert_type t action = do
 
 mkEnv kvs = M.fromList kvs
 
-eval :: (ToDoc c, ToDoc d, ToDoc n, Ord n)
-     => Env n d -> G.Exp n c -> Reporter (Value d)
+eval :: (ToDoc d, ToDoc n, Ord n)
+     => Env n (Value d) -> G.Exp n -> Eval (Value d)
 eval env exp = informed exp $ case exp of
     G.Ref n -> ref env n
     G.Apply f args -> apply env f args
@@ -71,23 +77,27 @@ decl env (G.Decl tn (Just args) b) = do
     return $ M.insert (getName tn) v env
     
 ref env n = case M.lookup n env of
-            Nothing -> reject $ vcat
+            Nothing -> lift $ reject $ vcat
                        [ text "name" <+> toDoc n
                        , text "not bound in environment"
                        ]
             Just v -> return v 
 
+apply :: (ToDoc d, ToDoc n, Ord n)
+     => Env n (Value d)
+     -> G.Exp n -> [ G.Exp n ]
+     -> Eval (Value d)
 apply env f args = do
         fv <- eval env f
         case fv of
             Function t ts work -> do
-              when (length ts /= length args) $ reject $ vcat
+              when (length ts /= length args) $ lift $ reject $ vcat
                 [ text "argument list length mismatch"
                 ]  
               argvs <- forM (zip ts args) $ \ (t,a) -> do
                   assert_type t $ eval env a
               assert_type t $ work argvs
-            _ -> reject $ vcat
+            _ -> lift $ reject $ vcat
                    [ text "value" <+> toDoc fv
                    , text "is not a function"
                    ]  

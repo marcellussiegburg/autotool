@@ -12,19 +12,19 @@ instance (ToDoc v) => ToDoc (Exp v) where
         Apply f args ->
             toDoc f <+> dutch_tuple ( map toDoc args )
         Block decls val ->
-          dutch (text "{" , text ";", text "}")
-            $ map toDoc decls
+          braces $ align $ vcat $ map (\ d -> d <> text ";" ) 
+                $ map toDoc decls
             ++ [ text "return" <+> toDoc val ]
 
 derives [makeToDoc] [''Type]
 
 instance (ToDoc v) => ToDoc (Decl v) where
-    toDoc (Decl f margs b) =
-        toDoc f 
-        <+> ( case margs of
-           Nothing -> text "="
-           Just args -> dutch_tuple $ map toDoc args )
-        <+> toDoc b
+    toDoc (Decl f (Just args) (Just b)) =
+      toDoc f <+> dutch_tuple (map toDoc args) <+> toDoc b
+    toDoc (Decl f Nothing (Just b)) =
+      toDoc f <+> text "=" <+> toDoc b
+    toDoc (Decl f Nothing Nothing) =
+      toDoc f 
 
 instance ToDoc v => ToDoc (Typed v) where
     toDoc (Typed t v) = toDoc t <+> toDoc v
