@@ -5,16 +5,21 @@ Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
 AufgabeAufgabe: Aufgabenstellung
 AufgabeBearbeitungszeit: Bearbeitungszeit
-AufgabeZeitVorher zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
-AufgabeZeitNachher zeit@UTCTime: vorbei seit #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
+AufgabeBeginnDatum: Bearbeitungsbeginn der Aufgabe (Datum)
+AufgabeBeginnZeit: Bearbeitungsbeginn der Aufgabe (Uhrzeit)
+AufgabeBewertung: Bewertung
 AufgabeBewertungVorher: Vorherige Bewertung
 AufgabeEingeben: Eingeben
+AufgabeEinstellen: Aufgabe einstellen
+AufgabeEinstellungen: Einstellungen
+AufgabeEndeDatum: Bearbeitungsende der Aufgabe (Datum)
+AufgabeEndeZeit: Bearbeitungsende der Aufgabe (Uhrzeit)
 AufgabeGesamtwertung: Gesamtwertung
 AufgabeHighscore: Highscore
 AufgabeHinweis: Hinweis
 AufgabeHochladen: Hochladen
-AufgabeKonfigurieren: Aufgabe konfigurieren
 AufgabeKonfiguration: Konfiguration
+AufgabeKonfigurieren: Aufgabe konfigurieren
 AufgabeKonfigurationTyp: Typ der Konfiguration
 AufgabeXLösen aufgabe@Text: Aufgabe #{aufgabe} lösen
 AufgabeLösungEinsenden: Lösung einsenden
@@ -29,6 +34,8 @@ AufgabeTesten: Aufgabe testen
 AufgabeTyp: Aufgabentyp wählen
 AufgabeVorlagen: Aufgabenvorlage wählen
 AufgabeVorlageStandard: Standardvorlage / letzte Konfiguration
+AufgabeZeitVorher zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
+AufgabeZeitNachher zeit@UTCTime: vorbei seit #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 Ausstehend: Ausstehend
 Austragen: Austragen
 Bearbeiten: Bearbeiten
@@ -55,6 +62,9 @@ Gruppen: Übungsgruppen
 GruppeName: Gruppenname
 GruppeNummer: Gruppennummer
 HighscoreAnzeigen: Highscore
+HighscoreHoch: Hoch
+HighscoreKeine: Keine Highscore
+HighscoreNiedrig: Niedrig
 Identifikationsnummer: ID
 KeineAufgaben: Keine passenden Aufgaben gefunden.
 KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
@@ -99,6 +109,9 @@ ServerErstellen: Server erstellen
 Servers: Server wählen
 ServerWählen: Server wählen
 StatistikAnzeigen: Statistik anzeigen
+StatusDemonstration: Demonstration
+StatusOptional: Optional
+StatusPflicht: Pflicht
 Studenten: Studenten
 StudentenEingeschrieben: Eingeschriebene Studenten
 StudentenMaximal: Maximale Einschreibungen

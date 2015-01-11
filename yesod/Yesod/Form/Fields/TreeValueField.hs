@@ -23,7 +23,10 @@ treeValueField forest = Field {
   fieldParse = parseHelper Right,
   fieldView = \idAttr nameAttr otherAttrs val _ -> do
     [whamlet|
-    #{either id id val}
+    $case val
+      $of Right val'
+        <br>#{val'}
+      $of _
     <div .tree .well ##{idAttr}>
       <ul>
         $forall tree <- forest

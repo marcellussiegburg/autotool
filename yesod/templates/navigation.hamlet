@@ -69,7 +69,7 @@
       <li>
         <a href=@{AufgabenAktuellR 1}>_{MsgAufgabenAktuell}
       <li>
-        <a href=#>_{MsgAufgabeAnlegen}
+        <a href=@{AufgabeAnlegenR 1}>_{MsgAufgabeAnlegen}
   <li .dropdown>
     <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgAufgabe}
       <b .caret>

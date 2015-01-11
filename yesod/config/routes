@@ -22,6 +22,7 @@
 /vorlesung/#VorlesungId/resultate ResultateR GET
 /vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR GET
 /gruppe/#GruppeId GruppeR GET POST
+/gruppe/#GruppeId/aufgabe AufgabeAnlegenR GET POST
 /gruppe/#GruppeId/tutor TutorErnennenR GET
 /gruppe/#GruppeId/tutoren TutorenR GET POST
 /gruppe/#GruppeId/aufgaben AufgabenR GET

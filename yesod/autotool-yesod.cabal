@@ -21,6 +21,9 @@ library
                      Model
                      Handler.Home
                      Handler.Aufgabe
+                     Handler.Aufgabe.Forms
+                     Handler.AufgabeAnlegen
+                     Handler.AufgabeEinstellungen
                      Handler.AufgabeKonfiguration
                      Handler.Aufgaben
                      Handler.AufgabenAktuell
@@ -50,6 +53,8 @@ library
                      Handler.VorlesungAnlegen
                      Handler.Vorlesungen
                      Handler.Waisenkinder
+                     Data.Tuple6
+                     Yesod.Form.Fields.TreeValueField
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

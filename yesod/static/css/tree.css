@@ -54,11 +54,19 @@
 .tree li:last-child::before {
   height: calc(16px);
 }
+.tree button {
+  border: none;
+  background-color: inherit;
+  padding: 0;
+}
+.tree input[type="radio"] + label,
 .tree input[type="checkbox"] + label,
-.tree a > label {
+.tree a > label,
+.tree button > label {
   margin-bottom: 0;
   font-weight: normal;
 }
+.tree input[type="radio"],
 .tree input[type="checkbox"] {
   appearance: none;
   display: none;
@@ -77,12 +85,23 @@
 .tree input[type="checkbox"] ~ ul > li {
   display: none;
 }
+.tree input[type="radio"] ~ label {
+  color: #07b;
+}
+.tree input[type="radio"] ~ label:hover {
+    color: #00466e;
+}
+.tree input[type="radio"]:checked ~ label {
+  color: #ff0000;
+}
+.tree input[type="radio"] ~ label,
 .tree input[type="checkbox"] ~ label {
   cursor: pointer;
 }
 .tree input[type="checkbox"]:checked ~ ul > li {
   display: block;
 }
+.tree input[type="radio"] + label:hover,
 .tree input[type="checkbox"] + label:hover,
 .tree input[type="checkbox"] + label:hover ~ ul label {
   background: #eee;

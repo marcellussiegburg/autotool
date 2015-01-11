@@ -57,19 +57,13 @@ Nein.\n\
 Bewertung der Einsendung: No"
 
 getAufgabeR :: AufgabeId -> Handler Html
-getAufgabeR aufgabe = do
-    let vorherigeEinsendung = Just $ Textarea "h (a (c , g (d , k )), l (m , f (i , b )))"
-    (formWidget, formEnctype) <- generateFormPost $ aufgabeLösenForm vorherigeEinsendung
-    (formWidgetUpload, formEnctypeUpload) <- generateFormPost lösungHochladenForm
-    let mbewertung = Nothing
-        widgets = (formWidget, formEnctype, formWidgetUpload, formEnctypeUpload)
-    aufgabeTemplate Lösen (AufgabeR aufgabe) widgets mbewertung
+getAufgabeR = postAufgabeR
 
 postAufgabeR :: AufgabeId -> Handler Html
 postAufgabeR aufgabe = do
-  let vorherigeEinsendung = Just $ Textarea "h (a (c , g (d , k )), l (m , f (i , b )))"
-  ((result, formWidget), formEnctype) <- runFormPost $ aufgabeLösenForm vorherigeEinsendung
-  ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost lösungHochladenForm
+  let vorherigeEinsendung = Just $ "h (a (c , g (d , k )), l (m , f (i , b )))"
+  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeLösenForm vorherigeEinsendung
+  ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ lösungHochladenForm
   let mbewertung = Just bew
       widgets = (formWidget, formEnctype, formWidgetUpload, formEnctypeUpload)
   aufgabeTemplate Lösen (AufgabeR aufgabe) widgets mbewertung
@@ -81,17 +75,15 @@ aufgabeTemplate lösen zielAdresse (formWidget, formEnctype, formWidgetUpload, f
   defaultLayout $ do
     $(widgetFile "aufgabe")
   
-lösungHochladenForm :: Form FileInfo
+lösungHochladenForm :: AForm Handler FileInfo
 lösungHochladenForm = do
-  identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $
     areq fileField "Datei Hochladen" Nothing
     <* bootstrapSubmit (BootstrapSubmit MsgLösungAbsenden "btn-success" [])
 
-aufgabeLösenForm :: Maybe Textarea -> Form Textarea
-aufgabeLösenForm meinsendung = do
+aufgabeLösenForm :: Maybe Text -> AForm Handler Text
+aufgabeLösenForm meinsendung =
   let actionType v = [("name", "action"), ("value", v)]
-  identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $
-    bootstrapSubmit (BootstrapSubmit MsgBeispielLaden "btn-primary" $ actionType "beispielLaden")
-    *> bootstrapSubmit (BootstrapSubmit MsgVorherigeEinsendungLaden "btn-primary" $ actionType "vorherigeEinsendung")
-    *> areq textareaField (bfs MsgLösung) meinsendung
-    <* bootstrapSubmit (BootstrapSubmit MsgLösungAbsenden "btn-success" $ actionType "Lösung absenden")
+  in bootstrapSubmit (BootstrapSubmit MsgBeispielLaden "btn-primary" $ actionType "beispielLaden")
+     *> bootstrapSubmit (BootstrapSubmit MsgVorherigeEinsendungLaden "btn-primary" $ actionType "vorherigeEinsendung")
+     *> (unTextarea <$> areq textareaField (bfs MsgLösung) (fmap Textarea meinsendung))
+     <* bootstrapSubmit (BootstrapSubmit MsgLösungAbsenden "btn-success" $ actionType "Lösung absenden")
