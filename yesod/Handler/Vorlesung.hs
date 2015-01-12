@@ -44,3 +44,4 @@ vorlesungForm mvorlesung = do
     <*> areq timeField (bfs MsgEinschreibungEndeZeit) (fmap endeZeit mvorlesung)
     <*> aopt textField (bfs MsgTagesNachricht) (fmap tagesNachricht mvorlesung)
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgVorlesungAnlegen (\ _ -> MsgVorlesungBearbeiten) mvorlesung) "btn-success" [])
+    <* maybe (pure ()) (\_ -> bootstrapSubmit (BootstrapSubmit MsgLöschen "btn-danger" [])) mvorlesung

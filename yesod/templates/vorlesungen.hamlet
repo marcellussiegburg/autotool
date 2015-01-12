@@ -19,5 +19,3 @@ $else
         <div .cell>
           <a href=@{VorlesungR 1} .btn .btn-primary .btn-block>
             _{MsgBearbeiten}
-          <a href=@{VorlesungenR 1} .btn .btn-danger .btn-block>
-            _{MsgLöschen}

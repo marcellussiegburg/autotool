@@ -30,3 +30,4 @@ gruppeForm mgruppe = do
     <*> areq textField (bfs MsgReferent) (fmap referent mgruppe)
     <*> areq intField (bfs MsgPlätze) (fmap plätze mgruppe)
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgGruppeAnlegen (\ _ -> MsgGruppeBearbeiten) mgruppe) "btn-success" [])
+    <* maybe (pure ()) (\_ -> bootstrapSubmit (BootstrapSubmit MsgLöschen "btn-danger" [])) mgruppe

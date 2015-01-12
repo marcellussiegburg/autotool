@@ -21,7 +21,7 @@
       <td>
         Herr Müller
       <td>
-        <a href="#" .btn .btn-primary .btn-block role="button">
+        <a href=@{GruppeR 1} .btn .btn-primary .btn-block role="button">
           _{MsgBearbeiten}
     <tr>
       <td>
@@ -31,7 +31,7 @@
       <td>
         Herr Meyer
       <td>
-        <a href="#" .btn .btn-primary .btn-block role="button">
+        <a href=@{GruppeR 1} .btn .btn-primary .btn-block role="button">
           _{MsgBearbeiten}
 <h2>
   _{MsgStudenten}
