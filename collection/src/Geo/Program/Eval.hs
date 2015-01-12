@@ -85,12 +85,6 @@ block env decls result = do
     env' <- foldM decl env decls
     eval env' result
 
-number :: Domain s d => Eval d s d
-number = do
-  s0 <- lift get
-  let (k,s1) = fresh 30 s0
-  lift $ put s1
-  return k
 
 curry3 f a b c = f (a,b,c)
 

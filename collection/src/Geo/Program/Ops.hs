@@ -10,6 +10,7 @@ import Geo.Program.Value
 import Autolib.TES.Identifier (mk, Identifier)
 
 import qualified Data.Map.Strict as M
+import Control.Applicative
 
 -- | semantics:
 -- Point A :== [a1,a2] <=> A=(a1,a2)
@@ -70,7 +71,8 @@ eq_dist [a,b,c,d] = do
 
 std :: Domain s d => Env Identifier d s
 std = M.fromList
-  [ ( mk 0 "Point", Function PointT [ NumberT, NumberT ] point )
+  [ ( mk 0 "fresh", Function NumberT [] $ \ _ -> Number <$> number )
+  , ( mk 0 "Point", Function PointT [ NumberT, NumberT ] point )
   , ( mk 0 "Line", Function LineT [ NumberT, NumberT, NumberT ] line )
   , ( mk 0 "pp_line" , Function LineT [ PointT, PointT ] pp_line )
   , ( mk 0 "intersection_point", Function PointT [ LineT, LineT ] intersection_point )

@@ -2,6 +2,8 @@
 
 module Geo.Program.Value where
 
+import Geo.Domain
+
 import Control.Monad.Writer
 import Control.Monad.State
 import Autolib.Reporter
@@ -40,6 +42,13 @@ type Env n d s = M.Map n (Value d s)
 type Eval k s v = WriterT [ k ] (StateT s  Reporter ) v
 
 add_ndg k = tell [k]
+
+number :: Domain s d => Eval d s d
+number = do
+  s0 <- lift get
+  let (k,s1) = fresh 30 s0
+  lift $ put s1
+  return k
 
 -- Note: deriving for Value creates a bogus ToDoc s constraint
 -- (a Function cannot be printed)
