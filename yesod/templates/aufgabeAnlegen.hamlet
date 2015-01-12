@@ -1,3 +1,12 @@
 <h1>_{MsgAufgabeAnlegen}
+$maybe hinweis <- mhinweis
+  <h2>_{MsgAufgabeHinweis}
+  <p>#{hinweis}
+$maybe aufgabenstellung <- maufgabenstellung
+  <h2>_{MsgAufgabeAufgabe}
+  <pre>#{aufgabenstellung}
 <div .tabs>
   ^{tabWidget forms []}
+$maybe bewertung <- mbewertung
+  <h2>_{MsgAufgabeBewertung}
+  <pre .alert-danger>#{bewertung}

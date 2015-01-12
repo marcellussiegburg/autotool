@@ -2,6 +2,7 @@
 module Handler.Aufgabe where
 
 import Import
+import Yesod.Form.Fields.PreField (preField)
 
 data Lösen = Lösen | Testen
 
@@ -61,8 +62,9 @@ getAufgabeR = postAufgabeR
 
 postAufgabeR :: AufgabeId -> Handler Html
 postAufgabeR aufgabe = do
-  let vorherigeEinsendung = Just $ "h (a (c , g (d , k )), l (m , f (i , b )))"
-  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeLösenForm vorherigeEinsendung
+  let vorherigeEinsendung = Just $ "h (a (c , g (d , k )), l (m , f (i , b )))" :: Maybe Text
+      typ = preEscapedToHtml ("<td><a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Raw.html#t:Term\"><tt>Term</tt></a>(<a href=\"http://hackage.haskell.org/package/ghc-prim/docs/GHC-Tuple.html#t:()\")><tt>()</tt></a>)(<a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Identifier.html#t:Identifier\"><tt>Identifier</tt></a>)</td>" :: Text)
+  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeLösenForm typ vorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ lösungHochladenForm
   let mbewertung = Just bew
       widgets = (formWidget, formEnctype, formWidgetUpload, formEnctypeUpload)
@@ -70,20 +72,20 @@ postAufgabeR aufgabe = do
 
 aufgabeTemplate :: Lösen -> Route Autotool -> (Widget, Enctype, Widget, Enctype) -> Maybe Text -> Handler Html 
 aufgabeTemplate lösen zielAdresse (formWidget, formEnctype, formWidgetUpload, formEnctypeUpload) mbewertung = do
-  let typ = preEscapedToHtml ("<td><a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Raw.html#t:Term\"><tt>Term</tt></a>(<a href=\"http://hackage.haskell.org/package/ghc-prim/docs/GHC-Tuple.html#t:()\")><tt>()</tt></a>)(<a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Identifier.html#t:Identifier\"><tt>Identifier</tt></a>)</td>" :: Text)
-      name = "Reconstruct-Direct-1" :: Text
+  let name = "Reconstruct-Direct-1" :: Text
   defaultLayout $ do
     $(widgetFile "aufgabe")
-  
+
 lösungHochladenForm :: AForm Handler FileInfo
 lösungHochladenForm = do
     areq fileField "Datei Hochladen" Nothing
     <* bootstrapSubmit (BootstrapSubmit MsgLösungAbsenden "btn-success" [])
 
-aufgabeLösenForm :: Maybe Text -> AForm Handler Text
-aufgabeLösenForm meinsendung =
+aufgabeLösenForm :: ToMarkup t => t -> Maybe Text -> AForm Handler Text
+aufgabeLösenForm typ meinsendung =
   let actionType v = [("name", "action"), ("value", v)]
   in bootstrapSubmit (BootstrapSubmit MsgBeispielLaden "btn-primary" $ actionType "beispielLaden")
      *> bootstrapSubmit (BootstrapSubmit MsgVorherigeEinsendungLaden "btn-primary" $ actionType "vorherigeEinsendung")
+     *> aopt (preField typ) (bfs MsgAufgabeLösungTyp) {fsAttrs = []} Nothing
      *> (unTextarea <$> areq textareaField (bfs MsgLösung) (fmap Textarea meinsendung))
      <* bootstrapSubmit (BootstrapSubmit MsgLösungAbsenden "btn-success" $ actionType "Lösung absenden")

@@ -18,8 +18,6 @@ $case lösen
           <a href="#hochladen">_{MsgAufgabeHochladen}
       <div .content>
         <form role="form" action=@{zielAdresse}#eingeben method="post" enctype=#{formEnctype}>
-          <label for="typ">_{MsgAufgabeLösungTyp}
-          <pre #typ>#{typ}
           ^{formWidget}
     <div .content>
       <form role="form" action=@{zielAdresse}#hochladen method="post" enctype=#{formEnctypeUpload}>

@@ -54,6 +54,7 @@ library
                      Handler.Vorlesungen
                      Handler.Waisenkinder
                      Data.Tuple6
+                     Yesod.Form.Fields.PreField
                      Yesod.Form.Fields.TreeValueField
 
     if flag(dev) || flag(library-only)

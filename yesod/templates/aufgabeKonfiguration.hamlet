@@ -1,6 +1,4 @@
 <h1>_{MsgAufgabeKonfigurieren}
 <form role="form" action=@{AufgabeKonfigurationR server aufgabeTyp konfiguration} method="post" enctype=#{formEnctype}>
-  <label for="typ">_{MsgAufgabeKonfigurationTyp}
-  <pre #typ>#{typ}
   ^{formWidget}
   <a .btn .btn-primary href=@{AufgabeTestenR server aufgabeTyp konfiguration}>_{MsgAufgabeTesten}

@@ -23,6 +23,11 @@ getAufgabeAnlegenR = postAufgabeAnlegenR
 postAufgabeAnlegenR :: GruppeId -> Handler Html
 postAufgabeAnlegenR gruppe = do
   let ziel = AufgabeAnlegenR gruppe
+      maufgabenstellung = Nothing :: Maybe Text
+      mhinweis = Nothing :: Maybe Text
+      mbewertung = Nothing :: Maybe Text
+      atyp = preEscapedToHtml ("<td><a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Raw.html#t:Term\"><tt>Term</tt></a>(<a href=\"http://hackage.haskell.org/package/ghc-prim/docs/GHC-Tuple.html#t:()\")><tt>()</tt></a>)(<a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Identifier.html#t:Identifier\"><tt>Identifier</tt></a>)</td>" :: Text)
+      ktyp = preEscapedToHtml ("[(<a href=\"http://autotool.imn.htwk-leipzig.de/docs/autotool-collection/Baum-Order.html#t:Order\"><tt>Order</tt></a>, [<a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Identifier.html#t:Identifier\"><tt>Identifier</tt></a>])]" :: Text)
       aufgabenTypen =
        [Node "Terme, Ersetzungssysteme"
         [Node "Unifikation"
@@ -42,28 +47,31 @@ postAufgabeAnlegenR gruppe = do
   ((typResult, _), _) <- runFormPost $ typForm aufgabenTypen "" Nothing
   ((einstellungenResult, _), _) <- runFormPost $ aufgabeForm "" "" Nothing
   ((vorlageResult, _), _) <- runFormPost $ vorlagenForm vorlagen "" "" undefined Nothing
-  ((konfigurationResult, _), _) <- runFormPost $ konfigurationForm "" "" undefined undefined Nothing
+  ((konfigurationResult, _), _) <- runFormPost $ konfigurationForm (undefined :: Text) "" "" undefined undefined Nothing
   ((hochladenResult, _), _) <- runFormPost $ hochladenForm "" "" undefined undefined undefined
-  ((testenResult, _), _) <- runFormPost $ testenForm "" "" undefined undefined "" Nothing
+  ((testenResult, _), _) <- runFormPost $ testenForm (undefined :: Text) "" "" undefined undefined "" Nothing
+
+  hochladen <- auswerten hochladenResult Tuple6_6 [ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm, KonfigurationForm]
+  eingaben <- do
+      a <- auswertenTyped serverResult Tuple6_1 []
+      b <- auswertenTyped typResult Tuple6_2 [ServerForm]
+      c <- auswertenTyped einstellungenResult Tuple6_3 [ServerForm, AufgabeTypForm]
+      d <- auswertenTyped vorlageResult Tuple6_4 [ServerForm, AufgabeTypForm, AufgabeForm]
+      e <- auswertenTyped konfigurationResult Tuple6_5 [ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm]
+      f <- auswerten testenResult Tuple6_6 [ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm, KonfigurationForm]
+      return $ do {_ <- a; _ <- b; _ <- c; _ <- d; _ <- e; f}
+  let (mserver', mtyp', meinstellungen', mvorlage', mkonfiguration', mtesten) = fromTuple6 $ either id id eingaben
+      (mserver'', mtyp'', meinstellungen'', mvorlage'', mkonfiguration'', mhochladen) = fromTuple6 $ either id id hochladen
+      (mserver, mtyp, meinstellungen, mvorlage, mkonfiguration) = case mserver'' of
+        Nothing -> (mserver', mtyp', meinstellungen', mvorlage', mkonfiguration')
+        Just _ -> (mserver'', mtyp'', meinstellungen'', mvorlage'', mkonfiguration'')
   let getServerForm ms = getForm ServerForm ziel [] $ serverForm ms
       getTypForm s mt = getForm AufgabeTypForm ziel [] $ typForm aufgabenTypen s mt
       getAufgabeForm s t ma = getForm AufgabeForm ziel [] $ aufgabeForm s t ma
       getVorlagenForm s t a mv = getForm VorlagenForm ziel [("class", "form-inline")] $ vorlagenForm vorlagen s t a mv
-      getKonfigurationForm s t a v mk = getForm KonfigurationForm ziel [] $ konfigurationForm s t a v mk
+      getKonfigurationForm s t a v mk = getForm KonfigurationForm ziel [] $ konfigurationForm ktyp s t a v mk
       getHochladenForm s t a v k = getForm HochladenForm ziel [] $ hochladenForm s t a v k
-      getTestenForm s t a v k ml = getForm TestenForm ziel [] $ testenForm s t a v k ml
-  --mhochladen <- case hochladenResult of
-    --                FormSuccess a -> Just a
-  vals <- do
-       a <- auswertenTyped serverResult Tuple6_1 []
-       b <- auswertenTyped typResult Tuple6_2 [ServerForm]
-       c <- auswertenTyped einstellungenResult Tuple6_3 [ServerForm, AufgabeTypForm]
-       d <- auswertenTyped vorlageResult Tuple6_4 [ServerForm, AufgabeTypForm, AufgabeForm]
-       e <- auswertenTyped konfigurationResult Tuple6_5 [ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm]
-       --f <- auswerten hochladenResult Tuple6_6 [ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm, KonfigurationForm]
-       f <- auswerten testenResult Tuple6_6 [ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm, KonfigurationForm]
-       return $ do {_ <- a; _ <- b; _ <- c; _ <- d; _ <- e; f}
-  let (mserver, mtyp, meinstellungen, mvorlage, mkonfiguration, mtesten) = fromTuple6 $ either id id vals
+      getTestenForm s t a v k ml = getForm TestenForm ziel [] $ testenForm atyp s t a v k ml
   forms <- sequence $ concat $ fmap maybeToList
              [getServerForm <$> Just mserver,
               getTypForm <$> mserver <*> Just mtyp,
@@ -85,7 +93,7 @@ auswertenTyped = auswerten
 
 auswerten ::
   (MonadHandler m, PathPiece a, PathPiece b, PathPiece c, PathPiece d, PathPiece e,
-   PathPiece f, RenderMessage (HandlerSite m) FormMessage) =>
+   RenderMessage (HandlerSite m) FormMessage) =>
   FormResult t -> (t -> Tuple6 a b c d e f) -> [AufgabeForm]
   -> m (Either (Tuple6 a b c d e f) (Tuple6 a b c d e f))
 auswerten result t forms =
@@ -96,18 +104,17 @@ auswerten result t forms =
     FormMissing -> return $ Right Tuple6_0
 
 parameterAbrufen :: (MonadHandler m, PathPiece a, PathPiece b, PathPiece c, PathPiece d,
-            PathPiece e, PathPiece f, RenderMessage (HandlerSite m) FormMessage) =>
+            PathPiece e, RenderMessage (HandlerSite m) FormMessage) =>
            [AufgabeForm] -> m (Tuple6 a b c d e f)
 parameterAbrufen forms = do
-    let (form1, form2, form3, form4, form5, form6) = fromTuple6 $ listToTuple6 forms
+    let (form1, form2, form3, form4, form5, _) = fromTuple6 $ listToTuple6 forms
         fv = (\ f -> runInputPost $ ireq hiddenField (getId f))
     form1' <- mapM fv form1
     form2' <- mapM fv form2
     form3' <- mapM fv form3
     form4' <- mapM fv form4
     form5' <- mapM fv form5
-    form6' <- mapM fv form6
-    return $ toTuple6 (form1', form2', form3', form4', form5', form6')
+    return $ toTuple6 (form1', form2', form3', form4', form5', Nothing)
 
 getForm :: AufgabeForm -> Route Autotool -> [(Text, Text)] -> Form a -> Handler AutotoolForm
 getForm art ziel attrs form = do

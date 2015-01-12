@@ -32,15 +32,15 @@ getTitel f =
     HochladenForm -> MsgAufgabeHochladen
     TestenForm -> MsgAufgabeTesten
 
-testenForm :: ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> AufgabeKonfiguration -> Maybe Text -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration, Text)
-testenForm server typ einstellungen vorlage konfiguration mlösung =
-  identifyForm (getId HochladenForm) $ renderBootstrap3 BootstrapBasicForm $ (,,,,,)
+testenForm :: ToMarkup t => t -> ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> AufgabeKonfiguration -> Maybe Text -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration, Text)
+testenForm atyp server typ einstellungen vorlage konfiguration mlösung =
+  identifyForm (getId TestenForm) $ renderBootstrap3 BootstrapBasicForm $ (,,,,,)
   <$> areq hiddenField (bfs $ server) {fsName = Just $ getId ServerForm} (Just server)
   <*> areq hiddenField (bfs $ typ) {fsName = Just $ getId AufgabeTypForm} (Just typ)
   <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
   <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
   <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
-  <*> A.aufgabeLösenForm mlösung
+  <*> A.aufgabeLösenForm atyp mlösung
 
 hochladenForm :: ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> AufgabeKonfiguration -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration, FileInfo)
 hochladenForm server typ einstellungen vorlage konfiguration =
@@ -52,14 +52,14 @@ hochladenForm server typ einstellungen vorlage konfiguration =
   <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
   <*> A.lösungHochladenForm
 
-konfigurationForm :: ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> Maybe AufgabeKonfiguration -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration)
-konfigurationForm server typ einstellungen vorlage mkonfiguration =
+konfigurationForm :: ToMarkup t => t -> ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> Maybe AufgabeKonfiguration -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration)
+konfigurationForm ktyp server typ einstellungen vorlage mkonfiguration =
   identifyForm (getId KonfigurationForm) $ renderBootstrap3 BootstrapBasicForm $ (,,,,)
   <$> areq hiddenField (bfs $ server) {fsName = Just $ getId ServerForm} (Just server)
   <*> areq hiddenField (bfs $ typ) {fsName = Just $ getId AufgabeTypForm} (Just typ)
   <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
   <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
-  <*> K.konfigurationForm mkonfiguration
+  <*> K.konfigurationForm ktyp mkonfiguration
 
 vorlagenForm :: [Text] -> ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe (Maybe VorlageName) -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName)
 vorlagenForm vorlagen server typ einstellungen mvorlage =

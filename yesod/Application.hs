@@ -16,7 +16,6 @@ import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
 import Network.HTTP.Client.Conduit (newManager)
 import System.Log.FastLogger (newStdoutLoggerSet, defaultBufSize)
 import Network.Wai.Logger (clockDateCacher)
-import Data.Default (def)
 import Yesod.Core.Types (loggerSet, Logger (Logger))
 
 import Handler.Home
