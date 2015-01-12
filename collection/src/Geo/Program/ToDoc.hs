@@ -8,6 +8,7 @@ import Autolib.ToDoc
 
 instance (ToDoc v) => ToDoc (Exp v) where
     toDoc e = case e of
+        Const i -> toDoc i
         Ref n -> toDoc n
         Apply f args ->
             toDoc f <+> dutch_tuple ( map toDoc args )

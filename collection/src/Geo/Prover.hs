@@ -15,6 +15,7 @@ import Autolib.Reporter
 import System.Environment
 import Control.Applicative
 import System.Random
+import System.IO
 
 main = do
   args <- getArgs
@@ -34,7 +35,7 @@ handle p = do
   g <- newStdGen
   let (out, msg :: Doc) =
         export $ Geo.Program.Run.concrete g p
-  print msg
+  print msg ; hFlush stdout
   case out of
     Just (val, dgc) -> do
       print $ vcat [ text "value" <+> toDoc val
@@ -44,7 +45,7 @@ handle p = do
   putStrLn "symbolic evaluation (polynomials)"
   let (out, msg :: Doc) =
         export $ Geo.Program.Run.symbolic p
-  print msg
+  print msg ; hFlush stdout
   case out of
     Just (val, dgc) -> do
       print $ vcat [ text "value" <+> toDoc val

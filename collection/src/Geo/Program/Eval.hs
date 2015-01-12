@@ -5,6 +5,9 @@
 
 module Geo.Program.Eval where
 
+import Prelude hiding (Num (..))
+import Polynomial.Class
+
 import Geo.Domain
 import qualified Geo.Program.Type as G
 import Geo.Program.Value
@@ -73,6 +76,7 @@ eval
      -> G.Exp n
      -> Eval d s (Value d s) 
 eval env exp = informed exp $ case exp of
+    G.Const i -> return $ Number $ fromInteger i
     G.Ref n -> ref env n
     G.Apply f args -> apply env f args
     G.Block decls result -> block env decls result

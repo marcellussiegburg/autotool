@@ -8,7 +8,8 @@ import Autolib.Reader hiding ((<|>), many)
 import Control.Applicative hiding ( Const )
 
 instance (Reader v) => Reader (Exp v) where
-    reader = my_braces ( Block <$> many (reader <* my_semi)
+    reader = Const <$> reader
+         <|> my_braces ( Block <$> many (reader <* my_semi)
                          <*> (my_reserved "return" *> reader <* my_semi ))
          <|> do
              f <- reader

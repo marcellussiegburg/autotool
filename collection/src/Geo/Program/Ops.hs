@@ -16,6 +16,12 @@ import qualified Data.Map.Strict as M
 -- Line a :== [a1,a2,a3] <=> a1*x+a2*y+a3 = 0
 -- Circle c :== [c0,c1,c2,c3] <=> c0*(x^2+y^2)+c1*x+c2*y+c3 = 0
 
+point [Number a1, Number a2] = do
+  return $ Point (a1,a2)
+
+line [Number a1, Number a2, Number a3] = do
+  return $ Line (a1,a2,a3)
+
 pp_line [ Point (a1,a2), Point (b1,b2) ] = do
   return $ Line ( b2-a2, a1-b1, a2*b1 - a1*b2 )
 
@@ -64,7 +70,9 @@ eq_dist [a,b,c,d] = do
 
 std :: Domain s d => Env Identifier d s
 std = M.fromList
-  [ ( mk 0 "pp_line" , Function LineT [ PointT, PointT ] pp_line )
+  [ ( mk 0 "Point", Function PointT [ NumberT, NumberT ] point )
+  , ( mk 0 "Line", Function LineT [ NumberT, NumberT, NumberT ] line )
+  , ( mk 0 "pp_line" , Function LineT [ PointT, PointT ] pp_line )
   , ( mk 0 "intersection_point", Function PointT [ LineT, LineT ] intersection_point )
   , ( mk 0 "ortho_line", Function LineT [ PointT, LineT ] ortho_line )
   , ( mk 0 "par_line", Function LineT [ PointT, LineT ] par_line )

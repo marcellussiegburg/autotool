@@ -7,7 +7,8 @@ import Data.Typeable
 import Autolib.TES.Identifier
 
 data Exp v
-     = Ref v 
+     = Ref v
+     | Const Integer  
      | Apply (Exp v) [ Exp v ]
      | Block [ Decl v ] ( Exp  v )
     deriving Typeable
