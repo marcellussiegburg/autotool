@@ -22,6 +22,8 @@ import Test.SmallCheck.Series
 import Control.Applicative ((<$>), (<*>), (<*), (*>))
 import Data.Typeable
 
+import Control.DeepSeq
+
 infixl 7  *, /
 infixl 6  +, -
 
@@ -91,6 +93,9 @@ instance Ring Int where
 data Ratio z = z :% z 
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 
+instance NFData z => NFData (Ratio z) where
+  rnf (p :% q) = rnf p `seq` rnf q `seq` ()
+
 instance (Serial m z, Ring z, Normalize_Fraction z ) 
          => Serial m (Ratio z) where
     series = (%) 
@@ -124,6 +129,9 @@ instance ( Normalize_Fraction z, Ring z )
 
 data Complex r = r :+ r
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
+
+instance NFData r => NFData (Complex r) where
+  rnf (p :+ q) = rnf p `seq` rnf q `seq` ()
 
 instance (Serial m z ) 
          => Serial m (Complex z) where

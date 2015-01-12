@@ -12,6 +12,7 @@ import Polynomial.Data
 import Autolib.Reader
 import Control.Applicative ((<$>),(<*>))
 import Control.Lens ( (^.) )
+import Control.DeepSeq
 
 import qualified Text.Parsec.Expr as E
 
@@ -37,8 +38,8 @@ table   = [ [prefix "-" Negate  ]
 binary  name fun assoc = E.Infix (do{ my_symbol name; return fun }) assoc
 prefix  name fun       = E.Prefix (do{ my_symbol name; return fun })
 
-instance (Ring r, Reader r, Ord v, Reader v) 
-         => Reader (Poly r v) where 
+instance (Ring r, Reader r, Ord v, Reader v -- , NFData v, NFData r
+         )  => Reader (Poly r v) where 
     reader = expr Prelude.>>= buildR
 
 buildR e = case e of
@@ -50,11 +51,12 @@ buildR e = case e of
     Times p q -> (*) <$> buildR p <*> buildR q
     Divide p q -> Prelude.fail "cannot divive, coeffienct domain is not a field"
 
-instance (Ord v, Reader v) 
-         => Reader (Poly Rational v) where 
+instance (Ord v, Reader v -- , NFData v
+         )  => Reader (Poly Rational v) where 
     reader = expr Prelude.>>= buildF
 
-buildF :: Ord v => Exp Rational v -> Parser (Poly Rational v)
+buildF :: (Ord v -- , NFData v
+          ) => Exp Rational v -> Parser (Poly Rational v)
 buildF e = case e of
     Const c -> return $ constant c
     Fact f -> return $ poly [(one, mono[f])]

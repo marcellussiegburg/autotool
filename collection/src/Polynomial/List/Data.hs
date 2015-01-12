@@ -7,6 +7,8 @@ import Polynomial.Class ( zero )
 import Data.Typeable
 import Control.Lens
 
+import Control.DeepSeq
+
 type Expo = Int
 
 data Factor v = Factor { _var :: ! v, _expo :: ! Expo } 
@@ -22,6 +24,9 @@ data Mono v = Mono { _total_degree :: ! Expo
     deriving (Typeable, Eq, Ord)
 
 $(makeLenses ''Mono)
+
+instance NFData v => NFData (Mono v) where
+  rnf m = rnf (_total_degree m ) `seq` rnf ( _unMono m ) `seq` ()
 
 factors m = m ^. unMono
 
@@ -40,6 +45,9 @@ data Poly r v = Poly { _unPoly :: ! [ (Mono v, r) ]
     deriving ( Eq, Typeable )
 
 $(makeLenses ''Poly)
+
+instance (NFData r, NFData v) => NFData (Poly r v) where
+  rnf p = rnf (_unPoly p ) `seq` rnf ( _absolute p ) `seq` ()
 
 constant r =
   Poly { _unPoly = [ (mono [], r) | r /= zero ]

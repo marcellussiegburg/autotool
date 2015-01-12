@@ -1,3 +1,5 @@
+{-# language NoMonomorphismRestriction #-}
+
 module Polynomial.List.Op where
 
 import Polynomial.List.Data
@@ -11,16 +13,28 @@ import Control.Lens
 import Control.Applicative
 
 import Control.Parallel.Strategies
+import Control.DeepSeq
 
 import Autolib.TES.Identifier -- for specialization
+import Autolib.Hash (hash)
+
+instance NFData Identifier where
+  rnf i = hash i `seq` show i `seq` ()
 
 {-# specialize merge :: [(Mono Identifier,Integer)] -> [(Mono Identifier,Integer)] -> [(Mono Identifier,Integer)] #-}
 {-# specialize merge :: [(Identifier,Integer)] -> [(Identifier,Integer)] -> [(Identifier,Integer)] #-}
 
+
+-- | choice of strategy does not seem to have any influence on performance
+strat = r0
+  -- rseq
+  -- evalList rdeepseq
+  -- evalList $ evalTuple2 rseq rseq
+  -- evalList rseq
+
+merge xs ys = mrg xs ys `using` strat
+
 -- | largest comes first
-
-merge xs ys = mrg xs ys `using` evalList rseq
-
 mrg [] ys = ys ; mrg xs [] = xs
 mrg (x:xs) (y:ys) = case compare (fst x) (fst y) of
   GT -> x : mrg xs (y:ys)
@@ -29,12 +43,19 @@ mrg (x:xs) (y:ys) = case compare (fst x) (fst y) of
         in  if v == zero then mrg xs ys
             else (fst x, v) : mrg xs ys                  
 
-foldB f z [] = z ; foldB f z [x] = x
-foldB f z (x:y:zs) = foldB f z (zs ++ [f x y])
+foldB :: (a -> a -> a) -> a -> [a] -> a
+foldB f z [] = z
+foldB f _ xs =
+  let work (x:y:zs) done =
+        let z = f x y in z `seq` work zs (z : done)
+      work [x] [] = x
+      work xs done = work (xs ++ done) []
+  in  work xs []
 
-merges xss = foldB merge [] xss `using` evalList rseq
+merges xss = foldB merge [] xss `using` strat
 
-poly :: (Ord v, Ring r) => [(r, Mono v)] -> Poly r v
+poly :: ( -- NFData v, NFData r,
+  Ord v, Ring r) => [(r, Mono v)] -> Poly r v
 poly cms = foldB (+) zero
    $ map ( \(c,m) -> monomial m c ) cms
 
@@ -45,7 +66,8 @@ monomial m c = Poly
 
 variable v = poly [ (one, mono [ factor v one ] ) ]
 
-instance (Ring r, Ord v) => Ring (Poly r v) where
+instance ( -- NFData v, NFData r,
+  Ring r, Ord v) => Ring (Poly r v) where
     {-# specialize instance Ring (Poly Integer Identifier) #-}
     fromInteger i = constant $ fromInteger i
     zero = fromInteger 0 ; one = fromInteger 1
