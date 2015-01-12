@@ -21,6 +21,10 @@ instance (Ring r, Ord v) => Ring (Poly r v) where
         (c , f) <- terms p ; (d , g) <- terms q 
         return (c*d, monoMult f g)
 
+instance Normalize_Fraction (Poly r v) where
+    -- RISKY?
+    (%) = (:%)
+
 monoMult p q = Mono 
                  { _unMono = M.filter (/= 0) $ M.unionWith (+) (p ^. unMono) (q ^. unMono) 
                  , _total_degree = p ^. total_degree + q ^. total_degree

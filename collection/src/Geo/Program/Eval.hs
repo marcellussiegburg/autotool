@@ -5,6 +5,7 @@
 
 module Geo.Program.Eval where
 
+import Geo.Domain
 import qualified Geo.Program.Type as G
 import Geo.Program.Value
 
@@ -15,7 +16,8 @@ import qualified Data.Map.Strict as M
 
 import Control.Monad.Trans
 import Control.Monad.Writer
-
+import Control.Monad.State
+import Control.Applicative
 
 
 typeOf v = case v of
@@ -38,15 +40,24 @@ getName (G.Typed t n) = n
 
 
 informed exp action = do
-    lift $ inform $ text "expression" <+> toDoc exp
-    val <- mapWriterT ( \ act -> nested 4 act ) action
-    lift $ inform $ text "has value" <+> toDoc val
+    inf $ text "expression" <+> toDoc exp
+    val <- mapWriterT ( mapStateT (nested 4) ) action
+    inf $ text "has value" <+> toDoc val
     return val
 
-assert_type :: Type -> Eval (Value d) -> Eval (Value d)
+inf d = lift $ lift $ inform d
+rej d = lift $ lift $ reject d
+
+-- | check (at run time)
+-- that action yiels result of specified type.
+-- fail (in the monad) if type is wrong.
+assert_type
+  :: Type
+     -> Eval k s (Value d s)
+     -> Eval k s (Value d s)
 assert_type t action = do
     v <- action
-    when ( typeOf v /= t ) $ lift $ reject $ vcat
+    when ( typeOf v /= t ) $ rej $ vcat
         [ text "types do not agree:"
         , text "expected:" <+> toDoc t
         , text "but got: " <+> toDoc (typeOf v)
@@ -55,8 +66,12 @@ assert_type t action = do
 
 mkEnv kvs = M.fromList kvs
 
-eval :: (ToDoc d, ToDoc n, Ord n)
-     => Env n (Value d) -> G.Exp n -> Eval (Value d)
+-- | evaluate expression in environment.
+eval
+  :: (ToDoc d, ToDoc n, Ord n, Domain s d, ToDoc s)
+     => Env n d s
+     -> G.Exp n
+     -> Eval d s (Value d s) 
 eval env exp = informed exp $ case exp of
     G.Ref n -> ref env n
     G.Apply f args -> apply env f args
@@ -66,38 +81,67 @@ block env decls result = do
     env' <- foldM decl env decls
     eval env' result
 
-decl env (G.Decl tn Nothing b) = do
+number :: Domain s d => Eval d s d
+number = do
+  s0 <- lift get
+  let (k,s1) = fresh 30 s0
+  lift $ put s1
+  return k
+
+curry3 f a b c = f (a,b,c)
+
+-- | process a declaration.
+-- return the new environment
+-- (where the declared name is bound).
+
+decl :: (Ord n, ToDoc n, ToDoc d, Domain s d, ToDoc s)
+        => Env n d s -> G.Decl n -> Eval d s (Env n d s)
+
+decl env (G.Decl tn Nothing Nothing) = do
+    v <- case getType tn of
+      NumberT -> Number <$> number
+      PointT -> curry Point <$> number <*> number
+      LineT -> curry3 Line  <$> number <*> number <*> number
+      t -> rej $ vcat
+          [ text "cannot declare unknown of type" <+> toDoc t ]
+    return $ M.insert (getName tn) v env
+
+decl env (G.Decl tn Nothing (Just b)) = do
     v <- assert_type (getType tn) $ eval env b
     return $ M.insert (getName tn) v env
 
-decl env (G.Decl tn (Just args) b) = do
+decl env (G.Decl tn (Just args) (Just b)) = do
     let v = Function (getType tn) (map getType args)
           $ \ xs -> let env' = M.union (mkEnv $ zip (map getName args) xs) env
                     in  eval env' b    
     return $ M.insert (getName tn) v env
-    
+
+-- | look up name in environment
+ref :: ( Ord n , ToDoc n )
+       => Env n d s -> n -> Eval d s (Value d s)
 ref env n = case M.lookup n env of
-            Nothing -> lift $ reject $ vcat
+            Nothing -> rej $ vcat
                        [ text "name" <+> toDoc n
                        , text "not bound in environment"
                        ]
             Just v -> return v 
 
-apply :: (ToDoc d, ToDoc n, Ord n)
-     => Env n (Value d)
+-- | apply function to arguments
+apply :: (ToDoc d, ToDoc n, Ord n, ToDoc s, Domain s d)
+     => Env n d s
      -> G.Exp n -> [ G.Exp n ]
-     -> Eval (Value d)
+     -> Eval d s (Value d s)
 apply env f args = do
         fv <- eval env f
         case fv of
             Function t ts work -> do
-              when (length ts /= length args) $ lift $ reject $ vcat
+              when (length ts /= length args) $ rej $ vcat
                 [ text "argument list length mismatch"
                 ]  
               argvs <- forM (zip ts args) $ \ (t,a) -> do
                   assert_type t $ eval env a
               assert_type t $ work argvs
-            _ -> lift $ reject $ vcat
+            _ -> rej $ vcat
                    [ text "value" <+> toDoc fv
                    , text "is not a function"
                    ]  

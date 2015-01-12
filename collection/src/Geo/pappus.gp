@@ -3,5 +3,5 @@
   Point p = intersection_point (pp_line(a,y),pp_line(b,x));
   Point q = intersection_point (pp_line(a,z),pp_line(c,x));
   Point r = intersection_point (pp_line(b,z),pp_line(c,y));
-  return collinear (p,q,r);
+  return is_collinear (p,q,r);
 }
