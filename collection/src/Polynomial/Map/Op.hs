@@ -1,6 +1,6 @@
-module Polynomial.Op where
+module Polynomial.Map.Op where
 
-import Polynomial.Data
+import Polynomial.Map.Data
 
 import Polynomial.Class
 import qualified Prelude
@@ -17,9 +17,7 @@ instance (Ring r, Ord v) => Ring (Poly r v) where
     zero = fromInteger 0 ; one = fromInteger 1
     negate p = Poly { _unPoly = M.map negate $ p ^. unPoly }
     p + q = Poly { _unPoly = M.filter (/= zero) $ M.unionWith (+) (p ^. unPoly) (q ^.unPoly) }
-    p * q = poly $ do
-        (c , f) <- terms p ; (d , g) <- terms q 
-        return (c*d, monoMult f g)
+    p * q = poly $ do (c , f) <- terms p ; (d , g) <- terms q ; return (c*d, monoMult f g)
 
 instance Normalize_Fraction (Poly r v) where
     -- RISKY?

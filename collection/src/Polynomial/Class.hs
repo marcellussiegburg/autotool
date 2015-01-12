@@ -83,6 +83,11 @@ instance Ring Integer where
     one = 1 ; (*) = (Prelude.*)
     fromInteger i = i
 
+instance Ring Int where
+    zero = 0; (+) = (Prelude.+) ; negate = Prelude.negate 
+    one = 1 ; (*) = (Prelude.*)
+    fromInteger i = Prelude.fromInteger i
+
 data Ratio z = z :% z 
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 

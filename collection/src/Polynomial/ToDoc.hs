@@ -14,7 +14,7 @@ instance ToDoc v => ToDoc (Factor v) where
 
 instance ToDoc v => ToDoc (Mono v) where
     toDoc m = hsep $ punctuate (text " *") $ do
-        (v,e) <- factors m ; return $ toDoc $ Factor { _var = v, _expo = e }
+        (v,e) <- factors m ; return $ toDoc $ factor v e
 
 instance (Num r, Ord r, ToDoc r, ToDoc v) 
          => ToDoc (Poly r v) where

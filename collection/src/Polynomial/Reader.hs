@@ -6,8 +6,8 @@ module Polynomial.Reader where
 import Polynomial.Class
 import qualified Prelude
 import Prelude ( return, ($), Eq, Ord, read )
+
 import Polynomial.Data
-import Polynomial.Op
 
 import Autolib.Reader
 import Control.Applicative ((<$>),(<*>))
@@ -69,8 +69,9 @@ buildF e = case e of
         
 instance Reader v => Reader (Factor v) where
     reader = do 
-        v <- reader ; e <- option 1 $ do my_symbol "^" ; natural
-        return $ Factor { _var = v, _expo = e }
+        v <- reader
+        e <- option 1 $ do my_symbol "^" ; fromInteger <$> natural
+        return $ factor v e
 
 natural :: Parser Integer
 natural = do

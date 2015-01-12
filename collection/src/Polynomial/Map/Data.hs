@@ -3,7 +3,7 @@
 {-# language TypeFamilies #-}
 {-# language DeriveDataTypeable #-}
 
-module Polynomial.Data where
+module Polynomial.Map.Data where
 
 import Polynomial.Class
 import Prelude hiding ( Num (..), Integer, sum)
@@ -14,29 +14,53 @@ import Control.Lens.At
 import Control.Monad ( guard )
 import Control.Applicative ((<$>))
 import Data.Typeable
+import Data.Function ( on )
+
+import Autolib.TES.Identifier -- for specializations
 
 -- * factors (for lack of a better name) like "x^5"
 
-data Factor v = Factor { _var :: v, _expo :: Integer } 
-    deriving Typeable
+data Factor v = Factor { _var :: ! v, _expo :: ! Integer } 
+    deriving (Typeable)
+
+factor v e = Factor { _var = v, _expo = e }
 
 $(makeLenses ''Factor)
 
-deriving instance Eq v => Eq (Factor v)
-deriving instance Ord v => Ord (Factor v)
+instance Eq v => Eq (Factor v) where
+  {-# specialize instance Eq (Factor Identifier) #-}
+  (==) = (==) `on` ( \ f -> ( _var f, _expo f ) )
+
+instance Ord v => Ord (Factor v) where
+  {-# specialize instance Ord (Factor Identifier) #-}
+  compare = compare `on` ( \ f -> ( _var f, _expo f ) )
+
 
 -- * monomials like "x^5 z^2"
 
 -- | invariant: store only factors with nonzero exponents.
 -- implementation note: total_degree comes first,
 -- and this is used in the derived Ord instance
--- (which then gives length-lexicographic)
-data Mono v = Mono { _total_degree :: Integer
-                   , _unMono :: M.Map v Integer 
+-- (which then gives graded-lexicographic)
+data Mono v = Mono { _total_degree :: ! Integer
+                   , _unMono :: ! ( M.Map v Integer )
                    }
-    deriving Typeable
+    deriving (Typeable)
 
 $(makeLenses ''Mono)
+
+instance Eq v => Eq (Mono v) where
+  {-# specialize instance Eq (Mono Identifier) #-}
+  (==) x y = {-# SCC "instance-Eq-Mono" #-}
+    ((==) `on` ( \ m -> ( _total_degree m , _unMono m ))) x y
+
+instance Ord v => Ord (Mono v) where
+  {-# specialize instance Ord (Mono Identifier) #-}
+  compare x y = {-# SCC "instance-Ord-Mono" #-}
+    -- (compare `on` ( \ m -> ( _total_degree m , _unMono m ))) x y
+    case compare (_total_degree x) (_total_degree y) of
+      EQ -> compare (_unMono x) (_unMono y)
+      c -> c
 
 type instance IxValue (Mono v) = Integer
 type instance Index (Mono v)  = v
@@ -52,9 +76,6 @@ divMono m n =
     in  if M.null $ M.filter (< 0) d
         then mono $ map (\(k,v) -> Factor k v) $ M.toList d
         else error "Polynomial.data.divMono: exponent<0"
-
-deriving instance Eq v => Eq (Mono v)
-deriving instance Ord v => Ord (Mono v)
 
 mono :: Ord v => [Factor v] -> Mono v
 mono fs = Mono 
@@ -72,7 +93,7 @@ factors m =  M.toList $ m ^. unMono
 -- | for the moment, this is monomorphic.
 -- in theory, coefficient domain should be some ring.
 -- invariant: store only monomials with coefficient /= 0
-data Poly r v = Poly { _unPoly :: M.Map (Mono v) r }
+data Poly r v = Poly { _unPoly :: ! ( M.Map (Mono v) r ) }
     deriving ( Eq, Typeable )
 
 $(makeLenses ''Poly)
