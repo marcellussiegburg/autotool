@@ -121,7 +121,7 @@ instance Normalize_Fraction Integer where
 instance ( Normalize_Fraction z, Ring z ) 
          => Ring (Ratio z) where
     zero = zero % one 
-    (a :% b) + (c :% d) = (a * d + b * c) % (b * d)
+    (a :% b) + (c :% d) = if b == d then (a + c) % d else (a * d + b * c) % (b * d)
     negate (a :% b) = negate a % b
     one = one % one 
     (a :% b) * (c :% d) = (a * c) % (b * d)

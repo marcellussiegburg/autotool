@@ -1,4 +1,4 @@
-{ Point a = Point (0,0);
+{ Point a ;
   Point b ;
   Point c = varpoint (a, b, fresh() ) ;
   Point x ;
