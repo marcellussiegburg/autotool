@@ -3,66 +3,40 @@
 
 module Polynomial.List.Data where
 
-import Polynomial.Class ( zero )
+import Prelude hiding (Num (..), (/), Integer, map, null)
+import qualified Prelude
+
+import Polynomial.Class 
+import Polynomial.Base
+
 import Data.Typeable
 import Control.Lens
 
 import Control.DeepSeq
 
-type Expo = Int
-
-data Factor v = Factor { _var :: ! v, _expo :: ! Expo } 
-    deriving (Typeable, Eq, Ord)
-
-factor v e = Factor { _var = v, _expo = e }
-
-$(makeLenses ''Factor)
-
-data Mono v = Mono { _total_degree :: ! Expo
-                   , _unMono :: ! [(v, Expo)]
-                   }
-    deriving (Typeable, Eq, Ord)
-
-$(makeLenses ''Mono)
-
-instance NFData v => NFData (Mono v) where
-  rnf m = rnf (_total_degree m ) `seq` rnf ( _unMono m ) `seq` ()
-
-factors m = map (\(v,e) -> factor v e) $ m ^. unMono
-
-mono :: [Factor v] -> Mono v
-mono fs = Mono
-    { _total_degree = sum $ map ( ^. expo ) fs
-    , _unMono = map ( \ f -> (f ^.var, f ^.expo) ) fs
-    }
-
-nullMono m = Prelude.null $ m ^. unMono
 
 -- | unPoly contains *all* terms (including absolute)
-data Poly r v = Poly { _unPoly :: ! [ (Mono v, r) ]
-                     , _absolute :: ! r
+data Poly r v = Poly { unPoly :: ! [ (Mono v, r) ]
+                     , absolute :: ! r
                      }
     deriving ( Eq, Typeable )
 
-$(makeLenses ''Poly)
 
-instance (NFData r, NFData v) => NFData (Poly r v) where
-  rnf p = rnf (_unPoly p ) `seq` rnf ( _absolute p ) `seq` ()
-
+constant :: (Ord v, Ring r) => r -> Poly r v
 constant r =
-  Poly { _unPoly = [ (mono [], r) | r /= zero ]
-       , _absolute = r
+  Poly { unPoly = [ (mono [], r) | r /= zero ]
+       , absolute = r
        }
 
-null p = Prelude.null $ p ^. unPoly
+null p = Prelude.null $ unPoly p 
 
-terms p = map ( \(m,c) -> (c,m) ) $ p ^. unPoly
-nterms p = length $ p ^. unPoly
+terms p = Prelude.map ( \(m,c) -> (c,m) ) $ unPoly p
+nterms p = length $ unPoly p
 
 
-valid p = monotone (p ^. unPoly )
-  && all (monotone .  _unMono . fst ) (p ^. unPoly )
-  && all (\ (m,c) -> c /= zero ) (p ^. unPoly)
+valid p = monotone (unPoly p )
+  && all (monotone .  _unMono . fst ) ( unPoly p )
+  && all (\ (m,c) -> c /= zero ) (unPoly p)
 
 monotone kvs = and $
   zipWith ( \ (k1,v1) (k2, v2) -> k1 > k2 ) kvs ( drop 1 kvs )

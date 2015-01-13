@@ -7,7 +7,11 @@
 
 module Polynomial.Base where
 
-import Polynomial.Class ( zero )
+import qualified Prelude
+import Prelude hiding 
+    ( Num (..), (/), Integer, null, gcd, divMod, div, mod )
+
+import Polynomial.Class 
 
 import Data.Typeable
 import Control.Lens
@@ -35,13 +39,13 @@ factors m = map ( \ (v,e) -> factor v e ) $ m ^. unMono
 
 mono :: Ord v => [Factor v] -> Mono v
 mono fs = Mono
-    { _total_degree = sum $ map ( ^. expo ) fs
+    { _total_degree = Prelude.sum $ map ( ^. expo ) fs
     , _unMono = msort $ map ( \ f -> (f ^.var, f ^.expo) ) fs
     }
 
 monoFromDecreasing :: Ord v => [Factor v] -> Mono v
 monoFromDecreasing fs = Mono
-    { _total_degree = sum $ map ( ^. expo ) fs
+    { _total_degree = Prelude.sum $ map ( ^. expo ) fs
     , _unMono = map ( \ f -> (f ^.var, f ^.expo) ) fs
     }
 
@@ -64,7 +68,7 @@ type Term r v = (r, Mono v)
 
 msort [] = [] ; msort [x] = [x]
 msort xs =
-  let (lo,hi) = splitAt (div (length xs) 2) xs
+  let (lo,hi) = splitAt (Prelude.div (length xs) 2) xs
   in  merge (msort lo) (msort hi)
 
 merge xs ys = mergeWith (+) xs ys

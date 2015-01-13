@@ -13,9 +13,12 @@ where
 
 import qualified Prelude
 
+import Polynomial.Base
+
+
 -- pick one implementation:
 
-import Polynomial.Base
+
 import Polynomial.Tree.Data
 
 -- import Polynomial.Map.Data

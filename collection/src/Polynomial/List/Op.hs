@@ -5,6 +5,7 @@ module Polynomial.List.Op where
 import Polynomial.List.Data
 
 import Polynomial.Class
+import Polynomial.Base
 import qualified Prelude
 import Prelude hiding 
     ( Num (..), (/), Integer, null, gcd, divMod, div, mod )
@@ -25,24 +26,6 @@ instance NFData Identifier where
 {-# specialize merge :: [(Identifier,Integer)] -> [(Identifier,Integer)] -> [(Identifier,Integer)] #-}
 
 
--- | choice of strategy does not seem to have any influence on performance
-strat = r0
-  -- rseq
-  -- evalList rdeepseq
-  -- evalList $ evalTuple2 rseq rseq
-  -- evalList rseq
-
-merge xs ys = mrg xs ys `using` strat
-
--- | largest comes first
-mrg [] ys = ys ; mrg xs [] = xs
-mrg (x:xs) (y:ys) = case compare (fst x) (fst y) of
-  GT -> x : mrg xs (y:ys)
-  LT -> y : mrg (x:xs) ys
-  EQ -> let v = snd x + snd y
-        in  if v == zero then mrg xs ys
-            else (fst x, v) : mrg xs ys                  
-
 foldB :: (a -> a -> a) -> a -> [a] -> a
 foldB f z [] = z
 foldB f _ xs =
@@ -52,7 +35,7 @@ foldB f _ xs =
       work xs done = work (xs ++ done) []
   in  work xs []
 
-merges xss = foldB merge [] xss `using` strat
+merges xss = foldB merge [] xss 
 
 poly :: ( -- NFData v, NFData r,
   Ord v, Ring r) => [(r, Mono v)] -> Poly r v
@@ -60,45 +43,49 @@ poly cms = foldB (+) zero
    $ map ( \(c,m) -> monomial m c ) cms
 
 monomial m c = Poly
-   { _unPoly = [(m,c) | c /= zero]
-   , _absolute = if nullMono m then c else zero
+   { unPoly = [(m,c) | c /= zero]
+   , absolute = if nullMono m then c else zero
    }
 
 variable v = poly [ (one, mono [ factor v one ] ) ]
 
-instance ( -- NFData v, NFData r,
-  Ring r, Ord v) => Ring (Poly r v) where
+instance ( Ring r, Ord v) => Ring (Poly r v) where
     {-# specialize instance Ring (Poly Integer Identifier) #-}
     fromInteger i = constant $ fromInteger i
     zero = fromInteger 0 ; one = fromInteger 1
-    negate = over ( unPoly . mapped . _2 ) negate
-           . over ( absolute ) negate  
+    negate p = p { absolute = negate $ absolute p
+                 , unPoly = over ( mapped . _2 ) negate
+                            $ unPoly p
+                 }
     p + q = Poly
-      { _absolute = p ^. absolute + q ^. absolute
-      , _unPoly = merge (p ^. unPoly) (q ^.unPoly) 
+      { absolute = absolute p + absolute q
+      , unPoly = merge (unPoly p) (unPoly q) 
       }
-    p * q | length (p ^. unPoly) > length (q ^. unPoly) = Poly
-      { _absolute = p ^. absolute * q ^. absolute
-      , _unPoly = merges $ do
-            (g,d) <- q ^. unPoly
+    p * q | length (unPoly p) > length (unPoly q) = Poly
+      { absolute = absolute p * absolute q
+      , unPoly = merges $ do
+            (g,d) <- unPoly q
             return $ map ( \ (f,c) -> (monoMult f g, c*d))
-                   $ p ^. unPoly
+                   $ unPoly p
       }      
     p * q = Poly
-      { _absolute = p ^. absolute * q ^. absolute
-      , _unPoly = merges $ do
-            (f,c) <- p ^. unPoly
+      { absolute = absolute p *  absolute q
+      , unPoly = merges $ do
+            (f,c) <- unPoly p 
             return $ map ( \ (g,d) -> (monoMult f g, c*d))
-                   $ q ^. unPoly
+                   $ unPoly q
       }
     
-monoMult p q = Mono 
-    { _unMono = merge (p ^. unMono) (q ^. unMono) 
-    , _total_degree = p ^. total_degree + q ^. total_degree
-    }
 
-splitAbsolute p =
-  ( p ^. absolute , p - constant ( p^. absolute ) )
+
+splitLeading p = case unPoly p of
+  [] -> Nothing
+  (m,c) : rest ->
+    Just ((c,m), Poly { unPoly = rest
+                      , absolute = case rest of
+                        [] -> zero
+                        _ -> absolute p
+                      } )
 
 instance Normalize_Fraction (Poly r v) where
     -- RISKY?
@@ -107,9 +94,10 @@ instance Normalize_Fraction (Poly r v) where
 divF :: Field f => Poly f v -> f -> Poly f v
 divF p f =
    let d c = c / f
-   in  over ( unPoly . mapped . _2 ) d
-           $ over ( absolute ) d
-           $ p
+   in  p { absolute = d $ absolute p
+               , unPoly = over (  mapped . _2 ) d
+                          $ unPoly p
+               }
 
 
 
