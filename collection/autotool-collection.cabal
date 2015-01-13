@@ -66,7 +66,9 @@ Library
         logict>=0.6.0.2,
         lens,
         hashable,
-        stm
+        stm,
+        deepseq,
+        parallel
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -320,7 +322,10 @@ Library
                  Rewriting.Abstract.Quiz,
                  Polynomial.Class,
                  Polynomial.Data
-                 Polynomial.Op
+                 Polynomial.Map.Data
+                 Polynomial.Map.Op
+                 Polynomial.List.Data
+                 Polynomial.List.Op
                  Polynomial.Reader
                  Polynomial.ToDoc
                  Polynomial.Type

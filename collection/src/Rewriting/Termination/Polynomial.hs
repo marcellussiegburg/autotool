@@ -37,7 +37,7 @@ substitute f gs = sum $ do
     (c,m) <- P.terms f
     return $ product $ fromInteger c : do
         (X i,e) <- P.factors m
-        return $ (gs !! pred i) ^ e
+        return $ (gs !! pred i) ^ fromIntegral e
     
 projection :: Int -> P.Poly Integer X
 projection to = P.variable $ X to
@@ -64,11 +64,13 @@ must_be_monotone f arity p = do
             , text "since it does not occur isolated in some monomial" 
             ]
 
+weakly_greater :: P.Poly Integer X -> P.Poly Integer X -> Bool
 weakly_greater p q = and $ do
     (c,m) <- P.terms $ p - q
     return $ c > 0
 
 -- | precondition:  weakly_greater p q == True 
+strictly_greater :: P.Poly Integer X -> P.Poly Integer X -> Bool
 strictly_greater p q = 
-    P.absolute p > P.absolute q
+    p ^. P.absolute  > q ^. P.absolute 
 
