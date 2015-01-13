@@ -16,13 +16,16 @@ import Control.Applicative
 -- Point A :== [a1,a2] <=> A=(a1,a2)
 -- Line a :== [a1,a2,a3] <=> a1*x+a2*y+a3 = 0
 -- Circle c :== [c0,c1,c2,c3] <=> c0*(x^2+y^2)+c1*x+c2*y+c3 = 0
-
+-- Angle w  :== Angle(w1,w2)        <=> tan(w)=w1/w2
+   
 point [Number a1, Number a2] = do
   return $ Point (a1,a2)
 
 line [Number a1, Number a2, Number a3] = do
   return $ Line (a1,a2,a3)
 
+-- *  /* ==== elementary geometric constructions ==== */
+  
 pp_line [ Point (a1,a2), Point (b1,b2) ] = do
   return $ Line ( b2-a2, a1-b1, a2*b1 - a1*b2 )
 
@@ -42,8 +45,12 @@ par_line [ Point (p1,p2), Line (a1,a2,a3)] = do
 varpoint [Point (b1,b2), Point (a1,a2), Number l ] = do
   return $ Point (l*a1+(fromInteger 1-l)*b1, l*a2+(fromInteger 1-l)*b2)
 
+-- *   /* ======= geometric type Distance ====== */
+   
 sqrdist [ Point (p1,p2), Point (q1,q2) ] = do
   return $ Number $ (p1-q1)^2 + (p2-q2)^2
+
+-- *    /* ======= elementary geometric properties ====== */
 
 is_collinear [Point(p1,p2),Point(q1,q2),Point(r1,r2)] = do
   let e = fromInteger 1
@@ -69,6 +76,25 @@ eq_dist [a,b,c,d] = do
   Number cd <- sqrdist [c, d]
   return $ Boolean $ ab - cd
 
+-- *  /* ======= angles ====== */
+
+l2_angle [Line(g1,g2,g3), Line (h1,h2,h3)] = do
+  return $ Angle ( g1*h2 - g2*h1 , g1*h1+g2*h2 )
+
+eq_angle [Angle(a1,a2), Angle (b1,b2)] = do
+  return $ Boolean $ g1*h2 - g2*h1       
+
+angle_sum [Angle(v1,v2), Angle(w1,w2)] = do
+  return $ Angle ( v1*w2 + v2*w1, v2*w2 - v1*w1 )
+  
+-- *    /* ======= circles ====== */
+
+-- missing   
+
+-- *      /* generic code */
+
+-- missing
+   
 std :: Domain s d => Env Identifier d s
 std = M.fromList
   [ ( mk 0 "fresh", Function NumberT [] $ \ _ -> Number <$> number )

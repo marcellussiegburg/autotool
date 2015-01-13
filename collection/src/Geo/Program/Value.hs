@@ -28,7 +28,7 @@ data Value k s
       ( [Value k s] -> Eval k s (Value k s) )
 
 data Type = BooleanT | NumberT
-          | PointT | LineT | CircleT
+          | PointT | LineT | CircleT | AngleT
           | FunctionT Type [Type]
     deriving (Eq)
 

@@ -23,20 +23,24 @@ import Control.Monad.State
 import Control.Applicative
 
 
+-- | from a value representation to a type representation       
 typeOf v = case v of
     Boolean {} -> BooleanT
     Number {} -> NumberT
     Point {} -> PointT
     Line {} -> LineT
     Circle {} -> CircleT
+    Angle {} -> AngleT
     Function res args _ -> FunctionT res args
 
+-- | from abstract syntax to type representation    
 liftT t = case t of
     G.Boolean -> BooleanT
     G.Number -> NumberT
     G.Point -> PointT
     G.Line -> LineT
     G.Circle -> CircleT
+    G.Angle -> AngleT
 
 getType (G.Typed t n) = liftT t
 getName (G.Typed t n) = n
@@ -95,11 +99,13 @@ curry3 f a b c = f (a,b,c)
 decl :: (Ord n, ToDoc n, ToDoc d, Domain s d, ToDoc s)
         => Env n d s -> G.Decl n -> Eval d s (Env n d s)
 
+-- this is the case where we introduce a free object     
 decl env (G.Decl tn Nothing Nothing) = do
     v <- case getType tn of
       NumberT -> Number <$> number
       PointT -> curry Point <$> number <*> number
       LineT -> curry3 Line  <$> number <*> number <*> number
+      AngleT -> curry Angle <$> number <*> number
       t -> rej $ vcat
           [ text "cannot declare unknown of type" <+> toDoc t ]
     return $ M.insert (getName tn) v env

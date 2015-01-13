@@ -19,7 +19,7 @@ data Typed v = Typed Type v
 data Decl v = Decl (Typed v) (Maybe [ Typed v ]) (Maybe (Exp v ))
     deriving Typeable
 
-data Type = Boolean | Number | Point | Line | Circle
+data Type = Boolean | Number | Point | Line | Circle | Angle
     deriving Typeable
 
 a = mknullary "a" ; b = mknullary "b" ; c = mknullary "c"
