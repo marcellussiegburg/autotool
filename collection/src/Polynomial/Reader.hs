@@ -7,7 +7,7 @@ import Polynomial.Class
 import qualified Prelude
 import Prelude ( return, ($), Eq, Ord, read )
 
-import Polynomial.Data
+import Polynomial.Common
 
 import Autolib.Reader
 import Control.Applicative ((<$>),(<*>))

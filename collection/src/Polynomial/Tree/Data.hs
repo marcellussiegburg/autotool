@@ -15,16 +15,14 @@ import Control.Lens
 
 import qualified Data.IntMap.Strict as M
 
-import Test.Hspec.Core.Runner ( hspec )
-
 data Poly r v
-   = Zero
-   | Number ! r  -- ^ nonzero
+   = Zero -- ^ can only occur at the very top (no subtree is Zero)
+   | Number ! r  -- ^ must be nonzero
    | Branch ! v ! (M.IntMap (Poly r v))
      -- ^ the key is the exponent.
    -- variables in the subtrees are smaller than variable in root.
     -- Not all variables have to be present on each path  (BDD-like).
-     -- A must contain the variable non-trivially
+     -- A Branch must contain the variable non-trivially
     -- (Branch v (M.singleton 0 _)) is forbidden 
    deriving (Eq )
 
@@ -32,8 +30,7 @@ valid p = case p of
   Zero -> True
   Number r -> r /= zero
   Branch v m ->
-       not (M.null m)
-    && not (any null $ M.elems m)
+       not (any null $ M.elems m)
     && not (M.null $ M.delete 0 m) -- ^ variable must occur nontrivially   
     && all ( \ q -> case q of
                 Branch w _ -> v > w ; Number _ -> True
@@ -73,6 +70,16 @@ terms p = case p of
     (e, q) <- M.toDescList m
     (c, m) <- terms q
     return (c, monoMult m $ mono [ factor v e | e > 0 ] )
+
+splitLeading p = case p of
+  Zero -> Nothing
+  Number r -> return (( r, mono [] ), Zero )
+  Branch v m -> do 
+    ((e,q), m') <- M.maxViewWithKey m
+    ((c,l),r) <- splitLeading q
+    return ( (c, monoMult l $ mono [ factor v e ])
+           , branch v $ M.insert e r m'
+           )  
 
 -- | TODO: make more efficient (if needed)
 -- by storing this value in the nodes
@@ -134,9 +141,3 @@ instance (Ord v , Ring r) => Normalize_Fraction (Poly r v) where
       else if p == q then one :% one
       else p :% q
 
--- | this is generic (and should be in a different module)
-poly :: (Ring r, Ord v) => [ Term r v ] -> Poly r v
-poly cms = foldl (+) zero
-    $ Prelude.map ( \ (c,m) -> monomial m c ) cms
-
-splitAbsolute p = ( absolute p, p - constant (absolute p))

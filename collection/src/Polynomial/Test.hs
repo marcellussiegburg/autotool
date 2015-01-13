@@ -8,7 +8,7 @@ import qualified Prelude
 import Prelude hiding ( Num (..), Integer, null, negate, fromInteger)
 
 import Polynomial.Class 
-import Polynomial.Data
+import Polynomial.Common
 import Polynomial.ToDoc
 
 import Test.SmallCheck.Series
@@ -21,6 +21,16 @@ import Test.Hspec.SmallCheck
 
 test d = spec d
        $ ring_spec (undefined :: Poly Integer Identifier)
+
+leading_spec (_ :: Poly r v) = describe "leading" $ do
+  it "valid" $ property $ \ p ->
+    case splitLeading (p :: Poly r v) of
+      Nothing -> null p
+      Just ((c,m), q) -> valid q
+  it "sum" $ property $ \ p ->
+    case splitLeading (p :: Poly r v) of
+      Nothing -> null p
+      Just ((c,m), q) -> monomial m c + q == p
 
 valid_spec (_ :: Poly r v) = describe "valid" $ do
   it "poly" $ property $ \ p -> valid (p :: Poly r v)

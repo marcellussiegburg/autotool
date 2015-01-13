@@ -1,10 +1,11 @@
 module Polynomial.Data
 
-( Poly , poly, terms, nterms
-, constant, variable, absolute, splitAbsolute, null, divF
-, Mono, mono , nullMono, factors
+( Poly , terms, nterms
+, constant, variable, absolute, null, divF
+, Mono, mono, monomial , nullMono, factors
 , Factor, expo, var, factor
 , Expo
+, splitLeading
 , valid
 )
        
