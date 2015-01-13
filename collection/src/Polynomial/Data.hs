@@ -23,5 +23,3 @@ import Polynomial.Tree.Data
 -- import Polynomial.List.Data
 -- import Polynomial.List.Op
 
-
-  
