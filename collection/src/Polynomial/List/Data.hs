@@ -28,7 +28,7 @@ $(makeLenses ''Mono)
 instance NFData v => NFData (Mono v) where
   rnf m = rnf (_total_degree m ) `seq` rnf ( _unMono m ) `seq` ()
 
-factors m = m ^. unMono
+factors m = map (\(v,e) -> factor v e) $ m ^. unMono
 
 mono :: [Factor v] -> Mono v
 mono fs = Mono
@@ -59,3 +59,10 @@ null p = Prelude.null $ p ^. unPoly
 terms p = map ( \(m,c) -> (c,m) ) $ p ^. unPoly
 nterms p = length $ p ^. unPoly
 
+
+valid p = monotone (p ^. unPoly )
+  && all (monotone .  _unMono . fst ) (p ^. unPoly )
+  && all (\ (m,c) -> c /= zero ) (p ^. unPoly)
+
+monotone kvs = and $
+  zipWith ( \ (k1,v1) (k2, v2) -> k1 > k2 ) kvs ( drop 1 kvs )

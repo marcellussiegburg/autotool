@@ -30,7 +30,7 @@ intersection_point [ Line(a1,a2,a3), Line(b1,b2,b3) ] = do
   let d = a1*b2 - b1*a2
       d1 = a3 *b2 - b3*a2
       d2 = a1*b3 - b1*a3
-  add_ndg d -- actually, the denominator
+  add_ndg d -- actually, the numerator
   return $ Point(negate d1 / d, negate d2 / d)
 
 ortho_line [ Point(p1,p2), Line(a1,a2,a3)] = do
