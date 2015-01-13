@@ -5,14 +5,23 @@ module Polynomial.Data
 , Mono, mono , nullMono, factors
 , Factor, expo, var, factor
 , Expo
+, valid
 )
        
 where
 
-import qualified Prelude  
+import qualified Prelude
 
-import Polynomial.Map.Data
-import Polynomial.Map.Op
+-- pick one implementation:
+
+import Polynomial.Base
+import Polynomial.Tree.Data
+
+-- import Polynomial.Map.Data
+-- import Polynomial.Map.Op
 
 -- import Polynomial.List.Data
 -- import Polynomial.List.Op
+
+
+  

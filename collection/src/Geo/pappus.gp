@@ -1,7 +1,7 @@
 { Point a = Point (0,0);
   Point b ;
   Point c = varpoint (a, b, fresh() ) ;
-  Point x ; 
+  Point x ;
   Point y ;
   Point z = varpoint (x, y, fresh() ) ;
   Point p = intersection_point (pp_line(a,y),pp_line(b,x));
