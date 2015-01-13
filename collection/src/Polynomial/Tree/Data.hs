@@ -125,9 +125,14 @@ instance ( Ring r, Ord v) => Ring (Poly r v) where
               return (c+d, f*g)
           (Number r, Number s) -> number $ r * s  
 
-instance Normalize_Fraction (Poly r v) where
-    -- RISKY?
-    (%) = (:%)
+
+-- note: this is not at all normalizing
+-- (we should compute GCD, but do not)
+instance (Ord v , Ring r) => Normalize_Fraction (Poly r v) where
+    p % q =
+      if p == zero then zero :% one
+      else if p == q then one :% one
+      else p :% q
 
 -- | this is generic (and should be in a different module)
 poly :: (Ring r, Ord v) => [ Term r v ] -> Poly r v
