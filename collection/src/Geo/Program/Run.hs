@@ -24,14 +24,14 @@ concrete
   :: ( RandomGen g, ToDoc g )
      => g 
      -> Exp Identifier
-     -> Reporter ( Value Rational g , [ Rational ] )
+     -> Reporter ( Value Rational g , [ (Kind,Rational) ] )
 concrete g p = do
   evalStateT ( runWriterT (eval std p) ) g 
     
 symbolic
   :: Exp Identifier
      -> Reporter ( Value (Ratio (Poly Integer Identifier)) Int,
-                   [ Ratio (Poly Integer Identifier) ] )
+                   [ (Kind,Ratio (Poly Integer Identifier)) ] )
 symbolic p = do
   evalStateT ( runWriterT (eval std p) ) 0  
 

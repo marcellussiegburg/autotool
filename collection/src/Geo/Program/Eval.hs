@@ -85,23 +85,28 @@ eval env exp = informed exp $ case exp of
     G.Parens exp -> eval env exp
     G.Oper x op y -> oper env x op y
     G.Apply f args -> apply env f args
-    G.Block decls result -> block env decls result
+    G.Block stmts result -> block env stmts result
 
-block env decls result = do
-    env' <- foldM decl env decls
+block env stmts result = do
+    env' <- foldM statement env stmts
     eval env' result
 
 curry3 f a b c = f (a,b,c)
 
--- | process a declaration.
+-- | process a statement (declaration or emission)
 -- return the new environment
 -- (where the declared name is bound).
 
-decl :: (Ord n, ToDoc n, ToDoc d, Domain s d, ToDoc s)
-        => Env n d s -> G.Decl n -> Eval d s (Env n d s)
+statement :: (Ord n, ToDoc n, ToDoc d, Domain s d, ToDoc s)
+        => Env n d s -> G.Statement n -> Eval d s (Env n d s)
+
+statement env (G.Emit k exp) = do
+    Number p <- assert_type NumberT $ eval env exp
+    tell [ (k, p) ]
+    return env
 
 -- this is the case where we introduce a free object     
-decl env (G.Decl tn Nothing Nothing) = do
+statement env (G.Decl tn Nothing Nothing) = do
     v <- case getType tn of
       NumberT -> Number <$> number
       PointT -> curry Point <$> number <*> number
@@ -111,11 +116,11 @@ decl env (G.Decl tn Nothing Nothing) = do
           [ text "cannot declare unknown of type" <+> toDoc t ]
     return $ M.insert (getName tn) v env
 
-decl env (G.Decl tn Nothing (Just b)) = do
+statement env (G.Decl tn Nothing (Just b)) = do
     v <- assert_type (getType tn) $ eval env b
     return $ M.insert (getName tn) v env
 
-decl env (G.Decl tn (Just args) (Just b)) = do
+statement env (G.Decl tn (Just args) (Just b)) = do
     let v = Function (getType tn) (map getType args)
           $ \ xs -> let env' = M.union (mkEnv $ zip (map getName args) xs) env
                     in  eval env' b    

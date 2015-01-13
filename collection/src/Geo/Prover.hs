@@ -39,7 +39,7 @@ handle p = do
   case out of
     Just (val, dgc) -> do
       print $ vcat [ text "value" <+> toDoc val
-               , text "degeneracy conditions" <+> toDoc dgc
+               , text "trace" <+> toDoc dgc
                ]  
 
   putStrLn "symbolic evaluation (polynomials)"
@@ -49,7 +49,7 @@ handle p = do
   case out of
     Just (val, dgc) -> do
       print $ vcat [ text "value" <+> toDoc val
-               , text "degeneracy conditions" <+> toDoc dgc
+               , text "trace" <+> toDoc dgc
                ]  
 
 instance ToDoc StdGen 

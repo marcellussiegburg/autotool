@@ -4,6 +4,8 @@ module Geo.Program.Value where
 
 import Geo.Domain
 
+import Geo.Program.AST (Kind (..))
+
 import Control.Monad.Writer
 import Control.Monad.State
 import Autolib.Reporter
@@ -37,12 +39,17 @@ type Env n d s = M.Map n (Value d s)
 
 -- | the evaluation monad:
 -- name supply
--- accumulate non-degeneracy conditions
+-- accumulate non-degeneracy conditions, preconditions, and claims
 -- tracing
 -- failure (e.g., variable not bound, type error)
-type Eval k s v = WriterT [ k ] (StateT s  Reporter ) v
 
-add_ndg k = tell [k]
+
+
+type Trace k = [(Kind, k)]
+
+type Eval k s v = WriterT (Trace k) (StateT s  Reporter ) v
+
+add_ndg k = tell [(Prohibit, k)]
 
 number :: Domain s d => Eval d s d
 number = do
@@ -54,4 +61,4 @@ number = do
 -- Note: deriving for Value creates a bogus ToDoc s constraint
 -- (a Function cannot be printed)
 
-derives [makeToDoc] [''Value,''Type]
+derives [makeToDoc] [''Value,''Type ]

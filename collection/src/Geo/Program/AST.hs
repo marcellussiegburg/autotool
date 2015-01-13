@@ -15,17 +15,22 @@ data Exp v
      | Oper (Exp v) Op (Exp v)
      | Parens (Exp v)  
      | Apply (Exp v) [ Exp v ]
-     | Block [ Decl v ] ( Exp  v )
+     | Block [ Statement v ] ( Exp  v )
     deriving Typeable
 
 data Typed v = Typed Type v
     deriving Typeable
              
-data Decl v = Decl (Typed v) (Maybe [ Typed v ]) (Maybe (Exp v ))
+data Statement v
+       = Decl (Typed v) (Maybe [ Typed v ]) (Maybe (Exp v ))
+       | Emit Kind (Exp v)
     deriving Typeable
 
 data Type = Boolean | Number | Point | Line | Circle | Angle
     deriving Typeable
+
+data Kind = Prohibit | Assume | Claim
+   deriving Typeable
 
 a = mknullary "a" ; b = mknullary "b" ; c = mknullary "c"
 
