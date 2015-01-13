@@ -71,9 +71,14 @@ msort xs =
   let (lo,hi) = splitAt (Prelude.div (length xs) 2) xs
   in  merge (msort lo) (msort hi)
 
+{-# inlineable merge #-}
+
 merge xs ys = mergeWith (+) xs ys
 
 -- | largest comes first
+
+{-# inlineable mergeWith #-}
+
 mergeWith f [] ys = ys ; mergeWith f xs [] = xs
 mergeWith f (x:xs) (y:ys) = case compare (fst x) (fst y) of
   GT -> x : mergeWith f xs (y:ys)

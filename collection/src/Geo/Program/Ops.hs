@@ -51,7 +51,7 @@ ortho_line [ Point(p1,p2), Line(a1,a2,a3)] = do
 
 -- | the line through p, parallel to a
 par_line [ Point (p1,p2), Line (a1,a2,a3)] = do
-  return $ Line ( a1,a2, - a2*p1 + a2*p2)
+  return $ Line ( a1,a2, - (a1*p1 + a2*p2))
 
 -- | a point on the line through a and b.
 -- choice of parameters: 1 => a, 0 => b.

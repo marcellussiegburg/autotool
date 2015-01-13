@@ -33,7 +33,7 @@ data Type = Void | Boolean | Number | Point | Line | Circle | Angle
     deriving Typeable
 
 data Kind = Prohibit | Assume | Claim
-   deriving Typeable
+   deriving (Typeable, Eq)
 
 a = mknullary "a" ; b = mknullary "b" ; c = mknullary "c"
 
