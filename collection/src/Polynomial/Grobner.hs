@@ -70,3 +70,9 @@ b2 = read "[ a * x - y^2, a * y - z^2, a * z - x^2 ]"
 b3 :: [ Poly Integer Identifier ]
 b3 = read "[ x^2+y+z-3, x+y^2+z-3, x+y+z^2-3 ]"
  
+b5 :: [ Poly Integer Identifier ]
+b5 = [ read "w + x + y +z"
+     , read "w*x + x*y + y*z + z*w"
+     , read "w*x*y + x*y*z + y*z*w + z*w*x"
+     , read "w*x*y*z - 1"
+     ]  
