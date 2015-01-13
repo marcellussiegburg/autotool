@@ -20,21 +20,14 @@ import Autolib.TES.Identifier -- for specializations
 
 -- * factors (for lack of a better name) like "x^5"
 
-data Factor v = Factor { _var :: ! v, _expo :: ! Integer } 
-    deriving (Typeable)
+type Expo = Int
+
+data Factor v = Factor { _var :: ! v, _expo :: ! Expo } 
+    deriving (Typeable, Eq, Ord)
 
 factor v e = Factor { _var = v, _expo = e }
 
 $(makeLenses ''Factor)
-
-instance Eq v => Eq (Factor v) where
-  {-# specialize instance Eq (Factor Identifier) #-}
-  (==) = (==) `on` ( \ f -> ( _var f, _expo f ) )
-
-instance Ord v => Ord (Factor v) where
-  {-# specialize instance Ord (Factor Identifier) #-}
-  compare = compare `on` ( \ f -> ( _var f, _expo f ) )
-
 
 -- * monomials like "x^5 z^2"
 
@@ -42,51 +35,25 @@ instance Ord v => Ord (Factor v) where
 -- implementation note: total_degree comes first,
 -- and this is used in the derived Ord instance
 -- (which then gives graded-lexicographic)
-data Mono v = Mono { _total_degree :: ! Integer
-                   , _unMono :: ! ( M.Map v Integer )
+data Mono v = Mono { _total_degree :: ! Expo
+                   , _unMono :: ! [ (v, Expo ) ]
                    }
-    deriving (Typeable)
+    deriving (Typeable, Eq, Ord)
 
 $(makeLenses ''Mono)
 
-instance Eq v => Eq (Mono v) where
-  {-# specialize instance Eq (Mono Identifier) #-}
-  (==) x y = {-# SCC "instance-Eq-Mono" #-}
-    ((==) `on` ( \ m -> ( _total_degree m , _unMono m ))) x y
-
-instance Ord v => Ord (Mono v) where
-  {-# specialize instance Ord (Mono Identifier) #-}
-  compare x y = {-# SCC "instance-Ord-Mono" #-}
-    -- (compare `on` ( \ m -> ( _total_degree m , _unMono m ))) x y
-    case compare (_total_degree x) (_total_degree y) of
-      EQ -> compare (_unMono x) (_unMono y)
-      c -> c
-
-type instance IxValue (Mono v) = Integer
-type instance Index (Mono v)  = v
-instance Ord v => Ixed (Mono v) where 
-    ix k = unMono  . ix k 
-
-nullMono m = M.null $ m ^. unMono
-
-divMono :: Ord v => Mono v -> Mono v -> Mono v
-divMono m n =
-    let d = M.unionWith (+) (m ^. unMono)
-          $ M.map negate (n ^. unMono)
-    in  if M.null $ M.filter (< 0) d
-        then mono $ map (\(k,v) -> Factor k v) $ M.toList d
-        else error "Polynomial.data.divMono: exponent<0"
+nullMono m = Prelude.null $ m ^. unMono
 
 mono :: Ord v => [Factor v] -> Mono v
 mono fs = Mono 
-    { _unMono = M.filter (/= 0) $ M.fromListWith (+) $ do 
+    { _unMono = filter ( (/= 0) . snd ) $ do 
         f <- fs 
         return (f ^. var , f ^. expo )
     , _total_degree = sum $ map ( ^. expo ) fs
     }
 
-factors :: Mono v -> [ (v,Integer) ]
-factors m =  M.toList $ m ^. unMono
+factors :: Mono v -> [ (v,Expo) ]
+factors m =  m ^. unMono
 
 -- * polynomials
 
@@ -115,7 +82,7 @@ terms p = do (m,c) <- M.toList $ p ^. unPoly ; return (c,m)
 
 nterms p = M.size $ p ^. unPoly
 
-variable v = poly [(1, mono [ Factor {_var=v, _expo=1 } ])]
+variable v = poly [(1, mono [ factor v 1 ])]
 constant c = poly [(c, mono[])]
 
 absolute p = M.findWithDefault zero ( mono [] ) $ p ^. unPoly
