@@ -23,7 +23,8 @@ data Value k s
     | Number k  
     | Point (k,k)
     | Line (k,k,k)
-    | Circle (k,k,k,k)  
+    | Circle (k,k,k,k)
+    | Angle (k,k)  
     | Function Type [ Type ]
       ( [Value k s] -> Eval k s (Value k s) )
 

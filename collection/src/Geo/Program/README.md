@@ -32,3 +32,12 @@ decl env (G.Decl tn Nothing Nothing) = ...
 
 * implement basic (built-in) operations that use the type (Geo.Program.Ops)
 
+angle_sum [Angle(v1,v2), Angle(w1,w2)] = do
+  return $ Angle ( v1*w2 + v2*w1, v2*w2 - v1*w1 )
+
+* make them known in the standard environment (Geo.Program.Ops)
+
+std = ...
+  , ( mk 0 "angle_sum", Function AngleT [ AngleT, AngleT ] angle_sum )
+
+
