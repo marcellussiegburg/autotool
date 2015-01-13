@@ -11,8 +11,8 @@ where
 
 import qualified Prelude  
 
-import Polynomial.Map.Data
-import Polynomial.Map.Op
+-- import Polynomial.Map.Data
+-- import Polynomial.Map.Op
 
--- import Polynomial.List.Data
--- import Polynomial.List.Op
+import Polynomial.List.Data
+import Polynomial.List.Op
