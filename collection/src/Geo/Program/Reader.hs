@@ -5,16 +5,28 @@ module Geo.Program.Reader where
 import Geo.Program.AST
 
 import Autolib.Reader hiding ((<|>), many)
+import Text.Parsec.Expr
 import Control.Applicative hiding ( Const )
 
 instance (Reader v) => Reader (Exp v) where
-    reader = Const <$> reader
+    reader = buildExpressionParser
+        [ [ binary "*" Multiply , binary "/" Divide ]
+        , [ binary "+" Add , binary "-" Subtract ]
+        ] atomic
+
+binary name op = 
+    Infix ( my_reservedOp name *> return ( \ l r -> Oper l op r ) ) AssocLeft
+
+atomic :: Reader v => Parser (Exp v)
+atomic =     my_parens ( Parens <$> reader )
+         <|> Const <$> reader
          <|> my_braces ( Block <$> many (reader <* my_semi)
                          <*> (my_reserved "return" *> reader <* my_semi ))
          <|> do
              f <- reader
              curried_args <- many $ my_parens (my_commaSep reader)
              return $ foldl ( \ f a -> Apply f a ) (Ref f) curried_args
+
 
 derives [makeReader] [''Type]
 

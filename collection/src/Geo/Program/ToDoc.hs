@@ -6,10 +6,16 @@ import Geo.Program.AST
 
 import Autolib.ToDoc
 
+instance ToDoc Op where
+    toDoc op = case op of
+      Add -> text "+" ; Subtract -> text "-" ; Multiply -> text "*" ; Divide -> text "/"
+
 instance (ToDoc v) => ToDoc (Exp v) where
     toDoc e = case e of
         Const i -> toDoc i
         Ref n -> toDoc n
+        Oper x op y -> fsep [ toDoc x, toDoc op, toDoc y ]
+        Parens e -> parens $ toDoc e
         Apply f args ->
             toDoc f <+> dutch_tuple ( map toDoc args )
         Block decls val ->

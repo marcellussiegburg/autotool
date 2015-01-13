@@ -47,7 +47,7 @@ intersection_point [ Line(a1,a2,a3), Line(b1,b2,b3) ] = do
 
 -- | the line through p, perpendicular to a
 ortho_line [ Point(p1,p2), Line(a1,a2,a3)] = do
-  return $ Line ( a1, - a2, a2*p2 - a2*p1) 
+  return $ Line ( a2, - a1, a1*p2 - a2*p1) 
 
 -- | the line through p, parallel to a
 par_line [ Point (p1,p2), Line (a1,a2,a3)] = do
@@ -142,8 +142,6 @@ radical_axis [Circle(c1,c2,c3,c4),Circle(d1,d2,d3,d4)] = do
 
 -- *      /* generic code */
 
--- missing
-   
 std :: Domain s d => Env Identifier d s
 std = M.fromList
   [ ( mk 0 "fresh", Function NumberT [] $ \ _ -> Number <$> number )

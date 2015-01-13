@@ -6,9 +6,14 @@ import Data.Typeable
 
 import Autolib.TES.Identifier
 
+data Op = Add | Subtract | Multiply | Divide
+    deriving ( Typeable, Eq )
+
 data Exp v
      = Ref v
-     | Const Integer  
+     | Const Integer
+     | Oper (Exp v) Op (Exp v)
+     | Parens (Exp v)  
      | Apply (Exp v) [ Exp v ]
      | Block [ Decl v ] ( Exp  v )
     deriving Typeable
