@@ -117,7 +117,7 @@ inter_poly int t = explained t $ case t of
         Just fun -> do
             let syn = length args
             void $ sequence $ do 
-                (c,m) <- P.terms fun ; (P.X i,e) <- P.factors m 
+                (c,m) <- P.terms fun ; f  <- P.factors m ; let P.X i = f ^. P.var
                 return $ when ( i < 1 || i > syn ) $ reject $ vcat 
                     [ text "interpretation of symbol" <+> toDoc f
                     , text "uses non-existing argument" <+> toDoc (P.X i)
