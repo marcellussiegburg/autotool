@@ -85,28 +85,31 @@ eval env exp = informed exp $ case exp of
     G.Parens exp -> eval env exp
     G.Oper x op y -> oper env x op y
     G.Apply f args -> apply env f args
-    G.Block stmts result -> block env stmts result
+    G.Block stmts -> block env stmts
 
-block env stmts result = do
-    env' <- foldM statement env stmts
-    eval env' result
+block env [] = return Void
+block env (this : later) = case this of
+    G.Emit k exp -> do
+      Boolean p <- assert_type BooleanT $ eval env exp
+      tell [ (k, p) ]
+      block env later
+    G.Return exp -> do
+      eval env exp
+    G.Decl {} -> do
+      env' <- decl env this
+      block env' later
 
 curry3 f a b c = f (a,b,c)
 
--- | process a statement (declaration or emission)
+-- | process a declaration,
 -- return the new environment
 -- (where the declared name is bound).
 
-statement :: (Ord n, ToDoc n, ToDoc d, Domain s d, ToDoc s)
+decl :: (Ord n, ToDoc n, ToDoc d, Domain s d, ToDoc s)
         => Env n d s -> G.Statement n -> Eval d s (Env n d s)
 
-statement env (G.Emit k exp) = do
-    Number p <- assert_type NumberT $ eval env exp
-    tell [ (k, p) ]
-    return env
-
 -- this is the case where we introduce a free object     
-statement env (G.Decl tn Nothing Nothing) = do
+decl env (G.Decl tn Nothing Nothing) = do
     v <- case getType tn of
       NumberT -> Number <$> number
       PointT -> curry Point <$> number <*> number
@@ -116,11 +119,11 @@ statement env (G.Decl tn Nothing Nothing) = do
           [ text "cannot declare unknown of type" <+> toDoc t ]
     return $ M.insert (getName tn) v env
 
-statement env (G.Decl tn Nothing (Just b)) = do
+decl env (G.Decl tn Nothing (Just b)) = do
     v <- assert_type (getType tn) $ eval env b
     return $ M.insert (getName tn) v env
 
-statement env (G.Decl tn (Just args) (Just b)) = do
+decl env (G.Decl tn (Just args) (Just b)) = do
     let v = Function (getType tn) (map getType args)
           $ \ xs -> let env' = M.union (mkEnv $ zip (map getName args) xs) env
                     in  eval env' b    

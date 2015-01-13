@@ -21,7 +21,8 @@ import qualified Data.Map.Strict as M
 --  Circle c :== [c0,c1,c2,c3] <=> c0*(x^2+y^2)+c1*x+c2*y+c3 = 0
 
 data Value k s
-    = Boolean k -- ^ property is true iff k == 0
+    = Void
+    | Boolean k -- ^ property is true iff k == 0
     | Number k  
     | Point (k,k)
     | Line (k,k,k)
@@ -30,7 +31,7 @@ data Value k s
     | Function Type [ Type ]
       ( [Value k s] -> Eval k s (Value k s) )
 
-data Type = BooleanT | NumberT
+data Type = VoidT | BooleanT | NumberT
           | PointT | LineT | CircleT | AngleT
           | FunctionT Type [Type]
     deriving (Eq)

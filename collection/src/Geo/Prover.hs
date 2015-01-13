@@ -5,6 +5,7 @@
 {-# language OverloadedStrings #-}
 
 import Geo.Program.Type
+import Geo.Program.Reader (program)
 
 import qualified Geo.Program.Run
 
@@ -22,10 +23,10 @@ main = do
   (f, s) <- case args of
     [] -> ("stdin",) <$> getContents
     [f] -> (f,) <$> readFile f
-  let p = parse (reader :: Parser (Exp Identifier)) f s
+  let p = parse (program <* eof ) f s
   case p of
        Left e -> error $ show e
-       Right x -> handle x
+       Right x -> handle $ Block x
 
 handle p = do
   putStrLn "input program"

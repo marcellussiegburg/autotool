@@ -15,8 +15,10 @@ data Exp v
      | Oper (Exp v) Op (Exp v)
      | Parens (Exp v)  
      | Apply (Exp v) [ Exp v ]
-     | Block [ Statement v ] ( Exp  v )
+     | Block (Program v)
     deriving Typeable
+
+type Program v = [ Statement v ] 
 
 data Typed v = Typed Type v
     deriving Typeable
@@ -24,9 +26,10 @@ data Typed v = Typed Type v
 data Statement v
        = Decl (Typed v) (Maybe [ Typed v ]) (Maybe (Exp v ))
        | Emit Kind (Exp v)
+       | Return (Exp v)  
     deriving Typeable
 
-data Type = Boolean | Number | Point | Line | Circle | Angle
+data Type = Void | Boolean | Number | Point | Line | Circle | Angle
     deriving Typeable
 
 data Kind = Prohibit | Assume | Claim
@@ -40,6 +43,7 @@ exp0 = Block
           (Just $ Apply (Ref $ mk 0 "bisector") [ Ref a, Ref b ])
    , Decl (Typed Line (mk 0 "ma")) Nothing
           (Just $ Apply (Ref $ mk 0 "bisector") [ Ref b, Ref c ])
-   ] (Apply (Ref $ mk 0 "intersection")
+   , Return  (Apply (Ref $ mk 0 "intersection")
          [ Ref (mk 0 "mc"), Ref (mk 0 "ma") ] )
+   ]  
    

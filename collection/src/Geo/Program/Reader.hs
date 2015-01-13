@@ -20,18 +20,23 @@ binary name op =
 
 atomic =     my_parens ( Parens <$> reader )
          <|> Const <$> reader
-         <|> my_braces ( Block <$> many (reader <* my_semi)
-                         <*> (my_reserved "return" *> reader <* my_semi ))
+         <|> my_braces ( Block <$> program )
          <|> do
              f <- reader
              curried_args <- many $ my_parens (my_commaSep reader)
              return $ foldl ( \ f a -> Apply f a ) (Ref f) curried_args
 
+program :: Reader v => Parser (Program v)
+program = many reader
 
 derives [makeReader] [''Type]
 
 instance (Reader v) => Reader (Statement v) where
-    reader = declare <|> emit
+    reader = statement <* my_semi
+
+statement = declare
+        <|> ( Emit <$> reader <*> reader )
+        <|> ( Return <$> (my_reserved "return" *> reader ))
 
 declare = do
         tn <- reader
@@ -39,8 +44,6 @@ declare = do
           <|> ( do fps <- my_parens ( my_commaSep reader ) ; b <- reader ; return $ Decl tn (Just fps) (Just b) )
           <|> ( return $ Decl tn Nothing Nothing )
 
-emit = Emit <$> reader <*> reader
-  
 
 instance Reader v => Reader (Typed v) where
     reader = Typed <$> reader <*> reader

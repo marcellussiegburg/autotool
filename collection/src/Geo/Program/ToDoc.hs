@@ -19,10 +19,9 @@ instance (ToDoc v) => ToDoc (Exp v) where
         Parens e -> parens $ toDoc e
         Apply f args ->
             toDoc f <+> dutch_tuple ( map toDoc args )
-        Block stmts val ->
+        Block stmts ->
           braces $ align $ vcat $ map (\ d -> d <> text ";" ) 
                 $ map toDoc stmts
-            ++ [ text "return" <+> toDoc val ]
 
 derives [makeToDoc] [''Type]
 
@@ -34,6 +33,7 @@ instance (ToDoc v) => ToDoc (Statement v) where
     toDoc (Decl f Nothing Nothing) =
       toDoc f 
     toDoc (Emit k e) = toDoc k <+> toDoc e
+    toDoc (Return e) = text "return" <+> toDoc e
 
 instance ToDoc v => ToDoc (Typed v) where
     toDoc (Typed t v) = toDoc t <+> toDoc v
