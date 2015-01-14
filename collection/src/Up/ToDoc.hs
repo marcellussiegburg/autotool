@@ -54,8 +54,8 @@ instance ToDoc Exp where
 
 instance Show Exp where show = render . toDoc
 
-parens' = dutch_tuple
-braces' = dutch_set
+parens' = flowing_dutch (text "{", text ",", text "}" )
+braces' = flowing_dutch (text "{", empty   , text "}" )
 
 
 
