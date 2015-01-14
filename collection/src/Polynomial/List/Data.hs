@@ -19,7 +19,7 @@ import Control.DeepSeq
 data Poly r v = Poly { unPoly :: ! [ (Mono v, r) ]
                      , absolute :: ! r
                      }
-    deriving ( Eq, Typeable )
+    deriving ( Eq, Ord, Typeable )
 
 
 constant :: (Ord v, Ring r) => r -> Poly r v

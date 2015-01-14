@@ -24,7 +24,7 @@ data Poly r v
     -- Not all variables have to be present on each path  (BDD-like).
      -- A Branch must contain the variable non-trivially
     -- (Branch v (M.singleton 0 _)) is forbidden 
-   deriving (Eq )
+   deriving (Eq, Ord )
 
 valid p = case p of
   Zero -> True

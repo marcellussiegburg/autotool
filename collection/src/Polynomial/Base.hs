@@ -17,7 +17,7 @@ import Data.Typeable
 import Control.Lens
 
 import Control.Monad 
-
+import Data.Function (on)
 
 type Expo = Int
 
@@ -35,6 +35,12 @@ data Mono v = Mono { _total_degree :: ! Expo
 
 $(makeLenses ''Mono)
 
+{-
+instance Ord v => Ord (Mono v) where
+  compare = compare `on` \ m ->
+    (m^.total_degree, over (mapped . _2) negate $ m ^. unMono)
+-}
+
 factors m = map ( \ (v,e) -> factor v e ) $ m ^. unMono
 
 mono :: Ord v => [Factor v] -> Mono v
@@ -51,7 +57,7 @@ monoFromDecreasing fs = Mono
 
 nullMono m = Prelude.null $ m ^. unMono
 
--- | return the quotiont if it exists
+-- | return the quotient if it exists
 divMono :: Ord v => Mono v -> Mono v -> Maybe (Mono v)
 divMono m1 m2 = do
   let d = merge (m1 ^. unMono)
@@ -61,7 +67,7 @@ divMono m1 m2 = do
 
 lcmMono :: Ord v => Mono v -> Mono v -> Mono v
 lcmMono m1 m2 = 
-  let d = mergeWith max (m1 ^. unMono) (m2 ^. unMono)
+  let d = mergeDescWith max (m1 ^. unMono) (m2 ^. unMono)
   in  monoFromDecreasing $ map (uncurry factor) d
 
 type Term r v = (r, Mono v)
@@ -73,19 +79,34 @@ msort xs =
 
 {-# inlineable merge #-}
 
-merge xs ys = mergeWith (+) xs ys
+merge xs ys = mergeDesc xs ys
+
+mergeDesc xs ys = mergeDescWith (+) xs ys
+mergeAsc xs ys = mergeAscWith (+) xs ys
 
 -- | largest comes first
 
-{-# inlineable mergeWith #-}
+{-# inlineable mergeDescWith #-}
 
-mergeWith f [] ys = ys ; mergeWith f xs [] = xs
-mergeWith f (x:xs) (y:ys) = case compare (fst x) (fst y) of
-  GT -> x : mergeWith f xs (y:ys)
-  LT -> y : mergeWith f (x:xs) ys
+mergeDescWith f [] ys = ys
+mergeDescWith f xs [] = xs
+mergeDescWith f (x:xs) (y:ys) = case compare (fst x) (fst y) of
+  GT -> x : mergeDescWith f xs (y:ys)
+  LT -> y : mergeDescWith f (x:xs) ys
   EQ -> let v = f (snd x) (snd y)
-        in  if v == zero then mergeWith f xs ys
-            else (fst x, v) : mergeWith f xs ys 
+        in  if v == zero then mergeDescWith f xs ys
+            else (fst x, v) : mergeDescWith f xs ys 
+
+{-# inlineable mergeAscWith #-}
+
+mergeAscWith f [] ys = ys
+mergeAscWith f xs [] = xs
+mergeAscWith f (x:xs) (y:ys) = case compare (fst x) (fst y) of
+  LT -> x : mergeAscWith f xs (y:ys)
+  GT -> y : mergeAscWith f (x:xs) ys
+  EQ -> let v = f (snd x) (snd y)
+        in  if v == zero then mergeAscWith f xs ys
+            else (fst x, v) : mergeAscWith f xs ys 
 
 monoMult p q = Mono 
     { _unMono = merge (p ^. unMono) (q ^. unMono) 

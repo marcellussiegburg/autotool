@@ -9,10 +9,13 @@ import Prelude
 import Polynomial.Class
 import Polynomial.Type
 
+import Control.Applicative
+import qualified Data.Set as S
 import Control.Monad
 import Data.Monoid
 import Data.List ( inits, tails )
 import Data.Maybe
+import System.IO
 
 -- | reduce  polynomial g  w.r.t.  polynomials in f.
 -- the leading term of the result
@@ -48,17 +51,44 @@ spoly g h = do
 
 -- | Computes a Grober basis for the ideal of fs.
 -- Uses the term ordering that is implicit in splitLeading.
+-- always reduce a pair that has low lm (?)
+--  http://arxiv.org/abs/1206.6940
 buchberger fs =
-  let handle done [] = done
-      handle done ((g,h):odo) = case spoly g h of
-        Nothing -> handle done odo
-        Just s ->
-          let r = reduce done s
-          in  if null r
-              then handle done odo
-              else handle (r : done)
-                   $ map (,r) done ++ odo        
-  in handle fs $ do g : hs <- tails fs ; map (g,) hs
+  let handle done todo = case S.minView todo of
+        Nothing -> done
+        Just ((_,(g,h)), odo) -> case spoly g h of
+          Nothing -> handle done odo
+          Just s ->
+            let r = reduce done s
+            in  if null r
+                then handle done odo
+                else handle (r : done)
+                   $ S.union odo
+                   $ S.fromList $ map (pair r) done
+      pair g h = (lcmMono <$> (lt g) <*> (lt h), (g,h))
+  in handle fs $ S.fromList
+               $ do g : hs <- tails fs
+                    map (pair g) hs
+
+buchbergerIO fs = do
+  let pair g h = (lcmMono <$> (lt g) <*> (lt h), (g,h))
+  let handle done todo = do
+        putStr $ show (length done, S.size todo)
+        hFlush stdout
+        case S.minView todo of
+         Nothing -> return done
+         Just ((_,(g,h)), odo) -> case spoly g h of
+          Nothing -> handle done odo
+          Just s -> do
+            let r = reduce done s
+            if null r
+                then handle done odo
+                else handle (r : done)
+                   $ S.union odo
+                   $ S.fromList $ map (pair r) done
+  handle fs $ S.fromList
+               $ do g : hs <- tails fs
+                    map (pair g) hs
 
 for = flip map
 
@@ -76,3 +106,11 @@ b5 = [ read "w + x + y +z"
      , read "w*x*y + x*y*z + y*z*w + z*w*x"
      , read "w*x*y*z - 1"
      ]  
+
+-- | http://www.sagemath.org/doc/reference/polynomial_rings/sage/rings/polynomial/multi_polynomial_ideal_libsingular.html
+
+s1 :: [ Poly Integer Identifier ]
+s1 = read " [ x^5 + y^4 + z^3 - 1,  x^3 + y^3 + z^2 - 1 ] "
+
+s2 :: [ Poly Integer Identifier ]
+s2 = read " [x^2 - 2*y^2, x*y - 3] "
