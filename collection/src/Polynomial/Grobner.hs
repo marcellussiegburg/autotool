@@ -83,7 +83,7 @@ buchbergerIO fs = do
             let r = reduce done s
             if null r
                 then handle done odo
-                else handle (r : done)
+                else handle (done ++ [r])
                    $ S.union odo
                    $ S.fromList $ map (pair r) done
   handle fs $ S.fromList

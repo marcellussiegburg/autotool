@@ -91,7 +91,7 @@ block env [] = return Void
 block env (this : later) = case this of
     G.Emit k exp -> do
       Boolean p <- assert_type BooleanT $ eval env exp
-      tell [ (k, p) ]
+      tell [ Message {kind=k,contents=p, reason= toDoc exp} ]
       block env later
     G.Return exp -> do
       eval env exp
@@ -100,6 +100,7 @@ block env (this : later) = case this of
       block env' later
 
 curry3 f a b c = f (a,b,c)
+curry4 f a b c d = f (a,b,c,d)
 
 -- | process a declaration,
 -- return the new environment
@@ -114,6 +115,7 @@ decl env (G.Decl tn Nothing Nothing) = do
       NumberT -> Number <$> number
       PointT -> curry Point <$> number <*> number
       LineT -> curry3 Line  <$> number <*> number <*> number
+      CircleT -> curry4 Circle  <$> number <*> number <*> number <*> number
       AngleT -> curry Angle <$> number <*> number
       t -> rej $ vcat
           [ text "cannot declare unknown of type" <+> toDoc t ]
@@ -144,7 +146,7 @@ oper env x op y = do
     Number ny <- assert_type NumberT $ eval env y
     let f = case op of
           G.Add -> (+) ; G.Subtract -> (-) ; G.Multiply -> (*) ; G.Divide -> (/)
-    when ( op == G.Divide ) $ add_ndg ny
+    when ( op == G.Divide ) $ add_ndg ny $ toDoc $ G.Oper x op y
     return $ Number $ f nx ny
 
 -- | apply function to arguments

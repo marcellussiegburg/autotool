@@ -1,6 +1,9 @@
 {-# language NoMonomorphismRestriction #-}
 
-module Polynomial.List.Op where
+module Polynomial.List.Op
+( module Polynomial.List.Data
+, module Polynomial.List.Op
+) where
 
 import Polynomial.List.Data
 

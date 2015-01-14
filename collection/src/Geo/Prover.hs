@@ -6,6 +6,7 @@
 {-# language RebindableSyntax #-}
 
 import Geo.Program.Type
+import Geo.Program.Value (Message (..),Trace)
 import Geo.Program.Reader (program)
 
 import qualified Geo.Program.Run
@@ -88,9 +89,9 @@ prove trace = do
 
 instance ToDoc StdGen 
 
-collect :: Kind -> [(Kind,Ratio p)] -> [p]
+collect :: Kind -> Trace (Ratio p) -> [p]
 collect k trace = do
-  (k', p :% q ) <- trace
+  Message {kind = k',contents= p :% q } <- trace
   guard $ k == k'
   return p
   
