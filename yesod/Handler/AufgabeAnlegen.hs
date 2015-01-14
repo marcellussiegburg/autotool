@@ -22,7 +22,13 @@ getAufgabeAnlegenR = postAufgabeAnlegenR
 
 postAufgabeAnlegenR :: GruppeId -> Handler Html
 postAufgabeAnlegenR gruppe = do
-  let ziel = AufgabeAnlegenR gruppe
+  aufgabeTemplate (Left gruppe) Nothing
+
+aufgabeTemplate :: Either GruppeId AufgabeId -> Maybe (Maybe ServerUrl, Maybe AufgabeTyp, Maybe AufgabeFormDaten, Maybe (Maybe VorlageName), Maybe AufgabeKonfiguration) -> Handler Html
+aufgabeTemplate eid maufgabe = do
+  let ziel = case eid of
+               Left gruppe -> AufgabeAnlegenR gruppe
+               Right aufgabe -> AufgabeBearbeitenR aufgabe
       maufgabenstellung = Nothing :: Maybe Text
       mhinweis = Nothing :: Maybe Text
       mbewertung = Nothing :: Maybe Text
@@ -47,7 +53,7 @@ postAufgabeAnlegenR gruppe = do
   ((typResult, _), _) <- runFormPost $ typForm aufgabenTypen "" Nothing
   ((einstellungenResult, _), _) <- runFormPost $ aufgabeForm "" "" Nothing
   ((vorlageResult, _), _) <- runFormPost $ vorlagenForm vorlagen "" "" undefined Nothing
-  ((konfigurationResult, _), _) <- runFormPost $ konfigurationForm (undefined :: Text) "" "" undefined undefined Nothing
+  ((konfigurationResult, _), _) <- runFormPost $ konfigurationForm (undefined :: Text) eid "" "" undefined undefined Nothing
   ((hochladenResult, _), _) <- runFormPost $ hochladenForm "" "" undefined undefined undefined
   ((testenResult, _), _) <- runFormPost $ testenForm (undefined :: Text) "" "" undefined undefined "" Nothing
 
@@ -62,14 +68,16 @@ postAufgabeAnlegenR gruppe = do
       return $ do {_ <- a; _ <- b; _ <- c; _ <- d; _ <- e; f}
   let (mserver', mtyp', meinstellungen', mvorlage', mkonfiguration', mtesten) = fromTuple6 $ either id id eingaben
       (mserver'', mtyp'', meinstellungen'', mvorlage'', mkonfiguration'', mhochladen) = fromTuple6 $ either id id hochladen
-      (mserver, mtyp, meinstellungen, mvorlage, mkonfiguration) = case mserver'' of
-        Nothing -> (mserver', mtyp', meinstellungen', mvorlage', mkonfiguration')
-        Just _ -> (mserver'', mtyp'', meinstellungen'', mvorlage'', mkonfiguration'')
+      (mserver, mtyp, meinstellungen, mvorlage, mkonfiguration) = case maufgabe of
+        Just aufgabe -> aufgabe
+        Nothing -> case mserver'' of
+          Nothing -> (mserver', mtyp', meinstellungen', mvorlage', mkonfiguration')
+          Just _ -> (mserver'', mtyp'', meinstellungen'', mvorlage'', mkonfiguration'')
   let getServerForm ms = getForm ServerForm ziel [] $ serverForm ms
       getTypForm s mt = getForm AufgabeTypForm ziel [] $ typForm aufgabenTypen s mt
       getAufgabeForm s t ma = getForm AufgabeForm ziel [] $ aufgabeForm s t ma
       getVorlagenForm s t a mv = getForm VorlagenForm ziel [("class", "form-inline")] $ vorlagenForm vorlagen s t a mv
-      getKonfigurationForm s t a v mk = getForm KonfigurationForm ziel [] $ konfigurationForm ktyp s t a v mk
+      getKonfigurationForm s t a v mk = getForm KonfigurationForm ziel [] $ konfigurationForm ktyp eid s t a v mk
       getHochladenForm s t a v k = getForm HochladenForm ziel [] $ hochladenForm s t a v k
       getTestenForm s t a v k ml = getForm TestenForm ziel [] $ testenForm atyp s t a v k ml
   forms <- sequence $ concat $ fmap maybeToList

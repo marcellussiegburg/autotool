@@ -23,6 +23,7 @@ library
                      Handler.Aufgabe
                      Handler.Aufgabe.Forms
                      Handler.AufgabeAnlegen
+                     Handler.AufgabeBearbeiten
                      Handler.AufgabeEinstellungen
                      Handler.AufgabeKonfiguration
                      Handler.Aufgaben

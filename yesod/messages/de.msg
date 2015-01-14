@@ -4,6 +4,7 @@ Anzeigen: Anzeigen
 Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
 AufgabeAufgabe: Aufgabenstellung
+AufgabeBearbeiten: Aufgabe bearbeiten
 AufgabeBearbeitungszeit: Bearbeitungszeit
 AufgabeBeginnDatum: Bearbeitungsbeginn der Aufgabe (Datum)
 AufgabeBeginnZeit: Bearbeitungsbeginn der Aufgabe (Uhrzeit)

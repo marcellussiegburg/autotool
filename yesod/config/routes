@@ -27,7 +27,8 @@
 /gruppe/#GruppeId/tutoren TutorenR GET POST
 /gruppe/#GruppeId/aufgaben AufgabenR GET
 /gruppe/#GruppeId/aufgaben/aktuell AufgabenAktuellR GET
-/aufgabe/#AufgabeId AufgabeR GET POST
+/aufgabe/#AufgabeId AufgabeBearbeitenR GET POST
+/aufgabe/#AufgabeId/einsendung AufgabeR GET POST
 /aufgabe/#AufgabeId/statistik StatistikR GET POST
 
 /servers ServersR GET POST

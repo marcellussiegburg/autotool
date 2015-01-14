@@ -76,7 +76,7 @@
     <ul .dropdown-menu>
       <li .dropdown-header>Aufgabenname
       <li>
-        <a href=#>_{MsgBearbeiten}
+        <a href=@{AufgabeBearbeitenR 1}>_{MsgBearbeiten}
       <li>
         <a href=@{AufgabeR 1}>_{MsgLösen}
       <li>
