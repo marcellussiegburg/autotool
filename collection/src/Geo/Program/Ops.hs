@@ -98,7 +98,7 @@ eq_dist [a,b,c,d] = do
 -- *  /* ======= angles ====== */
 
 l2_angle [Line(g1,g2,g3), Line (h1,h2,h3)] = do
-  return $ Angle ( g1*h2 - g2*h1 , g1*h1+g2*h2 )
+  return $ Angle ( g1*h2 - g2*h1 , g1*h1 + g2*h2 )
 
 eq_angle [Angle(a1,a2), Angle (b1,b2)] = do
   return $ Boolean $ a1*b2 - b2*a1       
@@ -111,7 +111,7 @@ angle_sum [Angle(v1,v2), Angle(w1,w2)] = do
 -- | the circle with center m and point a on circumference
 pc_circle [Point(m1,m2),Point(a1,a2)] = do
   return $ Circle (1, -2 * m1, -2 * m2
-                  ,a1*(2*m1 - a1) + a2*(2*m2-a2) )
+                  ,a1*(2*m1 - a1) + a2*(2*m2 - a2) )
 
 circle_center [Circle (c1,c2,c3,c4)] = do
   add_ndg c1

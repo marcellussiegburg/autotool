@@ -100,6 +100,7 @@ block env (this : later) = case this of
       block env' later
 
 curry3 f a b c = f (a,b,c)
+curry4 f a b c d = f (a,b,c,d)
 
 -- | process a declaration,
 -- return the new environment
@@ -114,6 +115,7 @@ decl env (G.Decl tn Nothing Nothing) = do
       NumberT -> Number <$> number
       PointT -> curry Point <$> number <*> number
       LineT -> curry3 Line  <$> number <*> number <*> number
+      CircleT -> curry4 Circle  <$> number <*> number <*> number <*> number
       AngleT -> curry Angle <$> number <*> number
       t -> rej $ vcat
           [ text "cannot declare unknown of type" <+> toDoc t ]
