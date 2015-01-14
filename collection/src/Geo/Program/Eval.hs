@@ -91,7 +91,7 @@ block env [] = return Void
 block env (this : later) = case this of
     G.Emit k exp -> do
       Boolean p <- assert_type BooleanT $ eval env exp
-      tell [ (k, p) ]
+      tell [ Message {kind=k,contents=p, reason= toDoc exp} ]
       block env later
     G.Return exp -> do
       eval env exp
@@ -146,7 +146,7 @@ oper env x op y = do
     Number ny <- assert_type NumberT $ eval env y
     let f = case op of
           G.Add -> (+) ; G.Subtract -> (-) ; G.Multiply -> (*) ; G.Divide -> (/)
-    when ( op == G.Divide ) $ add_ndg ny
+    when ( op == G.Divide ) $ add_ndg ny $ toDoc $ G.Oper x op y
     return $ Number $ f nx ny
 
 -- | apply function to arguments

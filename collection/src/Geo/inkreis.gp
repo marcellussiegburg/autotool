@@ -35,6 +35,6 @@ Circle In = pc_circle (I,pedalpoint (I, pp_line(A,B)));
 
 Claim eq_dist (I,pedalpoint (I, pp_line(A,B)), I, pedalpoint (I, pp_line(B,C)));
 
--- Claim is_cl_tangent (In,pp_line(A,B));
--- Claim is_cl_tangent (In,pp_line(B,C));
--- Claim is_cl_tangent (In,pp_line(C,A));
+Claim is_cl_tangent (In,pp_line(A,B));
+Claim is_cl_tangent (In,pp_line(B,C));
+Claim is_cl_tangent (In,pp_line(C,A));

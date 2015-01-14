@@ -11,7 +11,7 @@ import Polynomial.Class
 import Geo.Domain
 import Geo.Program.Value
 import Autolib.TES.Identifier (mk, Identifier)
-
+import Autolib.ToDoc
 import qualified Data.Map.Strict as M
 import Control.Applicative
 
@@ -42,7 +42,7 @@ intersection_point [ Line(a1,a2,a3), Line(b1,b2,b3) ] = do
   let d = a1*b2 - b1*a2
       d1 = a3 *b2 - b3*a2
       d2 = a1*b3 - b1*a3
-  add_ndg d -- actually, the numerator
+  add_ndg d $ text "intersection_point"
   return $ Point( - d1 / d, - d2 / d)
 
 -- | the line through p, perpendicular to a
@@ -101,7 +101,7 @@ l2_angle [Line(g1,g2,g3), Line (h1,h2,h3)] = do
   return $ Angle ( g1*h2 - g2*h1 , g1*h1 + g2*h2 )
 
 eq_angle [Angle(a1,a2), Angle (b1,b2)] = do
-  return $ Boolean $ a1*b2 - b2*a1       
+  return $ Boolean $ a1*b2 - a2*b1 
 
 angle_sum [Angle(v1,v2), Angle(w1,w2)] = do
   return $ Angle ( v1*w2 + v2*w1, v2*w2 - v1*w1 )
@@ -114,11 +114,11 @@ pc_circle [Point(m1,m2),Point(a1,a2)] = do
                   ,a1*(2*m1 - a1) + a2*(2*m2 - a2) )
 
 circle_center [Circle (c1,c2,c3,c4)] = do
-  add_ndg c1
+  add_ndg c1 $ text "circle_center"
   return $ Point (- c2 / (2 * c1), - c3 / (2 * c1) )
 
 circle_sqradius [Circle (c1,c2,c3,c4)] = do
-  add_ndg c1
+  add_ndg c1 $ text "circle_sqradius"
   return $ Number $ ( c2^2 +c3^2 - 4 * c1*c4) / (2 * c1) ^2
 
 on_circle [Point(p1,p2),Circle(c1,c2,c3,c4)] = do
@@ -128,7 +128,7 @@ on_circle [Point(p1,p2),Circle(c1,c2,c3,c4)] = do
 -- and circumference point A using parameter u
 circle_slider [Point(m1,m2),Point(a1,a2),Number u] = do
   let d = u^2 + 1
-  add_ndg d
+  add_ndg d $ text "circle_slider"
   return $ Point ( (a1*(u^2-1)+ 2*m1+2*(m2-a2)*u) / d
                  , (a2 + 2*(m1-a1)*u + (2*m2-a2)*u^2) / d
                  )

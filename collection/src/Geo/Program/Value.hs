@@ -4,8 +4,6 @@ module Geo.Program.Value where
 
 import Geo.Domain
 
-import Geo.Program.AST (Kind (..))
-
 import Control.Monad.Writer
 import Control.Monad.State
 import Autolib.Reporter
@@ -14,6 +12,10 @@ import Autolib.ToDoc
 import Autolib.TES.Identifier ( mk, Identifier )
 import qualified Data.Map.Strict as M
 
+-- this is bogus: syntax should not be needed to define the semantics domain       
+import Geo.Program.AST (Kind (..), Exp )
+import Geo.Program.ToDoc ()
+       
 
 -- | cf. https://github.com/hg-graebe/GeoProver/blob/master/src/Inline/maxima.inline
 --  Point A :== [a1,a2] <=> A=(a1,a2)
@@ -45,12 +47,14 @@ type Env n d s = M.Map n (Value d s)
 -- failure (e.g., variable not bound, type error)
 
 
+data Message k =
+     Message { kind::Kind, contents::k, reason ::Doc }
 
-type Trace k = [(Kind, k)]
+type Trace k = [ Message k ]
 
 type Eval k s v = WriterT (Trace k) (StateT s  Reporter ) v
 
-add_ndg k = tell [(Prohibit, k)]
+add_ndg k doc = tell [ Message {kind=Prohibit,contents=k, reason=doc} ]
 
 number :: Domain s d => Eval d s d
 number = do
@@ -62,4 +66,4 @@ number = do
 -- Note: deriving for Value creates a bogus ToDoc s constraint
 -- (a Function cannot be printed)
 
-derives [makeToDoc] [''Value,''Type ]
+derives [makeToDoc] [''Value,''Type, ''Message ]
