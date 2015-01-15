@@ -19,11 +19,11 @@
       <li .divider>
       <li>
         <a href=@{SchulenR}>_{MsgSchulen}
-       <li>
+      <li>
         <a href=@{SchuleAnlegenR}>_{MsgSchuleAnlegen}
-       <li>
+      <li>
         <a href=#>_{MsgPersönlicheDaten}
-       <li>
+      <li>
         <a href=#>_{MsgHighscoreAnzeigen}
   <li .dropdown>
     <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgSemester}
@@ -44,6 +44,10 @@
       <li>
         <a href=@{VorlesungR 1}>_{MsgBearbeiten}
       <li>
+        <a href=@{TutorErnennenR 1}>_{MsgTutor}
+      <li>
+        <a href=@{TutorenR 1}>_{MsgTutoren}
+      <li>
         <a href=@{StudentenR 1}>_{MsgStudenten}
       <li>
         <a href=@{ResultateR 1}>_{MsgAlleResultate}
@@ -60,10 +64,6 @@
       <li .dropdown-header>Übungsgruppenname
       <li>
         <a href=@{GruppeR 1}>_{MsgBearbeiten}
-      <li>
-        <a href=@{TutorErnennenR 1}>_{MsgTutor}
-      <li>
-        <a href=@{TutorenR 1}>_{MsgTutoren}
       <li>
         <a href=@{AufgabenR 1}>_{MsgAufgaben}
       <li>

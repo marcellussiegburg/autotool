@@ -1,41 +1,40 @@
-/static StaticR Static getStatic
+/static                                                                           StaticR               Static getStatic
+/favicon.ico                                                                      FaviconR              GET
+/robots.txt                                                                       RobotsR               GET
 
-/favicon.ico FaviconR GET
-/robots.txt RobotsR GET
+/auth                                                                             AuthR                 Auth   getAuth
 
-/auth AuthR Auth getAuth
+/                                                                                 HomeR                 GET    POST
+/schule                                                                           SchuleAnlegenR        GET    POST      !admin
+/schulen                                                                          SchulenR              GET
+/schule/#SchuleId                                                                 SchuleR               GET    POST      !admin
+/schule/#SchuleId/direktoren                                                      DirektorenR           GET    POST      !admin
+/schule/#SchuleId/direktor                                                        DirektorErnennenR     GET    POST      !admin
+/schule/#SchuleId/waisenkinder                                                    WaisenkinderR         GET              !tutor
+/schule/#SchuleId/semesters                                                       SemestersR            GET              !student
+/schule/#SchuleId/semester                                                        SemesterAnlegenR      GET    POST      !direktor
+/semester/#SemesterId                                                             SemesterR             GET    POST      !direktor
+/semester/#SemesterId/vorlesungen                                                 VorlesungenR          GET              !student
+/semester/#SemesterId/vorlesung                                                   VorlesungAnlegenR     GET    POST      !direktor
+/vorlesung/#VorlesungId                                                           VorlesungR            GET    POST      !direktor !tutor
+/vorlesung/#VorlesungId/gruppe                                                    GruppeAnlegenR        GET    POST      !tutor
+/vorlesung/#VorlesungId/gruppen                                                   GruppenR              GET    POST      !student
+/vorlesung/#VorlesungId/studenten                                                 StudentenR            GET              !tutor
+/vorlesung/#VorlesungId/tutor                                                     TutorErnennenR        GET              !direktor
+/vorlesung/#VorlesungId/tutoren                                                   TutorenR              GET    POST      !direktor
+/vorlesung/#VorlesungId/resultate                                                 ResultateR            GET              !tutor
+/vorlesung/#VorlesungId/resultate/pflicht                                         ResultatePflichtR     GET              !tutor
+/gruppe/#GruppeId                                                                 GruppeR               GET    POST      !tutor
+/gruppe/#GruppeId/aufgabe                                                         AufgabeAnlegenR       GET    POST      !tutor
+/gruppe/#GruppeId/aufgaben                                                        AufgabenR             GET              !student
+/gruppe/#GruppeId/aufgaben/aktuell                                                AufgabenAktuellR      GET              !student
+/aufgabe/#AufgabeId                                                               AufgabeBearbeitenR    GET    POST      !tutor
+/aufgabe/#AufgabeId/einsendung                                                    AufgabeR              GET    POST      !student
+/aufgabe/#AufgabeId/statistik                                                     StatistikR            GET    POST      !tutor
+/servers                                                                          ServersR              GET    POST
+/server/#ServerUrl                                                                ServerR               GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp                                            AufgabeVorlagenR      GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp/vorlage/#VorlageName                       AufgabeVorlageR       GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration        AufgabeKonfigurationR GET    POST
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/testen AufgabeTestenR        GET    POST
 
-/ HomeR GET POST
-/schule SchuleAnlegenR GET POST
-/schulen SchulenR GET
-/schule/#SchuleId SchuleR GET POST
-/schule/#SchuleId/direktoren DirektorenR GET POST
-/schule/#SchuleId/direktor DirektorErnennenR GET POST
-/schule/#SchuleId/waisenkinder WaisenkinderR GET
-/schule/#SchuleId/semesters SemestersR GET
-/schule/#SchuleId/semester SemesterAnlegenR GET POST
-/semester/#SemesterId SemesterR GET POST
-/semester/#SemesterId/vorlesungen VorlesungenR GET
-/semester/#SemesterId/vorlesung VorlesungAnlegenR GET POST
-/vorlesung/#VorlesungId VorlesungR GET POST
-/vorlesung/#VorlesungId/gruppe GruppeAnlegenR GET POST
-/vorlesung/#VorlesungId/gruppen GruppenR GET POST
-/vorlesung/#VorlesungId/studenten StudentenR GET
-/vorlesung/#VorlesungId/resultate ResultateR GET
-/vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR GET
-/gruppe/#GruppeId GruppeR GET POST
-/gruppe/#GruppeId/aufgabe AufgabeAnlegenR GET POST
-/gruppe/#GruppeId/tutor TutorErnennenR GET
-/gruppe/#GruppeId/tutoren TutorenR GET POST
-/gruppe/#GruppeId/aufgaben AufgabenR GET
-/gruppe/#GruppeId/aufgaben/aktuell AufgabenAktuellR GET
-/aufgabe/#AufgabeId AufgabeBearbeitenR GET POST
-/aufgabe/#AufgabeId/einsendung AufgabeR GET POST
-/aufgabe/#AufgabeId/statistik StatistikR GET POST
-
-/servers ServersR GET POST
-/server/#ServerUrl ServerR GET
-/server/#ServerUrl/aufgabe/#AufgabeTyp AufgabeVorlagenR GET
-/server/#ServerUrl/aufgabe/#AufgabeTyp/vorlage/#VorlageName AufgabeVorlageR GET
-/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration AufgabeKonfigurationR GET POST
-/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/testen AufgabeTestenR GET POST

@@ -1,14 +1,13 @@
 module Handler.TutorErnennen where
 
 import Import
-import Prelude (undefined)
 import Handler.Tutoren (StudentListe (StudentEintrag))
 
 title :: AutotoolMessage
 title = MsgTutor
 
-getTutorErnennenR :: GruppeId -> Handler Html
-getTutorErnennenR gruppe = do
+getTutorErnennenR :: VorlesungId -> Handler Html
+getTutorErnennenR vorlesung = do
   let studenten = 
         [StudentEintrag 1 "1234" "Mark" "Otto" "mark.otto@schule.de",
          StudentEintrag 10 "2454" "Jacob" "Thornton" "jacob.thornton@schule.de",
@@ -20,5 +19,5 @@ getTutorErnennenR gruppe = do
   defaultLayout $ do
     $(widgetFile "studentenFunktion")
 
-postTutorErnennenR :: GruppeId -> Handler Html
-postTutorErnennenR gruppe = undefined
+postTutorErnennenR :: VorlesungId -> Handler Html
+postTutorErnennenR vorlesung = undefined
