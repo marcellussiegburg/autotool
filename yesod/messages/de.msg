@@ -1,4 +1,5 @@
 AlleResultate: Alle Resultate
+Abmelden: Abmelden
 Anmelden: Anmelden
 Anzeigen: Anzeigen
 Aufgabe: Aufgabe

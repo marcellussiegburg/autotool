@@ -55,6 +55,10 @@ library
                      Handler.Vorlesungen
                      Handler.Waisenkinder
                      Data.Tuple6
+                     Yesod.Auth.Autotool
+                     Yesod.Auth.Autotool.Message
+                     Yesod.Auth.Autotool.Type
+                     Yesod.Auth.Autotool.Widget
                      Yesod.Form.Fields.PreField
                      Yesod.Form.Fields.TreeValueField
 
@@ -107,6 +111,10 @@ library
                  , time
                  , old-locale
                  , blaze-html
+                 , mime-mail
+                 , email-validate
+                 , exceptions
+                 , autotool-db
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)

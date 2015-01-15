@@ -18,6 +18,8 @@ import System.Log.FastLogger (newStdoutLoggerSet, defaultBufSize)
 import Network.Wai.Logger (clockDateCacher)
 import Yesod.Core.Types (loggerSet, Logger (Logger))
 
+import Yesod.Auth (getAuth)
+
 import Handler.Home
 import Handler.Aufgabe
 import Handler.AufgabeAnlegen

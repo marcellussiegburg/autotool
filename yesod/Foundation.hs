@@ -2,6 +2,9 @@ module Foundation where
 
 import Prelude
 import Yesod
+import Yesod.Auth
+import Yesod.Auth.Autotool
+import qualified Yesod.Auth.Message as AM
 import Yesod.Static
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
@@ -17,10 +20,18 @@ import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
+import Data.Maybe (listToMaybe)
 import Data.Time (UTCTime, formatTime)
 import Data.Text (Text)
+import Data.Text.Read (decimal, signed)
 import System.Locale (defaultTimeLocale)
 import Model
+
+import Control.Types
+import qualified Control.Student.DB as StudDB
+import qualified Control.Schule.DB as SchuleDB
+import qualified Control.Student.Type as Student
+import qualified Control.Schule.Typ as Schule
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -48,6 +59,7 @@ instance Yesod Autotool where
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage
+        maid <- maybeAuthId
         lang <- fmap (\langs -> if langs == [] then "de" else head langs) languages
         pc <- widgetToPageContent $ do
             $(combineStylesheets 'StaticR
@@ -94,11 +106,70 @@ instance RenderMessage Autotool FormMessage where
     renderMessage master (_:langs) = renderMessage master langs
     renderMessage _ [] = defaultFormMessage
 
+instance RenderMessage Autotool YesodAuthAutotoolMessage where
+    renderMessage _ ("de":_) = germanAuthAutotoolMessage
+    renderMessage _ ("en":_) = englishAuthAutotoolMessage 
+    renderMessage master (_:langs) = renderMessage master langs
+    renderMessage _ [] = germanAuthAutotoolMessage
+
 instance YesodJquery Autotool where
     urlJqueryJs _ = Left $ StaticR js_jquery_min_js
     urlJqueryUiJs _ = Left $ StaticR js_jquery_ui_min_js
     urlJqueryUiCss _ = Left $ StaticR css_jquery_ui_min_css
     urlJqueryUiDateTimePicker _ = Left $ StaticR js_jquery_ui_datetimepicker_js
+
+instance YesodAuth Autotool where
+    renderAuthMessage _ ("de":_) = AM.germanMessage
+    renderAuthMessage _ ("en":_) = AM.englishMessage 
+    renderAuthMessage master (_:langs) = renderAuthMessage master langs
+    renderAuthMessage _ [] = AM.defaultMessage
+    type AuthId Autotool = Int
+    -- Where to send a user after successful login
+    loginDest _ = SchulenR
+    -- Where to send a user after logout
+    logoutDest _ = SchulenR
+    getAuthId creds = liftIO $ do
+      case signed decimal $ credsIdent creds of
+        Right (s, "") -> do
+          x <- StudDB.get_snr $ SNr s
+          case x of
+            [_] -> return $ Just $ s
+            _ -> return $ Nothing
+        _ -> return Nothing
+{-
+        x <- getBy $ UniqueUser $ credsIdent creds
+        case x of
+            Just (Entity uid _) -> return $ Just uid
+            Nothing -> do
+                fmap Just $ insert User
+                    { userIdent = credsIdent creds
+                    , userPassword = Nothing
+                    }-}
+    maybeAuthId = do
+      ms <- lookupSession credsKey
+      case ms of
+        Nothing -> return Nothing
+        Just session ->
+            case fromPathPiece session of
+              Nothing -> return Nothing
+              Just s -> do
+                mstud <- liftIO $ StudDB.get_snr $ SNr s
+                case mstud of
+                  [stud] -> return $ Just s
+                  _ -> return Nothing
+    authPlugins _ = [authAutotool $ Nothing] --authBrowserId def]
+    authHttpManager = httpManager
+
+instance YesodAuthAutotool Autotool where
+   type AuthSchool = UNr
+   type AuthStudent = MNr
+   getStudentByMNr u m = liftIO $ StudDB.get_unr_mnr (u, m)
+   getStudentByAuthStudent u m = liftIO $ StudDB.get_unr_mnr (u, m)
+   getSchools = liftIO SchuleDB.get
+   getSchool = maybe (return Nothing) $ \u' -> liftIO $ SchuleDB.get_unr u' >>= return . listToMaybe
+   toSchool u' = liftIO $ SchuleDB.get_unr (UNr u') >>= return . listToMaybe
+   studentToAuthStudent = return . Student.mnr
+   schoolToAuthSchool = return . Schule.unr
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
