@@ -14,11 +14,12 @@ import Data.Generics.Schemes
 import Data.Data
 import Data.Typeable
 
-import Test.QuickCheck as Q
-import Data.DeriveTH
-import Control.Applicative
+-- import Test.QuickCheck as Q
+-- import Data.DeriveTH
 
 import Test.SmallCheck.Series as S
+import Control.Applicative
+
 import Data.Generics
 
 instance Size Block where 
@@ -71,7 +72,9 @@ instance Monad m => Serial m Block where
     series = cons1 Block
 
 -- * also not nice:
-    
+
+{-    
+
 instance Arbitrary Name where
   arbitrary =
     ( \ ( Q.Positive i ) -> Name $ "a" ++ show (i::Int) )
@@ -82,3 +85,5 @@ derive makeArbitrary ''TypedName
 derive makeArbitrary ''Statement
 derive makeArbitrary ''Block
 derive makeArbitrary ''Exp
+
+-}

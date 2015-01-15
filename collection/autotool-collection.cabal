@@ -321,7 +321,10 @@ Library
                  Rewriting.Abstract.Fixed,
                  Rewriting.Abstract.Quiz,
                  Polynomial.Class,
+                 Polynomial.Base,
                  Polynomial.Data
+                 Polynomial.Common
+                 Polynomial.Tree.Data
                  Polynomial.Map.Data
                  Polynomial.Map.Op
                  Polynomial.List.Data
