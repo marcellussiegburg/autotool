@@ -18,10 +18,10 @@ import Polynomial.Base
 
 -- pick one implementation:
 
--- import Polynomial.Tree.Data
+import Polynomial.Tree.Data
 
 -- import Polynomial.Map.Data
 -- import Polynomial.Map.Op
 
-import Polynomial.List.Op
+-- import Polynomial.List.Op
 
