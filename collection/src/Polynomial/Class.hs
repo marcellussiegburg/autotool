@@ -34,6 +34,8 @@ class Prelude.Eq r => Ring r where
     one :: r
     (*) :: r -> r -> r
     fromInteger :: Prelude.Integer -> r
+    -- | this does not really belong here. it is used just for printing (the "-" sign)
+    negative :: r -> Prelude.Bool
 
 associative f a b c = f (f a b) c == f a (f b c)
 commutative f a b = f a b == f b a
@@ -84,12 +86,14 @@ instance Ring Integer where
     zero = 0; (+) = (Prelude.+) ; negate = Prelude.negate 
     one = 1 ; (*) = (Prelude.*)
     fromInteger i = i
+    negative = (< 0)
 
 instance Ring Int where
     zero = 0; (+) = (Prelude.+) ; negate = Prelude.negate 
     one = 1 ; (*) = (Prelude.*)
     fromInteger i = Prelude.fromInteger i
-
+    negative = (< 0)
+    
 data Ratio z = z :% z 
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 
@@ -104,10 +108,12 @@ instance (Serial m z, Ring z, Normalize_Fraction z )
 
 type Rational = Ratio Integer
 
-instance ToDoc z => ToDoc (Ratio z) where
-    toDoc (a :% b) = parens $ hsep [ toDoc a, text ":%", toDoc b ]
-instance (Normalize_Fraction z, Reader z) => Reader (Ratio z) where
-    reader = my_parens $ (%) <$> reader <* my_reservedOp ":%" <*> reader 
+instance (Ring z, ToDoc z) => ToDoc (Ratio z) where
+    toDoc (a :% b) = if b == one then toDoc a else parens $ hsep [ toDoc a, text ":%", toDoc b ]
+
+instance (Ring z, Normalize_Fraction z, Reader z) => Reader (Ratio z) where
+    reader = ( my_parens $ (%) <$> reader <* my_reservedOp ":%" <*> reader )
+        <|>  ( % one ) <$> reader 
 
 class Normalize_Fraction z where
     (%) :: z -> z -> Ratio z
@@ -126,6 +132,7 @@ instance ( Normalize_Fraction z, Ring z )
     one = one % one 
     (a :% b) * (c :% d) = (a * c) % (b * d)
     fromInteger i = fromInteger i % one
+    negative (a :% b) = negative a -- hmpf
 
 data Complex r = r :+ r
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
@@ -137,11 +144,12 @@ instance (Serial m z )
          => Serial m (Complex z) where
     series = (:+) <$> series <~> series
 
-instance ToDoc r => ToDoc (Complex r) where
-    toDoc (a :+ b) = 
+instance (Ring r, ToDoc r) => ToDoc (Complex r) where
+    toDoc (a :+ b) = if b == zero then toDoc a else
         parens $ hsep [ toDoc a, text ":+", toDoc b ]
-instance (Reader r) => Reader (Complex r) where
-    reader = my_parens $ (:+) <$> reader <* my_reservedOp ":+" <*> reader 
+instance (Ring r, Reader r) => Reader (Complex r) where
+    reader = ( my_parens $ (:+) <$> reader <* my_reservedOp ":+" <*> reader )
+        <|>  ( :+ zero ) <$> reader
 
 instance Ring r => Ring ( Complex r ) where
     zero = zero :+ zero

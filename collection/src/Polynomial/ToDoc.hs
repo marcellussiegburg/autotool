@@ -3,6 +3,11 @@
 
 module Polynomial.ToDoc where
 
+import qualified Prelude  
+import Prelude
+  hiding ( Num (..), (^), sum, Integer, Rational, fromInteger)
+import Polynomial.Class
+
 import Polynomial.Data
 import Control.Lens
 import Autolib.ToDoc
@@ -16,18 +21,18 @@ instance ToDoc v => ToDoc (Mono v) where
     toDoc m = hsep $ punctuate (text " *")
               $ map toDoc $ factors m
 
-instance (Num r, Ord r, ToDoc r, ToDoc v, Ord v) 
+instance (Ring r, Ord r, ToDoc r, ToDoc v, Ord v) 
          => ToDoc (Poly r v) where
     toDoc p = case terms p of
         [] -> text "0"
         t : ts -> 
               let term (c,m) = case (c , nullMono m) of
-                      _ | c < 0 -> hsep [ text "-", term (negate c, m) ]
+                      _ | negative c -> hsep [ text "-", term (negate c, m) ]
                       ( _ , True) -> toDoc c
-                      ( _ , False) | c == 1 -> toDoc m
-                      ( _ , False) | c == -1 -> hsep [ text "-", toDoc m ]
+                      ( _ , False) | c == one -> toDoc m
+                      ( _ , False) | c == negate one -> hsep [ text "-", toDoc m ]
                       _ -> hsep [ toDoc c, text "*", toDoc m ]
-              in  hsep $ term t : map ( \ t @(c,m) -> if c < 0 then term t else text "+" <+>  term t) ts
+              in  hsep $ term t : map ( \ t @(c,m) -> if negative c then term t else text "+" <+>  term t) ts
 
 instance ToDoc (Poly r v) => Show (Poly r v) where
     show = render . toDoc 

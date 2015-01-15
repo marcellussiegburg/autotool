@@ -1,5 +1,7 @@
 -- | nested univariate polynomials
 
+{-# language DeriveDataTypeable #-}
+
 module Polynomial.Tree.Data where
 
 import Prelude hiding (Num (..), (/), Integer, map, null)
@@ -24,7 +26,7 @@ data Poly r v
     -- Not all variables have to be present on each path  (BDD-like).
      -- A Branch must contain the variable non-trivially
     -- (Branch v (M.singleton 0 _)) is forbidden 
-   deriving (Eq, Ord )
+   deriving (Typeable, Eq, Ord )
 
 valid p = case p of
   Zero -> True

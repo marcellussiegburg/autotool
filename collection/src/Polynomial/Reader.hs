@@ -46,6 +46,8 @@ instance (Ring r, Reader r, Ord v, Reader v )  => Reader (Poly r v) where
 instance (Ring r, Reader r, Ord v, Reader v )  => Read (Poly r v) where
     readsPrec = parsec_readsPrec
 
+-- | parse polynomial where coefficient domain is ring 
+-- (so we cannot use division, not even for constants)
 buildR e = case e of
     Const c -> return $ constant c
     Fact f -> return $ poly [(one, mono[f])]
@@ -61,8 +63,8 @@ instance (Ord v, Reader v )  => Reader (Poly Rational v) where
 instance (Ord v, Reader v )  => Read (Poly Rational v) where 
     readsPrec = parsec_readsPrec
 
-buildF :: (Ord v -- , NFData v
-          ) => Exp Rational v -> Parser (Poly Rational v)
+-- | parse polynomial where coefficient domain is field
+-- (so we can use division, but only for constants)
 buildF e = case e of
     Const c -> return $ constant c
     Fact f -> return $ poly [(one, mono[f])]
@@ -72,7 +74,7 @@ buildF e = case e of
     Times p q -> (*) <$> buildF p <*> buildF q
     Divide p q -> do
         (a, n) <- splitAbsolute <$> buildF q 
-        if null n then do b <- buildF q ; return $ divF b a
+        if null n then do b <- buildF p ; return $ divF b a
             else Prelude.fail "cannot divide by non-constant"
         
 instance Reader v => Reader (Factor v) where

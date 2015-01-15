@@ -258,6 +258,7 @@ import qualified Lattice.LLL.Task
 import qualified Lattice.LLL.Inverse
 
 import qualified Polynomial.Euclid
+import qualified Polynomial.Task.Ideal
 
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
@@ -711,6 +712,7 @@ tmakers =
                 , item Lattice.LLL.Task.make_fixed
                 , item Lattice.LLL.Inverse.make_fixed
                 , item Lattice.LLL.Inverse.make_quiz
+                , item Polynomial.Task.Ideal.make_fixed  
                 ]
 	  , heading "experimentell"
 	        [ item $ Algebraic2.Central.make Algebraic_Integer

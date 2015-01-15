@@ -72,6 +72,11 @@ instance Dom (U.Poly Rational) where
         , text "norm: degree"
         ]
 
+instance Ring r => Ring (Patch r) where
+   zero = This zero
+   one  = This  one
+   negative _ = False
+
 instance Size (Step r) where size _ = 1
 
 
