@@ -37,3 +37,10 @@ lm p = fst <$> splitLeading p
 -- | reductum
 red p = snd <$> splitLeading p
 
+-- note: this is not at all normalizing
+-- (we should compute GCD, but do not)
+instance (Ord v , Ring r) => Normalize_Fraction (Poly r v) where
+    p % q =
+      if p == zero then zero :% one
+      else if p == q then one :% one
+      else p :% q

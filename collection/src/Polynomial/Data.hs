@@ -30,7 +30,6 @@ import Polynomial.Base
 import Polynomial.List.Op
 
 -- this should also work (keys in the map are sorted)
--- import Polynomial.Map.Data
 -- import Polynomial.Map.Op
 
 -- but this requires extra work, so: DONTUSE

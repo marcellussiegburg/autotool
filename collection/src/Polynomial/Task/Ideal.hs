@@ -10,7 +10,7 @@ module Polynomial.Task.Ideal where
 
 import qualified Prelude  
 import Prelude
-  hiding ( Num (..), (^), sum, Integer, Rational, fromInteger)
+  hiding ( map, Num (..), (^), sum, Integer, Rational, fromInteger)
 
 import Polynomial.Class
 import Polynomial.Type
@@ -41,7 +41,7 @@ instance OrderScore Polynomial_Ideal_Membership where
 
 instance Measure Polynomial_Ideal_Membership ([P], P) [P] where
   measure _ (fs,g) cs =
-    sum $ map (Prelude.fromIntegral . nterms) cs
+    sum $ fmap (Prelude.fromIntegral . nterms) cs
 
 instance Partial Polynomial_Ideal_Membership ([P], P) [P] where
   describe _ (fs,g) = vcat

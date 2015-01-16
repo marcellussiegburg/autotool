@@ -90,9 +90,6 @@ splitLeading p = case unPoly p of
                         _ -> absolute p
                       } )
 
-instance Normalize_Fraction (Poly r v) where
-    -- RISKY?
-    (%) = (:%)
 
 divF :: Field f => Poly f v -> f -> Poly f v
 divF p f =

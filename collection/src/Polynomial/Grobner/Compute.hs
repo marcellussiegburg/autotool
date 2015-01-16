@@ -201,8 +201,7 @@ new_basis :: (ToDoc v, Ord v) => Option -> State v -> Reporter (State v)
 new_basis opt s = do
   info opt $ text "new_basis" <+> toDoc s
   let gee = S.union (g s) (p s)
-  return $ count $  s { g = S.filter ( not . null ) -- WHAT?
-                          $ S.map ( \ h -> normalform (S.delete h gee) h ) gee
+  return $ count $  s { g = S.map ( \ h -> normalform (S.delete h gee) h ) gee
         , b = S.union (b s) $ pairs gee (p s)
         -- r and p not changed?
         }
