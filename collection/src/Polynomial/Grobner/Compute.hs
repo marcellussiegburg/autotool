@@ -21,7 +21,7 @@ http://www.risc.jku.at/Groebner-Bases-Bibliography/details.php?details_id=529
 {-# language TemplateHaskell #-}
 {-# language ScopedTypeVariables #-}
 {-# language DatatypeContexts #-}
-{-# language NoMonomorphismRestriction #-}
+
 
 module Polynomial.Grobner.Compute where
 
@@ -44,7 +44,8 @@ import Data.Function (on)
 import Data.Maybe
 import System.IO
 
--- | Def 6.4   
+-- | Def 6.4
+spolynomial :: (Euclidean_Ring r , Normalize_Fraction r, Ord v) =>  Poly r v -> Poly r v -> Poly r v   
 spolynomial g h = maybe (error "spolynomial") id $ do
   (gc,gm) <- lm g
   (hc,hm) <- lm h
@@ -114,92 +115,103 @@ data (Ord v) => State v = State {
         , r :: S.Set (Poly Integer v)
         -- | and store the resulting reduced polynomials in P
         , p :: S.Set (Poly Integer v)
+        , reduction_count :: Int
          }
 
-terse st = named_dutch_record (text "State")
+oneline = text . unwords . words . show
+     
+terse st = oneline $ named_dutch_record (text "State")
   [ text "step" <+> toDoc (step st)
   , text "g" <+> toDoc (S.size $ g st)
   , text "b" <+> toDoc (S.size $ b st)
     , text "r" <+> toDoc (S.size $ r st)
     , text "p" <+> toDoc (S.size $ p st)
+  , text "reduction_count" <+> toDoc (reduction_count st)
   ]
 
 state0 fs = State
-   { step = 0 , r = S.fromList fs, p = S.empty , g = S.empty , b = S.empty }
+   { step = 0 , r = S.fromList fs, p = S.empty , g = S.empty , b = S.empty, reduction_count = 0 }
 
 count st = st { step = succ $ step st }
+countred st = st { reduction_count = succ $ reduction_count st }
    
 data Option =
      Option { max_steps :: Maybe Int
             , verbose :: Bool
-            , criterion1 :: Bool
-            , criterion2 :: Bool
+            , use_criterion1 :: Bool
+            , use_criterion2 :: Bool
             }
 
-algorithm63 :: (ToDoc v, Ord v) => Option -> [ Poly Integer v ] -> Reporter (State v)
+info opt d = when (verbose opt) $ inform d     
+     
+algorithm63 :: (ToDoc v, Ord v) => Option -> [ Poly Integer v ] -> Reporter [Poly Integer v]
 algorithm63 opt (fs :: [Poly Integer v]) = do
-  let work s = do
-        inform $ text "work" <+> toDoc s
+  let w_nb_ra s = do reduce_all opt s >>= new_basis opt >>= work
+      work s = do
+        inform $ text "work" <+> if verbose opt then toDoc s else terse s
         case S.minView (b s) of
-          Nothing -> do
-            return s
-          Just ((f1,f2),b') -> do
+          Just ((f1,f2),b') | not (criterion2 (f1,f2)) -> do
             let h = normalform (g s) $ spolynomial f1 f2
             if null h
             then work $ count $ s { b = b' }
             else do
-              let (g0, g1) = S.partition ( \ g -> lt g <= lt h ) (g s)
-                  s' = count
+              let (g0, g1) = S.partition ( \ g -> (lt g :: Maybe (Mono v)) <= lt h ) (g s)
+              w_nb_ra $ count
                      $ s
                        { r = g0 , p = S.singleton h , g = g1
                        , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) b'
                        }
-              s0 <- reduce_all s'
-              s1 <-  new_basis s0
-              work s1
-  s0 <- reduce_all (state0 fs)
-  s1 <- new_basis s0
-  work s1
+          _ -> do
+            return $ S.toList $ g s
+  w_nb_ra $ state0 fs
 
-new_basis :: (ToDoc v, Ord v) => State v -> Reporter (State v)
-new_basis s = do
-  inform $ text "new_basis" <+> toDoc s
+criterion2 (f1,f2) = 
+  let Just m1 = lt f1 ; Just m2 = lt f2 in  lcmMono m1 m2 == multMono m1 m2
+  
+new_basis :: (ToDoc v, Ord v) => Option -> State v -> Reporter (State v)
+new_basis opt s = do
+  info opt $ text "new_basis" <+> toDoc s
   let gee = S.union (g s) (p s)
   return $ count $  s { g = S.map ( \ h -> normalform (S.delete h gee) h ) gee
         , b = S.union (b s) $ pairs gee (p s)
         -- r and p not changed?
         }
 
-reduce_all :: (ToDoc v, Ord v) => State v -> Reporter (State v)  
-reduce_all s = do
-  inform $ text "reduce_all" <+> toDoc s
+reduce_all :: (ToDoc v, Ord v) => Option -> State v -> Reporter (State v)  
+reduce_all opt (s :: State v) = do
+  info opt $ text "reduce_all" <+> toDoc s
   case S.minView (r s) of
      Nothing -> return s
      Just (h0 , r') -> do
        let h = normalform (S.union (g s) (p s)) h0
        if  null h
-       then reduce_all $ count $ s { r = r' }
+       then reduce_all opt $ count $ s { r = r' }
        else do
-         let (g0,g1) = S.partition (\ g -> lt h <= lt g ) (g s)
-             (p0,p1) = S.partition (\ p -> lt h <= lt p ) (p s)
-         reduce_all $ count
+         let (g0,g1) = S.partition (\ g -> (lt h :: Maybe (Mono v)) <= lt g ) (g s)
+             (p0,p1) = S.partition (\ p -> (lt h :: Maybe (Mono v)) <= lt p ) (p s)
+         reduce_all opt $ count
                     $ s { g = g1, p = S.insert h p1, r = S.unions [ g0, p0, r s ]
                        , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) (b s)
                       }
   
   
 buchbergerIO fs = do
-   let (res,msg :: Doc) = export $ algorithm62 $ S.fromList fs
+   let (res,msg :: Doc) = export
+           --  $ algorithm62 
+           $ algorithm63 ( Option { verbose = False } )
+           $ fs
    print msg
    case res of
        Just g -> return g
   
-for = flip fmap
+for f xs = flip fmap f xs
 
 splits xs = zip (inits xs) (tails xs)
 
 derives [makeToDoc] [''State]
 
+s1 :: [ Poly Integer Identifier ]
+s1 = read " [ x^5 , x-1 ] "
 
 b2 :: [ Poly Integer Identifier ]
 b2 = read "[ a * x - y^2, a * y - z^2, a * z - x^2 ]"
@@ -214,6 +226,7 @@ b5 = [ read "w + x + y +z"
      , read "w*x*y*z - 1"
      ]  
 
-s1 :: [ Poly Integer Identifier ]
-s1 = read " [ x^5 , x-1 ] "
+ex66 :: [ Poly Integer Identifier ]
+ex66 = read "[ x^3*y*z - x*z^2 , x*y^2*z-x*y*z, x^2*y^2-z^2 ]"
+
 
