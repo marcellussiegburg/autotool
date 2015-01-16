@@ -16,12 +16,26 @@ import qualified Prelude
 import Polynomial.Base
 
 
--- pick one implementation:
+-- pick one implementation.
 
--- import Polynomial.Tree.Data
+       
+-- WARNING:
+-- the ordering on terms is defined in Polynomial.Base.
+-- the implementation of  splitLeading  (in ...Op)
+-- must be compatible with that definition,
+-- else all the Grobner stuff will break.
 
+-- an implementation that works automagically
+-- (because it keeps lists sorted w.r.t. that order)   
+import Polynomial.List.Op
+
+-- this should also work (keys in the map are sorted)
 -- import Polynomial.Map.Data
 -- import Polynomial.Map.Op
 
-import Polynomial.List.Op
+-- but this requires extra work, so: DONTUSE
+-- import Polynomial.Tree.Data
+
+
+
 

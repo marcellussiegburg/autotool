@@ -92,7 +92,7 @@ pairs ps qs = S.fromList $ do
     return $ pair p q
 
 -- | algorithm 6.2 (straightforward computation, inefficient)
-algorithm62 f = do
+algorithm62 fs = do
   let work (g,b) = case S.minView b of
           Nothing -> return g
           Just ((f1,f2), b' ) -> do
@@ -102,6 +102,7 @@ algorithm62 f = do
               if  null h'
               then work (g, b')
               else work (S.insert h' g, S.union b' $ pairs (S.singleton h') g )
+  let f = S.fromList fs
   work (f, pairs f f)
 
   
@@ -150,18 +151,23 @@ algorithm63 opt (fs :: [Poly Integer v]) = do
       work s = do
         inform $ text "work" <+> if verbose opt then toDoc s else terse s
         case S.minView (b s) of
-          Just ((f1,f2),b') | not (criterion2 (f1,f2)) -> do
+          Just ((f1,f2),b') -> do
+            info opt $ text "(f1,f2) =" <+> toDoc (f1,f2)
             let h = normalform (g s) $ spolynomial f1 f2
-            if null h
-            then work $ count $ s { b = b' }
+            if  criterion2 (f1,f2)
+              || null h -- lazily! evaluate criteria first
+            then do
+              info opt $ text "is trivial"
+              work $ count $ s { b = b' }
             else do
-              let (g0, g1) = S.partition ( \ g -> (lt g :: Maybe (Mono v)) <= lt h ) (g s)
+              info opt $ text "h =" <+> toDoc h
+              let (g0, g1) = S.partition ( \ g -> (lt h :: Maybe (Mono v)) <= lt g ) (g s)
               w_nb_ra $ count
                      $ s
                        { r = g0 , p = S.singleton h , g = g1
                        , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) b'
                        }
-          _ -> do
+          Nothing -> do
             return $ S.toList $ g s
   w_nb_ra $ state0 fs
 
@@ -172,7 +178,8 @@ new_basis :: (ToDoc v, Ord v) => Option -> State v -> Reporter (State v)
 new_basis opt s = do
   info opt $ text "new_basis" <+> toDoc s
   let gee = S.union (g s) (p s)
-  return $ count $  s { g = S.map ( \ h -> normalform (S.delete h gee) h ) gee
+  return $ count $  s { g = S.filter ( not . null ) -- WHAT?
+                          $ S.map ( \ h -> normalform (S.delete h gee) h ) gee
         , b = S.union (b s) $ pairs gee (p s)
         -- r and p not changed?
         }
@@ -184,20 +191,22 @@ reduce_all opt (s :: State v) = do
      Nothing -> return s
      Just (h0 , r') -> do
        let h = normalform (S.union (g s) (p s)) h0
+       info opt $ text "inside:" <+> vcat [ text "h0 =" <+> toDoc h0 , text "h =" <+> toDoc h ]
        if  null h
-       then reduce_all opt $ count $ s { r = r' }
+       then do
+         reduce_all opt $ count $ s { r = r' }
        else do
          let (g0,g1) = S.partition (\ g -> (lt h :: Maybe (Mono v)) <= lt g ) (g s)
              (p0,p1) = S.partition (\ p -> (lt h :: Maybe (Mono v)) <= lt p ) (p s)
          reduce_all opt $ count
-                    $ s { g = g1, p = S.insert h p1, r = S.unions [ g0, p0, r s ]
+                    $ s { g = g1, p = S.insert h p1, r = S.unions [ g0, p0, r' ]
                        , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) (b s)
                       }
   
   
 buchbergerIO fs = do
    let (res,msg :: Doc) = export
-           --  $ algorithm62 
+           -- $ algorithm62 
            $ algorithm63 ( Option { verbose = False } )
            $ fs
    print msg
