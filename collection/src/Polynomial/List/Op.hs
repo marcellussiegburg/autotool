@@ -11,11 +11,12 @@ import Polynomial.Class
 import Polynomial.Base
 import qualified Prelude
 import Prelude hiding 
-    ( Num (..), (/), Integer, null, gcd, divMod, div, mod )
+    ( map, Num (..), (/), Integer, null, gcd, divMod, div, mod )
 
 import Control.Lens
 import Control.Applicative
-
+import Control.Monad
+       
 import Control.Parallel.Strategies
 import Control.DeepSeq
 
@@ -40,10 +41,9 @@ foldB f _ xs =
 
 merges xss = foldB merge [] xss 
 
-poly :: ( -- NFData v, NFData r,
-  Ord v, Ring r) => [(r, Mono v)] -> Poly r v
+poly :: ( Ord v, Ring r) => [(r, Mono v)] -> Poly r v
 poly cms = foldB (+) zero
-   $ map ( \(c,m) -> monomial m c ) cms
+   $ fmap ( \(c,m) -> monomial m c ) cms
 
 monomial m c = Poly
    { unPoly = [(m,c) | c /= zero]
@@ -68,23 +68,23 @@ instance ( Ring r, Ord v) => Ring (Poly r v) where
       { absolute = absolute p * absolute q
       , unPoly = merges $ do
             (g,d) <- unPoly q
-            return $ map ( \ (f,c) -> (monoMult f g, c*d))
+            return $ fmap ( \ (f,c) -> (monoMult f g, c*d))
                    $ unPoly p
       }      
     p * q = Poly
       { absolute = absolute p *  absolute q
       , unPoly = merges $ do
             (f,c) <- unPoly p 
-            return $ map ( \ (g,d) -> (monoMult f g, c*d))
+            return $ fmap ( \ (g,d) -> (monoMult f g, c*d))
                    $ unPoly q
       }
     
 
 
 splitLeading p = case unPoly p of
-  [] -> Nothing
+  [] -> mzero
   (m,c) : rest ->
-    Just ((c,m), Poly { unPoly = rest
+    return ((c,m), Poly { unPoly = rest
                       , absolute = case rest of
                         [] -> zero
                         _ -> absolute p

@@ -1,3 +1,22 @@
+{- | Algorithms from
+
+   @book{GBBIB529,
+author = {B. Buchberger},
+title = {Gr\"{o}bner-Bases: An Algorithmic Method in Polynomial Ideal Theory.},
+length = {48},
+language = {English},
+chapter = {6},
+pages = {184--232},
+publisher = {Reidel Publishing Company, Dodrecht - Boston - Lancaster},
+year = {1985},
+refereed = {0},
+book = {Multidimensional Systems Theory - Progress, Directions and Open Problems in Multidimensional Systems}
+}
+
+http://www.risc.jku.at/Groebner-Bases-Bibliography/details.php?details_id=529
+
+-}
+
 {-# language TupleSections #-}
 {-# language TemplateHaskell #-}
 {-# language ScopedTypeVariables #-}
@@ -8,7 +27,7 @@ module Polynomial.Grobner.Compute where
 
 import qualified Prelude  
 import Prelude
-  hiding ( Num (..), Integer, null, negate, fromInteger)
+  hiding ( Num (..), div, gcd, Integer, null, negate, fromInteger)
 
 import Polynomial.Class
 import Polynomial.Type
@@ -20,145 +39,162 @@ import Control.Applicative
 import qualified Data.Set as S
 import Control.Monad
 import Data.Monoid
-import Data.List ( inits, tails, nub )
+import Data.List ( inits, tails, nub, maximumBy )
+import Data.Function (on)
 import Data.Maybe
 import System.IO
 
--- | reduce  polynomial g  w.r.t.  polynomials in f.
--- the leading term of the result
--- is not divisible by any leading term of f
-reduce fs g = mfixpoint g $ reduce_step fs
-
-reduce_step fs g = do
-  (gc, gm) <- lm g
-  msum $ for fs $ \ f -> do
-    (fc,fm) <- lm f
-    let (gc' :% fc') = gc % fc
-    d <- divMono gm fm
-    return $ constant fc' * g - monomial d gc' * f
-
--- | total-reduce  polynomial g  w.r.t.  polynomials in f.
--- no term of the result
--- is divisible by any leading term of f
-total_reduce fs g = mfixpoint g $ total_reduce_step fs
-
-total_reduce_step fs g = msum $ do
-  (gc, gm) <- terms g
-  f <- fs
-  (fc,fm) <- maybeToList $ lm f
-  let (gc' :% fc') = gc % fc
-  return $ do
-    d <- divMono gm fm
-    return $ constant fc' * g - monomial d gc' * f
-
-interreduce fs = mfixpoint fs $ \ fs -> msum $ do
-    (pre, f : post ) <- splits fs
-    return $ do
-      f' <- reduce_step (pre ++ post) f
-      return $ pre ++ f' : post
-
-total_interreduce fs = mfixpoint fs $ \ fs -> msum $ do
-    (pre, f : post ) <- splits fs
-    return $ do
-      f' <- total_reduce_step (pre ++ post) f
-      return $ pre ++ f' : post
-
-mfixpoint g op = case op g of
-  Nothing -> g
-  Just g' -> mfixpoint g' op
-
--- * computation
-
-spoly g h = do
+-- | Def 6.4   
+spolynomial g h = maybe (error "spolynomial") id $ do
   (gc,gm) <- lm g
   (hc,hm) <- lm h
   let common = lcmMono gm hm
   gd <- divMono common gm
   hd <- divMono common hm
   let (gc' :% hc') = gc % hc
-  return $ monomial gd hc' * g - monomial hd gc' * h
+      r = monomial gd hc' * g - monomial hd gc' * h  
+  return $ reduce_coefficients r
 
--- | Computes a Grober basis for the ideal of fs.
--- Uses the term ordering that is implicit in splitLeading.
--- always reduce a pair that has low lm (?)
---  http://arxiv.org/abs/1206.6940
-buchberger fs =
-  let handle done todo = case S.minView todo of
-        Nothing -> done
-        Just ((_,(g,h)), odo) -> case spoly g h of
-          Nothing -> handle done odo
-          Just s ->
-            let r = reduce done s
-            in  if null r
-                then handle done odo
-                else handle (r : done)
-                   $ S.union odo
-                   $ S.fromList $ map (pair r) done
-      pair g h = (lcmMono <$> (lt g) <*> (lt h), (g,h))
-  in handle fs $ S.fromList
-               $ do g : hs <- tails fs
-                    map (pair g) hs
-
--- * autotool friendly Buchberger Algorithm
-
+-- | divide polynomial by the gcd of its coefficients.  
+reduce_coefficients p =
+    let work g [] = g
+        work g ((c,m):later) =
+            let h = gcd g c
+            in  if h == one then h else work h later
+    in  case terms p of
+          [] -> p
+          (lc,lm):later -> 
+            let g = work lc later
+            in  if g == one then p else Polynomial.Type.map (\ c -> div c g) p
+                    
+-- | algorithm 6.1
+normalform :: ( Ord v, Ring r, Normalize_Fraction r )
+           => S.Set ( Poly r v ) -> Poly r v    -> Poly r v   
+normalform f g =
+  let candidates = do
+          (gc,gm) <- terms g
+          f <- S.toList f
+          (fc,fm) <- lm f
+          let (gc' :% fc') = gc % fc
+          d <- divMono gm fm
+          return (gm, constant fc' * g - monomial d gc' * f)
+  in  if Prelude.null candidates then g
+      else normalform f $ snd $ maximumBy (compare `on` fst) candidates
+          
 type Pair r v = (Poly r v, Poly r v)
 
 pair p q = if p <= q then (p,q) else (q,p)
 
+pairs ps qs = S.fromList $ do
+    p <- S.toList ps ; q <- S.toList qs
+    guard $ p /= q
+    return $ pair p q
+
+-- | algorithm 6.2 (straightforward computation, inefficient)
+algorithm62 f = do
+  let work (g,b) = case S.minView b of
+          Nothing -> return g
+          Just ((f1,f2), b' ) -> do
+              let h = spolynomial f1 f2
+              let h' = normalform g h
+              inform $ vcat [ text "(f1,f2) =" <+> toDoc (f1,f2) , text "h =" <+> toDoc h, text "h' =" <+> toDoc h' ]
+              if  null h'
+              then work (g, b')
+              else work (S.insert h' g, S.union b' $ pairs (S.singleton h') g )
+  work (f, pairs f f)
+
+  
 data (Ord v) => State v = State {
-       -- | the current basis
-        current :: S.Set (Poly Integer v)
+       step :: Int
+       -- | the current basis 
+        , g :: S.Set (Poly Integer v)
          -- | pairs that need to be S-checked
-         , todo :: S.Set (Pair Integer v)
+         , b :: S.Set (Pair Integer v)
+        -- | contains polynomials of G which can be reduced modulo the other polynomials of G
+        , r :: S.Set (Poly Integer v)
+        -- | and store the resulting reduced polynomials in P
+        , p :: S.Set (Poly Integer v)
          }
 
 terse st = named_dutch_record (text "State")
-  [ text "current" <+> toDoc (S.size $ current st)
-  , text "todo" <+> toDoc (S.size $ todo st)
+  [ text "step" <+> toDoc (step st)
+  , text "g" <+> toDoc (S.size $ g st)
+  , text "b" <+> toDoc (S.size $ b st)
+    , text "r" <+> toDoc (S.size $ r st)
+    , text "p" <+> toDoc (S.size $ p st)
   ]
 
 state0 fs = State
-   { current = S.fromList fs
-   , todo = S.fromList $ do f:gs <- tails fs ; map (pair f) gs
-   }
+   { step = 0 , r = S.fromList fs, p = S.empty , g = S.empty , b = S.empty }
 
+count st = st { step = succ $ step st }
+   
 data Option =
-     Option { verbose :: Bool }
+     Option { max_steps :: Maybe Int
+            , verbose :: Bool
+            , criterion1 :: Bool
+            , criterion2 :: Bool
+            }
 
-buchberger_step opt state = do
-  inform $ if verbose opt then toDoc state
-           else terse state
-  let info d = when (verbose opt) $ inform d                
-  case S.minView $ todo state of
-    Nothing -> do
-      info $ text "done"
-      return Nothing
-    Just ((f,g), odo) -> do
-      info $ text "pair" </> toDoc (f,g)
-      case spoly f g of
-        Just s -> do
-          info $ text "S polynomial" </> toDoc s
-          let r = total_reduce (S.toList $ current state) s
-          info $ text "after (total) reduction" </> toDoc r
-          if null r then return $ Just $ state { todo = odo } else do
-            let fresh = S.map (pair r) $ current state
-            info $ text "fresh pairs" </> toDoc fresh
-            return $ Just
-                   $ state { todo = S.union fresh odo
-                           , current = S.insert r $ current state
-                           }
-          
-buchbergerIO fs = do
-  let handle st = do
-        let (Just res,msg :: Doc) = export $
-               buchberger_step (Option{verbose=False}) st
-        print msg
-        case res of
-          Nothing -> return $ S.toList $ current st
-          Just st' -> handle st'
-  handle $ state0 fs
+algorithm63 :: (ToDoc v, Ord v) => Option -> [ Poly Integer v ] -> Reporter (State v)
+algorithm63 opt (fs :: [Poly Integer v]) = do
+  let work s = do
+        inform $ text "work" <+> toDoc s
+        case S.minView (b s) of
+          Nothing -> do
+            return s
+          Just ((f1,f2),b') -> do
+            let h = normalform (g s) $ spolynomial f1 f2
+            if null h
+            then work $ count $ s { b = b' }
+            else do
+              let (g0, g1) = S.partition ( \ g -> lt g <= lt h ) (g s)
+                  s' = count
+                     $ s
+                       { r = g0 , p = S.singleton h , g = g1
+                       , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) b'
+                       }
+              s0 <- reduce_all s'
+              s1 <-  new_basis s0
+              work s1
+  s0 <- reduce_all (state0 fs)
+  s1 <- new_basis s0
+  work s1
+
+new_basis :: (ToDoc v, Ord v) => State v -> Reporter (State v)
+new_basis s = do
+  inform $ text "new_basis" <+> toDoc s
+  let gee = S.union (g s) (p s)
+  return $ count $  s { g = S.map ( \ h -> normalform (S.delete h gee) h ) gee
+        , b = S.union (b s) $ pairs gee (p s)
+        -- r and p not changed?
+        }
+
+reduce_all :: (ToDoc v, Ord v) => State v -> Reporter (State v)  
+reduce_all s = do
+  inform $ text "reduce_all" <+> toDoc s
+  case S.minView (r s) of
+     Nothing -> return s
+     Just (h0 , r') -> do
+       let h = normalform (S.union (g s) (p s)) h0
+       if  null h
+       then reduce_all $ count $ s { r = r' }
+       else do
+         let (g0,g1) = S.partition (\ g -> lt h <= lt g ) (g s)
+             (p0,p1) = S.partition (\ p -> lt h <= lt p ) (p s)
+         reduce_all $ count
+                    $ s { g = g1, p = S.insert h p1, r = S.unions [ g0, p0, r s ]
+                       , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) (b s)
+                      }
   
-for = flip map
+  
+buchbergerIO fs = do
+   let (res,msg :: Doc) = export $ algorithm62 $ S.fromList fs
+   print msg
+   case res of
+       Just g -> return g
+  
+for = flip fmap
 
 splits xs = zip (inits xs) (tails xs)
 

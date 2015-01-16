@@ -16,7 +16,7 @@ import Polynomial.Class
 import Data.Typeable
 import Control.Lens
 
-import Control.Monad 
+import Control.Monad
 import Data.Function (on)
 
 type Expo = Int
@@ -58,7 +58,7 @@ monoFromDecreasing fs = Mono
 nullMono m = Prelude.null $ m ^. unMono
 
 -- | return the quotient if it exists
-divMono :: Ord v => Mono v -> Mono v -> Maybe (Mono v)
+divMono :: (MonadPlus m, Ord v) => Mono v -> Mono v -> m (Mono v)
 divMono m1 m2 = do
   let d = merge (m1 ^. unMono)
         $ over (mapped . _2) negate (m2 ^. unMono)
@@ -107,6 +107,8 @@ mergeAscWith f (x:xs) (y:ys) = case compare (fst x) (fst y) of
   EQ -> let v = f (snd x) (snd y)
         in  if v == zero then mergeAscWith f xs ys
             else (fst x, v) : mergeAscWith f xs ys 
+
+multMono p q = monoMult p q  
 
 monoMult p q = Mono 
     { _unMono = merge (p ^. unMono) (q ^. unMono) 

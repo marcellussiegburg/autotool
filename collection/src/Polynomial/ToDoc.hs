@@ -5,7 +5,7 @@ module Polynomial.ToDoc where
 
 import qualified Prelude  
 import Prelude
-  hiding ( Num (..), (^), sum, Integer, Rational, fromInteger)
+  hiding ( Num (..), (^), sum, map, Integer, Rational, fromInteger)
 import Polynomial.Class
 
 import Polynomial.Data
@@ -19,7 +19,7 @@ instance ToDoc v => ToDoc (Factor v) where
 
 instance ToDoc v => ToDoc (Mono v) where
     toDoc m = hsep $ punctuate (text " *")
-              $ map toDoc $ factors m
+              $ Prelude.map toDoc $ factors m
 
 instance (Ring r, Ord r, ToDoc r, ToDoc v, Ord v) 
          => ToDoc (Poly r v) where
@@ -32,7 +32,7 @@ instance (Ring r, Ord r, ToDoc r, ToDoc v, Ord v)
                       ( _ , False) | c == one -> toDoc m
                       ( _ , False) | c == negate one -> hsep [ text "-", toDoc m ]
                       _ -> hsep [ toDoc c, text "*", toDoc m ]
-              in  hsep $ term t : map ( \ t @(c,m) -> if negative c then term t else text "+" <+>  term t) ts
+              in  hsep $ term t : Prelude.map ( \ t @(c,m) -> if negative c then term t else text "+" <+>  term t) ts
 
 instance ToDoc (Poly r v) => Show (Poly r v) where
     show = render . toDoc 

@@ -1,6 +1,6 @@
 module Polynomial.Data
 
-( Poly , terms, nterms
+( Poly , terms, nterms, map
 , constant, variable, absolute, null, divF
 , Mono, mono, monomial , nullMono, factors
 , Factor, expo, var, factor
@@ -18,10 +18,10 @@ import Polynomial.Base
 
 -- pick one implementation:
 
-import Polynomial.Tree.Data
+-- import Polynomial.Tree.Data
 
 -- import Polynomial.Map.Data
 -- import Polynomial.Map.Op
 
--- import Polynomial.List.Op
+import Polynomial.List.Op
 

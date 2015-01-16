@@ -27,6 +27,8 @@ import Control.DeepSeq
 infixl 7  *, /
 infixl 6  +, -
 
+-- * the class and its properties
+       
 class Prelude.Eq r => Ring r where
     zero :: r
     negate :: r -> r
@@ -36,7 +38,7 @@ class Prelude.Eq r => Ring r where
     fromInteger :: Prelude.Integer -> r
     -- | this does not really belong here. it is used just for printing (the "-" sign)
     negative :: r -> Prelude.Bool
-
+    
 associative f a b c = f (f a b) c == f a (f b c)
 commutative f a b = f a b == f b a
 left_distributive f g a b c = 
@@ -80,6 +82,8 @@ a ^ b | b Prelude.>= 0 =
 sum = Prelude.foldr (+) zero
 product = Prelude.foldr (*) one
 
+-- * instances for basic numerical types
+        
 type Integer = Prelude.Integer
 
 instance Ring Integer where
@@ -93,6 +97,8 @@ instance Ring Int where
     one = 1 ; (*) = (Prelude.*)
     fromInteger i = Prelude.fromInteger i
     negative = (< 0)
+
+-- * ratios
     
 data Ratio z = z :% z 
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
@@ -108,11 +114,13 @@ instance (Serial m z, Ring z, Normalize_Fraction z )
 
 type Rational = Ratio Integer
 
+-- FIXME: this instance is questionable. Print a rational as "(p/q)" (with parentheses)
+-- or as  "p" (without) (which is interpreted as   "(p/1)"
 instance (Ring z, ToDoc z) => ToDoc (Ratio z) where
-    toDoc (a :% b) = if b == one then toDoc a else parens $ hsep [ toDoc a, text ":%", toDoc b ]
+    toDoc (a :% b) = if b == one then toDoc a else parens $ hsep [ toDoc a, text "/", toDoc b ]
 
 instance (Ring z, Normalize_Fraction z, Reader z) => Reader (Ratio z) where
-    reader = ( my_parens $ (%) <$> reader <* my_reservedOp ":%" <*> reader )
+    reader = ( my_parens $ (%) <$> reader <* my_reservedOp "/" <*> reader )
         <|>  ( % one ) <$> reader 
 
 class Normalize_Fraction z where
@@ -134,6 +142,8 @@ instance ( Normalize_Fraction z, Ring z )
     fromInteger i = fromInteger i % one
     negative (a :% b) = negative a -- hmpf
 
+-- * complex numbers
+    
 data Complex r = r :+ r
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
 
@@ -159,6 +169,8 @@ instance Ring r => Ring ( Complex r ) where
     (a :+ b) * (c :+ d) = (a * c - b * d) :+ (a * d + b * c)
     fromInteger i = fromInteger i :+ zero
 
+-- * Euclidean ring and easy instances
+    
 class Ring r => Euclidean_Ring r where
     norm :: r -> Prelude.Maybe Integer
     div :: r -> r -> r
@@ -187,7 +199,8 @@ euclidean_spec (_ :: r ) =
         if q /= (zero :: r) 
         then norm ( mod p q ) < norm q else True
 
-
+-- * the Field class
+  
 class Ring r => Field r where
     (/) :: r -> r -> r
 
@@ -201,6 +214,8 @@ instance Field a => Field (Complex a) where
             n = c * c + d * d
         in  (p / n) :+ (q / n)
 
+-- * GCD computations
+    
 data Step r = Step { quotient :: r, remainder :: r }
     deriving Typeable
 
