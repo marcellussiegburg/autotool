@@ -81,10 +81,17 @@ normalform f g =
           return (gm, constant fc' * g - monomial d gc' * f)
   in  if Prelude.null candidates then g
       else normalform f $ snd $ maximumBy (compare `on` fst) candidates
-          
-type Pair r v = (Poly r v, Poly r v)
 
-pair p q = if p <= q then (p,q) else (q,p)
+-- | the @tag@ is there for sorting,
+--   so that S.minView below picks
+--   "a pair in B whose LCM(..) is minimal"
+data (Ring r, Ord r, Ord v) => Pair r v = Pair { tag :: Mono v
+     , first :: Poly r v, second :: Poly r v
+     } deriving (Eq, Ord)
+
+pair p q =
+     let c = lcmMono (the $ lt p) (the $ lt q)
+     in  if p <= q then Pair c p q else Pair c q p
 
 pairs ps qs = S.fromList $ do
     p <- S.toList ps ; q <- S.toList qs
@@ -95,10 +102,11 @@ pairs ps qs = S.fromList $ do
 algorithm62 fs = do
   let work (g,b) = case S.minView b of
           Nothing -> return g
-          Just ((f1,f2), b' ) -> do
-              let h = spolynomial f1 f2
+          Just (p, b' ) -> do
+              let f1 = first p ; f2 = second p
+                  h = spolynomial f1 f2
               let h' = normalform g h
-              inform $ vcat [ text "(f1,f2) =" <+> toDoc (f1,f2) , text "h =" <+> toDoc h, text "h' =" <+> toDoc h' ]
+              inform $ vcat [ text "pair =" <+> toDoc p , text "h =" <+> toDoc h, text "h' =" <+> toDoc h' ]
               if  null h'
               then work (g, b')
               else work (S.insert h' g, S.union b' $ pairs (S.singleton h') g )
@@ -151,29 +159,44 @@ algorithm63 opt (fs :: [Poly Integer v]) = do
       work s = do
         inform $ text "work" <+> if verbose opt then toDoc s else terse s
         case S.minView (b s) of
-          Just ((f1,f2),b') -> do
-            info opt $ text "(f1,f2) =" <+> toDoc (f1,f2)
-            let h = normalform (g s) $ spolynomial f1 f2
-            if  criterion2 (f1,f2)
-              || null h -- lazily! evaluate criteria first
+          Just (p,b') -> do
+            let f1 = first p ; f2 = second p
+            info opt $ text "pair =" <+> toDoc p
+            let c1 = criterion1 p s
+                c2 = criterion2 p
+                h = normalform (g s) $ spolynomial f1 f2
+            info opt $ hsep [ text "c1 =", toDoc c1 , text "c2 =", toDoc c2 ]
+            if  c1 || c2 || null h -- evaluate h lazily (criteria first)
             then do
               info opt $ text "is trivial"
               work $ count $ s { b = b' }
             else do
               info opt $ text "h =" <+> toDoc h
-              let (g0, g1) = S.partition ( \ g -> (lt h :: Maybe (Mono v)) <= lt g ) (g s)
+              let (g0, g1) = S.partition ( divides h ) (g s)
               w_nb_ra $ count
                      $ s
                        { r = g0 , p = S.singleton h , g = g1
-                       , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) b'
+                       , b = S.filter ( \ p -> S.notMember (first p) g0 && S.notMember (second p) g0) b'
                        }
           Nothing -> do
             return $ S.toList $ g s
   w_nb_ra $ state0 fs
 
-criterion2 (f1,f2) = 
-  let Just m1 = lt f1 ; Just m2 = lt f2 in  lcmMono m1 m2 == multMono m1 m2
+criterion1 f s = or $ do
+    let f1 = first f ; f2 = second f
+    p <- S.toList $ g s
+    return $ and
+           [ p /= f1 , p /= f2
+           , dividesMono (the $ lt p) $ tag f
+           , S.notMember (pair f1 p) $ b s
+           , S.notMember (pair f2 p) $ b s
+           ]
   
+criterion2 pa = tag pa == multMono (the $ lt $ first pa) (the $ lt $ second pa)
+
+divides p q = the (lt p) `dividesMono` the (lt q)
+the m = maybe (error "the") id m
+        
 new_basis :: (ToDoc v, Ord v) => Option -> State v -> Reporter (State v)
 new_basis opt s = do
   info opt $ text "new_basis" <+> toDoc s
@@ -196,11 +219,11 @@ reduce_all opt (s :: State v) = do
        then do
          reduce_all opt $ count $ s { r = r' }
        else do
-         let (g0,g1) = S.partition (\ g -> (lt h :: Maybe (Mono v)) <= lt g ) (g s)
-             (p0,p1) = S.partition (\ p -> (lt h :: Maybe (Mono v)) <= lt p ) (p s)
+         let (g0,g1) = S.partition ( divides h ) (g s)
+             (p0,p1) = S.partition ( divides h ) (p s)
          reduce_all opt $ count
                     $ s { g = g1, p = S.insert h p1, r = S.unions [ g0, p0, r' ]
-                       , b = S.filter ( \(f1,f2) -> S.notMember f1 g0 && S.notMember f2 g0) (b s)
+                       , b = S.filter ( \ p -> S.notMember (first p) g0 && S.notMember (second p) g0) (b s)
                       }
   
   
@@ -217,7 +240,7 @@ for f xs = flip fmap f xs
 
 splits xs = zip (inits xs) (tails xs)
 
-derives [makeToDoc] [''State]
+derives [makeToDoc] [''Pair, ''State]
 
 s1 :: [ Poly Integer Identifier ]
 s1 = read " [ x^5 , x-1 ] "

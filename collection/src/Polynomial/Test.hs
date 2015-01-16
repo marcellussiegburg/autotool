@@ -11,13 +11,13 @@ import Polynomial.Class
 import Polynomial.Common
 import Polynomial.ToDoc
 
-import Test.SmallCheck.Series
 import Control.Applicative
 import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.TES.Identifier
 import Test.Hspec
 import Test.Hspec.SmallCheck
+import Test.SmallCheck.Series
 
 test d = spec d
        $ ring_spec (undefined :: Poly Integer Identifier)
