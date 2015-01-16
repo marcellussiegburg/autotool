@@ -18,7 +18,7 @@ import qualified Polynomial.Unary as U
 
 import qualified Prelude
 import Prelude hiding 
-    ( Num (..), (/), Integer, Rational(..)
+    ( map, Num (..), (/), Integer, Rational(..)
     , null, gcd, divMod, div, mod )
 
 import Autolib.Reporter hiding ( run, execute )
@@ -91,7 +91,7 @@ instance (Dom d, Euclidean_Ring d, Pattern p
         , toDoc ps
         ]
 
-    initial _ ps = map base ps
+    initial _ ps = fmap base ps
 
     partial _ ps vs = do
         forM_ (zip [0 :: Int ..] $ tails vs) $ \ (i, t) -> case t of
