@@ -47,7 +47,7 @@ instance Ord a => Ord (Reverse a) where
 instance Ord v => Ord (Mono v) where
   compare = compare `on` \ m ->
     ( m ^. total_degree
-    , Reverse $ m ^. unMono
+    , Reverse $       m ^. unMono
     )
 
 is_decreasing m =
