@@ -34,6 +34,7 @@ import Polynomial.Type
 
 import Autolib.Reporter
 import Autolib.ToDoc
+import Autolib.TES.Identifier (mk)
 
 import Control.Applicative
 import qualified Data.Set as S
@@ -260,4 +261,17 @@ b5 = [ read "w + x + y +z"
 ex66 :: [ Poly Integer Identifier ]
 ex66 = read "[ x^3*y*z - x*z^2 , x*y^2*z-x*y*z, x^2*y^2-z^2 ]"
 
+cyc :: Int -> [ Poly Integer Identifier ]
+cyc n = do
+  let vs = do c <- [ 'a' .. ] ; return $ mk 0 [c]
+  deg <- [ 1 .. n ]
+  return $ poly
+         $ ( if deg == n
+             then (( negate $ Prelude.fromIntegral n,  mono[]): )
+             else id)
+         $ do
+       s <- [0 ..  n-1]
+       return $ (one, ) $ mono $ do
+           o <- [ 0 .. deg-1 ]
+           return $ factor (vs !! Prelude.mod (s+o) n) 1
 
