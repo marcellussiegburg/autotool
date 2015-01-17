@@ -82,6 +82,7 @@ Matrikelnummer: Matrikelnummer
 Name: Name
 Nein: Nein
 Neins: Nein
+NichtAutorisiert: Sie sind für diese Anfrage leider nicht autorisiert. Die Anfrage wurde zurückgewiesen und der Zugriff verweigert.
 Okays: Okay
 PersönlicheDaten: Persönliche Daten
 Plätze: Plätze

@@ -20,18 +20,25 @@ import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
+import Data.Foldable (foldlM)
 import Data.Maybe (listToMaybe)
-import Data.Time (UTCTime, formatTime)
+import Data.Set (member)
 import Data.Text (Text)
 import Data.Text.Read (decimal, signed)
+import Data.Time (UTCTime, formatTime)
+import Data.Tuple6
 import System.Locale (defaultTimeLocale)
 import Model
 
 import Control.Types
-import qualified Control.Student.DB as StudDB
+import qualified Control.Admin.DB as AdminDB
+import qualified Control.Direktor.DB as DirektorDB
 import qualified Control.Schule.DB as SchuleDB
-import qualified Control.Student.Type as Student
 import qualified Control.Schule.Typ as Schule
+import qualified Control.Student.DB as StudDB
+import qualified Control.Student.Type as Student
+import qualified Control.Tutor.DB as TutorDB
+import qualified Control.Vorlesung.Typ as Vorlesung
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -80,11 +87,19 @@ instance Yesod Autotool where
         Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
     urlRenderOverride _ _ = Nothing
 
-    -- Routes not requiring authenitcation.
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
-    -- Default to Authorized for now.
-    isAuthorized _ _ = return Authorized
+    isAuthorized route _
+      | "student" `member` routeAttrs route = do
+          mid <- maybeAuthId
+          return $ maybe AuthenticationRequired (\_ -> Authorized) mid
+      | "admin" `member` routeAttrs route =
+          autorisierungChecken route
+      | "direktor" `member` routeAttrs route =
+          autorisierungChecken route
+      | "tutor" `member` routeAttrs route =
+          autorisierungChecken route
+      | otherwise = return Authorized
 
     addStaticContent =
         addStaticContentExternal minifym genFileName Settings.staticDir (StaticR . flip StaticRoute [])
@@ -99,6 +114,7 @@ instance Yesod Autotool where
         development || level == LevelWarn || level == LevelError
 
     makeLogger = return . appLogger
+    authRoute _ = Just $ AuthR LoginR
 
 instance RenderMessage Autotool FormMessage where
     renderMessage _ ("de":_) = germanFormMessage
@@ -108,7 +124,7 @@ instance RenderMessage Autotool FormMessage where
 
 instance RenderMessage Autotool YesodAuthAutotoolMessage where
     renderMessage _ ("de":_) = germanAuthAutotoolMessage
-    renderMessage _ ("en":_) = englishAuthAutotoolMessage 
+    renderMessage _ ("en":_) = englishAuthAutotoolMessage
     renderMessage master (_:langs) = renderMessage master langs
     renderMessage _ [] = germanAuthAutotoolMessage
 
@@ -120,13 +136,11 @@ instance YesodJquery Autotool where
 
 instance YesodAuth Autotool where
     renderAuthMessage _ ("de":_) = AM.germanMessage
-    renderAuthMessage _ ("en":_) = AM.englishMessage 
+    renderAuthMessage _ ("en":_) = AM.englishMessage
     renderAuthMessage master (_:langs) = renderAuthMessage master langs
     renderAuthMessage _ [] = AM.defaultMessage
     type AuthId Autotool = Int
-    -- Where to send a user after successful login
     loginDest _ = SchulenR
-    -- Where to send a user after logout
     logoutDest _ = SchulenR
     getAuthId creds = liftIO $ do
       case signed decimal $ credsIdent creds of
@@ -136,15 +150,6 @@ instance YesodAuth Autotool where
             [_] -> return $ Just $ s
             _ -> return $ Nothing
         _ -> return Nothing
-{-
-        x <- getBy $ UniqueUser $ credsIdent creds
-        case x of
-            Just (Entity uid _) -> return $ Just uid
-            Nothing -> do
-                fmap Just $ insert User
-                    { userIdent = credsIdent creds
-                    , userPassword = Nothing
-                    }-}
     maybeAuthId = do
       ms <- lookupSession credsKey
       case ms of
@@ -155,7 +160,7 @@ instance YesodAuth Autotool where
               Just s -> do
                 mstud <- liftIO $ StudDB.get_snr $ SNr s
                 case mstud of
-                  [stud] -> return $ Just s
+                  [_] -> return $ Just s
                   _ -> return Nothing
     authPlugins _ = [authAutotool $ Nothing] --authBrowserId def]
     authHttpManager = httpManager
@@ -174,3 +179,130 @@ instance YesodAuthAutotool Autotool where
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
+
+autorisierungChecken :: Route Autotool -> Handler AuthResult
+autorisierungChecken route = do
+  mid <- maybeAuthId
+  case mid of
+    Nothing -> return AuthenticationRequired
+    Just aId -> let braucht a = if a `member` routeAttrs route then [a] else []
+                    attrs = concat [braucht "admin", braucht "direktor", braucht "tutor"]
+                in foldlM (\c a -> if c == Authorized then return Authorized else (checke a aId route)) (AuthenticationRequired) attrs
+
+checke :: Text -> Int -> Route Autotool -> Handler AuthResult
+checke rolle authId route
+  | rolle == "admin" = do
+      mstud <- lift $ StudDB.get_snr (SNr authId)
+      case mstud of
+        [stud] -> do
+          isAdmin <- lift $ AdminDB.is_minister stud
+          if isAdmin
+             then return Authorized
+             else unauthorizedI MsgNichtAutorisiert
+        _ -> unauthorizedI MsgNichtAutorisiert
+  | rolle == "direktor" = do
+      mstud <- lift $ StudDB.get_snr (SNr authId)
+      case mstud of
+        [stud] -> do
+          schulen <- lift $ DirektorDB.get_directed stud
+          (mschule,_,_,_,_,_) <- lift $ routeInformation route
+          case mschule of
+            Nothing -> unauthorizedI MsgNichtAutorisiert
+            Just schule ->
+              if elem (UNr schule) $ map (Schule.unr) schulen
+              then return Authorized
+              else unauthorizedI MsgNichtAutorisiert
+        _ -> unauthorizedI MsgNichtAutorisiert
+  | rolle == "tutor" = do
+      mstud <- lift $ StudDB.get_snr (SNr authId)
+      case mstud of
+        [stud] -> do
+          vorlesungen <- liftIO $ TutorDB.get_tutored stud
+          (_,_,mvorlesung,_,_,_) <- lift $ routeInformation route
+          case mvorlesung of
+            Nothing -> unauthorizedI MsgNichtAutorisiert
+            Just vorlesung ->
+              if elem (VNr vorlesung) $ map (Vorlesung.vnr) vorlesungen
+              then return Authorized
+              else unauthorizedI MsgNichtAutorisiert
+        _ -> unauthorizedI MsgNichtAutorisiert
+  | otherwise =
+      unauthorizedI MsgNichtAutorisiert
+
+routeInformation :: Monad m => Route Autotool -> m (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe Text)
+routeInformation route = case routeParameter route of
+   Nothing -> return $ fromTuple6 Tuple6_0
+   Just parameter -> case parameter of
+     SchuleRoute schule -> return $ fromTuple6 $ Tuple6_1 schule
+     SemesterRoute semester -> do
+       schule <- getSchule $ Just semester
+       return $ fromTuple6 $ toTuple6 (schule, Just semester, Nothing, Nothing, Nothing, Nothing)
+     VorlesungRoute vorlesung -> do
+       semester <- getSemester $ Just vorlesung
+       schule <- getSchule $ semester
+       return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, Nothing, Nothing, Nothing)
+     GruppeRoute gruppe -> do
+       vorlesung <- getVorlesung $ Just gruppe
+       semester <- getSemester vorlesung
+       schule <- getSchule semester
+       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just gruppe, Nothing, Nothing)
+     AufgabeRoute aufgabe -> do
+       gruppe <- getGruppe $ Just aufgabe
+       vorlesung <- getVorlesung gruppe
+       semester <- getSemester vorlesung
+       schule <- getSchule semester
+       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, gruppe, Just aufgabe, Nothing)
+
+-- | TODO
+getSchule semester = return semester
+-- | TODO
+getSemester vorlesung = return vorlesung
+-- | TODO
+getVorlesung gruppe  = return gruppe
+-- | TODO
+getGruppe aufgabe = return aufgabe
+
+data RouteParameter = SchuleRoute SchuleId | SemesterRoute SemesterId | VorlesungRoute VorlesungId | GruppeRoute GruppeId | AufgabeRoute AufgabeId
+
+-- | Liefert den Parameter, der der Route übergeben wurde
+-- 
+-- Diese Methode nutzt absichtlich kein Wildcard-Eintrag, um Rückmeldung vom Compiler bei neu definierten Routen zu erhalten
+routeParameter :: Route Autotool -> Maybe RouteParameter
+routeParameter route = case route of
+  StaticR _                   -> Nothing
+  FaviconR                    -> Nothing
+  RobotsR                     -> Nothing
+  AuthR _                     -> Nothing
+  HomeR                       -> Nothing
+  SchuleAnlegenR              -> Nothing
+  SchulenR                    -> Nothing
+  SchuleR a                   -> Just $ SchuleRoute a
+  DirektorenR a               -> Just $ SchuleRoute a
+  DirektorErnennenR a         -> Just $ SchuleRoute a
+  WaisenkinderR a             -> Just $ SchuleRoute a
+  SemestersR a                -> Just $ SchuleRoute a
+  SemesterAnlegenR a          -> Just $ SchuleRoute a
+  SemesterR a                 -> Just $ SemesterRoute a
+  VorlesungenR a              -> Just $ SemesterRoute a
+  VorlesungAnlegenR a         -> Just $ SemesterRoute a
+  VorlesungR a                -> Just $ VorlesungRoute a
+  GruppeAnlegenR a            -> Just $ VorlesungRoute a
+  GruppenR a                  -> Just $ VorlesungRoute a
+  StudentenR a                -> Just $ VorlesungRoute a
+  TutorErnennenR a            -> Just $ VorlesungRoute a
+  TutorenR a                  -> Just $ VorlesungRoute a
+  ResultateR a                -> Just $ VorlesungRoute a
+  ResultatePflichtR a         -> Just $ VorlesungRoute a
+  GruppeR a                   -> Just $ GruppeRoute a
+  AufgabeAnlegenR a           -> Just $ GruppeRoute a
+  AufgabenR a                 -> Just $ GruppeRoute a
+  AufgabenAktuellR a          -> Just $ GruppeRoute a
+  AufgabeBearbeitenR a        -> Just $ AufgabeRoute a
+  AufgabeR a                  -> Just $ AufgabeRoute a
+  StatistikR a                -> Just $ AufgabeRoute a
+  ServersR                    -> Nothing
+  ServerR _                   -> Nothing
+  AufgabeVorlagenR _ _        -> Nothing
+  AufgabeVorlageR _ _ _       -> Nothing
+  AufgabeKonfigurationR _ _ _ -> Nothing
+  AufgabeTestenR _ _ _        -> Nothing
