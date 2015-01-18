@@ -20,6 +20,7 @@ import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
+import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
 import Data.Foldable (foldlM)
 import Data.Maybe (listToMaybe)
 import Data.Set (member)
@@ -33,12 +34,17 @@ import Model
 import Control.Types
 import qualified Control.Admin.DB as AdminDB
 import qualified Control.Direktor.DB as DirektorDB
+import qualified Control.Gruppe.DB as GruppeDB
+import qualified Control.Gruppe.Typ as Gruppe
 import qualified Control.Schule.DB as SchuleDB
 import qualified Control.Schule.Typ as Schule
+import qualified Control.Semester.DB as SemesterDB
+import qualified Control.Semester.Typ as Semester
 import qualified Control.Student.DB as StudDB
 import qualified Control.Student.Type as Student
 import qualified Control.Tutor.DB as TutorDB
 import qualified Control.Vorlesung.Typ as Vorlesung
+import qualified Control.Vorlesung.DB as VorlesungDB
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -229,7 +235,7 @@ checke rolle authId route
   | otherwise =
       unauthorizedI MsgNichtAutorisiert
 
-routeInformation :: Monad m => Route Autotool -> m (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe Text)
+routeInformation :: Route Autotool -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe [GruppeId], Maybe AufgabeId, Maybe Text)
 routeInformation route = case routeParameter route of
    Nothing -> return $ fromTuple6 Tuple6_0
    Just parameter -> case parameter of
@@ -239,28 +245,68 @@ routeInformation route = case routeParameter route of
        return $ fromTuple6 $ toTuple6 (schule, Just semester, Nothing, Nothing, Nothing, Nothing)
      VorlesungRoute vorlesung -> do
        semester <- getSemester $ Just vorlesung
-       schule <- getSchule $ semester
-       return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, Nothing, Nothing, Nothing)
+       schule <- getSchule semester
+       gruppe <- getGruppe $ Just vorlesung
+       return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, gruppe, Nothing, Nothing)
      GruppeRoute gruppe -> do
        vorlesung <- getVorlesung $ Just gruppe
        semester <- getSemester vorlesung
        schule <- getSchule semester
-       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just gruppe, Nothing, Nothing)
+       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just [gruppe], Nothing, Nothing)
      AufgabeRoute aufgabe -> do
-       gruppe <- getGruppe $ Just aufgabe
-       vorlesung <- getVorlesung gruppe
+       vorlesung <- getVorlesungAufgabe $ Just aufgabe
+       gruppe <- getGruppe vorlesung
        semester <- getSemester vorlesung
        schule <- getSchule semester
        return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, gruppe, Just aufgabe, Nothing)
 
--- | TODO
-getSchule semester = return semester
--- | TODO
-getSemester vorlesung = return vorlesung
--- | TODO
-getVorlesung gruppe  = return gruppe
--- | TODO
-getGruppe aufgabe = return aufgabe
+-- | Liefert ggf. die Schule zu einem Semester
+getSchule :: Maybe SemesterId -> IO (Maybe SchuleId)
+getSchule msemester = runMaybeT $ do
+  semester <- MaybeT $ return msemester
+  semesters <- lift $ SemesterDB.get_this $ ENr semester
+  UNr schuleId <- MaybeT $ return $ listToMaybe $ map Semester.unr semesters
+  return schuleId
+
+-- | Liefert ggf. das Semester zu einer Vorlesung
+getSemester :: Maybe VorlesungId -> IO (Maybe SemesterId)
+getSemester mvorlesung = runMaybeT $ do
+  vorlesung <- MaybeT $ return mvorlesung
+  vorlesungen <- lift $ VorlesungDB.get_this $ VNr vorlesung
+  ENr semesterId <- MaybeT $ return $ listToMaybe $ map Vorlesung.enr vorlesungen
+  return semesterId
+
+-- | Liefert ggf. die Vorlesung zu einer Gruppe
+getVorlesung :: Maybe GruppeId -> IO (Maybe VorlesungId)
+getVorlesung mgruppe  = runMaybeT $ do
+  gruppe <- MaybeT $ return mgruppe
+  gruppen <- lift $ GruppeDB.get_gnr $ GNr gruppe
+  VNr vorlesungId <- MaybeT $ return $ listToMaybe $ map Gruppe.vnr gruppen
+  return vorlesungId
+
+-- | Liefert ggf. die Vorlesung zu einer Aufgabe
+getVorlesungAufgabe :: Maybe AufgabeId -> IO (Maybe VorlesungId)
+getVorlesungAufgabe mgruppe  = runMaybeT $ do
+  gruppe <- MaybeT $ return mgruppe
+  gruppen <- lift $ GruppeDB.get_gnr $ GNr gruppe
+  VNr vorlesungId <- MaybeT $ return $ listToMaybe $ map Gruppe.vnr gruppen
+  return vorlesungId
+
+-- | Liefert ggf. die Gruppen zu einer Vorlesung
+getGruppe :: Maybe VorlesungId -> IO (Maybe [GruppeId])
+getGruppe mvorlesung = runMaybeT $ do
+  vorlesung <- MaybeT $ return mvorlesung
+  gruppen <- lift $ GruppeDB.get_this $ VNr vorlesung
+  return $ map (\g -> let GNr gId = Gruppe.gnr g in gId) gruppen
+
+-- | Liefert ggf. eine Gruppe zu einer Vorlesung, die der Student besucht
+getBesuchteGruppe :: Maybe VorlesungId -> Maybe Int -> IO (Maybe GruppeId)
+getBesuchteGruppe mvorlesung mauthId = runMaybeT $ do
+  vorlesung <- MaybeT $ return mvorlesung
+  authId <- MaybeT $ return mauthId
+  gruppen <- lift $ GruppeDB.get_attended (VNr vorlesung) $ SNr authId
+  GNr gruppeId <- MaybeT $ return $ listToMaybe $ map Gruppe.gnr gruppen
+  return gruppeId
 
 data RouteParameter = SchuleRoute SchuleId | SemesterRoute SemesterId | VorlesungRoute VorlesungId | GruppeRoute GruppeId | AufgabeRoute AufgabeId
 

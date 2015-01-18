@@ -115,6 +115,7 @@ library
                  , email-validate
                  , exceptions
                  , autotool-db
+                 , transformers
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)
