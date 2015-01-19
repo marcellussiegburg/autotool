@@ -1,96 +1,22 @@
-<ul .nav .navbar-nav>
-  <li .dropdown>
-    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgSchule}
-      <b .caret>
-    <ul .dropdown-menu>
-      <li .dropdown-header>Schulname
-      <li>
-        <a href=@{SchuleR 1}>_{MsgBearbeiten}
-      <li>
-        <a href=@{WaisenkinderR 1}>_{MsgWaisenkinder}
-      <li>
-        <a href=@{DirektorenR 1}>_{MsgDirektoren}
-      <li>
-        <a href=@{DirektorErnennenR 1}>_{MsgDirektorErnennen}
-      <li>
-        <a href=@{SemestersR 1}>_{MsgSemesters}
-      <li>
-        <a href=@{SemesterAnlegenR 1}>_{MsgSemesterAnlegen}
-      <li .divider>
-      <li>
-        <a href=@{SchulenR}>_{MsgSchulen}
-      <li>
-        <a href=@{SchuleAnlegenR}>_{MsgSchuleAnlegen}
-      <li>
-        <a href=#>_{MsgPersönlicheDaten}
-      <li>
-        <a href=#>_{MsgHighscoreAnzeigen}
-  <li .dropdown>
-    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgSemester}
-      <b .caret>
-    <ul .dropdown-menu>
-      <li .dropdown-header>Semestername
-      <li>
-        <a href=@{SemesterR 1}>_{MsgBearbeiten}
-      <li>
-        <a href=@{VorlesungenR 1}>_{MsgVorlesungen}
-      <li>
-        <a href=@{VorlesungAnlegenR 1}>_{MsgVorlesungAnlegen}
-  <li .dropdown>
-    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgVorlesung}
-      <b .caret>
-    <ul .dropdown-menu>
-      <li .dropdown-header>Vorlesungsname
-      <li>
-        <a href=@{VorlesungR 1}>_{MsgBearbeiten}
-      <li>
-        <a href=@{TutorErnennenR 1}>_{MsgTutor}
-      <li>
-        <a href=@{TutorenR 1}>_{MsgTutoren}
-      <li>
-        <a href=@{StudentenR 1}>_{MsgStudenten}
-      <li>
-        <a href=@{ResultateR 1}>_{MsgAlleResultate}
-      <li>
-        <a href=@{ResultatePflichtR 1}>_{MsgResultatePflicht}
-      <li>
-        <a href=@{GruppenR 1}>_{MsgGruppen}
-      <li>
-        <a href=@{GruppeAnlegenR 1}>_{MsgGruppeAnlegen}
-  <li .dropdown>
-    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgGruppe}
-      <b .caret>
-    <ul .dropdown-menu>
-      <li .dropdown-header>Übungsgruppenname
-      <li>
-        <a href=@{GruppeR 1}>_{MsgBearbeiten}
-      <li>
-        <a href=@{AufgabenR 1}>_{MsgAufgaben}
-      <li>
-        <a href=@{AufgabenAktuellR 1}>_{MsgAufgabenAktuell}
-      <li>
-        <a href=@{AufgabeAnlegenR 1}>_{MsgAufgabeAnlegen}
-  <li .dropdown>
-    <a data-toggle=dropdown .dropdown-toogle href=#>_{MsgAufgabe}
-      <b .caret>
-    <ul .dropdown-menu>
-      <li .dropdown-header>Aufgabenname
-      <li>
-        <a href=@{AufgabeBearbeitenR 1}>_{MsgBearbeiten}
-      <li>
-        <a href=@{AufgabeR 1}>_{MsgLösen}
-      <li>
-        <a href=@{StatistikR 1}>_{MsgStatistikAnzeigen}
-      <li .divider>
-      <li>
-        <a href=#>(_{MsgServerErstellen})
-      <li>
-        <a href=@{ServersR}>_{MsgServers}
-      <li .divider>
-      <li .dropdown-header>Aufgabenservername
-      <li>
-        <a href=@{ServerR "http://"}>_{MsgAufgabeTyp}
-      <li>
-        <a href=@{AufgabeVorlagenR "http://" "Unify-Direct-1"}>_{MsgAufgabeVorlagen}
-      <li>
-        <a href=@{AufgabeTestenR "http://" "Unify-Direct-1" ""}>_{MsgAufgabeTesten}
+$if null navMenu
+$else
+  <ul .nav .navbar-nav>
+    $forall NavigationMenu titel items <- navMenu
+      $if null items
+      $else
+        <li .dropdown>
+          <a data-toggle=dropdown .dropdown-toogle href=#>_{titel}
+            <b .caret>
+          <ul .dropdown-menu>
+            $forall item <- items
+              $case item
+                $of Trennstrich
+                  <li .divider>
+                $of Titel subtitel
+                  <li .dropdown-header>#{subtitel}
+                $of Link route mlinkTitel
+                  <li>
+                    $maybe linkTitel <- mlinkTitel
+                      <a href=@{route}>_{linkTitel}
+                    $nothing
+                      <a href=@{route}>@{route}
