@@ -71,6 +71,7 @@ Identifikationsnummer: ID
 KeineAufgaben: Keine passenden Aufgaben gefunden.
 KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
+KeineSchulen: Es gibt leider keine Schulen, auf die Sie zugreifen können.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
 KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
 KeineVorlesungen: Es gibt leider keine Vorlesungen in diesem Semester.

@@ -1,18 +1,21 @@
-<h1>
-  _{MsgSchulen}
-<p>
-  _{MsgSchuleWählen}
-<div .list-group>
-  <a href=@{SemestersR 1} .list-group-item>
-    <h4 .list-group-heading>
-      HTW Dresden
-  <a href=@{SemestersR 1} .list-group-item>
-    <h4 .list-group-heading>
-      HTWK Leipzig
-  <a href=@{SemestersR 1} .list-group-item>
-    <h4 .list-group-heading>
-      TU Dresden
-  <a href=@{SemestersR 1} .list-group-item>
-    <h4 .list-group-heading>
-      Uni Leipzig
-
+<h1>_{MsgSchulen}
+$if null schulenAutorisiert
+  <p>_{MsgKeineSchulen}
+$else
+  <p>_{MsgSchuleWählen}
+  <ul .list-group>
+    $forall (schule, msemesterLink, mbearbeitenLink) <- schulenAutorisiert
+      <li .list-group-item>
+        $maybe semesterLink <- msemesterLink
+          <a href=@{semesterLink} .btn .btn-default .btn-block .fill-width-cell>
+            <h4 .list-group-heading>#{schule}
+          $if isJust mbearbeitenLink
+            <div .cell>
+              <div .table-padding>
+        $nothing
+          <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
+            <h4 .list-group-heading>#{schule}
+        $maybe bearbeitenLink <- mbearbeitenLink
+          <div .cell>
+            <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
+              _{MsgBearbeiten}
