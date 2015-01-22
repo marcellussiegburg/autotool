@@ -712,7 +712,8 @@ tmakers =
                 , item Lattice.LLL.Task.make_fixed
                 , item Lattice.LLL.Inverse.make_fixed
                 , item Lattice.LLL.Inverse.make_quiz
-                , item Polynomial.Task.Ideal.make_fixed  
+                , item Polynomial.Task.Ideal.make_fixed
+                , item Polynomial.Task.Ideal.make_quiz
                 ]
 	  , heading "experimentell"
 	        [ item $ Algebraic2.Central.make Algebraic_Integer

@@ -126,6 +126,7 @@ data (Ord v) => State v = State {
         -- | and store the resulting reduced polynomials in P
         , p :: S.Set (Poly Integer v)
         , reduction_count :: Int
+        , trace :: [(Int, Poly Integer v)]
          }
 
 oneline = text . unwords . words . show
@@ -134,13 +135,13 @@ terse st = oneline $ named_dutch_record (text "State")
   [ text "step" <+> toDoc (step st)
   , text "g" <+> toDoc (S.size $ g st)
   , text "b" <+> toDoc (S.size $ b st)
-    , text "r" <+> toDoc (S.size $ r st)
-    , text "p" <+> toDoc (S.size $ p st)
+  , text "r" <+> toDoc (S.size $ r st)
+  , text "p" <+> toDoc (S.size $ p st)
   , text "reduction_count" <+> toDoc (reduction_count st)
   ]
 
 state0 fs = State
-   { step = 0 , r = S.fromList fs, p = S.empty , g = S.empty , b = S.empty, reduction_count = 0 }
+   { step = 0 , r = S.fromList fs, p = S.empty , g = S.empty , b = S.empty, reduction_count = 0, trace = [] }
 
 count st = st { step = succ $ step st }
 countred st = st { reduction_count = succ $ reduction_count st }
@@ -152,15 +153,31 @@ data Option =
             , use_criterion2 :: Bool
             }
 
+option0 = Option
+    { max_steps = Just 100
+    , verbose = False
+    , use_criterion1 = True
+    , use_criterion2 = True
+    }
+
 info opt d = when (verbose opt) $ inform d     
      
-algorithm63 :: (ToDoc v, Ord v) => Option -> [ Poly Integer v ] -> Reporter [Poly Integer v]
+algorithm63 :: (ToDoc v, Ord v)
+            => Option -> [ Poly Integer v ]
+            -> Reporter [Poly Integer v]
 algorithm63 opt (fs :: [Poly Integer v]) = do
+  s <- algorithm63s opt fs
+  return $ S.toList $ g s
+
+algorithm63s opt fs = do  
   let w_nb_ra s = do reduce_all opt s >>= new_basis opt >>= work
       work s = do
-        inform $ text "work" <+> if verbose opt then toDoc s else terse s
+        inform $ text "work" <+> if verbose opt then toDoc s else terse s        
         case S.minView (b s) of
           Just (p,b') -> do
+            case max_steps opt of
+                Just ms -> when (step s>ms) $ reject
+                     $ text "too many steps"
             let f1 = first p ; f2 = second p
             info opt $ text "pair =" <+> toDoc p
             let c1 = criterion1 p s
@@ -178,9 +195,10 @@ algorithm63 opt (fs :: [Poly Integer v]) = do
                      $ s
                        { r = g0 , p = S.singleton h , g = g1
                        , b = S.filter ( \ p -> S.notMember (first p) g0 && S.notMember (second p) g0) b'
+                       , trace = (step s, h):trace s
                        }
           Nothing -> do
-            return $ S.toList $ g s
+            return s
   w_nb_ra $ state0 fs
 
 criterion1 f s = or $ do
