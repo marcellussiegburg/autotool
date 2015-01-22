@@ -248,7 +248,7 @@ reduce_all opt (s :: State v) = do
   
 buchbergerIO fs = do
    let (res,msg :: Doc) = export
-           -- $ algorithm62 
+           --    $ algorithm62 
            $ algorithm63 ( Option { verbose = False } )
            $ fs
    print msg
