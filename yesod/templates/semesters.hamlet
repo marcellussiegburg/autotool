@@ -1,48 +1,24 @@
-<h1>
-  _{MsgSemesters}
-<ul .list-group>
-  <li .list-group-item .list-group-item-success>
-    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
-      <h4 .list-group-heading>
-        WS 2014/2015
-      <p .list-group-item-text>
-        _{MsgSemesterDauer (UTCTime (fromGregorian 2014 10 1) $ timeOfDayToTime midnight) $ UTCTime (fromGregorian 2015 3 31) $ timeOfDayToTime midnight}
-    <div .cell>
-      <div .table-padding>
-    <div .cell>
-      <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
-        _{MsgBearbeiten}
-  <li .list-group-item .list-group-item-warning>
-    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
-      <h4 .list-group-heading>
-        SS 2014
-      <p .list-group-item-text>
-        _{MsgSemesterDauer (UTCTime (fromGregorian 2014 4 1) $ timeOfDayToTime midnight) $ UTCTime (fromGregorian 2014 9 31) $ timeOfDayToTime midnight}
-    <div .cell>
-      <div .table-padding>
-    <div .cell>
-      <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
-        _{MsgBearbeiten}
-  <li .list-group-item .list-group-item-warning>
-    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
-      <h4 .list-group-heading>
-        WS 2013/2014
-      <p .list-group-item-text>
-        _{MsgSemesterDauer (UTCTime (fromGregorian 2013 10 1) $ timeOfDayToTime midnight) $ UTCTime (fromGregorian 2014 3 31) $ timeOfDayToTime midnight}
-    <div .cell>
-      <div .table-padding>
-    <div .cell>
-      <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
-        _{MsgBearbeiten}
-  <li .list-group-item .list-group-item-warning>
-    <a href=@{VorlesungenR 1} .btn .btn-default .btn-block .fill-width-cell>
-      <h4 .list-group-heading>
-        SS 2013
-      <p .list-group-item-text>
-        _{MsgSemesterDauer (UTCTime (fromGregorian 2013 4 1) $ timeOfDayToTime midnight) $ UTCTime (fromGregorian 2013 9 31) $ timeOfDayToTime midnight}
-    <div .cell>
-      <div .table-padding>
-    <div .cell>
-      <a href=@{SemesterR 1} .btn .btn-primary .btn-block>
-        _{MsgBearbeiten}
-
+<h1>_{MsgSemesters}
+$if null semestersAutorisiert
+  <p>_{MsgKeineSemesters}
+$else
+  <ul .list-group>
+    $forall (semester, mschuleLink, mbearbeitenLink) <- semestersAutorisiert
+      <li .list-group-item .#{listGroupItemClass $ Semester.status semester}>
+        $maybe schuleLink <- mschuleLink
+          <a href=@{schuleLink} .btn .btn-default .btn-block .fill-width-cell>
+            <h4 .list-group-heading>#{sname semester}
+            <p .list-group-item-text>
+              _{MsgSemesterDauer (timeToUTCTime $ Semester.von semester) $ timeToUTCTime $ Semester.bis semester}
+          $if isJust mbearbeitenLink
+            <div .cell>
+              <div .table-padding>
+        $nothing
+          <a href=# .btn .btn-default .btn-block .fill-width-cell>
+            <h4 .list-group-heading>#{sname semester}
+            <p .list-group-item-text>
+              _{MsgSemesterDauer (timeToUTCTime $ Semester.von semester) $ timeToUTCTime $ Semester.bis semester}
+        $maybe bearbeitenLink <- mbearbeitenLink
+          <div .cell>
+            <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
+              _{MsgBearbeiten}

@@ -1,14 +1,18 @@
 module Model where
 
+import Prelude (Integer, toInteger, (^), (*))
 import Data.Either (Either (Right))
+import Data.Fixed (Fixed (MkFixed))
 import Data.Function (($))
 import Data.Int (Int)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Text (Text, unpack, pack)
 import Data.Text.Read (decimal, signed)
+import Data.Time (TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime)
 import Yesod.Core.Dispatch (PathPiece, fromPathPiece, toPathPiece)
 
 import Control.Types
+import Control.Time.Typ (Time (Time))
 
 type AufgabeId = Int
 type AufgabeKonfiguration = Text
@@ -30,3 +34,6 @@ instance PathPiece UNr where
 instance PathPiece MNr where
     fromPathPiece u = Just $ MNr $ unpack u
     toPathPiece u = pack $ toString u
+
+timeToUTCTime :: Time -> UTCTime
+timeToUTCTime (Time y m d h min s) = UTCTime (fromGregorian (toInteger y) m d) $ timeOfDayToTime $ TimeOfDay h min $ MkFixed $ toInteger s * 10 ^ (12 :: Integer)

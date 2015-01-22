@@ -4,10 +4,10 @@ $if null schulenAutorisiert
 $else
   <p>_{MsgSchuleWählen}
   <ul .list-group>
-    $forall (schule, msemesterLink, mbearbeitenLink) <- schulenAutorisiert
+    $forall (schule, mschuleLink, mbearbeitenLink) <- schulenAutorisiert
       <li .list-group-item>
-        $maybe semesterLink <- msemesterLink
-          <a href=@{semesterLink} .btn .btn-default .btn-block .fill-width-cell>
+        $maybe schuleLink <- mschuleLink
+          <a href=@{schuleLink} .btn .btn-default .btn-block .fill-width-cell>
             <h4 .list-group-heading>#{schule}
           $if isJust mbearbeitenLink
             <div .cell>

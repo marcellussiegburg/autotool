@@ -18,14 +18,14 @@ autorisiertSchule :: Maybe (AuthId Autotool) -> Schule -> IO [(Text, Maybe (Rout
 autorisiertSchule mid schule = do
   let UNr u = Schule.unr schule
       Name sname = Schule.name schule
-      semesterRoute = SemestersR u
+      schuleRoute = SemestersR u
       bearbeitenRoute = SchuleR u
       ist (Just True) route = Just route
       ist _ _ = Nothing
-  autorisiertS <- istAutorisiert mid semesterRoute
+  autorisiertS <- istAutorisiert mid schuleRoute
   autorisiertB <- istAutorisiert mid bearbeitenRoute
   if autorisiertS == Just True || autorisiertB == Just True
      then return [(pack sname
-                  ,ist autorisiertS semesterRoute
-                  ,ist autorisiertB bearbeitenRoute)] 
+                  ,ist autorisiertS schuleRoute
+                  ,ist autorisiertB bearbeitenRoute)]
      else return []

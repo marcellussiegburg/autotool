@@ -114,8 +114,9 @@ library
                  , mime-mail
                  , email-validate
                  , exceptions
-                 , autotool-db
                  , transformers
+                 , autotool-db
+                 , autolib-util
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)
