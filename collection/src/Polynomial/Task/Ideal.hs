@@ -29,7 +29,7 @@ import Inter.Quiz
 
 import Data.Typeable
 import Data.Maybe
-import Data.List ( tails, maximumBy )
+import Data.List ( tails, maximumBy, minimumBy )
 import Data.Function (on)
 import Control.Applicative ((<$>),(<*>))
 import System.Random
@@ -128,16 +128,18 @@ roll_one conf = do
     Just s | not $ Prelude.null $ trace s -> do
       i <- randomRIO (0, length (trace s) - 1)
       let (c,g) = trace s !! i
-      return $ Just ( (c, negate $ nterms g)
+      return $ Just ( (negate c, nterms g, Prelude.sum $ fmap Prelude.abs $ coefficients g )
         , (fmap (map fromInteger) fs, map fromInteger g))
     _ -> return Nothing
     
+coefficients p = fmap fst $ terms p
+
 roll conf = do
   cs <- replicateM (num_candidates conf) $ roll_one conf
   case catMaybes cs of
     [] -> roll conf
     ds -> do
-      let p@(_, inst) = maximumBy (compare `on` fst) ds
+      let p@(_, inst) = minimumBy (compare `on` fst) ds
       return inst
 
 instance Generator Polynomial_Ideal_Membership Config ( [P], P ) where

@@ -340,6 +340,7 @@ Library
                  Polynomial.Unary.ToDoc
                  Polynomial.Unary.Data
                  Polynomial.Unary.Op
+                 Polynomial.Grobner.Compute
                  Polynomial.Task.Ideal
                  Algebraic2.Central,
                  Algebraic2.Class,

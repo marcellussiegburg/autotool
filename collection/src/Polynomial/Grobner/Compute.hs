@@ -21,6 +21,7 @@ http://www.risc.jku.at/Groebner-Bases-Bibliography/details.php?details_id=529
 {-# language TemplateHaskell #-}
 {-# language ScopedTypeVariables #-}
 {-# language DatatypeContexts #-}
+{-# language DoAndIfThenElse #-}
 
 
 module Polynomial.Grobner.Compute where
