@@ -62,7 +62,8 @@ Library
         mueval>=0.8.1.1, hint, 
         haskell-src-exts==1.15.*, 
         syb,
-        transformers,
+        -- comes with ghc:
+        transformers==0.3.*,
         logict>=0.6.0.2,
         lens,
         hashable,
