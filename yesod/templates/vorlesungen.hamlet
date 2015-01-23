@@ -1,21 +1,30 @@
-<h1>
-  _{MsgVorlesungen}
-$if null vorlesungen
+<h1>_{MsgVorlesungen}
+$if null vorlesungenAutorisiert
   _{MsgKeineVorlesungen}
 $else
   <ul .list-group>
-    $forall vorlesung <- vorlesungen
-      <li .list-group-item .#{listGroupItemClass $ ende vorlesung}>
-        <a href=@{GruppenR 1} .btn .btn-default .btn-block .fill-width-cell>
-          <h4 .list-group-heading>
-            #{name vorlesung}
-          <p .list-group-item-text>
-            _{MsgEinschreibungDauer (neuesDatum $ beginn vorlesung) $ neuesDatum $ ende vorlesung}
-          $maybe nachricht <- tagesNachricht vorlesung
+    $forall (vorlesung, mvorlesungLink, mbearbeitenLink) <- vorlesungenAutorisiert
+      <li .list-group-item .#{listGroupItemClass $ Vorlesung.einschreib vorlesung}>
+        $maybe vorlesungLink <- mvorlesungLink
+          <a href=@{vorlesungLink} .btn .btn-default .btn-block .fill-width-cell>
+            <h4 .list-group-heading>#{vname vorlesung}
             <p .list-group-item-text>
-              _{MsgTagesNachricht}: #{nachricht}
-        <div .cell>
-          <div .table-padding>
-        <div .cell>
-          <a href=@{VorlesungR 1} .btn .btn-primary .btn-block>
-            _{MsgBearbeiten}
+              _{MsgEinschreibungDauer (timeToUTCTime $ Vorlesung.einschreibVon vorlesung) $ timeToUTCTime $ Vorlesung.einschreibBis vorlesung}
+            $if not $ null $ vmotd vorlesung
+              <p .list-group-item-text>
+                _{MsgTagesNachricht}: #{vmotd vorlesung}
+          $if isJust mbearbeitenLink
+            <div .cell>
+              <div .table-padding>
+        $nothing
+          <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
+            <h4 .list-group-heading>#{vname vorlesung}
+            <p .list-group-item-text>
+              _{MsgEinschreibungDauer (timeToUTCTime $ Vorlesung.einschreibVon vorlesung) $ timeToUTCTime $ Vorlesung.einschreibBis vorlesung}
+            $if not $ null $ vmotd vorlesung
+              <p .list-group-item-text>
+                _{MsgTagesNachricht}: #{vmotd vorlesung}
+        $maybe bearbeitenLink <- mbearbeitenLink
+          <div .cell>
+            <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
+              _{MsgBearbeiten}

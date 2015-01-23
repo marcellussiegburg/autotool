@@ -2,24 +2,43 @@ module Handler.Vorlesungen where
 
 import Import
 
-import Handler.Vorlesung (VorlesungForm (..))
+import Handler.Semesters (listGroupItemClass)
+
+import Control.SQL (equals, reed, toEx)
+import qualified Control.Vorlesung as Vorlesung
+import Control.Types
+import Autolib.Util.Sort (sortBy)
 
 getVorlesungenR :: SemesterId -> Handler Html
 getVorlesungenR semester = do
-  let neuesDatum datum = UTCTime datum $ timeOfDayToTime midnight
-      vorlesungen =
-        [VorlesungForm "Theoretische Grundlagen der Informatik" (fromGregorian 2014 9 31) midnight (fromGregorian 2014 12 31) midnight (Just "Keine"),
-         VorlesungForm "Compilerbau" (fromGregorian 2014 10 31) midnight (fromGregorian 2014 12 31) midnight Nothing,
-         VorlesungForm "Constraint Programmierung" (fromGregorian 2014 8 31) midnight (fromGregorian 2014 12 31) midnight (Just "Bitte einschreiben"),
-         VorlesungForm "Symbolisches Rechnen" (fromGregorian 2014 6 31) midnight (fromGregorian 2014 9 31) midnight (Just "Einschreibung vorbei")]
+  vorlesungen <- lift $ get_at_semester $ ENr semester
+  let vorlesungenSortiert = reverse $ sortBy Vorlesung.einschreibVon vorlesungen
+  mid <- maybeAuthId
+  vorlesungenAutorisiert' <- lift $ mapM (autorisiertVorlesung mid) vorlesungenSortiert
+  let vorlesungenAutorisiert = concat vorlesungenAutorisiert'
+      vname v = let Name n = Vorlesung.name v
+                in n
+      vmotd v = let Name m = Vorlesung.motd v
+                in m
   defaultLayout $ do
     $(widgetFile "vorlesungen")
 
-postVorlesungenR :: SemesterId -> Handler Html
-postVorlesungenR = getVorlesungenR
+autorisiertVorlesung :: Maybe (AuthId Autotool) -> Vorlesung.Vorlesung -> IO [(Vorlesung.Vorlesung, Maybe (Route Autotool), Maybe (Route Autotool))]
+autorisiertVorlesung mid vorlesung = do
+  let VNr v = Vorlesung.vnr vorlesung
+      vorlesungRoute = GruppenR v
+      bearbeitenRoute = VorlesungR v
+      ist (Just True) route = Just route
+      ist _ _ = Nothing
+  autorisiertS <- istAutorisiert mid vorlesungRoute
+  autorisiertB <- istAutorisiert mid bearbeitenRoute
+  if autorisiertS == Just True || autorisiertB == Just True
+     then return [(vorlesung
+                  ,ist autorisiertS vorlesungRoute
+                  ,ist autorisiertB bearbeitenRoute)]
+     else return []
 
-listGroupItemClass :: Day -> Text
-listGroupItemClass datum =
-   if datum == fromGregorian 2014 12 31
-   then "list-group-item-success"
-   else "list-group-item-warning"
+get_at_semester :: ENr -> IO [ Vorlesung.Vorlesung ]
+get_at_semester enr =
+    Vorlesung.get_from_where (map reed ["vorlesung"])
+           (equals (reed "vorlesung.ENr") (toEx enr))

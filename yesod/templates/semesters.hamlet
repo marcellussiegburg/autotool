@@ -3,10 +3,10 @@ $if null semestersAutorisiert
   <p>_{MsgKeineSemesters}
 $else
   <ul .list-group>
-    $forall (semester, mschuleLink, mbearbeitenLink) <- semestersAutorisiert
+    $forall (semester, msemesterLink, mbearbeitenLink) <- semestersAutorisiert
       <li .list-group-item .#{listGroupItemClass $ Semester.status semester}>
-        $maybe schuleLink <- mschuleLink
-          <a href=@{schuleLink} .btn .btn-default .btn-block .fill-width-cell>
+        $maybe semesterLink <- msemesterLink
+          <a href=@{semesterLink} .btn .btn-default .btn-block .fill-width-cell>
             <h4 .list-group-heading>#{sname semester}
             <p .list-group-item-text>
               _{MsgSemesterDauer (timeToUTCTime $ Semester.von semester) $ timeToUTCTime $ Semester.bis semester}
@@ -14,7 +14,7 @@ $else
             <div .cell>
               <div .table-padding>
         $nothing
-          <a href=# .btn .btn-default .btn-block .fill-width-cell>
+          <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
             <h4 .list-group-heading>#{sname semester}
             <p .list-group-item-text>
               _{MsgSemesterDauer (timeToUTCTime $ Semester.von semester) $ timeToUTCTime $ Semester.bis semester}
