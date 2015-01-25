@@ -1,51 +1,48 @@
-<h1>
-  _{MsgGruppen}
-<table .table .table-striped .table-hover>
-  <thead>
-    <tr>
-      <th>
-        _{MsgGruppeName}
-      <th>
-        _{MsgReferent}
-      <th>
-        _{MsgStudentenEingeschrieben}
-      <th>
-        _{MsgStudentenMaximal}
-      <th>
-      <th>
-      <th>
-  <tbody>
-    <tr>
-      <td>
-        14INB-1
-      <td>
-        Herr Müller
-      <td>
-        11
-      <td>
-        30
-      <td>
-        <a href=@{GruppenR 1} .btn .btn-success .btn-block role="button">
-          _{MsgEinschreiben}
-      <td>
-      <td>
-        <a href=@{GruppeR 1} .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
-    <tr>
-      <td>
-        14INB-2
-      <td>
-        Herr Meyer
-      <td>
-        3
-      <td>
-        15
-      <td>
-        <a href=@{GruppenR 1} .btn .btn-danger .btn-block role="button">
-          _{MsgAustragen}
-      <td>
-        <a href=@{AufgabenR 1} .btn .btn-primary .btn-block role="button">
-          _{MsgBesuchen}
-      <td>
-        <a href=@{GruppeR 1} .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
+<h1>_{MsgGruppen}
+<p>_{MsgGruppenHinweis}
+$if null gruppenBesucht
+  <p>_{MsgKeineEinschreibungen}
+$if null gruppen
+  <p>_{MsgKeineÜbungsgruppen}
+$else
+  <table .table .table-striped .table-hover>
+    <thead>
+      <tr>
+        <th>
+          _{MsgGruppeName}
+        <th>
+          _{MsgReferent}
+        <th>
+          _{MsgStudentenEingeschrieben}
+        <th>
+          _{MsgStudentenMaximal}
+        <th>
+        <th>
+        <th>
+    <tbody>
+      $forall gruppe <- gruppen
+        <tr>
+          <td>
+            #{fromName $ Gruppe.name gruppe}
+          <td>
+            #{fromName $ Gruppe.referent gruppe}
+          <td>
+            11
+          <td>
+            #{Gruppe.maxStudents gruppe}
+          <td>
+            $if elem (Gruppe.gnr gruppe) gruppenBesuchtIds
+              <a href=@{GruppenR vorlesung} .btn .btn-danger .btn-block role="button">
+                _{MsgAustragen}
+            $else
+              $if fmap Vorlesung.einschreib (listToMaybe vorlesung') == Just Current
+                <a href=@{GruppenR vorlesung} .btn .btn-success .btn-block role="button">
+                  _{MsgEinschreiben}
+          <td>
+            $if elem (Gruppe.gnr gruppe) gruppenBesuchtIds
+              <a href=@{AufgabenR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
+                _{MsgBesuchen}
+          <td>
+            $if istTutor
+              <a href=@{GruppeR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
+                _{MsgBearbeiten}

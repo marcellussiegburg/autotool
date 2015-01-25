@@ -62,6 +62,7 @@ GruppeAnlegen: Übungsgruppe anlegen
 GruppeBearbeiten: Übungsgruppe bearbeiten
 Gruppen: Übungsgruppen
 GruppeName: Gruppenname
+GruppenHinweis: Um die Aufgaben für eine Vorlesung bearbeiten zu können, müssen Sie in einer Übungsgruppe dieser Vorlesung eingeschrieben sein.
 GruppeNummer: Gruppennummer
 HighscoreAnzeigen: Highscore
 HighscoreHoch: Hoch
@@ -71,10 +72,12 @@ Identifikationsnummer: ID
 KeineAufgaben: Keine passenden Aufgaben gefunden.
 KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
+KeineEinschreibungen: Sie sind in keine Übungsgruppe dieser Vorlesung eingeschrieben.
 KeineSchulen: Es gibt leider keine Schulen, auf die Sie zugreifen können.
 KeineSemesters: Für diese Schule wurden noch keine Semester definiert.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
 KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
+KeineÜbungsgruppen: Es gibt leider keien Übungsgruppen zu dieser Vorlesung.
 KeineVorlesungen: Es gibt leider keine Vorlesungen in diesem Semester.
 Löschen: Löschen
 Lösen: Lösen
