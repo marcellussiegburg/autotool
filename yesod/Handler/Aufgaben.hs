@@ -15,8 +15,8 @@ titel = MsgAufgabenAlle
 
 aktuell = False
 
-getAufgabenR :: GruppeId -> Handler Html
-getAufgabenR gruppe = do
+getAufgabenR :: VorlesungId -> Handler Html
+getAufgabenR vorlesung = do
   let aufgaben =
         [AufgabeEintrag "Reconstruct-Direct-1" "Demo" "Keine" (UTCTime (fromGregorian 2014 12 31) $ timeOfDayToTime midnight) (Just "Pending") (Just (0,4)),
          AufgabeEintrag "Reconstruct-Direct-1" "Optional" "Niedrig" (UTCTime (fromGregorian 2014 10 31) $ timeOfDayToTime midnight) (Just "Okay") (Just (2,0)),

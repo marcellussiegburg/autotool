@@ -24,10 +24,10 @@
 /vorlesung/#VorlesungId/tutoren           TutorenR              GET    POST      !direktor
 /vorlesung/#VorlesungId/resultate         ResultateR            GET              !tutor
 /vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR     GET              !tutor
+/vorlesung/#VorlesungId/aufgabe           AufgabeAnlegenR       GET    POST      !tutor
+/vorlesung/#VorlesungId/aufgaben          AufgabenR             GET              !student
+/vorlesung/#VorlesungId/aufgaben/aktuell  AufgabenAktuellR      GET              !student
 /gruppe/#GruppeId                         GruppeR               GET    POST      !tutor
-/gruppe/#GruppeId/aufgabe                 AufgabeAnlegenR       GET    POST      !tutor
-/gruppe/#GruppeId/aufgaben                AufgabenR             GET              !student
-/gruppe/#GruppeId/aufgaben/aktuell        AufgabenAktuellR      GET              !student
 /aufgabe/#AufgabeId                       AufgabeBearbeitenR    GET    POST      !tutor
 /aufgabe/#AufgabeId/einsendung            AufgabeR              GET    POST      !student
 /aufgabe/#AufgabeId/statistik             StatistikR            GET    POST      !tutor

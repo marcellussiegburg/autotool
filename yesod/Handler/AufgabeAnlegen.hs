@@ -17,14 +17,14 @@ data AutotoolForm = AutotoolForm {
   attributes :: [(Text, Text)]
 }
 
-getAufgabeAnlegenR :: GruppeId -> Handler Html
+getAufgabeAnlegenR :: VorlesungId -> Handler Html
 getAufgabeAnlegenR = postAufgabeAnlegenR
 
-postAufgabeAnlegenR :: GruppeId -> Handler Html
-postAufgabeAnlegenR gruppe = do
-  aufgabeTemplate (Left gruppe) Nothing
+postAufgabeAnlegenR :: VorlesungId -> Handler Html
+postAufgabeAnlegenR vorlesung = do
+  aufgabeTemplate (Left vorlesung) Nothing
 
-aufgabeTemplate :: Either GruppeId AufgabeId -> Maybe (Maybe ServerUrl, Maybe AufgabeTyp, Maybe AufgabeFormDaten, Maybe (Maybe VorlageName), Maybe AufgabeKonfiguration) -> Handler Html
+aufgabeTemplate :: Either VorlesungId AufgabeId -> Maybe (Maybe ServerUrl, Maybe AufgabeTyp, Maybe AufgabeFormDaten, Maybe (Maybe VorlageName), Maybe AufgabeKonfiguration) -> Handler Html
 aufgabeTemplate eid maufgabe = do
   let ziel = case eid of
                Left gruppe -> AufgabeAnlegenR gruppe

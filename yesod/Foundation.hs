@@ -251,8 +251,8 @@ navigationMenu mroute authId = do
   let schule s = [SchuleR s, DirektorenR s, DirektorErnennenR s, WaisenkinderR s, SemesterR s, SemesterAnlegenR s]
       schulen = [SchulenR, SchuleAnlegenR] -- ^ TODO ++ [Persönliche Daten, Highscore]
       semester s = [SemesterR s, VorlesungenR s, VorlesungAnlegenR s]
-      vorlesung v = [VorlesungR v, TutorenR v, TutorErnennenR v, StudentenR v, ResultateR v, ResultatePflichtR v, GruppenR v, GruppeAnlegenR v]
-      gruppe g = [GruppeR g, AufgabenR g, AufgabenAktuellR g, AufgabeAnlegenR g]
+      vorlesung v = [VorlesungR v, TutorenR v, TutorErnennenR v, StudentenR v, ResultateR v, ResultatePflichtR v, GruppenR v, GruppeAnlegenR v, AufgabenR v, AufgabenAktuellR v, AufgabeAnlegenR v]
+      gruppe g = [GruppeR g]
       aufgabe a = [AufgabeBearbeitenR a, AufgabeR a, StatistikR a]
       servers = [ServersR]
       server s t v k = concat $ map maybeToList
@@ -321,22 +321,16 @@ getName konstruktor dbFunktion nameFunktion mvId = runMaybeT $ do
   return $ pack sname
 
 -- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge, abhängig von der angegebenen Route und der Relevanz für den Nutzer. Route Nothing ist für den Fall einer fehlerhaften URL vorgesehen.
+-- 
+-- Momentan unterscheidet sich die Funktion nur in der Anzahl der Elemente des Tupels, das zurückgeliefert wird, von routeInformation.
 routeBrotkrumen :: Maybe (Route Autotool) -> Maybe Int -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId)
 routeBrotkrumen Nothing _ = return (Nothing, Nothing, Nothing, Nothing, Nothing)
-routeBrotkrumen (Just route) mauthId = do
-  (schule, semester, vorlesung, mgruppen, aufgabe, _) <- routeInformation route
-  gruppe <- runMaybeT $ do
-    gruppen <- MaybeT $ return mgruppen
-    case gruppen of
-      [] -> MaybeT $ return Nothing
-      [_] -> MaybeT $ return $ listToMaybe gruppen
-      _ -> do
-        mgruppe <- lift $ getBesuchteGruppe vorlesung mauthId
-        MaybeT $ return $ maybe (listToMaybe gruppen) (\_ -> mgruppe) mgruppe
+routeBrotkrumen (Just route) _ = do
+  (schule, semester, vorlesung, gruppe, aufgabe, _) <- routeInformation route
   return (schule, semester, vorlesung, gruppe, aufgabe)
 
 -- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge abhängig von der angegebenen Route und unabhängig von der Relevanz für den Nutzer. Dient als Hilfsfunktion für @routeBrotkrumen@.
-routeInformation :: Route Autotool -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe [GruppeId], Maybe AufgabeId, Maybe ())
+routeInformation :: Route Autotool -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe ())
 routeInformation route = case routeParameter route of
    Nothing -> return $ fromTuple6 Tuple6_0
    Just parameter -> case parameter of
@@ -347,19 +341,17 @@ routeInformation route = case routeParameter route of
      VorlesungRoute vorlesung -> do
        semester <- getSemester $ Just vorlesung
        schule <- getSchule semester
-       gruppen <- getGruppen $ Just vorlesung
-       return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, gruppen, Nothing, Nothing)
+       return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, Nothing, Nothing, Nothing)
      GruppeRoute gruppe -> do
        vorlesung <- getVorlesung $ Just gruppe
        semester <- getSemester vorlesung
        schule <- getSchule semester
-       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just [gruppe], Nothing, Nothing)
+       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just gruppe, Nothing, Nothing)
      AufgabeRoute aufgabe -> do
        vorlesung <- getVorlesungAufgabe $ Just aufgabe
-       gruppen <- getGruppen vorlesung
        semester <- getSemester vorlesung
        schule <- getSchule semester
-       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, gruppen, Just aufgabe, Nothing)
+       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Just aufgabe, Nothing)
      ServerRoute _ -> return $ fromTuple6 Tuple6_0
 
 -- | Liefert für die Interaktion mit dem Semantik-Server die aktuell abrufbaren Parameter aus der angegebenen Route.
@@ -406,22 +398,6 @@ getVorlesungAufgabe mgruppe  = runMaybeT $ do
   VNr vorlesungId <- MaybeT $ return $ listToMaybe $ map Gruppe.vnr gruppen
   return vorlesungId
 
--- | Liefert ggf. die Gruppen zu einer Vorlesung
-getGruppen :: Maybe VorlesungId -> IO (Maybe [GruppeId])
-getGruppen mvorlesung = runMaybeT $ do
-  vorlesung <- MaybeT $ return mvorlesung
-  gruppen <- lift $ GruppeDB.get_this $ VNr vorlesung
-  return $ map (\g -> let GNr gId = Gruppe.gnr g in gId) gruppen
-
--- | Liefert ggf. eine Gruppe zu einer Vorlesung, die der Student besucht
-getBesuchteGruppe :: Maybe VorlesungId -> Maybe Int -> IO (Maybe GruppeId)
-getBesuchteGruppe mvorlesung mauthId = runMaybeT $ do
-  vorlesung <- MaybeT $ return mvorlesung
-  authId <- MaybeT $ return mauthId
-  gruppen <- lift $ GruppeDB.get_attended (VNr vorlesung) $ SNr authId
-  GNr gruppeId <- MaybeT $ return $ listToMaybe $ map Gruppe.gnr gruppen
-  return gruppeId
-
 data RouteParameter =
     SchuleRoute SchuleId
   | SemesterRoute SemesterId
@@ -465,10 +441,10 @@ routeParameter route = case route of
   TutorenR v                  -> Just $ VorlesungRoute v
   ResultateR v                -> Just $ VorlesungRoute v
   ResultatePflichtR v         -> Just $ VorlesungRoute v
+  AufgabeAnlegenR v           -> Just $ VorlesungRoute v
+  AufgabenR v                 -> Just $ VorlesungRoute v
+  AufgabenAktuellR v          -> Just $ VorlesungRoute v
   GruppeR g                   -> Just $ GruppeRoute g
-  AufgabeAnlegenR g           -> Just $ GruppeRoute g
-  AufgabenR g                 -> Just $ GruppeRoute g
-  AufgabenAktuellR g          -> Just $ GruppeRoute g
   AufgabeBearbeitenR a        -> Just $ AufgabeRoute a
   AufgabeR a                  -> Just $ AufgabeRoute a
   StatistikR a                -> Just $ AufgabeRoute a
@@ -508,10 +484,10 @@ routeTitel route = case route of
   TutorenR _                  -> Just MsgTutoren
   ResultateR _                -> Just MsgAlleResultate
   ResultatePflichtR _         -> Just MsgResultatePflicht
-  GruppeR _                   -> Just MsgBearbeiten
   AufgabeAnlegenR _           -> Just MsgAufgabeAnlegen
   AufgabenR _                 -> Just MsgAufgaben
   AufgabenAktuellR _          -> Just MsgAufgabenAktuell
+  GruppeR _                   -> Just MsgBearbeiten
   AufgabeBearbeitenR _        -> Just MsgBearbeiten
   AufgabeR _                  -> Just MsgLösen
   StatistikR _                -> Just MsgStatistikAnzeigen
