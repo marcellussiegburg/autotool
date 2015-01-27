@@ -115,6 +115,7 @@ library
                  , email-validate
                  , exceptions
                  , transformers
+                 , either
                  , autotool-db
                  , autolib-util
 

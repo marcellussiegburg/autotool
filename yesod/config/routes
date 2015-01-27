@@ -10,7 +10,7 @@
 /schule/#SchuleId                         SchuleR               GET    POST      !admin
 /schule/#SchuleId/direktoren              DirektorenR           GET    POST      !admin
 /schule/#SchuleId/direktor                DirektorErnennenR     GET    POST      !admin
-/schule/#SchuleId/waisenkinder            WaisenkinderR         GET              !tutor
+/schule/#SchuleId/waisenkinder            WaisenkinderR         GET              !jederTutor
 /schule/#SchuleId/semesters               SemestersR            GET              !student
 /schule/#SchuleId/semester                SemesterAnlegenR      GET    POST      !direktor
 /semester/#SemesterId                     SemesterR             GET    POST      !direktor
@@ -25,11 +25,11 @@
 /vorlesung/#VorlesungId/resultate         ResultateR            GET              !tutor
 /vorlesung/#VorlesungId/resultate/pflicht ResultatePflichtR     GET              !tutor
 /vorlesung/#VorlesungId/aufgabe           AufgabeAnlegenR       GET    POST      !tutor
-/vorlesung/#VorlesungId/aufgaben          AufgabenR             GET              !student
-/vorlesung/#VorlesungId/aufgaben/aktuell  AufgabenAktuellR      GET              !student
+/vorlesung/#VorlesungId/aufgaben          AufgabenR             GET              !tutor !einschreibung
+/vorlesung/#VorlesungId/aufgaben/aktuell  AufgabenAktuellR      GET              !tutor !einschreibung
 /gruppe/#GruppeId                         GruppeR               GET    POST      !tutor
 /aufgabe/#AufgabeId                       AufgabeBearbeitenR    GET    POST      !tutor
-/aufgabe/#AufgabeId/einsendung            AufgabeR              GET    POST      !student
+/aufgabe/#AufgabeId/einsendung            AufgabeR              GET    POST      !einschreibung
 /aufgabe/#AufgabeId/statistik             StatistikR            GET    POST      !tutor
 
 /servers                                                                          ServersR              GET    POST

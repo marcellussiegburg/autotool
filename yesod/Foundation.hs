@@ -21,10 +21,11 @@ import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
 import Control.Applicative ((<$>), (<*>))
-import Control.Monad (filterM)
+import Control.Monad (filterM, when)
 import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
+import Control.Monad.Trans.Either (EitherT (runEitherT), left)
 import Data.Foldable (foldlM)
-import Data.Maybe (listToMaybe, maybeToList)
+import Data.Maybe (fromMaybe, listToMaybe, maybeToList)
 import Data.Set (member)
 import Data.Text (Text, pack)
 import Data.Text.Read (decimal, signed)
@@ -189,31 +190,43 @@ getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
 
 -- | Gibt zurück, ob ein Nutzer berechtigt ist, auf eine Route @route@ zuzugreifen. Dabei wird 'Just True' geliefert, wenn der Nutzer berechtigt ist. 'Nothing' wird geliefert, wenn der Nutzer nicht angemeldet ist (@mid@ = 'Nothing') und Authentifizierung notwendig ist, um auf die Ressource zuzugreifen. 'Just False' wird geliefert, wenn der Nutzer authentifiziert ist, allerdings nicht die notwendige Autorisierung besitzt.
-istAutorisiert :: Maybe Int -> Route Autotool -> IO (Maybe Bool)
-istAutorisiert mid route
-  | "student" `member` routeAttrs route = do
-      return $ maybe Nothing (\_ -> Just True) mid
-  | "admin" `member` routeAttrs route = do
-      autorisierung route mid
-  | "direktor" `member` routeAttrs route = do
-      autorisierung route mid
-  | "tutor" `member` routeAttrs route = do
-      autorisierung route mid
-  | otherwise = return $ Just True
-
--- | Liefert 'Just True', wenn der Nutzer mit Kennung @authId@ eine der für die Route notwendige Rolle besitzt ("admin, "direktor" oder "tutor") und somit Zugriff hat. 'Just False' wird geliefert, wenn der Nutzer kein Zugriff hat und 'Nothing', wenn @mid@ Nothing ist, also kein Nutzer angemeldet ist.
-autorisierung :: Route Autotool -> Maybe Int -> IO (Maybe Bool)
-autorisierung route mid = do
-  case mid of
-    Nothing -> return Nothing
-    Just aId -> let braucht a = if a `member` routeAttrs route
-                                then [a] else []
-                    attrs = concat [braucht "admin", braucht "direktor", braucht "tutor"]
-                in foldlM (\c a -> if c == True then return True else (autorisierungRolle a aId route)) False attrs >>= return . Just
+istAutorisiert :: Maybe (AuthId Autotool) -> Route Autotool -> IO (Maybe Bool)
+istAutorisiert mid route =
+  let braucht a = if a `member` routeAttrs route
+                  then [a] else []
+      attrs = concat [braucht "admin", braucht "direktor", braucht "jederTutor", braucht "tutor", braucht "student", braucht "einschreibung"]
+  in case attrs of
+       [] -> return $ Just True
+       _ -> runMaybeT $ do
+         aId <- MaybeT $ return mid
+         lift $ foldlM (\c a ->
+           if c == True
+           then return True
+           else autorisierungRolle a aId route
+           ) False attrs
 
 -- | Liefert 'True', wenn der Nutzer mit der Kennung @authId@ und der Rolle @rolle@ autorisiert ist, auf die Route @route@ zuzugreifen.
 autorisierungRolle:: Text -> Int -> Route Autotool -> IO Bool
 autorisierungRolle rolle authId route
+  | rolle == "student" = do
+      auth <- runEitherT $ do
+        (mschule, _, _, _, _, _) <- lift $ routeInformation route
+        mstud <- lift $ StudDB.get_snr $ SNr authId
+        stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
+        schule <- fromMaybe (left False) $ fmap return mschule
+        return $ Student.unr stud == UNr schule
+      return $ either id id auth
+  | rolle == "einschreibung" = do
+      auth <- runEitherT $ do
+        (mschule, _, mvorlesung, _, _, _) <- lift $ routeInformation route
+        mstud <- lift $ StudDB.get_snr $ SNr authId
+        stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
+        schule <- fromMaybe (left False) $ fmap return mschule
+        when (Student.unr stud /= UNr schule) $ left False
+        vorlesung <- fromMaybe (left False) $ fmap return mvorlesung
+        vorlesungen <- lift $ VorlesungDB.get_attended $ SNr authId
+        return $ elem (VNr vorlesung) $ map Vorlesung.vnr vorlesungen
+      return $ either id id auth
   | rolle == "admin" = do
       auth <- runMaybeT $ do
         mstud <- lift $ StudDB.get_snr (SNr authId)
@@ -238,6 +251,15 @@ autorisierungRolle rolle authId route
         vorlesung <- MaybeT $ return mvorlesung
         return $ elem (VNr vorlesung) $ map Vorlesung.vnr vorlesungen
       return $ maybe False id auth
+  | rolle == "jederTutor" = do
+      auth <- runMaybeT $ do
+        mstud <- lift $ StudDB.get_snr (SNr authId)
+        stud <- MaybeT $ return $ listToMaybe mstud
+        vorlesungen <- lift $ TutorDB.get_tutored stud
+        (mschule,_,_,_,_,_) <- lift $ routeInformation route
+        schule <- MaybeT $ return mschule
+        return $ elem (UNr schule) $ map Vorlesung.unr vorlesungen
+      return $ maybe False id auth
   | otherwise =
       return $ False
 
@@ -248,7 +270,7 @@ data NavigationEntry = Trennstrich | Titel Text | Link (Route Autotool) (Maybe A
 -- | Liefert das Navigationsmenü, die zu verwendenden Einträge sind in dieser Methode definiert.
 navigationMenu :: Maybe (Route Autotool) -> Maybe Int -> IO [NavigationMenu]
 navigationMenu mroute authId = do
-  let schule s = [SchuleR s, DirektorenR s, DirektorErnennenR s, WaisenkinderR s, SemesterR s, SemesterAnlegenR s]
+  let schule s = [SchuleR s, DirektorenR s, DirektorErnennenR s, WaisenkinderR s, SemestersR s, SemesterAnlegenR s]
       schulen = [SchulenR, SchuleAnlegenR] -- ^ TODO ++ [Persönliche Daten, Highscore]
       semester s = [SemesterR s, VorlesungenR s, VorlesungAnlegenR s]
       vorlesung v = [VorlesungR v, TutorenR v, TutorErnennenR v, StudentenR v, ResultateR v, ResultatePflichtR v, GruppenR v, GruppeAnlegenR v, AufgabenR v, AufgabenAktuellR v, AufgabeAnlegenR v]
