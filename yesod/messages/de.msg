@@ -43,7 +43,6 @@ Austragen: Austragen
 Bearbeiten: Bearbeiten
 Behalten: Behalten
 BeispielLaden: Beispiel laden
-Besuchen: Besuchen
 CacheLöschen: Cache Löschen
 Direktoren: Direktoren
 DirektorAbsetzen: Direktor absetzen
@@ -51,7 +50,7 @@ DirektorErnennen: Direktor ernennen
 Einschreiben: Einschreiben
 EinschreibungBeginnDatum: Beginn der Einschreibung (Datum)
 EinschreibungBeginnZeit: Beginn der Einschreibung (Datum)
-EinschreibungDauer beginn@UTCTime ende@UTCTime: Eine Einschreibung ist im Zeitraum vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr möglich
+EinschreibungDauer beginn@UTCTime ende@UTCTime: Eine Einschreibung ist nur im Zeitraum vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr möglich.
 EinschreibungEndeDatum: Ende der Einschreibung (Datum)
 EinschreibungEndeZeit: Ende der Einschreibung (Datum)
 Email: E-Mail
@@ -59,16 +58,20 @@ Gesamtpunktzahl: Total
 Größe: Größe
 Gruppe: Übungsgruppe
 GruppeAnlegen: Übungsgruppe anlegen
+GruppeAusgetragen: Übungsgruppe wurde verlassen
 GruppeBearbeiten: Übungsgruppe bearbeiten
+GruppeEingeschrieben: Erfolgreich in Übungsgruppe eingeschrieben
 Gruppen: Übungsgruppen
 GruppeName: Gruppenname
 GruppenHinweis: Um die Aufgaben für eine Vorlesung bearbeiten zu können, müssen Sie in einer Übungsgruppe dieser Vorlesung eingeschrieben sein.
 GruppeNummer: Gruppennummer
+GruppeVoll: Einschreibung ist nicht möglich. Die gewählte Übungsgruppe ist voll.
 HighscoreAnzeigen: Highscore
 HighscoreHoch: Hoch
 HighscoreKeine: Keine Highscore
 HighscoreNiedrig: Niedrig
 Identifikationsnummer: ID
+IstEingeschrieben: Sie sind in einer Übungsgruppe eingeschrieben.
 KeineAufgaben: Keine passenden Aufgaben gefunden.
 KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
@@ -77,7 +80,7 @@ KeineSchulen: Es gibt leider keine Schulen, auf die Sie zugreifen können.
 KeineSemesters: Für diese Schule wurden noch keine Semester definiert.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.
 KeineTutoren: Es gibt leider keine Tutoren zu dieser Vorlesung.
-KeineÜbungsgruppen: Es gibt leider keien Übungsgruppen zu dieser Vorlesung.
+KeineGruppen: Es gibt leider keien Übungsgruppen zu dieser Vorlesung.
 KeineVorlesungen: Es gibt leider keine Vorlesungen in diesem Semester.
 Löschen: Löschen
 Lösen: Lösen
@@ -138,3 +141,4 @@ VorlesungName: Bezeichnung
 Vorname: Vorname
 Waisenkinder: Waisenkinder
 WaisenkinderBeschreibung: Studenten Ihrer Schule, die keine Übungsgruppe gewählt haben.
+ZuAufgaben: Zu den Aufgaben

@@ -1,10 +1,18 @@
 <h1>_{MsgGruppen}
-<p>_{MsgGruppenHinweis}
-$if null gruppenBesucht
-  <p>_{MsgKeineEinschreibungen}
+<p>
+  _{MsgGruppenHinweis}&nbsp;
+  $if null gruppenBesucht'
+    _{MsgKeineEinschreibungen}
+  $else
+    _{MsgIstEingeschrieben}
+$if darfGruppenSehen == Just True
+  <a href=@{AufgabenAktuellR $ vorlesung} .btn .btn-default .btn-block role="button">_{MsgZuAufgaben}
 $if null gruppen
-  <p>_{MsgKeineÜbungsgruppen}
+  <p>_{MsgKeineGruppen}
 $else
+  $maybe vorlesung'' <- listToMaybe vorlesung'
+    $if Vorlesung.einschreib vorlesung'' /= Current
+      <p>_{MsgEinschreibungDauer (timeToUTCTime $ Vorlesung.einschreibVon vorlesung'') $ timeToUTCTime $ Vorlesung.einschreibBis vorlesung''}
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
@@ -18,30 +26,22 @@ $else
           _{MsgStudentenMaximal}
         <th>
         <th>
-        <th>
     <tbody>
-      $forall gruppe <- gruppen
+      $forall (gruppe, besucher, form) <- gruppenForms
         <tr>
           <td>
             #{fromName $ Gruppe.name gruppe}
           <td>
             #{fromName $ Gruppe.referent gruppe}
           <td>
-            11
+            #{besucher}
           <td>
             #{Gruppe.maxStudents gruppe}
           <td>
-            $if elem (Gruppe.gnr gruppe) gruppenBesuchtIds
-              <a href=@{GruppenR vorlesung} .btn .btn-danger .btn-block role="button">
-                _{MsgAustragen}
-            $else
-              $if fmap Vorlesung.einschreib (listToMaybe vorlesung') == Just Current
-                <a href=@{GruppenR vorlesung} .btn .btn-success .btn-block role="button">
-                  _{MsgEinschreiben}
-          <td>
-            $if elem (Gruppe.gnr gruppe) gruppenBesuchtIds
-              <a href=@{AufgabenR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
-                _{MsgBesuchen}
+            $maybe vorlesung'' <- listToMaybe vorlesung'
+              $if Vorlesung.einschreib vorlesung'' == Current
+                <form .form-inline role="form" action=@{GruppenR vorlesung} method="post" enctype=#{snd form}>
+                  ^{fst form}
           <td>
             $if istTutor
               <a href=@{GruppeR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
