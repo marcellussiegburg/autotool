@@ -9,13 +9,12 @@ $else
         $maybe schuleLink <- mschuleLink
           <a href=@{schuleLink} .btn .btn-default .btn-block .fill-width-cell>
             <h4 .list-group-heading>#{schule}
-          $if isJust mbearbeitenLink
-            <div .cell>
-              <div .table-padding>
         $nothing
           <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
             <h4 .list-group-heading>#{schule}
         $maybe bearbeitenLink <- mbearbeitenLink
+          <div .cell>
+            <div .table-padding>
           <div .cell>
             <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
               _{MsgBearbeiten}

@@ -10,15 +10,14 @@ $else
             <h4 .list-group-heading>#{sname semester}
             <p .list-group-item-text>
               _{MsgSemesterDauer (timeToUTCTime $ Semester.von semester) $ timeToUTCTime $ Semester.bis semester}
-          $if isJust mbearbeitenLink
-            <div .cell>
-              <div .table-padding>
         $nothing
           <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
             <h4 .list-group-heading>#{sname semester}
             <p .list-group-item-text>
               _{MsgSemesterDauer (timeToUTCTime $ Semester.von semester) $ timeToUTCTime $ Semester.bis semester}
         $maybe bearbeitenLink <- mbearbeitenLink
+          <div .cell>
+            <div .table-padding>
           <div .cell>
             <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
               _{MsgBearbeiten}

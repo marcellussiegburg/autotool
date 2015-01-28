@@ -13,9 +13,6 @@ $else
             $if not $ null $ vmotd vorlesung
               <p .list-group-item-text>
                 _{MsgTagesNachricht}: #{vmotd vorlesung}
-          $if isJust mbearbeitenLink
-            <div .cell>
-              <div .table-padding>
         $nothing
           <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
             <h4 .list-group-heading>#{vname vorlesung}
@@ -25,6 +22,8 @@ $else
               <p .list-group-item-text>
                 _{MsgTagesNachricht}: #{vmotd vorlesung}
         $maybe bearbeitenLink <- mbearbeitenLink
+          <div .cell>
+            <div .table-padding>
           <div .cell>
             <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
               _{MsgBearbeiten}
