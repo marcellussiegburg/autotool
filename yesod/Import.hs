@@ -4,7 +4,7 @@ module Import
 
 import Prelude as Import hiding (head, init, last, readFile, sequence, tail, writeFile, foldl, foldr, mapM)
 import Yesod as Import
-import Yesod.Auth as Import (AuthId, maybeAuthId)
+import Yesod.Auth as Import (AuthId, maybeAuthId, requireAuthId)
 import Yesod.Form.Bootstrap3 as Import (BootstrapFormLayout (..), BootstrapGridOptions (..), BootstrapSubmit (BootstrapSubmit), bfs, bootstrapSubmit, renderBootstrap3, withAutofocus)
 import Yesod.Form.Jquery as Import (jqueryDayField, def)
 import Text.Blaze.Html as Import (ToMarkup, preEscapedToHtml)

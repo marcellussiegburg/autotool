@@ -1,8 +1,6 @@
-<h1>
-  _{titel}
-$if null aufgaben
-  <p>
-    _{MsgKeineAufgaben}
+<h1>_{titel}
+$if null ergebnisse
+  <p>_{MsgKeineAufgaben}
 $else
   <table .table .table-striped .table-hover>
     <thead>
@@ -19,47 +17,79 @@ $else
           _{MsgAufgabeBewertungVorher}
         <th colspan=2>
           _{MsgAufgabeGesamtwertung}
-        <th>
+        $if istEingeschrieben
+          <th>
+        $if istTutor
+          <th>
     <tbody>
-      $forall aufgabeEintrag <- aufgaben
+      $forall (aufgabe, (ok, nein, mbewertung)) <- ergebnisse
         <tr>
           <td>
-            #{name aufgabeEintrag}
+            #{toString $ Aufgabe.name aufgabe}
           <td>
-            #{status aufgabeEintrag}
+            $case Aufgabe.status aufgabe
+              $of Demo
+                _{MsgStatusDemonstration}
+              $of Optional
+                _{MsgStatusOptional}
+              $of Mandatory
+                _{MsgStatusPflicht}
           <td>
-            #{highscore aufgabeEintrag}
+            $case Aufgabe.highscore aufgabe
+              $of High
+                _{MsgHighscoreHoch}
+              $of Low
+                _{MsgHighscoreNiedrig}
+              $of Keine
+                _{MsgHighscoreKeine}
           <td>
-            $if bearbeitungszeit aufgabeEintrag == UTCTime (fromGregorian 2014 12 31) (timeOfDayToTime midnight)
-              _{MsgAufgabeZeitVorher $ bearbeitungszeit aufgabeEintrag}
-            $else
-              _{MsgAufgabeZeitNachher $ bearbeitungszeit aufgabeEintrag}
+            $case Aufgabe.timeStatus aufgabe
+              $of Early
+                _{MsgAufgabeZeitVorher $ timeToUTCTime $ Aufgabe.von aufgabe}
+              $of Current
+                _{MsgAufgabeZeitAktuell $ timeToUTCTime $ Aufgabe.bis aufgabe}
+              $of Late
+                _{MsgAufgabeZeitNachher $ timeToUTCTime $ Aufgabe.bis aufgabe}
           <td>
-            $maybe vorher <- vorherigeBewertung aufgabeEintrag
-              #{vorher}
-          $maybe (ok, nein) <- gesamtBewertung aufgabeEintrag
+            $maybe vorher <- mbewertung
+              $case vorher
+                $of Pending
+                  _{MsgBewertungAusstehend}
+                $of Reset
+                  _{MsgBewertungReset}
+                $of No
+                  _{MsgBewertungNein}
+                $of Ok w
+                  _{MsgBewertungOk w}
+                $of Okay w g
+                  _{MsgBewertungOkay w g}
+          $maybe _ <- mbewertung
             <td .success>
-              #{show ok}
+              #{toString ok}
             <td .danger>
-              #{show nein}
+              #{toString nein}
           $nothing
             <td .warning colspan=2>
-          <td>
-            $if bearbeitungszeit aufgabeEintrag == UTCTime (fromGregorian 2014 12 31) (timeOfDayToTime midnight)
-              <a href=@{AufgabeR 1} .btn .btn-primary .btn-block role="button">
-                _{MsgLösen}
-            $else
-              <a href=# .btn .btn-primary .btn-block role="button">
-                _{MsgTesten}
+          $if istEingeschrieben
+            <td>
+              $case Aufgabe.timeStatus aufgabe
+                $of Current
+                  <a href=@{AufgabeR $ getAufgabe aufgabe} .btn .btn-success .btn-block role="button">_{MsgLösen}
+                $of Late
+                  <a href=@{AufgabeTestenR (pack $ toString $ Aufgabe.server aufgabe) (pack $ toString $ Aufgabe.typ aufgabe) (pack $ toString $ Aufgabe.config aufgabe)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
+                $of Early
+          $if istTutor
+            <td>
+              <a href=@{AufgabeBearbeitenR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
 <nav>
   <ul .pager>
-    $if aktuell == True
+    $if disp == fromList [Current]
       <li .previous>
-        <a href=@{AufgabenR 1}>
-          <span aria-hidden="true">&larr;
+        <a href=@{AufgabenR vorlesung}>
+          <span aria-hidden="true">&larr;&nbsp;
           _{MsgAufgabenAlle}
     $else
       <li .next>
-        <a href=@{AufgabenAktuellR 1}>
+        <a href=@{AufgabenAktuellR vorlesung}>
           _{MsgAufgabenAktuell}
-          <span aria-hidden="true">&rarr;
+          <span aria-hidden="true">&nbsp;&rarr;

@@ -36,13 +36,19 @@ AufgabeTesten: Aufgabe testen
 AufgabeTyp: Aufgabentyp wählen
 AufgabeVorlagen: Aufgabenvorlage wählen
 AufgabeVorlageStandard: Standardvorlage / letzte Konfiguration
-AufgabeZeitVorher zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
+AufgabeZeitAktuell zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 AufgabeZeitNachher zeit@UTCTime: vorbei seit #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
+AufgabeZeitVorher zeit@UTCTime: erst ab #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 Ausstehend: Ausstehend
 Austragen: Austragen
 Bearbeiten: Bearbeiten
 Behalten: Behalten
 BeispielLaden: Beispiel laden
+BewertungAusstehend: Ausstehend
+BewertungNein: Nein
+BewertungOk wert@Integer: Okay (#{show wert} Punkte)
+BewertungOkay punkte@Integer größe@Integer: Okay (P: #{show punkte}, G: #{show größe})
+BewertungReset: Zurückgesetzt
 CacheLöschen: Cache Löschen
 Direktoren: Direktoren
 DirektorAbsetzen: Direktor absetzen
