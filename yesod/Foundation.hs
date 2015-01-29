@@ -297,21 +297,22 @@ navigationMenu mroute authId = do
       addTitel _ [] = []
       addTitel Nothing _ = []
       addTitel t l = map Titel (maybeToList t) ++ l
-  schule'' <- filterBerechtigte schule schu
-  semester'' <- filterBerechtigte semester sem
-  vorlesung'' <- filterBerechtigte vorlesung vorl
-  gruppe'' <- filterBerechtigte gruppe grup
-  aufgabe'' <- filterBerechtigte aufgabe aufg
+  schule' <- filterBerechtigte schule schu
+  schulen' <- filterM filterRoute schulen
+  semester' <- filterBerechtigte semester sem
+  vorlesung' <- filterBerechtigte vorlesung vorl
+  gruppe' <- filterBerechtigte gruppe grup
+  aufgabe' <- filterBerechtigte aufgabe aufg
   schuName <- schuleName schu
   semName <- semesterName sem
   vorlName <- vorlesungName vorl
   grupName <- gruppeName grup
   aufgName <- aufgabeName aufg
-  return [NavigationMenu MsgSchule $ trennstrich (addTitel schuName $ map zuLink schule'') $ map zuLink schulen
-         ,NavigationMenu MsgSemester $ addTitel semName $ map zuLink semester''
-         ,NavigationMenu MsgVorlesung $ addTitel vorlName $ map zuLink vorlesung''
-         ,NavigationMenu MsgGruppe $ addTitel grupName $ map zuLink gruppe''
-         ,NavigationMenu MsgAufgabe $ trennstrich (addTitel aufgName $ map zuLink aufgabe'') $ map zuLink $ servers ++ server']
+  return [NavigationMenu MsgSchule $ trennstrich (addTitel schuName $ map zuLink schule') $ map zuLink schulen'
+         ,NavigationMenu MsgSemester $ addTitel semName $ map zuLink semester'
+         ,NavigationMenu MsgVorlesung $ addTitel vorlName $ map zuLink vorlesung'
+         ,NavigationMenu MsgGruppe $ addTitel grupName $ map zuLink gruppe'
+         ,NavigationMenu MsgAufgabe $ trennstrich (addTitel aufgName $ map zuLink aufgabe') $ map zuLink $ servers ++ server']
 
 -- | Liefert den Schulnamen zur Id der Schule
 schuleName :: Maybe SchuleId -> IO (Maybe Text)
@@ -373,7 +374,9 @@ routeInformation route = case routeParameter route of
        vorlesung <- getVorlesungAufgabe $ Just aufgabe
        semester <- getSemester vorlesung
        schule <- getSchule semester
-       return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Just aufgabe, Nothing)
+       case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
+         (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Nothing)
+         _ -> return $ fromTuple6 Tuple6_0
      ServerRoute _ -> return $ fromTuple6 Tuple6_0
 
 -- | Liefert für die Interaktion mit dem Semantik-Server die aktuell abrufbaren Parameter aus der angegebenen Route.
@@ -414,10 +417,10 @@ getVorlesung mgruppe  = runMaybeT $ do
 
 -- | Liefert ggf. die Vorlesung zu einer Aufgabe
 getVorlesungAufgabe :: Maybe AufgabeId -> IO (Maybe VorlesungId)
-getVorlesungAufgabe mgruppe  = runMaybeT $ do
-  gruppe <- MaybeT $ return mgruppe
-  gruppen <- lift $ GruppeDB.get_gnr $ GNr gruppe
-  VNr vorlesungId <- MaybeT $ return $ listToMaybe $ map Gruppe.vnr gruppen
+getVorlesungAufgabe maufgabe  = runMaybeT $ do
+  aufgabe <- MaybeT $ return maufgabe
+  aufgaben <- lift $ AufgabeDB.get_this $ ANr aufgabe
+  VNr vorlesungId <- MaybeT $ return $ listToMaybe $ map Aufgabe.vnr aufgaben
   return vorlesungId
 
 data RouteParameter =
