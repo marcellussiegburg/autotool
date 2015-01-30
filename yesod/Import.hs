@@ -11,6 +11,7 @@ import Text.Blaze.Html as Import (ToMarkup, preEscapedToHtml)
 import Text.Shakespeare.Text as Import (toText)
 
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))
+import Control.Monad as Import (guard)
 import Data.Foldable as Import (foldl, foldr)
 import Data.Maybe as Import (isJust, listToMaybe, maybeToList)
 import Data.Text as Import (Text, pack, unpack)

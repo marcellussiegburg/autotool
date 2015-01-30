@@ -1,5 +1,7 @@
 <h1>_{titel}
-$if null ergebnisse
+$if (&&) istEingeschrieben $ goal > 0
+  <p>_{MsgAufgabenErledigt done goal percent}
+$if null ergebnisse'
   <p>_{MsgKeineAufgaben}
 $else
   <table .table .table-striped .table-hover>
@@ -22,7 +24,7 @@ $else
         $if istTutor
           <th>
     <tbody>
-      $forall (aufgabe, (ok, nein, mbewertung)) <- ergebnisse
+      $forall (aufgabe, (ok, nein, mbewertung)) <- ergebnisse'
         <tr>
           <td>
             #{toString $ Aufgabe.name aufgabe}

@@ -61,6 +61,12 @@ data Autotool = Autotool
 instance HasHttpManager Autotool where
     getHttpManager = httpManager
 
+plural :: Num a => Eq a => a -> Text ->  Text -> Text
+plural zahl einzahl mehrzahl =
+  case zahl of
+    1 -> einzahl
+    _ -> mehrzahl
+
 mkMessage "Autotool" "messages" "de"
 
 mkYesodData "Autotool" $(parseRoutesFile "config/routes")

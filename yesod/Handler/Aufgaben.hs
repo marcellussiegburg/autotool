@@ -25,14 +25,24 @@ aufgabenListe titel disp vorlesung = do
     einschreibungen <- lift $ VorlesungDB.snr_teilnehmer $ VNr vorlesung
     return $ SNr stud `elem` einschreibungen
   aufgaben <- lift $ AufgabeDB.get $ Just $ VNr vorlesung
-  let aufgaben' = filter (\a -> Aufgabe.timeStatus a `member` disp) aufgaben
   ergebnisse <- sequence $ do
-    aufgabe <- aufgaben'
+    aufgabe <- aufgaben
     return $ do
       einsendungen <- lift $ EinsendungDB.get_snr_anr (SNr stud) (Aufgabe.anr aufgabe)
       let okno = case einsendungen of
             [eins] ->  (Einsendung.ok eins, Einsendung.no eins, Einsendung.result eins)
             _ ->  (Oks 0, Nos 0 , Nothing)
       return (aufgabe, okno)
+  let ergebnisse' = filter (\(a,_) -> Aufgabe.timeStatus a `member` disp) ergebnisse
+      goal = sum $ do
+        (aufgabe, _) <- ergebnisse
+        guard $ Aufgabe.status aufgabe == Mandatory
+        return 1
+      done = sum $ do
+        (aufgabe, (oks, _, _)) <- ergebnisse
+        guard $ Aufgabe.status aufgabe == Mandatory
+        guard $ oks > Oks 0
+        return 1
+      percent = (100 * done) `div` goal
   defaultLayout $ do
     $(widgetFile "aufgaben")

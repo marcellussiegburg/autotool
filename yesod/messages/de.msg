@@ -30,6 +30,7 @@ Aufgaben: Aufgaben
 AufgabenAktuell: Aktuelle Aufgaben
 AufgabenAlle: Alle Aufgaben
 AufgabeName: Name
+AufgabenErledigt erledigt@Integer ziel@Integer prozent@Integer: Von #{show ziel} #{plural ziel "Pflichtaufgabe" "Pflichtaufgaben"} haben Sie bis jetzt #{show erledigt} erledigt. Das sind #{show prozent} Prozent.
 AufgabeStatus: Status
 AufgabeXTesten aufgabe@Text: Aufgabe #{aufgabe} testen
 AufgabeTesten: Aufgabe testen
