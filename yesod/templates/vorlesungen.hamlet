@@ -27,3 +27,5 @@ $else
           <div .cell>
             <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
               _{MsgBearbeiten}
+        $nothing
+          <div .cell>
