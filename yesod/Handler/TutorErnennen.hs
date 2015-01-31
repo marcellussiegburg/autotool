@@ -1,23 +1,31 @@
 module Handler.TutorErnennen where
 
 import Import
-import Handler.Tutoren (StudentListe (StudentEintrag))
-
-title :: AutotoolMessage
-title = MsgTutor
+import Handler.DirektorErnennen (StudentenSeite (..), rolleSetzenListe)
+import qualified Control.Student.DB as StudentDB
+import qualified Control.Student.Type as Student
+import qualified Control.Tutor.DB as TutorDB
+import qualified Control.Vorlesung.DB as VorlesungDB
+import qualified Control.Vorlesung.Typ as Vorlesung
+import Control.Types
 
 getTutorErnennenR :: VorlesungId -> Handler Html
-getTutorErnennenR vorlesung = do
-  let studenten = 
-        [StudentEintrag 1 "1234" "Mark" "Otto" "mark.otto@schule.de",
-         StudentEintrag 10 "2454" "Jacob" "Thornton" "jacob.thornton@schule.de",
-         StudentEintrag 75 "5332" "Larry" "Müller" "larry.mueller@schule.de"
-        ]
-      ernennen = True
-      label = MsgTutorErnennen
-      nullStudenten = MsgKeineStudentenErnennen
-  defaultLayout $ do
-    $(widgetFile "studentenFunktion")
+getTutorErnennenR = postTutorErnennenR
 
 postTutorErnennenR :: VorlesungId -> Handler Html
-postTutorErnennenR vorlesung = undefined
+postTutorErnennenR vorlesung = do
+  vorlesung' <- lift $ VorlesungDB.get_this $ VNr vorlesung
+  studenten' <- lift $ liftM concat $ mapM (StudentDB.get_unr . Vorlesung.unr) vorlesung'
+  let keineTutoren = do
+        tutoren <- liftM concat $ mapM TutorDB.get_tutors vorlesung'
+        return $ deleteFirstsBy ((==) `on` Student.snr) studenten' tutoren
+  let studentenSeite = StudentenSeite {
+        titel = MsgTutor,
+        nullStudenten = MsgKeineStudentenErnennen,
+        submit = BootstrapSubmit MsgTutorErnennen "btn-success btn-block" [],
+        erfolgMsg = MsgTutorErnannt,
+        formRoute = TutorErnennenR vorlesung,
+        getOp = keineTutoren,
+        setOp = \stud -> sequence_ $ map (TutorDB.put stud) vorlesung'
+      }
+  rolleSetzenListe studentenSeite

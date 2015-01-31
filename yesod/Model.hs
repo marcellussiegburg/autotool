@@ -22,6 +22,7 @@ type VorlageName = Text
 type SchuleId = Int
 type SemesterId = Int
 type ServerUrl = Text
+type StudentId = Int
 type VorlesungId = Int
 
 instance PathPiece UNr where

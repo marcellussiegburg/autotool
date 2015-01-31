@@ -1,8 +1,6 @@
-<h1>
-  _{title}
-$if null studenten
-  <p>
-    _{nullStudenten}
+<h1>_{titel eigenschaften}
+$if null studentenForms
+  <p>_{nullStudenten eigenschaften}
 $else
   <table .table .table-striped .table-hover>
     <thead>
@@ -19,22 +17,18 @@ $else
           _{MsgEmail}
         <th>
     <tbody>
-      $forall StudentEintrag id mnr vorname name email <- studenten
+      $forall (student, form) <- studentenForms
         <tr>
           <td>
-            #{show id}
+            #{toString $ Student.snr student}
           <td>
-            #{mnr}
+            #{toString $ Student.mnr student}
           <td>
-            #{vorname}
+            #{toString $ Student.vorname student}
           <td>
-            #{name}
+            #{toString $ Student.name student}
           <td>
-            #{email}
+            #{toString $ Student.email student}
           <td>
-            $if ernennen == True
-              <a href="#" .btn .btn-success .btn-block role="button">
-                _{label}
-            $else
-              <a href="#" .btn .btn-danger .btn-block role="button">
-                _{label}
+            <form .form-inline role="form" action=@{formRoute eigenschaften} method="post" enctype=#{snd form}>
+              ^{fst form}

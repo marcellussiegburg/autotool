@@ -53,7 +53,9 @@ BewertungReset: Zurückgesetzt
 CacheLöschen: Cache Löschen
 Direktoren: Direktoren
 DirektorAbsetzen: Direktor absetzen
+DirektorAbgesetzt: Direktor abgesetzt
 DirektorErnennen: Direktor ernennen
+DirektorErnannt: Direktor ernannt
 Einschreiben: Einschreiben
 EinschreibungBeginnDatum: Beginn der Einschreibung (Datum)
 EinschreibungBeginnZeit: Beginn der Einschreibung (Datum)
@@ -138,7 +140,9 @@ Testen: Testen
 Tutor: Tutor ernennen
 Tutoren: Tutoren
 TutorAbsetzen: Tutor absetzen
+TutorAbgesetzt: Tutor abgesetzt
 TutorErnennen: Tutor ernennen
+TutorErnannt: Tutor ernannt
 VorherigeEinsendungLaden: Vorherige Einsendung laden
 Vorlesung: Vorlesung
 VorlesungAnlegen: Vorlesung anlegen

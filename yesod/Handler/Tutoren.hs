@@ -1,24 +1,25 @@
 module Handler.Tutoren where
 
 import Import
-
-data StudentListe = StudentEintrag Int Text Text Text Text
-
-title :: AutotoolMessage
-title = MsgTutoren
+import Handler.DirektorErnennen (StudentenSeite (..), rolleSetzenListe)
+import qualified Control.Tutor.DB as TutorDB
+import qualified Control.Vorlesung.DB as VorlesungDB
+import Control.Types
 
 getTutorenR :: VorlesungId -> Handler Html
-getTutorenR vorlesung = do
-  let studenten = 
-        [StudentEintrag 1 "1234" "Mark" "Otto" "mark.otto@schule.de",
-         StudentEintrag 10 "2454" "Jacob" "Thornton" "jacob.thornton@schule.de",
-         StudentEintrag 75 "5332" "Larry" "Müller" "larry.mueller@schule.de"
-        ]
-      ernennen = False
-      label = MsgTutorAbsetzen
-      nullStudenten = MsgKeineTutoren
-  defaultLayout $ do
-    $(widgetFile "studentenFunktion")
+getTutorenR = postTutorenR
 
 postTutorenR :: VorlesungId -> Handler Html
-postTutorenR vorlesung = undefined
+postTutorenR vorlesung = do
+  vorlesung' <- lift $ VorlesungDB.get_this $ VNr vorlesung
+  let tutoren = liftM concat $ mapM TutorDB.get_tutors vorlesung'
+      studentenSeite = StudentenSeite {
+        titel = MsgTutoren,
+        nullStudenten = MsgKeineTutoren,
+        submit = BootstrapSubmit MsgTutorAbsetzen "btn-danger btn-block" [],
+        erfolgMsg = MsgTutorAbgesetzt,
+        formRoute = TutorenR vorlesung,
+        getOp = tutoren,
+        setOp = \stud -> sequence_ $ map (TutorDB.delete stud) vorlesung'
+      }
+  rolleSetzenListe studentenSeite

@@ -1,25 +1,25 @@
 module Handler.Direktoren where
 
 import Import
-import Prelude (undefined)
+import Handler.DirektorErnennen (StudentenSeite (..), rolleSetzenListe)
+import qualified Control.Direktor.DB as DirektorDB
+import qualified Control.Schule.DB as SchuleDB
+import Control.Types
 
-data StudentListe = StudentEintrag Int Text Text Text Text
+getDirektorenR :: SchuleId -> Handler Html
+getDirektorenR = postDirektorenR
 
-title :: AutotoolMessage
-title = MsgDirektoren
-
-getDirektorenR :: GruppeId -> Handler Html
-getDirektorenR gruppe = do
-  let studenten = 
-        [StudentEintrag 1 "1234" "Mark" "Otto" "mark.otto@schule.de",
-         StudentEintrag 10 "2454" "Jacob" "Thornton" "jacob.thornton@schule.de",
-         StudentEintrag 75 "5332" "Larry" "Müller" "larry.mueller@schule.de"
-        ]
-      ernennen = False
-      label = MsgDirektorAbsetzen
-      nullStudenten = MsgKeineDirektoren
-  defaultLayout $ do
-    $(widgetFile "studentenFunktion")
-
-postDirektorenR :: GruppeId -> Handler Html
-postDirektorenR gruppe = undefined
+postDirektorenR :: SchuleId -> Handler Html
+postDirektorenR schule = do
+  schule' <- lift $ SchuleDB.get_unr $ UNr schule
+  let direktoren = liftM concat $ mapM DirektorDB.get_directors schule'
+      studentenSeite = StudentenSeite {
+        titel = MsgDirektoren,
+        nullStudenten = MsgKeineDirektoren,
+        submit = BootstrapSubmit MsgDirektorAbsetzen "btn-danger btn-block" [],
+        erfolgMsg = MsgDirektorAbgesetzt,
+        formRoute = DirektorenR schule,
+        getOp = direktoren,
+        setOp = \stud -> sequence_ $ map (DirektorDB.delete stud) schule'
+      }
+  rolleSetzenListe studentenSeite
