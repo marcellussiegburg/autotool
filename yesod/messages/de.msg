@@ -108,10 +108,13 @@ Referent: Referent
 Registrieren: Registrieren
 ResultatePflicht: Resultate der Pflichtaufgaben
 Schule: Schule
+SchuleAngelegt: Schule wurde angelegt
 SchuleAnlegen: Schule anlegen
 SchuleBearbeiten: Schule bearbeiten
+SchuleBearbeitet: Schule wurde bearbeitet
 Schulen: Schulen
 SchuleName: Schulname
+SchuleSprache: Bevorzugte Sprache
 SchuleSuffix: E-Mail-Suffix
 SchuleWählen: Bitte wählen Sie ihre Schule!
 Semester: Semester
@@ -128,6 +131,9 @@ Server: Server
 ServerErstellen: Server erstellen
 Servers: Server wählen
 ServerWählen: Server wählen
+SpracheDE: Deutsch
+SpracheNL: Niederländisch
+SpracheUK: Britisches Englisch
 StatistikAnzeigen: Statistik anzeigen
 StatusDemonstration: Demonstration
 StatusOptional: Optional
