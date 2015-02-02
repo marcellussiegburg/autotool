@@ -120,7 +120,9 @@ SchuleWählen: Bitte wählen Sie ihre Schule!
 Semester: Semester
 Semesters: Semester
 SemesterAnlegen: Semester anlegen
+SemesterAngelegt: Semester wurde angelegt
 SemesterBearbeiten: Semester bearbeiten
+SemesterBearbeitet: Semester wurde bearbeitet
 SemesterBeginnDatum: Semesterbeginn (Datum)
 SemesterBeginnZeit: Semesterbeginn (Uhrzeit)
 SemesterDauer beginn@UTCTime ende@UTCTime: dauert vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr

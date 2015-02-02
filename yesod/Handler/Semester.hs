@@ -1,44 +1,40 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Handler.Semester where
 
 import Import
 
-data SemesterForm = SemesterForm {
-    name :: Text,
-    beginn :: Day,
-    beginnZeit :: TimeOfDay,
-    ende :: Day,
-    endeZeit :: TimeOfDay
-}
+import qualified Control.Semester.DB as SemesterDB
+import Control.Semester.Typ
+import Control.Types
 
 getSemesterR :: SemesterId -> Handler Html
-getSemesterR semester = do
-  let beginn' = fromGregorian 2014 10 1
-      beginnZeit' = midnight
-      ende' = fromGregorian 2015 3 31
-      endeZeit' = midnight
-      semester' = Just $ SemesterForm "WS 2014/2015" beginn' beginnZeit' ende' endeZeit'
-  (formWidget, formEnctype) <- generateFormPost $ semesterForm semester'
-  defaultLayout $ do
-    $(widgetFile "semester")
+getSemesterR = postSemesterR
 
 postSemesterR :: SemesterId -> Handler Html
 postSemesterR semester = do
-  let beginn' = fromGregorian 2014 10 1
-      beginnZeit' = midnight
-      ende' = fromGregorian 2015 3 31
-      endeZeit' = midnight
-      semester' = Just $ SemesterForm "WS 2014/2015" beginn' beginnZeit' ende' endeZeit'
-  ((result, formWidget), formEnctype) <- runFormPost $ semesterForm semester'
+  msemester <- lift $ liftM listToMaybe $ SemesterDB.get_this $ ENr semester
+  ((result, formWidget), formEnctype) <- runFormPost $ semesterForm msemester
+  case result of
+    FormMissing -> return ()
+    FormFailure _ -> return ()
+    FormSuccess semester' -> do
+      _ <- lift $ SemesterDB.put (Just $ enr semester') semester'
+      setMessageI MsgSemesterBearbeitet
   defaultLayout $ do
     $(widgetFile "semester")
 
-semesterForm :: Maybe SemesterForm -> Form SemesterForm
+semesterForm :: Maybe Semester -> Form Semester
 semesterForm msemester = do
-  renderBootstrap3 BootstrapBasicForm $ SemesterForm
-    <$> areq textField (bfs MsgSemesterName) (fmap name msemester)
-    <*> areq (jqueryDayField def) (bfsFormControl MsgSemesterBeginnDatum) (fmap beginn msemester)
-    <*> areq timeField (bfs MsgSemesterBeginnZeit) (fmap beginnZeit msemester)
-    <*> areq (jqueryDayField def) (bfsFormControl MsgSemesterEndeDatum) (fmap ende msemester)
-    <*> areq timeField (bfs MsgSemesterEndeZeit) (fmap endeZeit msemester)
+  let fromName = pack . toString
+      toName = Name . unpack
+  renderBootstrap3 BootstrapBasicForm $ Semester
+    <$> pure (maybe undefined enr msemester)
+    <*> pure (maybe undefined unr msemester)
+    <*> (toName <$> areq textField (bfs MsgSemesterName) (fromName . name <$> msemester))
+    <*> ((\day time -> utcTimeToTime $ UTCTime day time)
+         <$> areq (jqueryDayField def) (bfsFormControl MsgSemesterBeginnDatum) (utctDay . timeToUTCTime . von <$> msemester)
+         <*> (timeOfDayToTime <$> areq timeField (bfs MsgSemesterBeginnZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . von <$> msemester)))
+    <*> ((\day time -> utcTimeToTime $ UTCTime day time)
+         <$> areq (jqueryDayField def) (bfsFormControl MsgSemesterEndeDatum) (utctDay . timeToUTCTime . bis <$> msemester)
+         <*> (timeOfDayToTime <$> areq timeField (bfs MsgSemesterEndeZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . von <$> msemester)))
+    <*> pure undefined
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgSemesterAnlegen (\ _ -> MsgSemesterBearbeiten) msemester) "btn-success" [])

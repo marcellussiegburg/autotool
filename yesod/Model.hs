@@ -1,6 +1,6 @@
 module Model where
 
-import Prelude (Integer, toInteger, (^), (*))
+import Prelude (Integer, div, fromInteger, toInteger, (^), (*))
 import Data.Either (Either (Right))
 import Data.Fixed (Fixed (MkFixed))
 import Data.Function (($))
@@ -8,7 +8,7 @@ import Data.Int (Int)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Text (Text, unpack, pack)
 import Data.Text.Read (decimal, signed)
-import Data.Time (TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime)
+import Data.Time (TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime, timeToTimeOfDay, todHour, todMin, todSec, toGregorian, utctDay, utctDayTime)
 import Yesod.Core.Dispatch (PathPiece, fromPathPiece, toPathPiece)
 
 import Control.Types
@@ -38,3 +38,10 @@ instance PathPiece MNr where
 
 timeToUTCTime :: Time -> UTCTime
 timeToUTCTime (Time y m d h min s) = UTCTime (fromGregorian (toInteger y) m d) $ timeOfDayToTime $ TimeOfDay h min $ MkFixed $ toInteger s * 10 ^ (12 :: Integer)
+
+utcTimeToTime :: UTCTime -> Time
+utcTimeToTime utcTime =
+  let (y, m, d) = toGregorian $ utctDay utcTime
+      time = timeToTimeOfDay $ utctDayTime utcTime
+      MkFixed picos = todSec time
+  in Time (fromInteger y) m d (todHour time) (todMin time) (fromInteger $ picos `div` 10 ^ (12 :: Integer))
