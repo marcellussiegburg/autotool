@@ -58,11 +58,12 @@ DirektorErnennen: Direktor ernennen
 DirektorErnannt: Direktor ernannt
 Einschreiben: Einschreiben
 EinschreibungBeginnDatum: Beginn der Einschreibung (Datum)
-EinschreibungBeginnZeit: Beginn der Einschreibung (Datum)
+EinschreibungBeginnZeit: Beginn der Einschreibung (Uhrzeit)
 EinschreibungDauer beginn@UTCTime ende@UTCTime: Eine Einschreibung ist nur im Zeitraum vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr möglich.
 EinschreibungEndeDatum: Ende der Einschreibung (Datum)
-EinschreibungEndeZeit: Ende der Einschreibung (Datum)
+EinschreibungEndeZeit: Ende der Einschreibung (Uhrzeit)
 Email: E-Mail
+Fehler: Ein Fehler ist aufgetreten
 Gesamtpunktzahl: Total
 Größe: Größe
 Gruppe: Übungsgruppe
@@ -154,8 +155,12 @@ TutorErnannt: Tutor ernannt
 VorherigeEinsendungLaden: Vorherige Einsendung laden
 Vorlesung: Vorlesung
 VorlesungAnlegen: Vorlesung anlegen
+VorlesungAngelegt: Vorlesung wurde angelegt
 VorlesungBearbeiten: Vorlesung bearbeiten
+VorlesungBearbeitet: Vorlesung wurde bearbeitet
 Vorlesungen: Vorlesungen
+VorlesungEntfernen: Wollen Sie die Vorlesung wirklich Löschen? Dann bestätigen Sie, indem Sie erneut auf den Button klicken.
+VorlesungEntfernt: Vorlesung wurde gelöscht
 VorlesungName: Bezeichnung
 Vorname: Vorname
 Waisenkinder: Waisenkinder

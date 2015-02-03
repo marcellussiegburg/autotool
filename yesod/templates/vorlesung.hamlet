@@ -1,3 +1,5 @@
 <h1>_{MsgVorlesungBearbeiten}
-<form role="form" action=@{VorlesungAnlegenR 1} method="post" enctype=#{formEnctype}>
+<form role="form" action=@{VorlesungR vorlesung} method="post" enctype=#{formEnctype}>
   ^{formWidget}
+<form role="form" action=@{VorlesungR vorlesung}##{entfernen} method="post" enctype=#{entfernenEnctype} ##{entfernen}>
+  ^{entfernenWidget}
