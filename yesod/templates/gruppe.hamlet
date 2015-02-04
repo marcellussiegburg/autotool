@@ -1,3 +1,5 @@
 <h1>_{MsgGruppeBearbeiten}
 <form role="form" action=@{GruppeR gruppe} method="post" enctype=#{formEnctype}>
   ^{formWidget}
+<form role="form" action=@{GruppeR gruppe}##{entfernen} method="post" enctype=#{entfernenEnctype} ##{entfernen}>
+  ^{entfernenWidget}

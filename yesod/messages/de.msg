@@ -68,14 +68,19 @@ Gesamtpunktzahl: Total
 Größe: Größe
 Gruppe: Übungsgruppe
 GruppeAnlegen: Übungsgruppe anlegen
+GruppeAngelegt: Übungsgruppe wurde angeleget
 GruppeAusgetragen: Übungsgruppe wurde verlassen
 GruppeBearbeiten: Übungsgruppe bearbeiten
+GruppeBearbeitet: Übungsgruppe wurde bearbeitet
 GruppeEingeschrieben: Erfolgreich in Übungsgruppe eingeschrieben
+GruppeEntfernen: Wollen Sie die Übungsgruppe wirklich löschen? Dann bestätigen Sie, indem Sie erneut auf den Button klicken.
+GruppeEntfernt: Übungsgruppe wurde gelöscht
 Gruppen: Übungsgruppen
 GruppeName: Gruppenname
 GruppenHinweis: Um die Aufgaben für eine Vorlesung bearbeiten zu können, müssen Sie in einer Übungsgruppe dieser Vorlesung eingeschrieben sein.
 GruppeNummer: Gruppennummer
 GruppeVoll: Einschreibung ist nicht möglich. Die gewählte Übungsgruppe ist voll.
+GruppeZuKlein: Übungsgruppe zu klein
 HighscoreAnzeigen: Highscore
 HighscoreHoch: Hoch
 HighscoreKeine: Keine Highscore
@@ -159,7 +164,7 @@ VorlesungAngelegt: Vorlesung wurde angelegt
 VorlesungBearbeiten: Vorlesung bearbeiten
 VorlesungBearbeitet: Vorlesung wurde bearbeitet
 Vorlesungen: Vorlesungen
-VorlesungEntfernen: Wollen Sie die Vorlesung wirklich Löschen? Dann bestätigen Sie, indem Sie erneut auf den Button klicken.
+VorlesungEntfernen: Wollen Sie die Vorlesung wirklich löschen? Dann bestätigen Sie, indem Sie erneut auf den Button klicken.
 VorlesungEntfernt: Vorlesung wurde gelöscht
 VorlesungName: Bezeichnung
 Vorname: Vorname
