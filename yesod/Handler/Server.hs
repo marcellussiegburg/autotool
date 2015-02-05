@@ -1,24 +1,12 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Handler.Server where
 
 import Import
+import Service.Interface (get_task_types)
+
 
 getServerR :: ServerUrl -> Handler Html
 getServerR server = do
-  let aufgabenTypen =
-        [Node "Terme, Ersetzungssysteme"
-         [Node "Unifikation"
-          [Node "Unify-Direct-1" []]
-         ,Node "Termersetzung"
-          [Node "Derive-For_TRS-Direct-1" []
-          ,Node "Termination"
-           [Node "Matrix-Interpretationen"
-            [Node "Rewriting_Termination-Direct" []]
-           ,Node "Polynom-Interpretationen"
-            [Node "Rewriting_Termination-Direct-1" []]]
-          ,Node "Completion-Direct-1" []]]
-        ,Node "Mengen und Relationen"
-         [Node "Algebraic_Set-Direct-1" []]] :: Forest Text
+  aufgabenTypen <- lift $ liftM (map taskTreeToTextTree) $ get_task_types $ unpack server
   defaultLayout $ do
     addStylesheet $ StaticR css_tree_css
     $(widgetFile "server")

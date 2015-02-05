@@ -117,6 +117,7 @@ library
                  , transformers
                  , either
                  , autotool-db
+                 , autotool-server-interface
                  , autolib-util
                  , autolib-todoc
 
