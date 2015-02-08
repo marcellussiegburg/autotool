@@ -1,3 +1,9 @@
+pre.alert-success, pre.alert-danger {
+  resize:both;
+}
+textarea {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace
+}
 /* Table-Button */
 .table .form-inline > div {
   margin-top: -20px;

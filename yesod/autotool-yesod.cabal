@@ -118,8 +118,9 @@ library
                  , either
                  , autotool-db
                  , autotool-server-interface
-                 , autolib-util
+                 , autolib-output
                  , autolib-todoc
+                 , autolib-util
 
     -- see https://github.com/yesodweb/yesod/issues/814
     if !os(windows)

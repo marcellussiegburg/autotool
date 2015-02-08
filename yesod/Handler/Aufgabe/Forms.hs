@@ -4,7 +4,7 @@ import Import
 import qualified Handler.Aufgabe as A
 import qualified Handler.AufgabeEinstellungen as E (aufgabeForm')
 import Handler.AufgabeEinstellungen (AufgabeFormDaten)
-import qualified Handler.AufgabeKonfiguration as K (konfigurationForm)
+import qualified Handler.AufgabeKonfiguration as K (checkKonfiguration, konfigurationForm)
 
 import Yesod.Form.Fields.TreeValueField (treeValueField)
 
@@ -59,7 +59,7 @@ konfigurationForm ktyp eid server typ einstellungen vorlage mkonfiguration =
   <*> areq hiddenField (bfs $ typ) {fsName = Just $ getId AufgabeTypForm} (Just typ)
   <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
   <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
-  <*> K.konfigurationForm ktyp mkonfiguration
+  <*> K.konfigurationForm (K.checkKonfiguration server typ) ktyp mkonfiguration
   <* bootstrapSubmit (BootstrapSubmit (either (\_ -> MsgAufgabeAnlegen) (\_ -> MsgAufgabeBearbeiten) eid) "btn-success" [])
   <* either (\_ -> pure ()) (\_ -> bootstrapSubmit (BootstrapSubmit MsgLöschen "btn-danger" [])) eid
 

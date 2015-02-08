@@ -24,10 +24,11 @@ import Control.Applicative ((<$>), (<*>))
 import Control.Monad (filterM, when)
 import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
 import Control.Monad.Trans.Either (EitherT (runEitherT), left)
+import Data.Char (toUpper)
 import Data.Foldable (foldlM)
 import Data.Maybe (fromMaybe, listToMaybe, maybeToList)
 import Data.Set (member)
-import Data.Text (Text, pack)
+import Data.Text (Text, pack, unpack)
 import Data.Text.Read (decimal, signed)
 import Data.Time (UTCTime, formatTime)
 import Data.Tuple6
@@ -50,6 +51,7 @@ import qualified Control.Student.Type as Student
 import qualified Control.Tutor.DB as TutorDB
 import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Vorlesung.DB as VorlesungDB
+import qualified Autolib.Multilingual as Sprache
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -136,6 +138,22 @@ instance YesodJquery Autotool where
     urlJqueryUiJs _ = Left $ StaticR js_jquery_ui_min_js
     urlJqueryUiCss _ = Left $ StaticR css_jquery_ui_min_css
     urlJqueryUiDateTimePicker _ = Left $ StaticR js_jquery_ui_datetimepicker_js
+
+getBevorzugteSprache :: MonadHandler m => m Sprache.Language
+getBevorzugteSprache = do
+  langs <- languages
+  return $ getBevorzugteSprache' $ map unpack langs
+
+-- | Sollte angepasst werden, wenn der Datentyp Language verändert wird
+-- TODO: Datentyp Language sollte auf die Form "DE_de" geändert werden (erst Sprache, dann Region). (in autolib-todoc)
+getBevorzugteSprache' :: [String] -> Sprache.Language
+getBevorzugteSprache' [] = Sprache.DE
+getBevorzugteSprache' (l:ls) =
+  case take 2 (map toUpper l) of
+    "UK" -> Sprache.UK
+    l' -> case reads l' of
+            (l'',_):_ -> l''
+            _ -> getBevorzugteSprache' ls
 
 instance RenderMessage Autotool FormMessage where
     renderMessage _ ("de":_) = germanFormMessage

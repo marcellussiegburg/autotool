@@ -2,7 +2,7 @@ module Import
     ( module Import
     ) where
 
-import Prelude as Import hiding (head, init, last, readFile, sequence, tail, writeFile, foldl, foldr, mapM)
+import Prelude as Import hiding (head, init, last, lines, readFile, sequence, tail, writeFile, foldl, foldr, mapM)
 import Yesod as Import
 import Yesod.Auth as Import (AuthId, maybeAuthId, requireAuthId)
 import Yesod.Form.Bootstrap3 as Import (BootstrapFormLayout (..), BootstrapGridOptions (..), BootstrapSubmit (BootstrapSubmit), bfs, bootstrapSubmit, renderBootstrap3, withAutofocus)
@@ -16,7 +16,7 @@ import Data.Foldable as Import (foldl, foldr)
 import Data.Function as Import (on)
 import Data.List as Import (deleteFirstsBy)
 import Data.Maybe as Import (isJust, listToMaybe, maybeToList)
-import Data.Text as Import (Text, pack, unpack)
+import Data.Text as Import (Text, lines, pack, unpack)
 import Data.Text.Lazy.Builder as Import (toLazyText)
 import Data.Time as Import (Day, TimeOfDay, UTCTime (UTCTime), fromGregorian, midnight, timeOfDayToTime, timeToTimeOfDay, utctDay, utctDayTime)
 import Data.Traversable as Import (mapM, sequence)
