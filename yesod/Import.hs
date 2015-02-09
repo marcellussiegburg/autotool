@@ -12,6 +12,7 @@ import Text.Shakespeare.Text as Import (toText)
 
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))
 import Control.Monad as Import (guard, liftM)
+import Control.Monad.Trans.Maybe as Import (MaybeT (MaybeT), runMaybeT)
 import Data.Foldable as Import (foldl, foldr)
 import Data.Function as Import (on)
 import Data.List as Import (deleteFirstsBy)

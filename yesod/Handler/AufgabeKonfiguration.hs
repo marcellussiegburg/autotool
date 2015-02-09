@@ -16,8 +16,6 @@ import Types.Documented (documentation)
 import Types.Signed (Signed)
 import Types.TaskDescription (task_sample_config)
 
-import Control.Monad.Trans.Maybe (runMaybeT)
-
 type Konfiguration = Text
 
 konfigurationId :: Text

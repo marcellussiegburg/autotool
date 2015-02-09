@@ -8,6 +8,10 @@ import qualified Handler.AufgabeKonfiguration as K (checkKonfiguration, konfigur
 
 import Yesod.Form.Fields.TreeValueField (treeValueField)
 
+import Types.Instance (Instance (Instance))
+import Types.Signed (Signed (Signed))
+import Util.Hash (hash)
+
 data AufgabeForm = ServerForm | AufgabeTypForm | AufgabeForm | VorlagenForm | KonfigurationForm | HochladenForm | TestenForm
 
 getId :: AufgabeForm -> Text
@@ -40,7 +44,7 @@ testenForm atyp server typ einstellungen vorlage konfiguration mlösung =
   <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
   <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
   <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
-  <*> A.aufgabeLösenForm atyp mlösung
+  <*> A.aufgabeEinsendenForm (A.checkEinsendung "" $ Signed ("", Instance "" "") (hash ' ')) atyp mlösung
 
 hochladenForm :: ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> AufgabeKonfiguration -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration, FileInfo)
 hochladenForm server typ einstellungen vorlage konfiguration =
@@ -50,7 +54,7 @@ hochladenForm server typ einstellungen vorlage konfiguration =
   <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
   <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
   <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
-  <*> A.lösungHochladenForm
+  <*> A.einsendungHochladenForm
 
 konfigurationForm :: ToMarkup t => t -> Either a b -> ServerUrl -> AufgabeTyp -> AufgabeFormDaten -> Maybe VorlageName -> Maybe AufgabeKonfiguration -> Form (ServerUrl, AufgabeTyp, AufgabeFormDaten, Maybe VorlageName, AufgabeKonfiguration)
 konfigurationForm ktyp eid server typ einstellungen vorlage mkonfiguration =

@@ -116,6 +116,7 @@ library
                  , exceptions
                  , transformers
                  , either
+                 , conduit-extra
                  , autotool-db
                  , autotool-server-interface
                  , autolib-output

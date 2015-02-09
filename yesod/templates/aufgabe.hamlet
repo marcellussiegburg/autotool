@@ -1,12 +1,9 @@
-$case lösen
-  $of Lösen
-    <h1>_{MsgAufgabeXLösen name}
-  $of Testen
-    <h1>_{MsgAufgabeXTesten name}
-<h2>_{MsgAufgabeHinweis}
-<p>#{hinweis}
+<h1>_{titel}
+$if hinweis /= ""
+  <h2>_{MsgAufgabeHinweis}
+  <p>#{hinweis}
 <h2>_{MsgAufgabeAufgabe}
-<pre>#{aufgabenstellung}
+#{aufgabenstellung}
 <h2>_{MsgAufgabeLösungEinsenden}
 <div .tabs>
   <div #hochladen>
@@ -17,6 +14,9 @@ $case lösen
         <li>
           <a href="#hochladen">_{MsgAufgabeHochladen}
       <div .content>
+        $maybe (widget, enctype) <- mvorlageForm
+          <form role="form" action=@{zielAdresse}#eingeben method="post" enctype=#{enctype}>
+            ^{widget}
         <form role="form" action=@{zielAdresse}#eingeben method="post" enctype=#{formEnctype}>
           ^{formWidget}
     <div .content>
@@ -24,4 +24,4 @@ $case lösen
         ^{formWidgetUpload}
 $maybe bewertung <- mbewertung
   <h2>_{MsgAufgabeBewertung}
-  <pre .alert-danger>#{bewertung}
+  #{bewertung}
