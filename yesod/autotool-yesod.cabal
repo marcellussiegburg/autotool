@@ -24,6 +24,8 @@ library
                      Handler.Aufgabe.Forms
                      Handler.AufgabeAnlegen
                      Handler.AufgabeBearbeiten
+                     Handler.AufgabeBenutzerId
+                     Handler.AufgabeBenutzerIdZufall
                      Handler.AufgabeEinstellungen
                      Handler.AufgabeKonfiguration
                      Handler.Aufgaben
@@ -117,6 +119,7 @@ library
                  , transformers
                  , either
                  , conduit-extra
+                 , random
                  , autotool-db
                  , autotool-server-interface
                  , autolib-output

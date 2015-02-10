@@ -4,6 +4,8 @@ import Import
 import Data.Set (Set, fromList, member)
 import qualified Control.Aufgabe.DB as AufgabeDB
 import qualified Control.Aufgabe.Typ as Aufgabe
+import qualified Control.Student.DB as StudentDB
+import qualified Control.Student.Type as Student
 import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Vorlesung.DB as VorlesungDB
@@ -18,6 +20,7 @@ aufgabenListe titel disp vorlesung = do
   let getAufgabe a = let ANr anr = Aufgabe.anr a
                      in anr
   stud <- requireAuthId
+  Just (MNr mnr) <- liftM (fmap Student.mnr . listToMaybe) $ lift $ StudentDB.get_unr $ UNr stud
   istTutor <- do
     vorlesungen <- lift $ VorlesungDB.get_tutored $ SNr stud
     return $ VNr vorlesung `elem` map Vorlesung.vnr vorlesungen

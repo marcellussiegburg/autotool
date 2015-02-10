@@ -24,6 +24,8 @@ import Handler.Home
 import Handler.Aufgabe
 import Handler.AufgabeAnlegen
 import Handler.AufgabeBearbeiten
+import Handler.AufgabeBenutzerId
+import Handler.AufgabeBenutzerIdZufall
 import Handler.AufgabeKonfiguration
 import Handler.Aufgaben
 import Handler.AufgabenAktuell

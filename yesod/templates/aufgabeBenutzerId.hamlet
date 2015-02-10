@@ -1,0 +1,3 @@
+<h1>_{MsgAufgabeBenutzerId}
+<form role="form" action=@{AufgabeBenutzerIdR server aufgabeTyp konfiguration} method="post" enctype=#{formEnctype}>
+  ^{formWidget}

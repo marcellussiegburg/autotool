@@ -20,11 +20,11 @@ import Data.Conduit.Binary (sinkLbs)
 import Data.Text.Lazy (toStrict)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
-getAufgabeTestenR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler Html
+getAufgabeTestenR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Text -> Handler Html
 getAufgabeTestenR = postAufgabeTestenR
 
-postAufgabeTestenR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler Html
-postAufgabeTestenR server typ konfiguration = do
+postAufgabeTestenR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Text -> Handler Html
+postAufgabeTestenR server typ konfiguration benutzerId = do
   sprache <- getBevorzugteSprache
   esigned <- lift $ verify_task_config_localized (unpack server) (unpack typ) (CString $ unpack konfiguration) sprache
   signed <- case esigned of
@@ -32,8 +32,7 @@ postAufgabeTestenR server typ konfiguration = do
       setMessage $ specialize sprache $ render $ descr err
       redirect $ AufgabeKonfigurationR server typ konfiguration
     Right signed' -> return signed'
-  let seed = "1111"
-  (signed', DString aufgabenstellung', einsendung) <- lift $ get_task_instance_localized (unpack server) signed seed sprache
+  (signed', DString aufgabenstellung', einsendung) <- lift $ get_task_instance_localized (unpack server) signed (unpack benutzerId) sprache
   let SString einsendung' = contents einsendung
       DString atyp' = documentation einsendung
       vorherigeEinsendung = Just $ pack einsendung'
@@ -42,7 +41,7 @@ postAufgabeTestenR server typ konfiguration = do
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp vorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ einsendungHochladenForm
   let hinweis = "" :: Text
-      zielAdresse = AufgabeTestenR server typ konfiguration
+      zielAdresse = AufgabeTestenR server typ konfiguration benutzerId
       name = typ
       titel = MsgAufgabeXTesten name
       mvorlageForm = Nothing :: Maybe (Widget, Enctype)

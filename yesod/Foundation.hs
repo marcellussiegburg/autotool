@@ -301,15 +301,17 @@ navigationMenu mroute authId = do
       gruppe g = [GruppeR g]
       aufgabe a = [AufgabeBearbeitenR a, AufgabeR a, StatistikR a]
       servers = [ServersR]
-      server s t v k = concat $ map maybeToList
+      server s t v k i = concat $ map maybeToList
         [ServerR <$> s
         ,AufgabeVorlagenR <$> s <*> t
         ,AufgabeVorlageR <$> s <*> t <*> v
         ,AufgabeKonfigurationR <$> s <*> t <*> k
-        ,AufgabeTestenR <$> s <*> t <*> k]
-      (as, at, av, ak) = serverRouteInformation mroute
+        ,AufgabeBenutzerIdR <$> s <*> t <*> k
+        ,AufgabeBenutzerIdZufallR <$> s <*> t <*> k
+        ,AufgabeTestenR <$> s <*> t <*> k <*> i]
+      (as, at, av, ak, ai) = serverRouteInformation mroute
   (schu, sem, vorl, grup, aufg) <- routeBrotkrumen mroute authId
-  let server' = server as at av ak
+  let server' = server as at av ak ai
       filterRoute r = do hatZugriff <- istAutorisiert authId r
                          return $ maybe False id hatZugriff
       filterBerechtigte liste param =
@@ -404,16 +406,17 @@ routeInformation route = case routeParameter route of
      ServerRoute _ -> return $ fromTuple6 Tuple6_0
 
 -- | Liefert für die Interaktion mit dem Semantik-Server die aktuell abrufbaren Parameter aus der angegebenen Route.
-serverRouteInformation :: Maybe (Route Autotool) -> (Maybe ServerUrl, Maybe AufgabeTyp, Maybe VorlageName, Maybe AufgabeKonfiguration)
+serverRouteInformation :: Maybe (Route Autotool) -> (Maybe ServerUrl, Maybe AufgabeTyp, Maybe VorlageName, Maybe AufgabeKonfiguration, Maybe Text)
 serverRouteInformation mroute = case mroute of
-  Nothing -> (Nothing, Nothing, Nothing, Nothing)
+  Nothing -> (Nothing, Nothing, Nothing, Nothing, Nothing)
   Just route -> case routeParameter route of
     Just (ServerRoute param) ->  case param of
-      ServerUrlRoute s -> (Just s, Nothing, Nothing, Nothing)
-      VorlagenRoute s t -> (Just s, Just t, Nothing, Nothing)
-      VorlageRoute s t v -> (Just s, Just t, Just v, Nothing)
-      KonfigurationRoute s t k -> (Just s, Just t, Nothing, Just k)
-    _ -> (Nothing, Nothing, Nothing, Nothing)
+      ServerUrlRoute s -> (Just s, Nothing, Nothing, Nothing, Nothing)
+      VorlagenRoute s t -> (Just s, Just t, Nothing, Nothing, Nothing)
+      VorlageRoute s t v -> (Just s, Just t, Just v, Nothing, Nothing)
+      KonfigurationRoute s t k -> (Just s, Just t, Nothing, Just k, Nothing)
+      TestenRoute s t k i -> (Just s, Just t, Nothing, Just k, Just i)
+    _ -> (Nothing, Nothing, Nothing, Nothing, Nothing)
 
 -- | Liefert ggf. die Schule zu einem Semester
 getSchule :: Maybe SemesterId -> IO (Maybe SchuleId)
@@ -460,89 +463,94 @@ data ServerParameter =
  | VorlagenRoute ServerUrl AufgabeTyp
  | VorlageRoute ServerUrl AufgabeTyp VorlageName
  | KonfigurationRoute ServerUrl AufgabeTyp AufgabeKonfiguration
+ | TestenRoute ServerUrl AufgabeTyp AufgabeKonfiguration Text
 
 -- | Liefert den Parameter, der der Route übergeben wurde
 -- 
 -- Diese Methode nutzt absichtlich keinen Wildcard-Eintrag, um Rückmeldung vom Compiler bei neu definierten Routen zu erhalten
 routeParameter :: Route Autotool -> Maybe RouteParameter
 routeParameter route = case route of
-  StaticR _                   -> Nothing
-  FaviconR                    -> Nothing
-  RobotsR                     -> Nothing
-  AuthR _                     -> Nothing
-  HomeR                       -> Nothing
-  SchuleAnlegenR              -> Nothing
-  SchulenR                    -> Nothing
-  SchuleR s                   -> Just $ SchuleRoute s
-  DirektorenR s               -> Just $ SchuleRoute s
-  DirektorErnennenR s         -> Just $ SchuleRoute s
-  WaisenkinderR s             -> Just $ SchuleRoute s
-  SemestersR s                -> Just $ SchuleRoute s
-  SemesterAnlegenR s          -> Just $ SchuleRoute s
-  SemesterR s                 -> Just $ SemesterRoute s
-  VorlesungenR s              -> Just $ SemesterRoute s
-  VorlesungAnlegenR s         -> Just $ SemesterRoute s
-  VorlesungR v                -> Just $ VorlesungRoute v
-  GruppeAnlegenR v            -> Just $ VorlesungRoute v
-  GruppenR v                  -> Just $ VorlesungRoute v
-  StudentenR v                -> Just $ VorlesungRoute v
-  TutorErnennenR v            -> Just $ VorlesungRoute v
-  TutorenR v                  -> Just $ VorlesungRoute v
-  ResultateR v                -> Just $ VorlesungRoute v
-  ResultatePflichtR v         -> Just $ VorlesungRoute v
-  AufgabeAnlegenR v           -> Just $ VorlesungRoute v
-  AufgabenR v                 -> Just $ VorlesungRoute v
-  AufgabenAktuellR v          -> Just $ VorlesungRoute v
-  GruppeR g                   -> Just $ GruppeRoute g
-  AufgabeBearbeitenR a        -> Just $ AufgabeRoute a
-  AufgabeR a                  -> Just $ AufgabeRoute a
-  StatistikR a                -> Just $ AufgabeRoute a
-  ServersR                    -> Nothing
-  ServerR s                   -> Just $ ServerRoute $ ServerUrlRoute s
-  AufgabeVorlagenR s t        -> Just $ ServerRoute $ VorlagenRoute s t
-  AufgabeVorlageR s t v       -> Just $ ServerRoute $ VorlageRoute s t v
-  AufgabeKonfigurationR s t k -> Just $ ServerRoute $ KonfigurationRoute s t k
-  AufgabeTestenR s t k        -> Just $ ServerRoute $ KonfigurationRoute s t k
+  StaticR _                      -> Nothing
+  FaviconR                       -> Nothing
+  RobotsR                        -> Nothing
+  AuthR _                        -> Nothing
+  HomeR                          -> Nothing
+  SchuleAnlegenR                 -> Nothing
+  SchulenR                       -> Nothing
+  SchuleR s                      -> Just $ SchuleRoute s
+  DirektorenR s                  -> Just $ SchuleRoute s
+  DirektorErnennenR s            -> Just $ SchuleRoute s
+  WaisenkinderR s                -> Just $ SchuleRoute s
+  SemestersR s                   -> Just $ SchuleRoute s
+  SemesterAnlegenR s             -> Just $ SchuleRoute s
+  SemesterR s                    -> Just $ SemesterRoute s
+  VorlesungenR s                 -> Just $ SemesterRoute s
+  VorlesungAnlegenR s            -> Just $ SemesterRoute s
+  VorlesungR v                   -> Just $ VorlesungRoute v
+  GruppeAnlegenR v               -> Just $ VorlesungRoute v
+  GruppenR v                     -> Just $ VorlesungRoute v
+  StudentenR v                   -> Just $ VorlesungRoute v
+  TutorErnennenR v               -> Just $ VorlesungRoute v
+  TutorenR v                     -> Just $ VorlesungRoute v
+  ResultateR v                   -> Just $ VorlesungRoute v
+  ResultatePflichtR v            -> Just $ VorlesungRoute v
+  AufgabeAnlegenR v              -> Just $ VorlesungRoute v
+  AufgabenR v                    -> Just $ VorlesungRoute v
+  AufgabenAktuellR v             -> Just $ VorlesungRoute v
+  GruppeR g                      -> Just $ GruppeRoute g
+  AufgabeBearbeitenR a           -> Just $ AufgabeRoute a
+  AufgabeR a                     -> Just $ AufgabeRoute a
+  StatistikR a                   -> Just $ AufgabeRoute a
+  ServersR                       -> Nothing
+  ServerR s                      -> Just $ ServerRoute $ ServerUrlRoute s
+  AufgabeVorlagenR s t           -> Just $ ServerRoute $ VorlagenRoute s t
+  AufgabeVorlageR s t v          -> Just $ ServerRoute $ VorlageRoute s t v
+  AufgabeKonfigurationR s t k    -> Just $ ServerRoute $ KonfigurationRoute s t k
+  AufgabeBenutzerIdR s t k       -> Just $ ServerRoute $ KonfigurationRoute s t k
+  AufgabeBenutzerIdZufallR s t k -> Just $ ServerRoute $ KonfigurationRoute s t k
+  AufgabeTestenR s t k i         -> Just $ ServerRoute $ TestenRoute s t k i
 
 -- | Liefert den Titel, der für einen Link zu dieser Route verwendet werden soll
 -- 
 -- Diese Methode nutzt absichtlich keinen Wildcard-Eintrag, um Rückmeldung vom Compiler bei neu definierten Routen zu erhalten
 routeTitel :: Route Autotool -> Maybe AutotoolMessage
 routeTitel route = case route of
-  StaticR _                   -> Nothing
-  FaviconR                    -> Nothing
-  RobotsR                     -> Nothing
-  AuthR _                     -> Nothing
-  HomeR                       -> Nothing
-  SchuleAnlegenR              -> Just MsgSchuleAnlegen
-  SchulenR                    -> Just MsgSchulen
-  SchuleR _                   -> Just MsgBearbeiten
-  DirektorenR _               -> Just MsgDirektoren
-  DirektorErnennenR _         -> Just MsgDirektorErnennen
-  WaisenkinderR _             -> Just MsgWaisenkinder
-  SemestersR _                -> Just MsgSemesters
-  SemesterAnlegenR _          -> Just MsgSemesterAnlegen
-  SemesterR _                 -> Just MsgBearbeiten
-  VorlesungenR _              -> Just MsgVorlesungen
-  VorlesungAnlegenR _         -> Just MsgVorlesungAnlegen
-  VorlesungR _                -> Just MsgBearbeiten
-  GruppeAnlegenR _            -> Just MsgGruppeAnlegen
-  GruppenR _                  -> Just MsgGruppen
-  StudentenR _                -> Just MsgStudenten
-  TutorErnennenR _            -> Just MsgTutor
-  TutorenR _                  -> Just MsgTutoren
-  ResultateR _                -> Just MsgAlleResultate
-  ResultatePflichtR _         -> Just MsgResultatePflicht
-  AufgabeAnlegenR _           -> Just MsgAufgabeAnlegen
-  AufgabenR _                 -> Just MsgAufgaben
-  AufgabenAktuellR _          -> Just MsgAufgabenAktuell
-  GruppeR _                   -> Just MsgBearbeiten
-  AufgabeBearbeitenR _        -> Just MsgBearbeiten
-  AufgabeR _                  -> Just MsgLösen
-  StatistikR _                -> Just MsgStatistikAnzeigen
-  ServersR                    -> Just MsgServers
-  ServerR _                   -> Just MsgAufgabeTyp
-  AufgabeVorlagenR _ _        -> Just MsgAufgabeVorlagen
-  AufgabeVorlageR _ _ _       -> Just MsgAufgabeKonfigurieren
-  AufgabeKonfigurationR _ _ _ -> Just MsgAufgabeKonfigurieren
-  AufgabeTestenR _ _ _        -> Just MsgAufgabeTesten
+  StaticR _                      -> Nothing
+  FaviconR                       -> Nothing
+  RobotsR                        -> Nothing
+  AuthR _                        -> Nothing
+  HomeR                          -> Nothing
+  SchuleAnlegenR                 -> Just MsgSchuleAnlegen
+  SchulenR                       -> Just MsgSchulen
+  SchuleR _                      -> Just MsgBearbeiten
+  DirektorenR _                  -> Just MsgDirektoren
+  DirektorErnennenR _            -> Just MsgDirektorErnennen
+  WaisenkinderR _                -> Just MsgWaisenkinder
+  SemestersR _                   -> Just MsgSemesters
+  SemesterAnlegenR _             -> Just MsgSemesterAnlegen
+  SemesterR _                    -> Just MsgBearbeiten
+  VorlesungenR _                 -> Just MsgVorlesungen
+  VorlesungAnlegenR _            -> Just MsgVorlesungAnlegen
+  VorlesungR _                   -> Just MsgBearbeiten
+  GruppeAnlegenR _               -> Just MsgGruppeAnlegen
+  GruppenR _                     -> Just MsgGruppen
+  StudentenR _                   -> Just MsgStudenten
+  TutorErnennenR _               -> Just MsgTutor
+  TutorenR _                     -> Just MsgTutoren
+  ResultateR _                   -> Just MsgAlleResultate
+  ResultatePflichtR _            -> Just MsgResultatePflicht
+  AufgabeAnlegenR _              -> Just MsgAufgabeAnlegen
+  AufgabenR _                    -> Just MsgAufgaben
+  AufgabenAktuellR _             -> Just MsgAufgabenAktuell
+  GruppeR _                      -> Just MsgBearbeiten
+  AufgabeBearbeitenR _           -> Just MsgBearbeiten
+  AufgabeR _                     -> Just MsgLösen
+  StatistikR _                   -> Just MsgStatistikAnzeigen
+  ServersR                       -> Just MsgServers
+  ServerR _                      -> Just MsgAufgabeTyp
+  AufgabeVorlagenR _ _           -> Just MsgAufgabeVorlagen
+  AufgabeVorlageR _ _ _          -> Just MsgAufgabeKonfigurieren
+  AufgabeKonfigurationR _ _ _    -> Just MsgAufgabeKonfigurieren
+  AufgabeBenutzerIdR _ _ _       -> Just MsgAufgabeBenutzerId
+  AufgabeBenutzerIdZufallR _ _ _ -> Just MsgAufgabeBenutzerIdZufall
+  AufgabeTestenR _ _ _ _         -> Just MsgAufgabeTesten

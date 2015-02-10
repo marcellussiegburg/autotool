@@ -4,4 +4,6 @@
 $maybe hinweis <- mhinweis
   #{hinweis}
 $nothing
-  <a .btn .btn-primary href=@{AufgabeTestenR server aufgabeTyp konfiguration}>_{MsgAufgabeTesten}
+  <a .btn .btn-primary href=@{AufgabeBenutzerIdZufallR server aufgabeTyp konfiguration}>_{MsgAufgabeTesten}
+  &nbsp;
+  <a .btn .btn-primary href=@{AufgabeBenutzerIdR server aufgabeTyp konfiguration}>_{MsgAufgabeTestenMitId}

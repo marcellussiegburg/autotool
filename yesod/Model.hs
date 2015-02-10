@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Model where
 
 import Prelude (Integer, div, fromInteger, toInteger, (^), (*))

@@ -32,9 +32,11 @@
 /aufgabe/#AufgabeId/einsendung            AufgabeR              GET    POST      !einschreibung
 /aufgabe/#AufgabeId/statistik             StatistikR            GET    POST      !tutor
 
-/servers                                                                          ServersR              GET    POST
-/server/#ServerUrl                                                                ServerR               GET
-/server/#ServerUrl/aufgabe/#AufgabeTyp                                            AufgabeVorlagenR      GET
-/server/#ServerUrl/aufgabe/#AufgabeTyp/vorlage/#VorlageName                       AufgabeVorlageR       GET
-/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration        AufgabeKonfigurationR GET    POST
-/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/testen AufgabeTestenR        GET    POST
+/servers                                                                            ServersR                 GET    POST
+/server/#ServerUrl                                                                  ServerR                  GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp                                              AufgabeVorlagenR         GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp/vorlage/#VorlageName                         AufgabeVorlageR          GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration          AufgabeKonfigurationR    GET    POST
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/id       AufgabeBenutzerIdR       GET    POST
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/zufallId AufgabeBenutzerIdZufallR GET
+/server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/id/#Text AufgabeTestenR           GET    POST

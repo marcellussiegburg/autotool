@@ -78,7 +78,7 @@ $else
                 $of Current
                   <a href=@{AufgabeR $ getAufgabe aufgabe} .btn .btn-success .btn-block role="button">_{MsgLösen}
                 $of Late
-                  <a href=@{AufgabeTestenR (pack $ toString $ Aufgabe.server aufgabe) (pack $ toString $ Aufgabe.typ aufgabe) (pack $ toString $ Aufgabe.config aufgabe)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
+                  <a href=@{AufgabeTestenR (pack $ toString $ Aufgabe.server aufgabe) (pack $ toString $ Aufgabe.typ aufgabe) (pack $ toString $ Aufgabe.config aufgabe) (pack mnr)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
                 $of Early
           $if istTutor
             <td>

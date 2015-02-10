@@ -9,6 +9,8 @@ AufgabeBearbeiten: Aufgabe bearbeiten
 AufgabeBearbeitungszeit: Bearbeitungszeit
 AufgabeBeginnDatum: Bearbeitungsbeginn der Aufgabe (Datum)
 AufgabeBeginnZeit: Bearbeitungsbeginn der Aufgabe (Uhrzeit)
+AufgabeBenutzerId: Identifikationsnummer wählen
+AufgabeBenutzerIdZufall: Zufällige Identifikationsnummer
 AufgabeBewertung: Bewertung
 AufgabeBewertungVorher: Vorherige Bewertung
 AufgabeEingeben: Eingeben
@@ -34,6 +36,7 @@ AufgabenErledigt erledigt@Integer ziel@Integer prozent@Integer: Von #{show ziel}
 AufgabeStatus: Status
 AufgabeXTesten aufgabe@Text: Aufgabe #{aufgabe} testen
 AufgabeTesten: Aufgabe testen
+AufgabeTestenMitId: Aufgabe mit bestimmter Benutzer-Id testen
 AufgabeTyp: Aufgabentyp wählen
 AufgabeVorlagen: Aufgabenvorlage wählen
 AufgabeVorlageStandard: Standardvorlage / letzte Konfiguration
