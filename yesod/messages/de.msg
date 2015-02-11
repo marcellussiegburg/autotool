@@ -1,3 +1,5 @@
+TextToMessage text@Text: #{text}
+
 AlleResultate: Alle Resultate
 Abmelden: Abmelden
 Anmelden: Anmelden
@@ -23,6 +25,7 @@ AufgabeHighscore: Highscore
 AufgabeHinweis: Hinweis
 AufgabeHochladen: Hochladen
 AufgabeKonfiguration: Konfiguration
+AufgabeKonfigurationFehler: Fehler in der Aufgabenkonfiguration
 AufgabeKonfigurieren: Aufgabe konfigurieren
 AufgabeKonfigurationTyp: Typ der Konfiguration
 AufgabeXLösen aufgabe@Text: Aufgabe #{aufgabe} lösen

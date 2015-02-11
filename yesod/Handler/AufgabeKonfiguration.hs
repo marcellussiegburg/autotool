@@ -12,7 +12,7 @@ import Service.Interface (get_task_description_localized, verify_task_config_loc
 import Types.Basic (Task)
 import Types.Config (Config (CString))
 import Types.Description (Description (DString))
-import Types.Documented (documentation)
+import Types.Documented (contents, documentation)
 import Types.Signed (Signed)
 import Types.TaskDescription (task_sample_config)
 
@@ -26,31 +26,41 @@ getAufgabeKonfigurationR = postAufgabeKonfigurationR
 
 postAufgabeKonfigurationR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler Html
 postAufgabeKonfigurationR server aufgabeTyp konfiguration = do
-  sprache <- getBevorzugteSprache
-  DString dokumentation <- lift $ liftM (documentation . task_sample_config)
-                           $ get_task_description_localized (unpack server) (unpack aufgabeTyp) sprache
-  let output = xmlStringToOutput dokumentation
-      typ :: Html
-      typ = specialize sprache $ render output
-      checkMethode = checkKonfiguration server aufgabeTyp
+  typ <- liftM snd $ getBeispielKonfiguration server aufgabeTyp
+  let checkMethode = checkKonfiguration server aufgabeTyp
   ((result, formWidget), formEnctype) <- runFormPost $ renderBootstrap3 BootstrapBasicForm $ konfigurationForm checkMethode typ $ Just konfiguration
+  case result of
+    FormSuccess k ->
+      redirect $ AufgabeKonfigurationR server aufgabeTyp k
+    _ -> do
+      mhinweis <- getKonfigurationFehler konfiguration checkMethode
+      defaultLayout $ do
+        $(widgetFile "aufgabeKonfiguration")
+
+getBeispielKonfiguration :: ServerUrl -> AufgabeTyp -> Handler (AufgabeKonfiguration, Html)
+getBeispielKonfiguration server aufgabeTyp = do
+  sprache <- getBevorzugteSprache
+  beispielKonfiguration <- lift $ liftM task_sample_config
+    $ get_task_description_localized (unpack server) (unpack aufgabeTyp) sprache
+  let DString dokumentation = documentation beispielKonfiguration
+      output = xmlStringToOutput dokumentation
+      CString konfiguration = contents beispielKonfiguration
+  return (pack konfiguration, specialize sprache $ render output)
+
+getKonfigurationFehler :: AufgabeKonfiguration -> (AufgabeKonfiguration -> Handler (Either Description b)) -> Handler (Maybe Html)
+getKonfigurationFehler konfiguration checkMethode = runMaybeT $ do
   konfiguration' <- lookupPostParam konfigurationId
-  mhinweis <- case result of
-    FormSuccess k -> redirect $ AufgabeKonfigurationR server aufgabeTyp k
-    _ -> runMaybeT $ do
-      Left (DString d) <- lift $ checkMethode $ maybe konfiguration id konfiguration'
-      let hinweis :: Html
-          hinweis = specialize sprache $ render $ xmlStringToOutput d
-      return $ hinweis ! class_ "alert-danger"
-  defaultLayout $ do
-    $(widgetFile "aufgabeKonfiguration")
+  Left (DString d) <- lift $ checkMethode $ maybe konfiguration id konfiguration'
+  sprache <- getBevorzugteSprache
+  let hinweis = specialize sprache $ render $ xmlStringToOutput d
+  return $ hinweis ! class_ "alert-danger"
 
 checkKonfiguration :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler (Either Description (Signed (Task, Config)))
 checkKonfiguration server aufgabeTyp konfiguration = do
   sprache <- getBevorzugteSprache
   lift $ verify_task_config_localized (unpack server) (unpack aufgabeTyp) (CString $ unpack $ konfiguration) sprache
 
-konfigurationForm :: ToMarkup t => (Text -> Handler (Either Description b)) -> t -> Maybe Text -> AForm Handler Text
+konfigurationForm :: ToMarkup t => (AufgabeKonfiguration -> Handler (Either Description b)) -> t -> Maybe AufgabeKonfiguration -> AForm Handler AufgabeKonfiguration
 konfigurationForm checkMethode typ mkonfiguration = do
     aopt (preField typ) (bfs MsgAufgabeKonfigurationTyp) {fsAttrs = []} Nothing
     *> areq konfigurationField (addAttrs $ bfs MsgAufgabeKonfiguration) mkonfiguration

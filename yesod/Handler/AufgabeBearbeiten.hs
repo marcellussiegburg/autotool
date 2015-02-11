@@ -11,7 +11,7 @@ getAufgabeBearbeitenR aufgabe = do
       ende' = fromGregorian 2015 3 31
       endeZeit' = midnight
       aufgabe' = Just $ AufgabeFormDaten (Just "kein Hinweis") Nothing Pflicht beginn' beginnZeit' ende' endeZeit'
-  aufgabeTemplate (Right aufgabe) $ Just (Just "http://server.url", Just "Unify-Direct-1", aufgabe', Just Nothing, Just "h (a (c , g (d , k )), l (m , f (i , b )))")
+  aufgabeTemplate (Right aufgabe) Nothing
 
 postAufgabeBearbeitenR :: AufgabeId -> Handler Html
 postAufgabeBearbeitenR aufgabe = aufgabeTemplate (Right aufgabe) Nothing

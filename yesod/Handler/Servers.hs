@@ -12,17 +12,17 @@ getServersR = postServersR
 
 postServersR :: Handler Html
 postServersR = do
-  ((result, formWidget), formEnctype) <- runFormPost serversForm
+  ((result, formWidget), formEnctype) <- runFormPost $ serversForm Nothing
   case result of
     FormSuccess s -> redirect $ ServerR s
     _ -> return ()
   defaultLayout $ do
     $(widgetFile "servers")
 
-serversForm :: Form ServerUrl
-serversForm = do
-  identifyForm "server" $ renderBootstrap3 BootstrapBasicForm $
-    areq serverField (withAutofocus $ bfs MsgServer) (Just $ pack server)
+serversForm :: Maybe ServerUrl -> Form ServerUrl
+serversForm mserver = do
+  renderBootstrap3 BootstrapBasicForm $
+    areq serverField (withAutofocus $ bfs MsgServer) (Just $ maybe (pack server) id mserver)
     <* bootstrapSubmit (BootstrapSubmit MsgServerWählen "btn-success" [])
   where
     serverField = flip checkM textField $ \ server' -> do

@@ -12,6 +12,9 @@ $maybe aufgabenstellung <- maufgabenstellung
   <pre>#{aufgabenstellung}
 <div .tabs>
   ^{tabWidget forms []}
+$maybe hinweis <- mhinweisFehler
+  <h2>_{MsgAufgabeKonfigurationFehler}
+  #{hinweis}
 $maybe bewertung <- mbewertung
   <h2>_{MsgAufgabeBewertung}
   <pre .alert-danger>#{bewertung}

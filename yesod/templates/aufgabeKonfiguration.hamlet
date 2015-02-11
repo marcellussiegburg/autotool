@@ -2,6 +2,7 @@
 <form role="form" action=@{AufgabeKonfigurationR server aufgabeTyp konfiguration} method="post" enctype=#{formEnctype}>
   ^{formWidget}
 $maybe hinweis <- mhinweis
+  <h2>_{MsgAufgabeKonfigurationFehler}
   #{hinweis}
 $nothing
   <a .btn .btn-primary href=@{AufgabeBenutzerIdZufallR server aufgabeTyp konfiguration}>_{MsgAufgabeTesten}

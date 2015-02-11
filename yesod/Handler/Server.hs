@@ -3,7 +3,6 @@ module Handler.Server where
 import Import
 import Service.Interface (get_task_types)
 
-
 getServerR :: ServerUrl -> Handler Html
 getServerR server = do
   aufgabenTypen <- lift $ liftM (map taskTreeToTextTree) $ get_task_types $ unpack server
