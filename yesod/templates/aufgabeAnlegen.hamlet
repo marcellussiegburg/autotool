@@ -9,7 +9,7 @@ $maybe hinweis <- mhinweis
   <p>#{hinweis}
 $maybe aufgabenstellung <- maufgabenstellung
   <h2>_{MsgAufgabeAufgabe}
-  <pre>#{aufgabenstellung}
+  #{aufgabenstellung}
 <div .tabs>
   ^{tabWidget forms []}
 $maybe hinweis <- mhinweisFehler
@@ -17,4 +17,4 @@ $maybe hinweis <- mhinweisFehler
   #{hinweis}
 $maybe bewertung <- mbewertung
   <h2>_{MsgAufgabeBewertung}
-  <pre .alert-danger>#{bewertung}
+  #{bewertung}

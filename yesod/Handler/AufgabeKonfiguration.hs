@@ -27,13 +27,12 @@ getAufgabeKonfigurationR = postAufgabeKonfigurationR
 postAufgabeKonfigurationR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler Html
 postAufgabeKonfigurationR server aufgabeTyp konfiguration = do
   typ <- liftM snd $ getBeispielKonfiguration server aufgabeTyp
-  let checkMethode = checkKonfiguration server aufgabeTyp
-  ((result, formWidget), formEnctype) <- runFormPost $ renderBootstrap3 BootstrapBasicForm $ konfigurationForm checkMethode typ $ Just konfiguration
+  ((result, formWidget), formEnctype) <- runFormPost $ renderBootstrap3 BootstrapBasicForm $ konfigurationForm server aufgabeTyp typ $ Just konfiguration
   case result of
     FormSuccess k ->
       redirect $ AufgabeKonfigurationR server aufgabeTyp k
     _ -> do
-      mhinweis <- getKonfigurationFehler konfiguration checkMethode
+      mhinweis <- getKonfigurationFehler server aufgabeTyp konfiguration
       defaultLayout $ do
         $(widgetFile "aufgabeKonfiguration")
 
@@ -47,21 +46,23 @@ getBeispielKonfiguration server aufgabeTyp = do
       CString konfiguration = contents beispielKonfiguration
   return (pack konfiguration, specialize sprache $ render output)
 
-getKonfigurationFehler :: AufgabeKonfiguration -> (AufgabeKonfiguration -> Handler (Either Description b)) -> Handler (Maybe Html)
-getKonfigurationFehler konfiguration checkMethode = runMaybeT $ do
+getKonfigurationFehler :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler (Maybe Html)
+getKonfigurationFehler server aufgabeTyp konfiguration = do
   konfiguration' <- lookupPostParam konfigurationId
-  Left (DString d) <- lift $ checkMethode $ maybe konfiguration id konfiguration'
-  sprache <- getBevorzugteSprache
-  let hinweis = specialize sprache $ render $ xmlStringToOutput d
-  return $ hinweis ! class_ "alert-danger"
+  liftM leftToMaybe $ checkKonfiguration server aufgabeTyp (maybe konfiguration id konfiguration')
 
-checkKonfiguration :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler (Either Description (Signed (Task, Config)))
+checkKonfiguration :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Handler (Either Html (Signed (Task, Config)))
 checkKonfiguration server aufgabeTyp konfiguration = do
   sprache <- getBevorzugteSprache
-  lift $ verify_task_config_localized (unpack server) (unpack aufgabeTyp) (CString $ unpack $ konfiguration) sprache
+  check' <- lift $ verify_task_config_localized (unpack server) (unpack aufgabeTyp) (CString $ unpack $ konfiguration) sprache
+  case check' of
+    Right r -> return $ Right r
+    Left (DString d) -> do
+      let hinweis = specialize sprache $ render $ xmlStringToOutput d
+      return $ Left $ hinweis ! class_ "alert-danger"
 
-konfigurationForm :: ToMarkup t => (AufgabeKonfiguration -> Handler (Either Description b)) -> t -> Maybe AufgabeKonfiguration -> AForm Handler AufgabeKonfiguration
-konfigurationForm checkMethode typ mkonfiguration = do
+konfigurationForm :: ToMarkup t => ServerUrl -> AufgabeTyp -> t -> Maybe AufgabeKonfiguration -> AForm Handler AufgabeKonfiguration
+konfigurationForm server aufgabeTyp typ mkonfiguration = do
     aopt (preField typ) (bfs MsgAufgabeKonfigurationTyp) {fsAttrs = []} Nothing
     *> areq konfigurationField (addAttrs $ bfs MsgAufgabeKonfiguration) mkonfiguration
     <* bootstrapSubmit (BootstrapSubmit MsgAufgabeKonfigurieren "btn-success" [])
@@ -71,7 +72,7 @@ konfigurationForm checkMethode typ mkonfiguration = do
         fsName = Just konfigurationId
       }
     konfigurationField = checkMMap (\ (Textarea konfiguration) -> do
-        check' <- checkMethode konfiguration
+        check' <- checkKonfiguration server aufgabeTyp konfiguration
         case check' of
           Left _ -> return $ Left MsgFehler
           Right _ -> return $ Right konfiguration
