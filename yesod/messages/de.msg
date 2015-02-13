@@ -1,13 +1,13 @@
-TextToMessage text@Text: #{text}
-
 AlleResultate: Alle Resultate
 Abmelden: Abmelden
 Anmelden: Anmelden
 Anzeigen: Anzeigen
 Aufgabe: Aufgabe
 AufgabeAnlegen: Aufgabe anlegen
+AufgabeAngelegt: Aufgabe wurde angelegt
 AufgabeAufgabe: Aufgabenstellung
 AufgabeBearbeiten: Aufgabe bearbeiten
+AufgabeBearbeitet: Aufgabe wurde bearbeitet
 AufgabeBearbeitungszeit: Bearbeitungszeit
 AufgabeBeginnDatum: Bearbeitungsbeginn der Aufgabe (Datum)
 AufgabeBeginnZeit: Bearbeitungsbeginn der Aufgabe (Uhrzeit)
@@ -20,6 +20,7 @@ AufgabeEinstellen: Aufgabe einstellen
 AufgabeEinstellungen: Einstellungen
 AufgabeEndeDatum: Bearbeitungsende der Aufgabe (Datum)
 AufgabeEndeZeit: Bearbeitungsende der Aufgabe (Uhrzeit)
+AufgabeEntfernt: Aufgabe wurde gelöscht
 AufgabeGesamtwertung: Gesamtwertung
 AufgabeHighscore: Highscore
 AufgabeHinweis: Hinweis
@@ -35,6 +36,7 @@ Aufgaben: Aufgaben
 AufgabenAktuell: Aktuelle Aufgaben
 AufgabenAlle: Alle Aufgaben
 AufgabeName: Name
+AufgabeNameVergeben: Dieser Name wurde bereits für eine andere Aufgabenkonfiguration dieses Typs vergeben.
 AufgabenErledigt erledigt@Integer ziel@Integer prozent@Integer: Von #{show ziel} #{plural ziel "Pflichtaufgabe" "Pflichtaufgaben"} haben Sie bis jetzt #{show erledigt} erledigt. Das sind #{show prozent} Prozent.
 AufgabeStatus: Status
 AufgabeXTesten aufgabe@Text: Aufgabe #{aufgabe} testen

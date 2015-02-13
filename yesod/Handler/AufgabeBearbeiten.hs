@@ -2,16 +2,15 @@ module Handler.AufgabeBearbeiten where
 
 import Import
 import Handler.AufgabeAnlegen (aufgabeTemplate)
-import Handler.AufgabeEinstellungen
+import Control.Aufgabe.DB as AufgabeDB (get_this)
+import Control.Types
 
 getAufgabeBearbeitenR :: AufgabeId -> Handler Html
-getAufgabeBearbeitenR aufgabe = do
-  let beginn' = fromGregorian 2014 10 1
-      beginnZeit' = midnight
-      ende' = fromGregorian 2015 3 31
-      endeZeit' = midnight
-      aufgabe' = Just $ AufgabeFormDaten (Just "kein Hinweis") Nothing Pflicht beginn' beginnZeit' ende' endeZeit'
-  aufgabeTemplate (Right aufgabe) Nothing
+getAufgabeBearbeitenR = postAufgabeBearbeitenR
 
 postAufgabeBearbeitenR :: AufgabeId -> Handler Html
-postAufgabeBearbeitenR aufgabe = aufgabeTemplate (Right aufgabe) Nothing
+postAufgabeBearbeitenR aufgabeId = do
+  aufgaben <- lift $ liftM listToMaybe $ AufgabeDB.get_this $ ANr aufgabeId
+  case aufgaben of
+    Just aufgabe -> aufgabeTemplate (Right aufgabe)
+    Nothing -> notFound

@@ -1,11 +1,15 @@
 module Handler.AufgabeEinstellungen where
 
-import Import
+import Import hiding (delete)
+import Handler.AufgabeVorlagen (getVorlagen)
+
+import Data.List (delete)
 
 import qualified Control.Aufgabe.Typ as A
 import qualified Control.Types as T
 
 data AufgabeFormDaten = AufgabeFormDaten {
+    name :: Text,
     hinweis :: Maybe Text,
     highscore :: Maybe Highscore,
     status :: Status,
@@ -24,6 +28,7 @@ instance PathPiece AufgabeFormDaten where
 aufgabeToFormDaten :: A.Aufgabe -> AufgabeFormDaten
 aufgabeToFormDaten aufgabe =
   AufgabeFormDaten {
+    name = pack . T.toString . A.name $ aufgabe,
     hinweis = Just . pack . T.toString . A.remark $ aufgabe,
     highscore = hiLoToFormDaten $ A.highscore aufgabe,
     status = statusToFormDaten $ A.status aufgabe,
@@ -47,6 +52,12 @@ hiLoToFormDaten h = case h of
   T.Low -> Just Niedrig
   T.Keine -> Nothing
 
+formDatenToHiLo :: Maybe Highscore -> T.HiLo
+formDatenToHiLo h = case h of
+  Just Hoch -> T.High
+  Just Niedrig -> T.Low
+  Nothing -> T.Keine
+
 data Status = Demonstration | Optional | Pflicht deriving (Eq, Show, Read)
 
 instance PathPiece Status where
@@ -61,16 +72,22 @@ statusToFormDaten s = case s of
   T.Optional -> Optional
   T.Demo -> Demonstration
 
+formDatenToStatus :: Status -> T.Status
+formDatenToStatus s = case s of
+  Pflicht -> T.Mandatory
+  Optional -> T.Optional
+  Demonstration -> T.Demo
+
 highscores ::  [(AutotoolMessage, Maybe Highscore)]
 highscores = [(MsgHighscoreKeine, Nothing), (MsgHighscoreHoch, Just Hoch), (MsgHighscoreNiedrig, Just Niedrig)]
 
 stati :: [(AutotoolMessage, Status)]
 stati = [(MsgStatusDemonstration, Demonstration), (MsgStatusPflicht, Pflicht), (MsgStatusOptional, Optional)]
 
-aufgabeForm :: Maybe AufgabeFormDaten -> AForm Handler AufgabeFormDaten
-aufgabeForm maufgabe = do
-  AufgabeFormDaten
-    <$> aopt textField (bfs MsgAufgabeHinweis) (fmap hinweis maufgabe)
+aufgabeForm :: AufgabeTyp -> Maybe AufgabeFormDaten -> AForm Handler AufgabeFormDaten
+aufgabeForm aufgabeTyp maufgabe = AufgabeFormDaten
+    <$> areq nameField (bfs MsgAufgabeName) (fmap name maufgabe)
+    <*> (fmap unTextarea <$> aopt textareaField (bfs MsgAufgabeHinweis) (fmap Textarea . hinweis <$> maufgabe))
     <*> areq (selectFieldList highscores) (bfs MsgAufgabeHighscore) (fmap highscore maufgabe)
     <*> areq (selectFieldList stati) (bfs MsgAufgabeStatus) (fmap status maufgabe)
     <*> areq (jqueryDayField def) (bfsFormControl MsgAufgabeBeginnDatum) (fmap beginn maufgabe)
@@ -78,3 +95,10 @@ aufgabeForm maufgabe = do
     <*> areq (jqueryDayField def) (bfsFormControl MsgAufgabeEndeDatum) (fmap ende maufgabe)
     <*> areq timeField (bfs MsgAufgabeEndeZeit) (fmap endeZeit maufgabe)
     <* bootstrapSubmit (BootstrapSubmit MsgAufgabeEinstellen "btn-success" [])
+  where
+    nameField = flip checkM textField $ \ n -> do
+      vorlagen <- getVorlagen aufgabeTyp
+      let vorlagen' = maybe vorlagen ((flip delete vorlagen) . name) maufgabe
+      if n `elem` vorlagen'
+        then return $ Left MsgAufgabeNameVergeben
+        else return $ Right n

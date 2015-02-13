@@ -1,5 +1,5 @@
 <h1>
-  $case eid
+  $case eidAufgabe
     $of Left _
       _{MsgAufgabeAnlegen}
     $of Right _

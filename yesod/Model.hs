@@ -10,7 +10,7 @@ import Data.Int (Int)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Text (Text, unpack, pack)
 import Data.Text.Read (decimal, signed)
-import Data.Time (TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime, timeToTimeOfDay, todHour, todMin, todSec, toGregorian, utctDay, utctDayTime)
+import Data.Time (Day, TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime, timeToTimeOfDay, todHour, todMin, todSec, toGregorian, utctDay, utctDayTime)
 import Data.Tree as Import (Tree (Node), rootLabel, subForest)
 import Yesod.Core.Dispatch (PathPiece, fromPathPiece, toPathPiece)
 
@@ -45,8 +45,13 @@ timeToUTCTime (Time y m d h min s) = UTCTime (fromGregorian (toInteger y) m d) $
 
 utcTimeToTime :: UTCTime -> Time
 utcTimeToTime utcTime =
-  let (y, m, d) = toGregorian $ utctDay utcTime
+  let day  = utctDay utcTime
       time = timeToTimeOfDay $ utctDayTime utcTime
+  in dayTimeToTime day time
+
+dayTimeToTime :: Day -> TimeOfDay -> Time
+dayTimeToTime day time =
+  let (y, m, d) = toGregorian $ day
       MkFixed picos = todSec time
   in Time (fromInteger y) m d (todHour time) (todMin time) (fromInteger $ picos `div` 10 ^ (12 :: Integer))
 
