@@ -9,7 +9,7 @@ import Handler.Aufgabe.Forms
 import qualified Handler.AufgabeEinstellungen as AE (AufgabeFormDaten (..), aufgabeToFormDaten, formDatenToHiLo, formDatenToStatus)
 import Handler.AufgabeVorlage (getVorlageKonfiguration)
 import Handler.AufgabeKonfiguration (checkKonfiguration, getBeispielKonfiguration, getKonfigurationFehler)
-import Handler.AufgabeTesten (getAufgabeInstanz, getBewertung)
+import Handler.Aufgabe (getAufgabeInstanz, getBewertung)
 
 import qualified Control.Aufgabe.DB as AufgabeDB
 import qualified Control.Aufgabe.Typ as A (Aufgabe (..))
@@ -81,7 +81,7 @@ aufgabeTemplate eidAufgabe = do
     liftM (maybe (Nothing, Nothing, "" :: Html, Nothing)
         (\ (a, b, c, d) -> (Just a, Just b, c, Just d))) $
     sequence $ getAufgabeInstanz <$> mserver <*> msignedK <*> Just "11111" -- ^ TODO auswählbar machen
-  mbewertung <- liftM join $ sequence $ getBewertung <$> mserver <*> msignedA <*> Just mhochladen
+  mbewertung <- liftM (fmap snd . join) $ sequence $ getBewertung <$> mserver <*> msignedA <*> Just mhochladen
   forms <- getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung
   defaultLayout $ do
     addStylesheet $ StaticR css_tree_css

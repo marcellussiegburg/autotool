@@ -16,6 +16,7 @@ AufgabeBenutzerIdZufall: Zufällige Identifikationsnummer
 AufgabeBewertung: Bewertung
 AufgabeBewertungVorher: Vorherige Bewertung
 AufgabeEingeben: Eingeben
+AufgabeEinsendungGespeichert: Nachricht zum Eintrag in die Log-Datei
 AufgabeEinstellen: Aufgabe einstellen
 AufgabeEinstellungen: Einstellungen
 AufgabeEndeDatum: Bearbeitungsende der Aufgabe (Datum)

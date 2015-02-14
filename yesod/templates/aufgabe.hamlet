@@ -25,3 +25,6 @@ $if hinweis /= ""
 $maybe bewertung <- mbewertung
   <h2>_{MsgAufgabeBewertung}
   #{bewertung}
+$maybe log <- mlog
+  <h2>_{MsgAufgabeEinsendungGespeichert}
+  <pre>#{log}

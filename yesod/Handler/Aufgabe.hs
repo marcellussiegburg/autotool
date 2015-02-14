@@ -1,88 +1,87 @@
 module Handler.Aufgabe where
 
 import Import
+import Handler.AufgabeKonfiguration (checkKonfiguration)
 import Yesod.Form.Fields.PreField (preField)
 
-import Service.Interface (grade_task_solution_localized)
+import Data.Conduit (($$))
+import Data.Conduit.Binary (sinkLbs)
+import Data.Text.Lazy (toStrict)
+import Data.Text.Lazy.Encoding (decodeUtf8)
+import Text.Blaze.Html5.Attributes (class_)
+import Text.Blaze.Html ((!))
+import Util.Xml.Output (xmlStringToOutput)
+
+import Autolib.Output (render)
+import Autolib.Multilingual (specialize)
+import qualified Control.Aufgabe.DB as AufgabeDB (get_this)
+import qualified Control.Aufgabe.Typ as Aufgabe
+import qualified Control.Student.DB as StudentDB (get_snr)
+import qualified Control.Student.Type as Student
+import qualified Control.Types as T
+import Operate.Bank (bank)
+import Operate.Click (Click (Example))
+import qualified Operate.Param as P
+import qualified Operate.Store as Store (Type (Input), latest)
+import Service.Interface (get_task_instance_localized, grade_task_solution_localized)
 import Types.Basic (Task)
-import Types.Description (Description)
-import Types.Documented (Documented)
-import Types.Instance (Instance (Instance))
-import Types.Signed (Signed (Signed))
+import Types.Config (Config)
+import Types.Description (Description (DString))
+import Types.Documented (Documented (contents), documentation)
+import Types.Instance (Instance)
+import Types.Signed (Signed)
 import Types.Solution (Solution (SString))
-import Util.Hash (hash)
 
-hinweis :: String
-hinweis = "nock kein Hinweis"
+data Aktion = BeispielLaden | VorherigeEinsendungLaden deriving (Show, Read)
 
-aufgabenstellung :: Text
-aufgabenstellung = "Gesucht ist ein binärer Baum t mit den Knoten-Reihenfolgen:\n\
-   Preorder (t) = [ e , j , b\n\
-                  , i , f , m , l , k , d , g , c\n\
-                  , a , h ]\n\
-   Inorder (t) = [ b , j , i , e\n\
-                 , k , l , d , m , g , f , a , c\n\
-                 , h ]"
-
-bew :: Text
-bew = "gelesen: h (a (c , g (d , k )), l (m , f (i , b )))\n\
-partiell korrekt?\n\
-Ihr Baum t ist h (a (c , g (d , k )), l (m , f (i , b )))\n\
-               \n\
-                   h            \n\
-                   |            \n\
-                   +------\\     \n\
-                   |      |     \n\
-                   a      l     \n\
-                   |      |     \n\
-                   +-g    +-f   \n\
-                   | |    | |   \n\
-                   | +-k  | +-b \n\
-                   | |    | |   \n\
-                   | `-d  | `-i \n\
-                   |      |     \n\
-                   `-c    `-m   \n\
-total korrekt?\n\
-Preorder () =\n\
-    Preorder (Eingabe) = [ h , a\n\
-                         , c , g , d , k , l , m , f , i\n\
-                         , b ]\n\
-    Preorder (Gesucht) = [ e , j , b\n\
-                         , i , f , m , l , k , d , g , c\n\
-                         , a , h ]\n\
-    stimmen überein? False\n\
-Inorder () =\n\
-    Inorder (Eingabe) = [ c , a\n\
-                        , d , g , k , h , m , l , i , f\n\
-                        , b ]\n\
-    Inorder (Gesucht) = [ b , j , i\n\
-                        , e , k , l , d , m , g , f , a\n\
-                        , c , h ]\n\
-    stimmen überein? False\n\
-stimmt alles überein?\n\
-Nein.\n\
-Bewertung der Einsendung: No"
+aktion :: Text
+aktion = "aktion"
 
 getAufgabeR :: AufgabeId -> Handler Html
 getAufgabeR = postAufgabeR
 
 postAufgabeR :: AufgabeId -> Handler Html
-postAufgabeR aufgabe = do
-  let vorherigeEinsendung = Just $ "h (a (c , g (d , k )), l (m , f (i , b )))" :: Maybe Text
-      typ = preEscapedToHtml ("<td><a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Raw.html#t:Term\"><tt>Term</tt></a>(<a href=\"http://hackage.haskell.org/package/ghc-prim/docs/GHC-Tuple.html#t:()\")><tt>()</tt></a>)(<a href=\"http://autotool.imn.htwk-leipzig.de/docs/autolib-rewriting/Autolib-TES-Identifier.html#t:Identifier\"><tt>Identifier</tt></a>)</td>" :: Text)
-      server = ""
-      signed = Signed ("", Instance "" "") (hash ' ')
-  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed) typ vorherigeEinsendung
+postAufgabeR aufgabeId = do
+  maufgabe <- lift $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabeId
+  aufgabe <- case maufgabe of
+    Nothing -> notFound
+    Just a -> return a
+  studentId <- requireAuthId
+  mstudent <- lift $ liftM listToMaybe $ StudentDB.get_snr $ T.SNr studentId
+  let server = pack . T.toString $ Aufgabe.server aufgabe
+      typ = pack . T.toString $ Aufgabe.typ aufgabe
+      konfiguration = pack . T.toString $ Aufgabe.config aufgabe
+      benutzerId = maybe "" (pack . T.toString . Student.mnr) mstudent
+  esigned <- checkKonfiguration server typ konfiguration
+  signed <- case esigned of
+    Left fehler -> do
+      setMessage fehler
+      let T.VNr vorlesungId = Aufgabe.vnr aufgabe
+      redirect $ AufgabenR vorlesungId
+    Right signed' -> return signed'
+  mvorherigeEinsendung <- runMaybeT $ do
+    maktion <- lookupPostParam $ pack $ show aktion
+    aktion' <- MaybeT . return $ maktion
+    case read $ unpack aktion' of
+      VorherigeEinsendungLaden -> do
+        mvorherigeEinsendung' <- lift $ getVorherigeEinsendung mstudent aufgabe
+        MaybeT . return $ mvorherigeEinsendung'
+      BeispielLaden -> MaybeT . return $ Nothing
+  (signed', beispiel, atyp, aufgabenstellung) <-
+    getAufgabeInstanz server signed benutzerId
+  (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just $ fromMaybe beispiel mvorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm einsendungHochladenForm
-  let widgets = (formWidget, formEnctype, formWidgetUpload, formEnctypeUpload)
-      mbewertung = Just bew
-  aufgabeTemplate (AufgabeR aufgabe) widgets mbewertung
-
-aufgabeTemplate :: Route Autotool -> (Widget, Enctype, Widget, Enctype) -> Maybe Text -> Handler Html 
-aufgabeTemplate zielAdresse (formWidget, formEnctype, formWidgetUpload, formEnctypeUpload) mbewertung = do
-  let name = "Reconstruct-Direct-1" :: Text
-      titel = MsgAufgabeXTesten name
-  mvorlageForm <- liftM Just $ generateFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm vorlageForm
+  let hinweis = pack . T.toString $ Aufgabe.remark aufgabe
+      zielAdresse = AufgabeR aufgabeId
+      name = pack . T.toString $ Aufgabe.name aufgabe
+      titel = MsgAufgabeXLösen name
+      mfile = case resultUpload of
+        FormSuccess f -> Just f
+        _ -> Nothing
+  mbewertung' <- getBewertung server signed' mfile
+  let mbewertung = fmap snd mbewertung'
+  mvorlageForm <- liftM Just $ generateFormPost $ identifyForm (pack $ show aktion) $ renderBootstrap3 BootstrapBasicForm vorlageForm
+  mlog <- logSchreiben mstudent aufgabe aufgabenstellung mbewertung' mfile
   defaultLayout $ do
     $(widgetFile "aufgabe")
 
@@ -93,9 +92,9 @@ einsendungHochladenForm =
 
 vorlageForm :: AForm Handler ()
 vorlageForm =
-  let actionType v = [("name", "action"), ("value", v)]
-  in bootstrapSubmit (BootstrapSubmit MsgBeispielLaden "btn-primary" $ actionType "beispielLaden")
-     *> bootstrapSubmit (BootstrapSubmit MsgVorherigeEinsendungLaden "btn-primary" $ actionType "vorherigeEinsendung")
+  let actionType v = [("name", pack $ show aktion), ("value", pack $ show v)]
+  in bootstrapSubmit (BootstrapSubmit MsgBeispielLaden "btn-primary" $ actionType BeispielLaden)
+     *> bootstrapSubmit (BootstrapSubmit MsgVorherigeEinsendungLaden "btn-primary" $ actionType VorherigeEinsendungLaden)
 
 einsendenId :: Text
 einsendenId = "einsenden"
@@ -121,3 +120,78 @@ aufgabeEinsendenForm checkMethode typ meinsendung =
           Left _ -> return $ Left MsgFehler
           Right _ -> return $ Right einsendung
       ) Textarea textareaField
+
+getAufgabeInstanz :: ServerUrl -> Signed (Task, Config) -> Text -> Handler (Signed (Task, Instance), Text, Html, Html)
+getAufgabeInstanz server signed benutzerId = do
+  sprache <- getBevorzugteSprache
+  (signed', DString aufgabenstellung, einsendung) <- lift $ get_task_instance_localized (unpack server) signed (unpack benutzerId) sprache
+  let SString einsendung' = contents einsendung
+      DString atyp = documentation einsendung
+      atyp' = specialize sprache $ render $ xmlStringToOutput atyp
+      aufgabenstellung' = specialize sprache $ render $ xmlStringToOutput aufgabenstellung
+  return (signed', pack einsendung', atyp', aufgabenstellung')
+
+getMaybeEinsendung :: Maybe FileInfo -> Handler (Maybe Text)
+getMaybeEinsendung mfile = runMaybeT $ do
+  meinsendung <- case mfile of
+    Just r -> lift $ liftM (Just . toStrict . decodeUtf8) $ fileSource r $$ sinkLbs
+    Nothing -> lookupPostParam einsendenId
+  MaybeT . return $ meinsendung
+
+getBewertung :: ServerUrl -> Signed (Task, Instance) -> Maybe FileInfo -> Handler (Maybe (Maybe Integer, Html))
+getBewertung server signed mfile = runMaybeT $ do
+  sprache <- getBevorzugteSprache
+  meinsendung <- lift $ getMaybeEinsendung mfile
+  einsendung <- MaybeT . return $ meinsendung
+  bewertung <- lift $ checkEinsendung server signed einsendung
+  let DString beschreibung = either id documentation bewertung
+      hinweis' = specialize sprache $ render $ xmlStringToOutput beschreibung
+      hinweis'' = hinweis' ! (class_ $ either (const "alert-danger") (const "alert-success") bewertung)
+      mwert = either (const Nothing) (Just . round . contents) bewertung
+  return (mwert, hinweis'')
+
+getVorherigeEinsendung :: Maybe Student.Student -> Aufgabe.Aufgabe -> Handler (Maybe Text)
+getVorherigeEinsendung mstudent aufgabe = runMaybeT $ do
+  student <- MaybeT . return $ mstudent
+  lift $ lift $ liftM pack $ Store.latest Store.Input $ getDefaultParam student aufgabe
+
+logSchreiben :: Maybe Student.Student -> Aufgabe.Aufgabe -> Html -> Maybe (Maybe Integer, Html) -> Maybe FileInfo -> Handler (Maybe Text)
+logSchreiben mstudent aufgabe aufgabenstellung mbewertung mfile = runMaybeT $ do
+  bewertung <- MaybeT . return $ mbewertung
+  student <- MaybeT . return $ mstudent
+  meinsendung <- lift $ getMaybeEinsendung mfile
+  einsendung <- MaybeT . return $ meinsendung
+  lift $ lift $ liftM pack $ bank (getDefaultParam student aufgabe) {
+      P.minstant = Just aufgabenstellung,
+      P.input = Just $ unpack einsendung,
+      P.report = Just $ snd bewertung,
+      P.mresult = Just $ maybe T.No T.ok $ fst bewertung
+    }
+
+getDefaultParam :: Student.Student -> Aufgabe.Aufgabe -> P.Type
+getDefaultParam student aufgabe =
+  P.Param { P.makers = [],
+    P.mmatrikel = Just $ Student.mnr student,
+    P.ident = Student.snr student,
+    P.mpasswort = Nothing,
+
+    P.aufgabe = Aufgabe.name aufgabe,
+    P.typ = Aufgabe.typ aufgabe,
+    P.anr = Aufgabe.anr aufgabe,
+    P.vnr = Aufgabe.vnr aufgabe,
+    P.highscore = Aufgabe.highscore aufgabe,
+
+    P.minstant = Nothing,
+    P.input = Nothing,
+    P.report = Nothing,
+    P.mresult = Nothing,
+
+    P.wahl = "",
+    P.click = Example,
+    P.input_width = 80,
+    P.conf =  error "Param.empty.conf",
+    P.remark = error "Param.empty.remark",
+
+    P.variante = error "Param.empty.variante",
+    P.names = []
+  }
