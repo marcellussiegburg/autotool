@@ -4,6 +4,7 @@ import Import
 import Handler.AufgabeKonfiguration (checkKonfiguration)
 import Yesod.Form.Fields.PreField (preField)
 
+import qualified Control.Exception as Exception
 import Data.Conduit (($$))
 import Data.Conduit.Binary (sinkLbs)
 import Data.Text.Lazy (toStrict)
@@ -52,6 +53,12 @@ postAufgabeR aufgabeId = do
       typ = pack . T.toString $ Aufgabe.typ aufgabe
       konfiguration = pack . T.toString $ Aufgabe.config aufgabe
       benutzerId = maybe "" (pack . T.toString . Student.mnr) mstudent
+  case Aufgabe.timeStatus aufgabe of
+    T.Late -> do
+      setMessageI MsgAufgabeVorbei
+      redirect $ AufgabeTestenR server typ konfiguration benutzerId
+    T.Early -> return ()
+    T.Current -> return ()
   esigned <- checkKonfiguration server typ konfiguration
   signed <- case esigned of
     Left fehler -> do
@@ -152,8 +159,11 @@ getBewertung server signed mfile = runMaybeT $ do
 
 getVorherigeEinsendung :: Maybe Student.Student -> Aufgabe.Aufgabe -> Handler (Maybe Text)
 getVorherigeEinsendung mstudent aufgabe = runMaybeT $ do
+  let stringToMaybeText t = if null t then Nothing else Just $ pack t
   student <- MaybeT . return $ mstudent
-  lift $ lift $ liftM pack $ Store.latest Store.Input $ getDefaultParam student aufgabe
+  mvorherigeEinsendung <- lift $ lift $ Store.latest Store.Input (getDefaultParam student aufgabe)
+    `Exception.catch` \ (Exception.SomeException _) -> return []
+  MaybeT . return $ stringToMaybeText mvorherigeEinsendung
 
 logSchreiben :: Maybe Student.Student -> Aufgabe.Aufgabe -> Html -> Maybe (Maybe Integer, Html) -> Maybe FileInfo -> Handler (Maybe Text)
 logSchreiben mstudent aufgabe aufgabenstellung mbewertung mfile = runMaybeT $ do

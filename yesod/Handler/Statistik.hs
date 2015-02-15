@@ -2,19 +2,164 @@ module Handler.Statistik where
 
 import Import
 
-data ErgebisListe = ErgebnisEintrag Text Text Text Int Int (Maybe Ergebnis)
+import qualified Control.Aufgabe.Typ as Aufgabe
+import qualified Control.Aufgabe.DB as AufgabeDB
+import qualified Control.Stud_Aufg.DB as EinsendungDB
+import qualified Control.Stud_Aufg.Typ as Einsendung
+import qualified Control.Student.Type as Student
+import qualified Control.Vorlesung.DB as VorlesungDB
+import qualified Control.Types as T
+
+import Control.Monad (unless)
+import Data.Set (member, fromList)
+import Data.List (head, find)
+
+data ErgebnisEintrag = ErgebnisEintrag {
+    matrikel :: Text,
+    vorname :: Text,
+    nachname :: Text,
+    okays :: Maybe Int,
+    neins :: Maybe Int,
+    mergebnis :: Maybe T.Wert,
+    form :: (Widget, Enctype)
+  }
 data Ergebnis = Okay {punkte :: Int, größe :: Int} | Nein | Ausstehend
 
 getStatistikR :: AufgabeId -> Handler Html
-getStatistikR aufgabe = do
-  let ergebnisse = 
-        [ErgebnisEintrag "1234" "Mark" "Otto" 1 0 (Just $ Okay 1 2),
-         ErgebnisEintrag "2454" "Jacob" "Thornton" 0 0 Nothing,
-         ErgebnisEintrag "2454" "Roy" "Meyer" 0 3 (Just Nein),
-         ErgebnisEintrag "5332" "Larry" "Müller" 0 2 (Just Ausstehend)
-        ]
+getStatistikR = postStatistikR
+
+postStatistikR :: AufgabeId -> Handler Html
+postStatistikR aufgabe = do
+  maufgabe <- liftIO $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabe
+  T.VNr vorlesungId <- case maufgabe of
+    Nothing -> do -- sollte nie passieren
+      setMessageI MsgFehler
+      redirect SchulenR
+    Just a -> return $ Aufgabe.vnr a
+  einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr aufgabe
+  studenten <- liftIO $ VorlesungDB.steilnehmer $ T.VNr vorlesungId
+  ergebnisse <- getErgebnisListe einsendungen studenten
   defaultLayout $ do
     $(widgetFile "statistik")
-    
-postStatistikR :: AufgabeId -> Handler Html
-postStatistikR = undefined
+
+getErgebnisListe :: [Einsendung.Stud_Aufg] -> [Student.Student] -> Handler [ErgebnisEintrag]
+getErgebnisListe einsendungen studenten =
+  let einsender = fromList $ fmap Einsendung.snr einsendungen
+      getStudent e = find (\ s -> Student.snr s == Einsendung.snr e) studenten
+      getEintrag e =
+        let s = getStudent e
+        in maybeToList $ fmap (\ s' -> getErgebnisEintrag s' $ Just e) s
+      einsendungen' = concat $ fmap getEintrag einsendungen
+      keineEinsendungen = concat $ fmap (\s -> if Student.snr s `member` einsender then [] else [getErgebnisEintrag s Nothing]) studenten
+  in sequence $ einsendungen' ++ keineEinsendungen
+
+getErgebnisEintrag :: Student.Student -> Maybe Einsendung.Stud_Aufg -> Handler ErgebnisEintrag
+getErgebnisEintrag student meinsendung = do
+  let fromOks oks = let T.Oks i = oks in i
+      fromNos nos = let T.Nos i = nos in i
+      fromSNr snr = let T.SNr s = snr in s
+  form' <- generateFormPost $ neuBewertenForm $ fromSNr $ Student.snr student
+  return $ ErgebnisEintrag {
+    matrikel = pack $ T.toString $ Student.mnr student,
+    vorname = pack $ T.toString $ Student.vorname student,
+    nachname = pack $ T.toString $ Student.name student,
+    okays = fmap (fromOks . Einsendung.ok) meinsendung,
+    neins = fmap (fromNos . Einsendung.no) meinsendung,
+    mergebnis = join $ fmap Einsendung.result meinsendung,
+    form = form'
+  }
+
+neuBewertenForm :: Int -> Form (Maybe T.Wert)
+neuBewertenForm student = identifyForm (pack $ "neuBewerten" ++ show student) $ renderRaw $
+  areq (tdRadioFieldNoLabel . optionsPairs $ [(MsgBehalten, Nothing), (MsgNein, Just T.No), (MsgTextToMsg "1", Just $ T.Ok 1), (MsgTextToMsg "2", Just $ T.Ok 2), (MsgTextToMsg "3", Just $ T.Ok 3), (MsgTextToMsg "4", Just $ T.Ok 4), (MsgTextToMsg "5", Just $ T.Ok 5)]) "" $ Just Nothing
+
+renderRaw :: Monad m => FormRender m a
+renderRaw aform fragment = do
+    (res, views') <- aFormToForm aform
+    let views = views' []
+    let widget = [whamlet|
+$newline never
+\#{fragment}
+$forall view <- views
+  ^{fvInput view}
+|]
+    return (res, widget)
+
+tdRadioFieldNoLabel :: (Eq a, RenderMessage site FormMessage)
+                    => HandlerT site IO (OptionList a)
+                    -> Field (HandlerT site IO) a
+tdRadioFieldNoLabel = selectFieldHelper
+    (\_theId _name _attrs inside -> [whamlet|
+$newline never
+^{inside}
+|])
+    (\theId name isSel -> [whamlet|
+$newline never
+<td .text-center>
+    <input id=#{theId}-none type=radio name=#{name} value=none :isSel:checked>
+|])
+    (\theId name attrs value isSel _text -> [whamlet|
+$newline never
+<td .text-center>
+    <input id=#{theId}-#{value} type=radio name=#{name} value=#{value} :isSel:checked *{attrs}>
+|])
+
+{- |
+kopiert von 'http://hackage.haskell.org/package/yesod-form-1.4.4/docs/src/Yesod-Form-Fields.html#radioFieldList'
+
+LICENSE for this method:
+Copyright (c) 2012 Michael Snoyman, http://www.yesodweb.com/
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-}
+selectFieldHelper
+        :: (Eq a, RenderMessage site FormMessage)
+        => (Text -> Text -> [(Text, Text)] -> WidgetT site IO () -> WidgetT site IO ())
+        -> (Text -> Text -> Bool -> WidgetT site IO ())
+        -> (Text -> Text -> [(Text, Text)] -> Text -> Bool -> Text -> WidgetT site IO ())
+        -> HandlerT site IO (OptionList a)
+        -> Field (HandlerT site IO) a
+selectFieldHelper outside onOpt inside opts' = Field
+    { fieldParse = \x _ -> do
+        opts <- opts'
+        return $ selectParser opts x
+    , fieldView = \theId name attrs val isReq -> do
+        opts <- fmap olOptions $ handlerToWidget opts'
+        outside theId name attrs $ do
+            unless isReq $ onOpt theId name $ not $ render opts val `elem` map optionExternalValue opts
+            flip mapM_ opts $ \opt -> inside
+                theId
+                name
+                ((if isReq then (("required", "required"):) else id) attrs)
+                (optionExternalValue opt)
+                ((render opts val) == optionExternalValue opt)
+                (optionDisplay opt)
+    , fieldEnctype = UrlEncoded
+    }
+  where
+    render _ (Left _) = ""
+    render opts (Right a) = maybe "" optionExternalValue $ listToMaybe $ filter ((== a) . optionInternalValue) opts
+    selectParser _ [] = Right Nothing
+    selectParser opts (s:_) = case s of
+            "" -> Right Nothing
+            "none" -> Right Nothing
+            x -> case olReadExternal opts x of
+                    Nothing -> Left $ SomeMessage $ MsgInvalidEntry x
+                    Just y -> Right $ Just y

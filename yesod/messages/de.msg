@@ -1,3 +1,5 @@
+TextToMsg text@Text: #{text}
+
 AlleResultate: Alle Resultate
 Abmelden: Abmelden
 Anmelden: Anmelden
@@ -44,6 +46,7 @@ AufgabeXTesten aufgabe@Text: Aufgabe #{aufgabe} testen
 AufgabeTesten: Aufgabe testen
 AufgabeTestenMitId: Aufgabe mit bestimmter Benutzer-Id testen
 AufgabeTyp: Aufgabentyp wählen
+AufgabeVorbei: Die Abgabezeit ist leider überschritten. Sie können die Aufgabe jedoch noch testen.
 AufgabeVorlagen: Aufgabenvorlage wählen
 AufgabeVorlageStandard: Standardvorlage / letzte Konfiguration
 AufgabeZeitAktuell zeit@UTCTime: noch bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
@@ -115,12 +118,14 @@ Name: Name
 Nein: Nein
 Neins: Nein
 NichtAutorisiert: Sie sind für diese Anfrage leider nicht autorisiert. Die Anfrage wurde zurückgewiesen und der Zugriff verweigert.
+Okay: Okay
 Okays: Okay
 PersönlicheDaten: Persönliche Daten
 Plätze: Plätze
 Punkte: Punkte
 Referent: Referent
 Registrieren: Registrieren
+Reset: Zurückgesetzt
 ResultatePflicht: Resultate der Pflichtaufgaben
 Schule: Schule
 SchuleAngelegt: Schule wurde angelegt

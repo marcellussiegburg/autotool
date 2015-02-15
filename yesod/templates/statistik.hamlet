@@ -4,6 +4,7 @@ $if null ergebnisse
   <p>
     Keine Studenten
 $else
+ <form role="form" action=@{StatistikR aufgabe} method="post" enctype=#{snd $ form $ head ergebnisse}>
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
@@ -37,31 +38,37 @@ $else
         <th>
           5
     <tbody>
-      $forall ErgebnisEintrag mnr vorname name okays neins ergebnis <- ergebnisse
+      $forall eintrag <- ergebnisse
         <tr>
           <td>
-            #{mnr}
+            #{matrikel eintrag}
           <td>
-            #{vorname}
+            #{vorname eintrag}
           <td>
-            #{name}
+            #{nachname eintrag}
           <td>
-            #{show okays}
+            #{maybe "-" show $ okays eintrag}
           <td>
-            #{show neins}
-          $maybe erg <- ergebnis
+            #{maybe "-" show $ neins eintrag}
+          $maybe erg <- mergebnis eintrag
             $case erg
-              $of Okay punkte größe
+              $of T.Okay punkte größe
                 <td .success>
                   #{show punkte}
                 <td .success>
                   #{show größe}
-              $of Nein
+              $of T.No
                 <td .danger colspan=2>
                   _{MsgNein}
-              $of Ausstehend
+              $of T.Ok punkte
+                <td .success colspan=2>
+                  _{MsgOkay} #{show punkte}
+              $of T.Pending
                 <td .warning colspan=2>
                   _{MsgAusstehend}
+              $of T.Reset
+                <td .danger colspan=2>
+                  _{MsgReset}
           $nothing
             <td .warning colspan=2>
           <td>
@@ -71,21 +78,7 @@ $else
             <a href="#" .btn .btn-primary .btn-block role="button">
               _{MsgBearbeiten}
           <td>
-            <a href="#" .btn .btn-primary .btn-block role="button">
+            <a href="#" .btn .btn-danger .btn-block role="button">
               _{MsgCacheLöschen}
-          <td>
-            <input type="checkbox">
-          <td>
-            <input type="checkbox">
-          <td>
-            <input type="checkbox">
-          <td>
-            <input type="checkbox">
-          <td>
-            <input type="checkbox">
-          <td>
-            <input type="checkbox">
-          <td>
-            <input type="checkbox">
-  <form role="form" action=@{StatistikR 1} method="post">
-    <button type="submit" .btn .btn-primary>_{MsgBearbeiten}
+          ^{fst $ form eintrag}
+  <button type="submit" .btn .btn-success>_{MsgBearbeiten}
