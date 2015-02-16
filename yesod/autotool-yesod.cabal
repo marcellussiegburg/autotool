@@ -121,6 +121,7 @@ library
                  , conduit-extra
                  , random
                  , autotool-db
+                 , autotool-interface
                  , autotool-server-interface
                  , autolib-output
                  , autolib-todoc

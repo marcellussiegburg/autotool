@@ -1,6 +1,7 @@
 module Handler.Statistik where
 
 import Import
+import Handler.Aufgabe (getDefaultParam)
 
 import qualified Control.Aufgabe.Typ as Aufgabe
 import qualified Control.Aufgabe.DB as AufgabeDB
@@ -9,7 +10,11 @@ import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Student.Type as Student
 import qualified Control.Vorlesung.DB as VorlesungDB
 import qualified Control.Types as T
+import Operate.Bank (bank)
+import qualified Operate.Param as P
+import qualified Util.Datei as D
 
+import Control.Exception (SomeException (SomeException), catch)
 import Control.Monad (unless)
 import Data.Set (member, fromList)
 import Data.List (head, find)
@@ -23,24 +28,73 @@ data ErgebnisEintrag = ErgebnisEintrag {
     mergebnis :: Maybe T.Wert,
     form :: (Widget, Enctype)
   }
+
+
 data Ergebnis = Okay {punkte :: Int, größe :: Int} | Nein | Ausstehend
+
+aktion :: Text
+aktion = "aktion"
+
+data Aktion = Bearbeiten | CacheLeeren Text deriving (Show, Read)
 
 getStatistikR :: AufgabeId -> Handler Html
 getStatistikR = postStatistikR
 
 postStatistikR :: AufgabeId -> Handler Html
-postStatistikR aufgabe = do
-  maufgabe <- liftIO $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabe
-  T.VNr vorlesungId <- case maufgabe of
+postStatistikR aufgabeId = do
+  maufgabe <- liftIO $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabeId
+  aufgabe <- case maufgabe of
     Nothing -> do -- sollte nie passieren
       setMessageI MsgFehler
       redirect SchulenR
-    Just a -> return $ Aufgabe.vnr a
-  einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr aufgabe
-  studenten <- liftIO $ VorlesungDB.steilnehmer $ T.VNr vorlesungId
+    Just a -> return a
+  studenten <- liftIO $ VorlesungDB.steilnehmer $ Aufgabe.vnr aufgabe
+  _ <- runMaybeT $ do
+    maktion <- lookupPostParam aktion
+    aktion' <- MaybeT . return $ maktion
+    lift $ case read $ unpack aktion' of
+      Bearbeiten -> bewertungenSchreiben studenten aufgabe
+      CacheLeeren m ->
+        let T.VNr vorlesungId = Aufgabe.vnr aufgabe
+        in cacheLeeren m vorlesungId aufgabeId
+  einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr aufgabeId
   ergebnisse <- getErgebnisListe einsendungen studenten
+  optionen' <- optionsPairs optionen
   defaultLayout $ do
     $(widgetFile "statistik")
+
+cacheLeeren :: Text -> VorlesungId -> AufgabeId -> Handler ()
+cacheLeeren matrikel' vorlesungId aufgabeId = do
+  let d =  D.Datei {
+      D.pfad = [ "autotool", "cache"
+               , show vorlesungId
+               , show aufgabeId
+               ]
+    , D.name = unpack $ matrikel'
+    , D.extension = "cache"
+    }
+  lift $ D.loeschen d `catch` \ (SomeException _) -> return ()
+  setMessageI $ MsgCacheGeleert $ pack $ show d
+
+bewertungenSchreiben :: [Student.Student] -> Aufgabe.Aufgabe -> Handler ()
+bewertungenSchreiben studenten aufgabe = do
+  let fromSNr snr = let T.SNr s = snr in s
+      getResult s = liftM (fst . fst) $ runFormPost $ neuBewertenForm $ fromSNr $ Student.snr s
+      erfolgreich (FormSuccess r, s) = Just (r, s)
+      erfolgreich _ = Nothing
+  results <- sequence $ map (\s -> do r <- getResult s
+                                      return (r, s)) studenten
+  let relevant = concat $ map (maybeToList . erfolgreich) results
+  sequence_ $ map (\ (r, s) -> bewertungSchreiben s aufgabe r) relevant
+
+bewertungSchreiben :: Student.Student -> Aufgabe.Aufgabe -> Maybe T.Wert -> Handler Text
+bewertungSchreiben _ _ Nothing = return ""
+bewertungSchreiben student aufgabe (Just bewertung) = do
+  let message = "Bewertung durch Tutor" :: Text -- ^ TODO: Übersetzung?
+  lift $ liftM pack $ bank (getDefaultParam student aufgabe) {
+      P.report = Just $ preEscapedToHtml message,
+      P.mresult = Just bewertung
+    }
 
 getErgebnisListe :: [Einsendung.Stud_Aufg] -> [Student.Student] -> Handler [ErgebnisEintrag]
 getErgebnisListe einsendungen studenten =
@@ -69,9 +123,12 @@ getErgebnisEintrag student meinsendung = do
     form = form'
   }
 
+optionen :: [(AutotoolMessage, Maybe T.Wert)]
+optionen = [(MsgBehalten, Nothing), (MsgNein, Just T.No), (MsgTextToMsg "1", Just $ T.Ok 1), (MsgTextToMsg "2", Just $ T.Ok 2), (MsgTextToMsg "3", Just $ T.Ok 3), (MsgTextToMsg "4", Just $ T.Ok 4), (MsgTextToMsg "5", Just $ T.Ok 5)]
+
 neuBewertenForm :: Int -> Form (Maybe T.Wert)
 neuBewertenForm student = identifyForm (pack $ "neuBewerten" ++ show student) $ renderRaw $
-  areq (tdRadioFieldNoLabel . optionsPairs $ [(MsgBehalten, Nothing), (MsgNein, Just T.No), (MsgTextToMsg "1", Just $ T.Ok 1), (MsgTextToMsg "2", Just $ T.Ok 2), (MsgTextToMsg "3", Just $ T.Ok 3), (MsgTextToMsg "4", Just $ T.Ok 4), (MsgTextToMsg "5", Just $ T.Ok 5)]) "" $ Just Nothing
+  areq (tdRadioFieldNoLabel . optionsPairs $ optionen) "" $ Just Nothing
 
 renderRaw :: Monad m => FormRender m a
 renderRaw aform fragment = do
@@ -85,6 +142,16 @@ $forall view <- views
 |]
     return (res, widget)
 
+renderTableHead :: OptionList a -> Widget
+renderTableHead options =
+  [whamlet|
+$newline never
+$forall option <- olOptions options
+  <th .text-center>
+    #{optionDisplay option}
+|]
+
+-- | Es werden so viele Tabellenzellen erzeugt, wie es Auswahlmöglichkeiten gibt. Für eventuell benötigte Tabellenüberschriften und umliegende Tabellenzeilen, sowie die Tabelle selbst muss man sich selbst kümmern (ggf. @renderTableHead@ verwenden)
 tdRadioFieldNoLabel :: (Eq a, RenderMessage site FormMessage)
                     => HandlerT site IO (OptionList a)
                     -> Field (HandlerT site IO) a
@@ -105,7 +172,7 @@ $newline never
 |])
 
 {- |
-kopiert von 'http://hackage.haskell.org/package/yesod-form-1.4.4/docs/src/Yesod-Form-Fields.html#radioFieldList'
+kopiert von 'http://hackage.haskell.org/package/yesod-form-1.4.4/docs/src/Yesod-Form-Fields.html#selectFieldHelper'
 
 LICENSE for this method:
 Copyright (c) 2012 Michael Snoyman, http://www.yesodweb.com/

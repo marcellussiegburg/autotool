@@ -60,9 +60,10 @@ BeispielLaden: Beispiel laden
 BewertungAusstehend: Ausstehend
 BewertungNein: Nein
 BewertungOk wert@Integer: Okay (#{show wert} Punkte)
-BewertungOkay punkte@Integer größe@Integer: Okay (P: #{show punkte}, G: #{show größe})
+BewertungOkay punkte@Integer size@Integer: Okay (P: #{show punkte}, G: #{show size})
 BewertungReset: Zurückgesetzt
-CacheLöschen: Cache Löschen
+CacheLeeren: Cache leeren
+CacheGeleert pfad@Text: Cache wurde geleert (#{pfad})
 Direktoren: Direktoren
 DirektorAbsetzen: Direktor absetzen
 DirektorAbgesetzt: Direktor abgesetzt

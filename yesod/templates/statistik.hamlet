@@ -4,7 +4,7 @@ $if null ergebnisse
   <p>
     Keine Studenten
 $else
- <form role="form" action=@{StatistikR aufgabe} method="post" enctype=#{snd $ form $ head ergebnisse}>
+ <form role="form" action=@{StatistikR aufgabeId} method="post" enctype=#{snd $ form $ head ergebnisse}>
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
@@ -23,20 +23,7 @@ $else
         <th>
           _{MsgGröße}
         <th colspan=3>
-        <th>
-          _{MsgBehalten}
-        <th>
-          _{MsgNein}
-        <th>
-          1
-        <th>
-          2
-        <th>
-          3
-        <th>
-          4
-        <th>
-          5
+        ^{renderTableHead optionen'}
     <tbody>
       $forall eintrag <- ergebnisse
         <tr>
@@ -78,7 +65,7 @@ $else
             <a href="#" .btn .btn-primary .btn-block role="button">
               _{MsgBearbeiten}
           <td>
-            <a href="#" .btn .btn-danger .btn-block role="button">
-              _{MsgCacheLöschen}
+            <button type="submit" .btn .btn-danger .btn-block role="button"name=#{aktion} value=#{show $ CacheLeeren $ matrikel eintrag}>
+              _{MsgCacheLeeren}
           ^{fst $ form eintrag}
-  <button type="submit" .btn .btn-success>_{MsgBearbeiten}
+  <button type="submit" .btn .btn-success name=#{aktion} value={show Bearbeiten}>_{MsgBearbeiten}
