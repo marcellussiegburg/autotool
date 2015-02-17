@@ -1,0 +1,12 @@
+<h1>_{MsgEinsendung}
+<h2>_{MsgAufgabeAufgabe}
+#{aufgabenstellung}
+<h2>_{MsgEinsendung}
+#{einsendung'}
+$maybe bewertung <- mbewertung
+  <h2>_{MsgAufgabeBewertung}
+  #{bewertung}
+  $if istTutor
+    <h2>_{MsgEinsendungBewerten}
+    <form role="form" action=@{EinsendungR aufgabeId studentId} method="post" enctype=#{formEnctype}>
+      ^{formWidget}

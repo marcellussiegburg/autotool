@@ -75,6 +75,9 @@ EinschreibungBeginnZeit: Beginn der Einschreibung (Uhrzeit)
 EinschreibungDauer beginn@UTCTime ende@UTCTime: Eine Einschreibung ist nur im Zeitraum vom #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" beginn} Uhr bis #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" ende} Uhr möglich.
 EinschreibungEndeDatum: Ende der Einschreibung (Datum)
 EinschreibungEndeZeit: Ende der Einschreibung (Uhrzeit)
+Einsendung: Letzte Einsendung
+EinsendungAnzeigen: Letzte Einsendung anzeigen
+EinsendungBewerten: Bewerten
 Email: E-Mail
 Fehler: Ein Fehler ist aufgetreten
 Gesamtpunktzahl: Total

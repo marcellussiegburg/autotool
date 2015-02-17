@@ -218,7 +218,7 @@ istAutorisiert :: Maybe (AuthId Autotool) -> Route Autotool -> IO (Maybe Bool)
 istAutorisiert mid route =
   let braucht a = if a `member` routeAttrs route
                   then [a] else []
-      attrs = concat [braucht "admin", braucht "direktor", braucht "jederTutor", braucht "tutor", braucht "student", braucht "einschreibung"]
+      attrs = concat $ map braucht ["admin", "direktor", "jederTutor", "tutor", "student", "einschreibung", "studentEigene"]
   in case attrs of
        [] -> return $ Just True
        _ -> runMaybeT $ do
@@ -239,6 +239,12 @@ autorisierungRolle rolle authId route
         stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
         schule <- fromMaybe (left False) $ fmap return mschule
         return $ Student.unr stud == UNr schule
+      return $ either id id auth
+  | rolle == "studentEigene" = do
+      auth <- runEitherT $ do
+        (_, _, _, _, _, mstudentId) <- lift $ routeInformation route
+        studentId <- fromMaybe (left False) $ fmap return mstudentId
+        return $ studentId == authId
       return $ either id id auth
   | rolle == "einschreibung" = do
       auth <- runEitherT $ do
@@ -300,6 +306,7 @@ navigationMenu mroute authId = do
       vorlesung v = [VorlesungR v, TutorenR v, TutorErnennenR v, StudentenR v, ResultateR v, ResultatePflichtR v, GruppenR v, GruppeAnlegenR v, AufgabenR v, AufgabenAktuellR v, AufgabeAnlegenR v]
       gruppe g = [GruppeR g]
       aufgabe a = [AufgabeBearbeitenR a, AufgabeR a, StatistikR a]
+      einsendung a s = [EinsendungR a s]
       servers = [ServersR]
       server s t v k i = concat $ map maybeToList
         [ServerR <$> s
@@ -310,12 +317,12 @@ navigationMenu mroute authId = do
         ,AufgabeBenutzerIdZufallR <$> s <*> t <*> k
         ,AufgabeTestenR <$> s <*> t <*> k <*> i]
       (as, at, av, ak, ai) = serverRouteInformation mroute
-  (schu, sem, vorl, grup, aufg) <- routeBrotkrumen mroute authId
+  (schu, sem, vorl, grup, aufg, stud) <- routeBrotkrumen mroute authId
   let server' = server as at av ak ai
       filterRoute r = do hatZugriff <- istAutorisiert authId r
                          return $ maybe False id hatZugriff
-      filterBerechtigte liste param =
-        filterM filterRoute $ concat . maybeToList $ liste <$> param
+      filterBerechtigte =
+        (filterM filterRoute) . concat . maybeToList
       zuLink r = Link r $ routeTitel r
       trennstrich [] b = b
       trennstrich a [] = a
@@ -323,12 +330,13 @@ navigationMenu mroute authId = do
       addTitel _ [] = []
       addTitel Nothing _ = []
       addTitel t l = map Titel (maybeToList t) ++ l
-  schule' <- filterBerechtigte schule schu
+  schule' <- filterBerechtigte $ schule <$> schu
   schulen' <- filterM filterRoute schulen
-  semester' <- filterBerechtigte semester sem
-  vorlesung' <- filterBerechtigte vorlesung vorl
-  gruppe' <- filterBerechtigte gruppe grup
-  aufgabe' <- filterBerechtigte aufgabe aufg
+  semester' <- filterBerechtigte $ semester <$> sem
+  vorlesung' <- filterBerechtigte $ vorlesung <$> vorl
+  gruppe' <- filterBerechtigte $ gruppe <$> grup
+  aufgabe' <- filterBerechtigte $ aufgabe <$> aufg
+  einsendung' <- filterBerechtigte $ einsendung <$> aufg <*> stud
   schuName <- schuleName schu
   semName <- semesterName sem
   vorlName <- vorlesungName vorl
@@ -338,7 +346,7 @@ navigationMenu mroute authId = do
          ,NavigationMenu MsgSemester $ addTitel semName $ map zuLink semester'
          ,NavigationMenu MsgVorlesung $ addTitel vorlName $ map zuLink vorlesung'
          ,NavigationMenu MsgGruppe $ addTitel grupName $ map zuLink gruppe'
-         ,NavigationMenu MsgAufgabe $ trennstrich (addTitel aufgName $ map zuLink aufgabe') $ map zuLink $ servers ++ server']
+         ,NavigationMenu MsgAufgabe $ trennstrich (addTitel aufgName $ map zuLink aufgabe') $ trennstrich (map zuLink einsendung') $ map zuLink $ servers ++ server']
 
 -- | Liefert den Schulnamen zur Id der Schule
 schuleName :: Maybe SchuleId -> IO (Maybe Text)
@@ -369,17 +377,13 @@ getName konstruktor dbFunktion nameFunktion mvId = runMaybeT $ do
   let Name sname = nameFunktion v
   return $ pack sname
 
--- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge, abhängig von der angegebenen Route und der Relevanz für den Nutzer. Route Nothing ist für den Fall einer fehlerhaften URL vorgesehen.
--- 
--- Momentan unterscheidet sich die Funktion nur in der Anzahl der Elemente des Tupels, das zurückgeliefert wird, von routeInformation.
-routeBrotkrumen :: Maybe (Route Autotool) -> Maybe Int -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId)
-routeBrotkrumen Nothing _ = return (Nothing, Nothing, Nothing, Nothing, Nothing)
-routeBrotkrumen (Just route) _ = do
-  (schule, semester, vorlesung, gruppe, aufgabe, _) <- routeInformation route
-  return (schule, semester, vorlesung, gruppe, aufgabe)
+-- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge, abhängig von der angegebenen Route. Maybe (Route Autotool), weil Nothing für den Fall einer fehlerhaften URL vorgesehen ist.
+routeBrotkrumen :: Maybe (Route Autotool) -> Maybe Int -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
+routeBrotkrumen Nothing _ = return (Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)
+routeBrotkrumen (Just route) _ = routeInformation route
 
 -- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge abhängig von der angegebenen Route und unabhängig von der Relevanz für den Nutzer. Dient als Hilfsfunktion für @routeBrotkrumen@.
-routeInformation :: Route Autotool -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe ())
+routeInformation :: Route Autotool -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
 routeInformation route = case routeParameter route of
    Nothing -> return $ fromTuple6 Tuple6_0
    Just parameter -> case parameter of
@@ -404,6 +408,13 @@ routeInformation route = case routeParameter route of
          (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Nothing)
          _ -> return $ fromTuple6 Tuple6_0
      ServerRoute _ -> return $ fromTuple6 Tuple6_0
+     EinsendungRoute aufgabe student -> do
+       vorlesung <- getVorlesungAufgabe $ Just aufgabe
+       semester <- getSemester vorlesung
+       schule <- getSchule semester
+       case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
+         (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Just student)
+         _ -> return $ fromTuple6 Tuple6_0
 
 -- | Liefert für die Interaktion mit dem Semantik-Server die aktuell abrufbaren Parameter aus der angegebenen Route.
 serverRouteInformation :: Maybe (Route Autotool) -> (Maybe ServerUrl, Maybe AufgabeTyp, Maybe VorlageName, Maybe AufgabeKonfiguration, Maybe Text)
@@ -456,6 +467,7 @@ data RouteParameter =
   | VorlesungRoute VorlesungId
   | GruppeRoute GruppeId
   | AufgabeRoute AufgabeId
+  | EinsendungRoute AufgabeId StudentId
   | ServerRoute ServerParameter
 
 data ServerParameter =
@@ -501,6 +513,7 @@ routeParameter route = case route of
   AufgabeBearbeitenR a           -> Just $ AufgabeRoute a
   AufgabeR a                     -> Just $ AufgabeRoute a
   StatistikR a                   -> Just $ AufgabeRoute a
+  EinsendungR a s                -> Just $ EinsendungRoute a s
   ServersR                       -> Nothing
   ServerR s                      -> Just $ ServerRoute $ ServerUrlRoute s
   AufgabeVorlagenR s t           -> Just $ ServerRoute $ VorlagenRoute s t
@@ -546,6 +559,7 @@ routeTitel route = case route of
   AufgabeBearbeitenR _           -> Just MsgBearbeiten
   AufgabeR _                     -> Just MsgLösen
   StatistikR _                   -> Just MsgStatistikAnzeigen
+  EinsendungR _ _                -> Just MsgEinsendungAnzeigen
   ServersR                       -> Just MsgServers
   ServerR _                      -> Just MsgAufgabeTyp
   AufgabeVorlagenR _ _           -> Just MsgAufgabeVorlagen

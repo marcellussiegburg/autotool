@@ -31,6 +31,7 @@
 /aufgabe/#AufgabeId                       AufgabeBearbeitenR    GET    POST      !tutor
 /aufgabe/#AufgabeId/einsendung            AufgabeR              GET    POST      !einschreibung
 /aufgabe/#AufgabeId/statistik             StatistikR            GET    POST      !tutor
+/einsendung/#AufgabeId/#StudentId         EinsendungR           GET    POST      !tutor !studentEigene
 
 /servers                                                                            ServersR                 GET    POST
 /server/#ServerUrl                                                                  ServerR                  GET

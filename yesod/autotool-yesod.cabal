@@ -35,6 +35,7 @@ library
                      Handler.AufgabeVorlagen
                      Handler.Direktoren
                      Handler.DirektorErnennen
+                     Handler.Einsendung
                      Handler.Gruppe
                      Handler.GruppeAnlegen
                      Handler.Gruppen
