@@ -9,7 +9,7 @@ import Handler.Aufgabe.Forms
 import qualified Handler.AufgabeEinstellungen as AE (AufgabeFormDaten (..), aufgabeToFormDaten, formDatenToHiLo, formDatenToStatus)
 import Handler.AufgabeVorlage (getVorlageKonfiguration)
 import Handler.AufgabeKonfiguration (checkKonfiguration, getBeispielKonfiguration, getKonfigurationFehler)
-import Handler.Aufgabe (getAufgabeInstanz, getBewertung)
+import Handler.Aufgabe (getAufgabeInstanz, getBewertung, getCrc)
 
 import qualified Control.Aufgabe.DB as AufgabeDB
 import qualified Control.Aufgabe.Typ as A (Aufgabe (..))
@@ -77,10 +77,14 @@ aufgabeTemplate eidAufgabe = do
     getBeispielKonfiguration <$> mserver <*> mtyp
   mvorlageKonfiguration <- sequence $ getVorlageKonfiguration <$> Just beispielKonfiguration <*> mtyp <*> (maybe "" id <$> mvorlage)
   mhinweisFehler <- liftM join $ sequence $ getKonfigurationFehler <$> mserver <*> mtyp <*> maybe mvorlageKonfiguration Just mkonfiguration
+  let matrikel = MNr "11111" -- ^ TODO auswählbar machen
+      crc = case eidAufgabe of
+        Left v -> getCrc (VNr v) Nothing matrikel
+        Right aufgabe -> getCrc (A.vnr aufgabe) (Just $ A.anr aufgabe) matrikel
   (msignedA, meinsendung, atyp, maufgabenstellung) <-
     liftM (maybe (Nothing, Nothing, "" :: Html, Nothing)
         (\ (a, b, c, d) -> (Just a, Just b, c, Just d))) $
-    sequence $ getAufgabeInstanz <$> mserver <*> msignedK <*> Just "11111" -- ^ TODO auswählbar machen
+    sequence $ getAufgabeInstanz <$> mserver <*> msignedK <*> Just crc
   mbewertung <- liftM (fmap snd . join) $ sequence $ getBewertung <$> mserver <*> msignedA <*> Just mhochladen
   forms <- getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung
   defaultLayout $ do

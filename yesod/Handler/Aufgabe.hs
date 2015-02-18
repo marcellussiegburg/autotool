@@ -5,8 +5,11 @@ import Handler.AufgabeKonfiguration (checkKonfiguration)
 import Yesod.Form.Fields.PreField (preField)
 
 import qualified Control.Exception as Exception
+import Data.ByteString (ByteString)
 import Data.Conduit (($$))
 import Data.Conduit.Binary (sinkLbs)
+import Data.Digest.CRC32 (crc32)
+import Data.String (fromString)
 import Data.Text.Lazy (toStrict)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Text.Blaze.Html5.Attributes (class_)
@@ -47,16 +50,20 @@ postAufgabeR aufgabeId = do
   aufgabe <- case maufgabe of
     Nothing -> notFound
     Just a -> return a
-  studentId <- requireAuthId
-  mstudent <- lift $ liftM listToMaybe $ StudentDB.get_snr $ T.SNr studentId
   let server = pack . T.toString $ Aufgabe.server aufgabe
       typ = pack . T.toString $ Aufgabe.typ aufgabe
       konfiguration = pack . T.toString $ Aufgabe.config aufgabe
-      benutzerId = maybe "" (pack . T.toString . Student.mnr) mstudent
+  studentId <- requireAuthId
+  mstudent <- lift $ liftM listToMaybe $ StudentDB.get_snr $ T.SNr studentId
+  student <- case mstudent of
+    Nothing ->
+      -- Benutzer nicht in DB gefunden (passiert nie)
+      redirect $ AufgabeTestenR server typ konfiguration ""
+    Just s -> return s
   case Aufgabe.timeStatus aufgabe of
     T.Late -> do
       setMessageI MsgAufgabeVorbei
-      redirect $ AufgabeTestenR server typ konfiguration benutzerId
+      redirect $ AufgabeTestenR server typ konfiguration $ pack . T.toString . Student.mnr $ student
     T.Early -> return ()
     T.Current -> return ()
   esigned <- checkKonfiguration server typ konfiguration
@@ -75,7 +82,7 @@ postAufgabeR aufgabeId = do
         MaybeT . return $ mvorherigeEinsendung'
       BeispielLaden -> MaybeT . return $ Nothing
   (signed', beispiel, atyp, aufgabenstellung) <-
-    getAufgabeInstanz server signed benutzerId
+    getAufgabeInstanz server signed $ getCrc (Aufgabe.vnr aufgabe) (Just $ Aufgabe.anr aufgabe) (Student.mnr student)
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just $ fromMaybe beispiel mvorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm einsendungHochladenForm
   let hinweis = pack . T.toString $ Aufgabe.remark aufgabe
@@ -128,10 +135,13 @@ aufgabeEinsendenForm checkMethode typ meinsendung =
           Right _ -> return $ Right einsendung
       ) Textarea textareaField
 
-getAufgabeInstanz :: ServerUrl -> Signed (Task, Config) -> Text -> Handler (Signed (Task, Instance), Text, Html, Html)
-getAufgabeInstanz server signed benutzerId = do
+getCrc :: T.VNr -> Maybe T.ANr -> T.MNr -> Integer
+getCrc vnr manr matrikel = fromIntegral $ crc32 (fromString (show vnr ++ show manr ++ T.toString matrikel) :: ByteString)
+
+getAufgabeInstanz :: ServerUrl -> Signed (Task, Config) -> Integer -> Handler (Signed (Task, Instance), Text, Html, Html)
+getAufgabeInstanz server signed crc = do
   sprache <- getBevorzugteSprache
-  (signed', DString aufgabenstellung, einsendung) <- lift $ get_task_instance_localized (unpack server) signed (unpack benutzerId) sprache
+  (signed', DString aufgabenstellung, einsendung) <- lift $ get_task_instance_localized (unpack server) signed (show crc) sprache
   let SString einsendung' = contents einsendung
       DString atyp = documentation einsendung
       atyp' = specialize sprache $ render $ xmlStringToOutput atyp

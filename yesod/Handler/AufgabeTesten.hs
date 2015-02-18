@@ -2,8 +2,9 @@ module Handler.AufgabeTesten where
 
 import Import
 
-import Handler.Aufgabe (aufgabeEinsendenForm, checkEinsendung, getAufgabeInstanz, getBewertung, einsendungHochladenForm)
+import Handler.Aufgabe (aufgabeEinsendenForm, checkEinsendung, getAufgabeInstanz, getBewertung, getCrc, einsendungHochladenForm)
 import Handler.AufgabeKonfiguration (checkKonfiguration)
+import Control.Types (VNr (VNr), MNr (MNr))
 
 getAufgabeTestenR :: ServerUrl -> AufgabeTyp -> AufgabeKonfiguration -> Text -> Handler Html
 getAufgabeTestenR = postAufgabeTestenR
@@ -17,7 +18,7 @@ postAufgabeTestenR server typ konfiguration benutzerId = do
       redirect $ AufgabeKonfigurationR server typ konfiguration
     Right signed' -> return signed'
   (signed', vorherigeEinsendung, atyp, aufgabenstellung) <-
-    getAufgabeInstanz server signed benutzerId
+    getAufgabeInstanz server signed $ getCrc (VNr 42) Nothing $ MNr $ unpack benutzerId
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just vorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ einsendungHochladenForm
   let hinweis = "" :: Text
