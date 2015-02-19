@@ -22,7 +22,7 @@ Library
         autolib-output,
         autolib-reader,
         autolib-reporter,
-        autolib-rewriting,
+        -- autolib-rewriting,
         autolib-todoc,
         autolib-util
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
