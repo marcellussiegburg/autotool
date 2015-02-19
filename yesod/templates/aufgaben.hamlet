@@ -20,9 +20,9 @@ $else
         <th colspan=2>
           _{MsgAufgabeGesamtwertung}
         $if istEingeschrieben
-          <th>
+          <th colspan=2>
         $if istTutor
-          <th>
+          <th colspan=2>
     <tbody>
       $forall (aufgabe, (ok, nein, mbewertung)) <- ergebnisse'
         <tr>
@@ -80,9 +80,18 @@ $else
                 $of Late
                   <a href=@{AufgabeTestenR (pack $ toString $ Aufgabe.server aufgabe) (pack $ toString $ Aufgabe.typ aufgabe) (pack $ toString $ Aufgabe.config aufgabe) (pack mnr)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
                 $of Early
+            <td>
+              $case Aufgabe.timeStatus aufgabe
+                $of Current
+                  <a href=@{EinsendungR (getAufgabe aufgabe) stud} .btn .btn-info .btn-block role="button">_{MsgAnzeigen}
+                $of Late
+                  <a href=@{EinsendungR (getAufgabe aufgabe) stud} .btn .btn-info .btn-block role="button">_{MsgAnzeigen}
+                $of Early
           $if istTutor
             <td>
               <a href=@{AufgabeBearbeitenR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
+            <td>
+              <a href=@{StatistikR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgStatistikAnzeigen}
 <nav>
   <ul .pager>
     $if disp == fromList [Current]

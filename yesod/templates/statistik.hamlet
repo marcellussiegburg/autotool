@@ -22,7 +22,7 @@ $else
           _{MsgPunkte}
         <th>
           _{MsgGröße}
-        <th colspan=3>
+        <th colspan=2>
         ^{renderTableHead optionen'}
     <tbody>
       $forall eintrag <- ergebnisse
@@ -59,10 +59,7 @@ $else
           $nothing
             <td .warning colspan=2>
           <td>
-            <a href="#" .btn .btn-primary .btn-block role="button">
-              _{MsgAnzeigen}
-          <td>
-            <a href="#" .btn .btn-primary .btn-block role="button">
+            <a href=@{EinsendungR aufgabeId (studentId eintrag)} .btn .btn-primary .btn-block role="button">
               _{MsgBearbeiten}
           <td>
             <button type="submit" .btn .btn-danger .btn-block role="button"name=#{aktion} value=#{show $ CacheLeeren $ matrikel eintrag}>
