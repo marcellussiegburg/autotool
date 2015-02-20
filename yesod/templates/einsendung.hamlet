@@ -1,12 +1,20 @@
 <h1>_{MsgEinsendung}
 <h2>_{MsgAufgabeAufgabe}
-#{aufgabenstellung}
+$maybe aufgabenstellung <- maufgabenstellung
+  #{aufgabenstellung}
+$nothing
+  _{MsgKeineAufgabenstellung}
 <h2>_{MsgEinsendung}
-#{einsendung'}
+$maybe einsendung' <- meinsendung'
+  <pre>#{einsendung'}
+$nothing
+  _{MsgKeineEinsendung}
+<h2>_{MsgEinsendungBewertungAlt}
 $maybe bewertung <- mbewertung
-  <h2>_{MsgAufgabeBewertung}
   #{bewertung}
-  $if istTutor
-    <h2>_{MsgEinsendungBewerten}
-    <form role="form" action=@{EinsendungR aufgabeId studentId} method="post" enctype=#{formEnctype}>
-      ^{formWidget}
+$nothing
+  _{MsgKeineBewertung}
+$if istTutor
+  <h2>_{MsgEinsendungBewerten}
+  <form role="form" action=@{EinsendungR aufgabeId studentId} method="post" enctype=#{formEnctype}>
+    ^{formWidget}

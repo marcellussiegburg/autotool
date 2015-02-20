@@ -20,6 +20,7 @@ import Data.Set (member, fromList)
 import Data.List (head, find)
 
 data ErgebnisEintrag = ErgebnisEintrag {
+    studentId :: StudentId,
     matrikel :: Text,
     vorname :: Text,
     nachname :: Text,
@@ -44,9 +45,7 @@ postStatistikR :: AufgabeId -> Handler Html
 postStatistikR aufgabeId = do
   maufgabe <- liftIO $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabeId
   aufgabe <- case maufgabe of
-    Nothing -> do -- sollte nie passieren
-      setMessageI MsgFehler
-      redirect SchulenR
+    Nothing -> permissionDeniedI MsgNichtAutorisiert
     Just a -> return a
   studenten <- liftIO $ VorlesungDB.steilnehmer $ Aufgabe.vnr aufgabe
   _ <- runMaybeT $ do
@@ -114,6 +113,7 @@ getErgebnisEintrag student meinsendung = do
       fromSNr snr = let T.SNr s = snr in s
   form' <- generateFormPost $ neuBewertenForm $ fromSNr $ Student.snr student
   return $ ErgebnisEintrag {
+    studentId = fromSNr $ Student.snr student,
     matrikel = pack $ T.toString $ Student.mnr student,
     vorname = pack $ T.toString $ Student.vorname student,
     nachname = pack $ T.toString $ Student.name student,
@@ -124,7 +124,7 @@ getErgebnisEintrag student meinsendung = do
   }
 
 optionen :: [(AutotoolMessage, Maybe T.Wert)]
-optionen = [(MsgBehalten, Nothing), (MsgNein, Just T.No), (MsgTextToMsg "1", Just $ T.Ok 1), (MsgTextToMsg "2", Just $ T.Ok 2), (MsgTextToMsg "3", Just $ T.Ok 3), (MsgTextToMsg "4", Just $ T.Ok 4), (MsgTextToMsg "5", Just $ T.Ok 5)]
+optionen = [(MsgBehalten, Nothing), (MsgNein, Just T.No)] ++ fmap (\ i -> (MsgTextToMsg (pack $ show i), Just $ T.Ok i)) [1..5]
 
 neuBewertenForm :: Int -> Form (Maybe T.Wert)
 neuBewertenForm student = identifyForm (pack $ "neuBewerten" ++ show student) $ renderRaw $
@@ -142,14 +142,37 @@ $forall view <- views
 |]
     return (res, widget)
 
-renderTableHead :: OptionList a -> Widget
-renderTableHead options =
-  [whamlet|
+renderTableHead :: OptionList a -> WidgetT site IO ()
+renderTableHead options = [whamlet|
 $newline never
 $forall option <- olOptions options
   <th .text-center>
     #{optionDisplay option}
 |]
+
+-- | Das Auswahlfeld wird als Tabelle gerendert.
+tdRadioField :: (Eq a, RenderMessage site FormMessage)
+             => HandlerT site IO (OptionList a)
+             -> Field (HandlerT site IO) a
+tdRadioField options = selectFieldHelper
+    (\theId _name attrs inside -> do
+      options' <- handlerToWidget options
+      [whamlet|
+$newline never
+<table .table ##{theId} *{attrs}>
+  <thead>^{renderTableHead options'}
+  <tbody>^{inside}
+|])
+    (\theId name isSel -> [whamlet|
+$newline never
+<td .text-center>
+    <input id=#{theId}-none type=radio name=#{name} value=none :isSel:checked>
+|])
+    (\theId name attrs value isSel _text -> [whamlet|
+$newline never
+<td .text-center>
+    <input id=#{theId}-#{value} type=radio name=#{name} value=#{value} :isSel:checked *{attrs}>
+|]) options
 
 -- | Es werden so viele Tabellenzellen erzeugt, wie es Auswahlmöglichkeiten gibt. Für eventuell benötigte Tabellenüberschriften und umliegende Tabellenzeilen, sowie die Tabelle selbst muss man sich selbst kümmern (ggf. @renderTableHead@ verwenden)
 tdRadioFieldNoLabel :: (Eq a, RenderMessage site FormMessage)

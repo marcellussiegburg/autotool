@@ -41,6 +41,7 @@ AufgabenAlle: Alle Aufgaben
 AufgabeName: Name
 AufgabeNameVergeben: Dieser Name wurde bereits für eine andere Aufgabenkonfiguration dieses Typs vergeben.
 AufgabenErledigt erledigt@Integer ziel@Integer prozent@Integer: Von #{show ziel} #{plural ziel "Pflichtaufgabe" "Pflichtaufgaben"} haben Sie bis jetzt #{show erledigt} erledigt. Das sind #{show prozent} Prozent.
+AufgabeSignaturUpdate: Achtung! Die fehlende Signatur wurde zur Aufgabe hinzugefügt.
 AufgabeStatus: Status
 AufgabeXTesten aufgabe@Text: Aufgabe #{aufgabe} testen
 AufgabeTesten: Aufgabe testen
@@ -58,6 +59,7 @@ Bearbeiten: Bearbeiten
 Behalten: Behalten
 BeispielLaden: Beispiel laden
 BewertungAusstehend: Ausstehend
+BewertungBearbeiten: Bewertung bearbeiten
 BewertungNein: Nein
 BewertungOk wert@Integer: Okay (#{show wert} Punkte)
 BewertungOkay punkte@Integer size@Integer: Okay (P: #{show punkte}, G: #{show size})
@@ -77,7 +79,10 @@ EinschreibungEndeDatum: Ende der Einschreibung (Datum)
 EinschreibungEndeZeit: Ende der Einschreibung (Uhrzeit)
 Einsendung: Letzte Einsendung
 EinsendungAnzeigen: Letzte Einsendung anzeigen
-EinsendungBewerten: Bewerten
+EinsendungBewerten: Neu Bewerten
+EinsendungBewertung: Bewertung
+EinsendungBewertungAlt: Alte Bewertung
+EinsendungBewertungNotwendig: Das Bewertungsfeld darf nicht leer sein.
 Email: E-Mail
 Fehler: Ein Fehler ist aufgetreten
 Gesamtpunktzahl: Total
@@ -103,10 +108,13 @@ HighscoreKeine: Keine Highscore
 HighscoreNiedrig: Niedrig
 Identifikationsnummer: ID
 IstEingeschrieben: Sie sind in einer Übungsgruppe eingeschrieben.
-KeineAufgaben: Keine passenden Aufgaben gefunden.
+KeineAufgaben: Es wurden keine passenden Aufgaben gefunden.
+KeineAufgabenstellung: Es wurde keine Aufgabenstellung gefunden.
 KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
+KeineBewertung: Es wurde keine Bewertung gefunden.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
 KeineEinschreibungen: Sie sind in keine Übungsgruppe dieser Vorlesung eingeschrieben.
+KeineEinsendung: Es gibt noch keine Einsendung.
 KeineSchulen: Es gibt leider keine Schulen, auf die Sie zugreifen können.
 KeineSemesters: Für diese Schule wurden noch keine Semester definiert.
 KeineStudentenErnennen: Es gibt leider keine Studenten, die ernannt werden können.

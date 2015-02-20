@@ -121,6 +121,7 @@ library
                  , either
                  , conduit-extra
                  , random
+                 , http-types
                  , digest
                  , autotool-db
                  , autotool-interface
