@@ -1,96 +1,63 @@
-<h1>
-  _{titel}
-<h2>
-  _{MsgGruppen}
-<table .table .table-striped .table-hover>
-  <thead>
-    <tr>
-      <th>
-        _{MsgGruppeNummer}
-      <th>
-        _{MsgGruppeName}
-      <th>
-        _{MsgReferent}
-      <th>
-  <tbody>
-    <tr>
-      <td>
-        1
-      <td>
-        14INB-1
-      <td>
-        Herr Müller
-      <td>
-        <a href=@{GruppeR 1} .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
-    <tr>
-      <td>
-        2
-      <td>
-        14INB-2
-      <td>
-        Herr Meyer
-      <td>
-        <a href=@{GruppeR 1} .btn .btn-primary .btn-block role="button">
-          _{MsgBearbeiten}
-<h2>
-  _{MsgStudenten}
-$if null studenten
-  <p>
-    Keine Studenten
+<h1>_{titel auswahl}
+$if null gruppen || null bewertungen
+  _{MsgKeineEinschreibungen}
 $else
+  <h2>_{MsgGruppen}
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
+        <th>_{MsgGruppeNummer}
+        <th>_{MsgGruppeName}
+        <th>_{MsgReferent}
         <th>
-          _{MsgMatrikelnummer}
-        <th>
-          _{MsgVorname}
-        <th>
-          _{MsgName}
-        <th>
-          _{MsgGruppeNummer}
-        <th>
-          _{MsgGesamtpunktzahl}
+    <tbody>
+      $forall gruppe <- gruppen
+        <tr>
+          <td>#{show $ fromGNr $ Gruppe.gnr gruppe}
+          <td>#{T.toString $ Gruppe.name gruppe}
+          <td>#{T.toString $ Gruppe.referent gruppe}
+          <td>
+            <a href=@{GruppeR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
+  <h2>_{MsgStudenten}
+  <table .table .table-striped .table-hover>
+    <thead>
+      <tr>
+        <th>_{MsgMatrikelnummer}
+        <th>_{MsgVorname}
+        <th>_{MsgName}
+        <th>_{MsgGruppeNummer}
+        <th>_{MsgGesamtpunktzahl}
         $if null aufgaben
           <th>
         $else
           $forall aufgabe <- aufgaben
-            <th colspan=2>
-              #{aufgabe}
+            <th colspan=2>#{aufgabe}
     <tbody>
-      $forall StudentEintrag mnr vorname name gruppe punkte ergebnisse <- studenten
+      $forall bewertung <- bewertungen
         <tr>
-          <td>
-            #{mnr}
-          <td>
-            #{vorname}
-          <td>
-            #{name}
-          <td>
-            #{gruppe}
-          <td>
-            #{punkte}
-          $if null ergebnisse
+          <td>#{T.toString $ Student.mnr $ student bewertung}
+          <td>#{T.toString $ Student.vorname $ student bewertung}
+          <td>#{T.toString $ Student.name $ student bewertung}
+          <td>#{gruppe bewertung}
+          <td>#{punkte bewertung}
+          $if null $ ergebnisse bewertung
             <td>
               <a href="#" .btn .btn-primary .btn-block role="button">
                 _{MsgBearbeiten}
           $else
-            $forall ergebnis <- ergebnisse
+            $forall ergebnis <- ergebnisse bewertung
               $maybe (ok, nein) <- ergebnis
-                <td .success>
-                  #{ok}
-                <td .danger>
-                  #{nein}
+                <td .success>#{ok}
+                <td .danger>#{nein}
               $nothing
                 <td .warning colspan=2>
 <nav>
   <ul .pager>
     <li .previous>
-      <a href=@{fst $ fst $ links vorlesung}>
+      <a href=@{link (davor auswahl) vorlesung}>
         <span aria-hidden="true">&larr;
-        _{snd $ fst $ links vorlesung}
+        &nbsp;_{titel $ davor auswahl}
     <li .next>
-      <a href=@{fst $ snd $ links vorlesung}>
-        _{snd $ snd $ links vorlesung}
+      <a href=@{link (danach auswahl) vorlesung}>
+        _{titel $ danach auswahl}&nbsp;
         <span aria-hidden="true">&rarr;

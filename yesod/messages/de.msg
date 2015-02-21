@@ -113,7 +113,8 @@ KeineAufgabenstellung: Es wurde keine Aufgabenstellung gefunden.
 KeineAufgabenTypen: Es gibt noch keine Aufgabentypen auf diesem Aufgabenserver.
 KeineBewertung: Es wurde keine Bewertung gefunden.
 KeineDirektoren: Es gibt leider keine Direktoren dieser Schule.
-KeineEinschreibungen: Sie sind in keine Übungsgruppe dieser Vorlesung eingeschrieben.
+KeineEinschreibung: Sie sind in keine Übungsgruppe dieser Vorlesung eingeschrieben.
+KeineEinschreibungen: Es sind keine Studenten in Gruppen eingeschrieben.
 KeineEinsendung: Es gibt noch keine Einsendung.
 KeineSchulen: Es gibt leider keine Schulen, auf die Sie zugreifen können.
 KeineSemesters: Für diese Schule wurden noch keine Semester definiert.

@@ -2,7 +2,7 @@
 <p>
   _{MsgGruppenHinweis}&nbsp;
   $if null gruppenBesucht'
-    _{MsgKeineEinschreibungen}
+    _{MsgKeineEinschreibung}
   $else
     _{MsgIstEingeschrieben}
 $if darfGruppenSehen == Just True
