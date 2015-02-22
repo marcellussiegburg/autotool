@@ -27,11 +27,10 @@ $else
         <th>_{MsgName}
         <th>_{MsgGruppeNummer}
         <th>_{MsgGesamtpunktzahl}
-        $if null aufgaben
+        $if auswahl == KeineAufgaben
           <th>
-        $else
-          $forall aufgabe <- aufgaben
-            <th colspan=2>#{aufgabe}
+        $forall aufgabe <- aufgaben
+          <th colspan=2>#{T.toString $ Aufgabe.name aufgabe}
     <tbody>
       $forall bewertung <- bewertungen
         <tr>
@@ -40,17 +39,32 @@ $else
           <td>#{T.toString $ Student.name $ student bewertung}
           <td>#{gruppe bewertung}
           <td>#{punkte bewertung}
-          $if null $ ergebnisse bewertung
-            <td>
-              <a href="#" .btn .btn-primary .btn-block role="button">
-                _{MsgBearbeiten}
-          $else
-            $forall ergebnis <- ergebnisse bewertung
-              $maybe (ok, nein) <- ergebnis
-                <td .success>#{ok}
-                <td .danger>#{nein}
-              $nothing
-                <td .warning colspan=2>
+          $if auswahl == KeineAufgaben
+              <td>
+                <a href="#" .btn .btn-primary .btn-block role="button">
+                  _{MsgBearbeiten}
+          $forall ergebnis <- ergebnisse bewertung
+            $maybe erg <- ergebnis
+              $case erg
+                $of T.Okay punkte größe
+                  <td .success>
+                    #{show punkte}
+                  <td .success>
+                    #{show größe}
+                $of T.No
+                  <td .danger colspan=2>
+                    _{MsgNein}
+                $of T.Ok punkte
+                  <td .success colspan=2>
+                    _{MsgOkay} #{show punkte}
+                $of T.Pending
+                  <td .warning colspan=2>
+                    _{MsgAusstehend}
+                $of T.Reset
+                  <td .danger colspan=2>
+                    _{MsgReset}
+            $nothing
+              <td .warning colspan=2>
 <nav>
   <ul .pager>
     <li .previous>
