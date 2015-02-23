@@ -1,4 +1,3 @@
-<h1>_{titel}
 $if (&&) istEingeschrieben $ goal > 0
   <p>_{MsgAufgabenErledigt done goal percent}
 $if null ergebnisse'

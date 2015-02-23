@@ -20,7 +20,6 @@ postTutorErnennenR vorlesung = do
         tutoren <- liftM concat $ mapM TutorDB.get_tutors vorlesung'
         return $ deleteFirstsBy ((==) `on` Student.snr) studenten' tutoren
   let studentenSeite = StudentenSeite {
-        titel = MsgTutor,
         nullStudenten = MsgKeineStudentenErnennen,
         submit = BootstrapSubmit MsgTutorErnennen "btn-success btn-block" [],
         erfolgMsg = MsgTutorErnannt,

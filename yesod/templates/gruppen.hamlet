@@ -1,4 +1,3 @@
-<h1>_{MsgGruppen}
 <p>
   _{MsgGruppenHinweis}&nbsp;
   $if null gruppenBesucht'

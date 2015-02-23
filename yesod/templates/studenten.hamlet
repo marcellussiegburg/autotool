@@ -1,4 +1,3 @@
-<h1>_{titel auswahl}
 $if null gruppen || null bewertungen
   _{MsgKeineEinschreibungen}
 $else

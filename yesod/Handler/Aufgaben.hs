@@ -13,10 +13,10 @@ import qualified Control.Vorlesung.Typ as Vorlesung
 import Control.Types
 
 getAufgabenR :: VorlesungId -> Handler Html
-getAufgabenR = aufgabenListe MsgAufgabenAlle $ fromList [Current, Early, Late]
+getAufgabenR = aufgabenListe $ fromList [Current, Early, Late]
 
-aufgabenListe :: AutotoolMessage -> Set TimeStatus -> VorlesungId -> Handler Html
-aufgabenListe titel disp vorlesung = do
+aufgabenListe :: Set TimeStatus -> VorlesungId -> Handler Html
+aufgabenListe disp vorlesung = do
   let getAufgabe a = let ANr anr = Aufgabe.anr a
                      in anr
   stud <- requireAuthId

@@ -1,3 +1,2 @@
-<h1>_{MsgVorlesungAnlegen}
 <form role="form" action=@{VorlesungAnlegenR semester} method="post" enctype=#{formEnctype}>
   ^{formWidget}

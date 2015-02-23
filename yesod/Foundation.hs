@@ -1,6 +1,6 @@
 module Foundation where
 
-import Prelude
+import Prelude hiding (sequence)
 import Yesod
 import Yesod.Auth
 import Yesod.Auth.Autotool
@@ -21,7 +21,7 @@ import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
 import Control.Applicative ((<$>), (<*>))
-import Control.Monad (filterM, when)
+import Control.Monad (filterM, join, liftM, when)
 import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
 import Control.Monad.Trans.Either (EitherT (runEitherT), left)
 import Data.Char (toUpper)
@@ -31,6 +31,7 @@ import Data.Set (member)
 import Data.Text (Text, pack, unpack)
 import Data.Text.Read (decimal, signed)
 import Data.Time (UTCTime, formatTime)
+import Data.Traversable (sequence)
 import Data.Tuple6
 import System.Locale (defaultTimeLocale)
 import Model
@@ -87,8 +88,11 @@ instance Yesod Autotool where
         mmsg <- getMessage
         maid <- maybeAuthId
         mroute <- getCurrentRoute
+        mmtitel <- sequence $ fmap routeTitel mroute
+        let mtitel = join mmtitel
         lang <- fmap (\langs -> if langs == [] then "de" else head langs) languages
         pc <- widgetToPageContent $ do
+            maybe (return ()) setTitleI mtitel
             $(combineStylesheets 'StaticR
                 [ css_normalize_css
                 , css_bootstrap_min_css
@@ -323,7 +327,7 @@ navigationMenu mroute authId = do
                          return $ maybe False id hatZugriff
       filterBerechtigte =
         (filterM filterRoute) . concat . maybeToList
-      zuLink r = Link r $ routeTitel r
+      zuLink r = Link r $ routeLinkTitel r
       trennstrich [] b = b
       trennstrich a [] = a
       trennstrich a b = a ++ [Trennstrich] ++ b
@@ -526,8 +530,8 @@ routeParameter route = case route of
 -- | Liefert den Titel, der für einen Link zu dieser Route verwendet werden soll
 -- 
 -- Diese Methode nutzt absichtlich keinen Wildcard-Eintrag, um Rückmeldung vom Compiler bei neu definierten Routen zu erhalten
-routeTitel :: Route Autotool -> Maybe AutotoolMessage
-routeTitel route = case route of
+routeLinkTitel :: Route Autotool -> Maybe AutotoolMessage
+routeLinkTitel route = case route of
   StaticR _                      -> Nothing
   FaviconR                       -> Nothing
   RobotsR                        -> Nothing
@@ -568,3 +572,53 @@ routeTitel route = case route of
   AufgabeBenutzerIdR _ _ _       -> Just MsgAufgabeBenutzerId
   AufgabeBenutzerIdZufallR _ _ _ -> Just MsgAufgabeBenutzerIdZufall
   AufgabeTestenR _ _ _ _         -> Just MsgAufgabeTesten
+
+-- | Liefert den Titel, der bei dieser Route verwendet werden soll.
+-- 
+-- Diese Methode nutzt absichtlich keinen Wildcard-Eintrag, um Rückmeldung vom Compiler bei neu definierten Routen zu erhalten
+routeTitel :: Route Autotool -> Handler (Maybe AutotoolMessage)
+routeTitel route = case route of
+  StaticR _                      -> return Nothing
+  FaviconR                       -> return Nothing
+  RobotsR                        -> return Nothing
+  AuthR _                        -> return Nothing
+  HomeR                          -> return $ Just MsgAutotool
+  SchuleAnlegenR                 -> return $ Just MsgSchuleAnlegen
+  SchulenR                       -> return $ Just MsgSchulen
+  SchuleR _                      -> return $ Just MsgSchuleBearbeiten
+  DirektorenR _                  -> return $ Just MsgDirektoren
+  DirektorErnennenR _            -> return $ Just MsgDirektorErnennen
+  WaisenkinderR _                -> return $ Just MsgWaisenkinder
+  SemestersR _                   -> return $ Just MsgSemesters
+  SemesterAnlegenR _             -> return $ Just MsgSemesterAnlegen
+  SemesterR _                    -> return $ Just MsgSemesterBearbeiten
+  VorlesungenR _                 -> return $ Just MsgVorlesungen
+  VorlesungAnlegenR _            -> return $ Just MsgVorlesungAnlegen
+  VorlesungR _                   -> return $ Just MsgVorlesungBearbeiten
+  GruppeAnlegenR _               -> return $ Just MsgGruppeAnlegen
+  GruppenR _                     -> return $ Just MsgGruppen
+  GruppeR _                      -> return $ Just MsgGruppeBearbeiten
+  TutorErnennenR _               -> return $ Just MsgTutor
+  TutorenR _                     -> return $ Just MsgTutoren
+  StudentenR _                   -> return $ Just MsgStudenten
+  ResultatePflichtR _            -> return $ Just MsgResultatePflicht
+  ResultateR _                   -> return $ Just MsgAlleResultate
+  AufgabeAnlegenR _              -> return $ Just MsgAufgabeAnlegen
+  AufgabenR _                    -> return $ Just MsgAufgabenAlle
+  AufgabenAktuellR _             -> return $ Just MsgAufgabenAktuell
+  AufgabeBearbeitenR _           -> return $ Just MsgAufgabeBearbeiten
+  AufgabeR a                     -> do
+    maufgabe <- lift $ liftM listToMaybe $ AufgabeDB.get_this $ ANr a
+    case maufgabe of
+      Just aufgabe -> return $ Just $ MsgAufgabeXLösen $ pack $ toString $ Aufgabe.name aufgabe
+      Nothing -> notFound
+  StatistikR _                   -> return $ Just MsgStatistik
+  EinsendungR _ _                -> return $ Just MsgEinsendung
+  ServersR                       -> return $ Just MsgServers
+  ServerR _                      -> return $ Just MsgAufgabeTyp
+  AufgabeVorlagenR _ _           -> return $ Just MsgAufgabeVorlagen
+  AufgabeVorlageR _ _ _          -> return $ Just MsgAufgabeKonfigurieren
+  AufgabeKonfigurationR _ _ _    -> return $ Just MsgAufgabeKonfigurieren
+  AufgabeBenutzerIdR _ _ _       -> return $ Just MsgAufgabeBenutzerId
+  AufgabeBenutzerIdZufallR _ _ _ -> return $ Just MsgAufgabeBenutzerIdZufall
+  AufgabeTestenR _ t _ _         -> return $ Just $ MsgAufgabeXTesten t

@@ -1,4 +1,3 @@
-<h1>_{MsgAufgabeKonfigurieren}
 <form role="form" action=@{AufgabeKonfigurationR server aufgabeTyp konfiguration} method="post" enctype=#{formEnctype}>
   ^{formWidget}
 $maybe hinweis <- mhinweis

@@ -1,4 +1,3 @@
-<h1>_{MsgEinsendung}
 <h2>_{MsgAufgabeAufgabe}
 $maybe aufgabenstellung <- maufgabenstellung
   #{aufgabenstellung}

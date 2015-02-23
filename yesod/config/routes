@@ -4,7 +4,7 @@
 
 /auth                                     AuthR                 Auth   getAuth
 
-/                                         HomeR                 GET    POST
+/                                         HomeR                 GET
 /schule                                   SchuleAnlegenR        GET    POST      !admin
 /schulen                                  SchulenR              GET
 /schule/#SchuleId                         SchuleR               GET    POST      !admin

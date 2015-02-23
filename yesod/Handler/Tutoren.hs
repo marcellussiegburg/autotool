@@ -14,7 +14,6 @@ postTutorenR vorlesung = do
   vorlesung' <- lift $ VorlesungDB.get_this $ VNr vorlesung
   let tutoren = liftM concat $ mapM TutorDB.get_tutors vorlesung'
       studentenSeite = StudentenSeite {
-        titel = MsgTutoren,
         nullStudenten = MsgKeineTutoren,
         submit = BootstrapSubmit MsgTutorAbsetzen "btn-danger btn-block" [],
         erfolgMsg = MsgTutorAbgesetzt,

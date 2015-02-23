@@ -1,4 +1,3 @@
-<h1>_{MsgSemesters}
 $if null semestersAutorisiert
   <p>_{MsgKeineSemesters}
 $else

@@ -1,9 +1,3 @@
-<h1>
-  $case eidAufgabe
-    $of Left _
-      _{MsgAufgabeAnlegen}
-    $of Right _
-      _{MsgAufgabeBearbeiten}
 $maybe hinweis <- mhinweis
   <h2>_{MsgAufgabeHinweis}
   <p>#{hinweis}

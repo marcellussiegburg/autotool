@@ -9,7 +9,6 @@ import Control.Student.Type (Student)
 import Control.Types
 
 -- | Definiert die Parameter für eine Html-Seite zum Setzen einer Rolle für Studenten. Dient als Hilfsdatenstruktur für 'rolleSetzenListe'.
--- * @titel@ ist der Titel der Html-Seite.
 -- * @nullStudenten@ ist die Nachricht, die ausgegeben werden soll, wenn kein Student zur entsprechenden Rollenänderung zur Verfügung steht.
 -- * @submit@ ist der Button, der in den Formularen angezeigt werden soll.
 -- * @erfolgMsg@ ist die Nachricht, die dem Nutzer angezeigt werden soll, wenn eine Rollenänderung stattgefunden hat.
@@ -17,7 +16,6 @@ import Control.Types
 -- * @getOp@ ist die Operation, mit der man alle für die Rollenänderung relevanten Studenten erhält (je nach dem: alle Studenten der Schule, die diese Rolle für die entsprechende Abteilung bereits haben oder noch nicht haben)
 -- * @setOp@ ist die Operation, mit der ein Student zur entsprechenden Rolle ernannt oder von ihr abgesetzt wird.
 data StudentenSeite = StudentenSeite {
-  titel :: AutotoolMessage,
   nullStudenten :: AutotoolMessage,
   submit :: BootstrapSubmit AutotoolMessage,
   erfolgMsg :: AutotoolMessage,
@@ -37,7 +35,6 @@ postDirektorErnennenR schule = do
         direktoren <- liftM concat $ mapM DirektorDB.get_directors schule'
         return $ deleteFirstsBy ((==) `on` Student.snr) studenten' direktoren
   let studentenSeite = StudentenSeite {
-        titel = MsgDirektorErnennen,
         nullStudenten = MsgKeineStudentenErnennen,
         submit = BootstrapSubmit MsgDirektorErnennen "btn-success btn-block" [],
         erfolgMsg = MsgDirektorErnannt,

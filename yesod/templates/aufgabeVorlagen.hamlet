@@ -1,4 +1,3 @@
-<h1>_{MsgAufgabeVorlagen}
 <a href=@{AufgabeVorlageR server aufgabeTyp ""} .btn .btn-default role="button">_{MsgAufgabeVorlageStandard}
 $forall vorlage <- vorlagen
   <a href=@{AufgabeVorlageR server aufgabeTyp vorlage} .btn .btn-default role="button">#{vorlage}

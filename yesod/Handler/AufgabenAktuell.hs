@@ -7,4 +7,4 @@ import Control.Types
 import Handler.Aufgaben (aufgabenListe)
 
 getAufgabenAktuellR :: VorlesungId -> Handler Html
-getAufgabenAktuellR = aufgabenListe MsgAufgabenAktuell $ fromList [Current]
+getAufgabenAktuellR = aufgabenListe $ fromList [Current]

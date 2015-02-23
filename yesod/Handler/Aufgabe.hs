@@ -88,7 +88,6 @@ postAufgabeR aufgabeId = do
   let hinweis = pack . T.toString $ Aufgabe.remark aufgabe
       zielAdresse = AufgabeR aufgabeId
       name = pack . T.toString $ Aufgabe.name aufgabe
-      titel = MsgAufgabeXLösen name
       mfile = case resultUpload of
         FormSuccess f -> Just f
         _ -> Nothing

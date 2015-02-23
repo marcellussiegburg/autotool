@@ -1,4 +1,3 @@
-<h1>_{MsgSchulen}
 $if null schulenAutorisiert
   <p>_{MsgKeineSchulen}
 $else

@@ -23,7 +23,6 @@ postAufgabeTestenR server typ konfiguration benutzerId = do
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ einsendungHochladenForm
   let hinweis = "" :: Text
       zielAdresse = AufgabeTestenR server typ konfiguration benutzerId
-      titel = MsgAufgabeXTesten typ
       mfile = case resultUpload of
                 FormSuccess f -> Just f
                 _ -> Nothing

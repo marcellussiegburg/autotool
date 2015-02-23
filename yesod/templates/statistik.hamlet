@@ -1,61 +1,40 @@
-<h1>
-  Statistik
 $if null ergebnisse
-  <p>
-    Keine Studenten
+  <p>Keine Studenten
 $else
  <form role="form" action=@{StatistikR aufgabeId} method="post" enctype=#{snd $ form $ head ergebnisse}>
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
-        <th>
-          _{MsgMatrikelnummer}
-        <th>
-          _{MsgVorname}
-        <th>
-          _{MsgName}
-        <th>
-          _{MsgOkays}
-        <th>
-          _{MsgNeins}
-        <th>
-          _{MsgPunkte}
-        <th>
-          _{MsgGröße}
+        <th>_{MsgMatrikelnummer}
+        <th>_{MsgVorname}
+        <th>_{MsgName}
+        <th>_{MsgOkays}
+        <th>_{MsgNeins}
+        <th>_{MsgPunkte}
+        <th>_{MsgGröße}
         <th colspan=2>
         ^{renderTableHead optionen'}
     <tbody>
       $forall eintrag <- ergebnisse
         <tr>
-          <td>
-            #{matrikel eintrag}
-          <td>
-            #{vorname eintrag}
-          <td>
-            #{nachname eintrag}
-          <td>
-            #{maybe "-" show $ okays eintrag}
-          <td>
-            #{maybe "-" show $ neins eintrag}
+          <td>#{matrikel eintrag}
+          <td>#{vorname eintrag}
+          <td>#{nachname eintrag}
+          <td>#{maybe "-" show $ okays eintrag}
+          <td>#{maybe "-" show $ neins eintrag}
           $maybe erg <- mergebnis eintrag
             $case erg
               $of T.Okay punkte größe
-                <td .success>
-                  #{show punkte}
-                <td .success>
-                  #{show größe}
+                <td .success>#{show punkte}
+                <td .success>#{show größe}
               $of T.No
-                <td .danger colspan=2>
-                  _{MsgNein}
+                <td .danger colspan=2>_{MsgNein}
               $of T.Ok punkte
-                <td .success colspan=2>
-                  _{MsgOkay} #{show punkte}
+                <td .success colspan=2>_{MsgOkay} #{show punkte}
               $of T.Pending
-                <td .warning colspan=2>
-                  _{MsgAusstehend}
+                <td .warning colspan=2>_{MsgAusstehend}
               $of T.Reset
-                <td .danger colspan=2>
-                  _{MsgReset}
+                <td .danger colspan=2>_{MsgReset}
           $nothing
             <td .warning colspan=2>
           <td>

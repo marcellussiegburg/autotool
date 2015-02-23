@@ -1,8 +1,5 @@
-<h1>
-  _{MsgAufgabeTyp}
 $if null aufgabenTypen
-  <p>
-    _{MsgKeineAufgabenTypen}
+  <p>_{MsgKeineAufgabenTypen}
 $else
   <div .tree .well>
     <ul>

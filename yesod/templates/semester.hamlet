@@ -1,3 +1,2 @@
-<h1>_{MsgSemesterBearbeiten}
 <form role="form" action=@{SemesterR semester} method="post" enctype=#{formEnctype}>
   ^{formWidget}

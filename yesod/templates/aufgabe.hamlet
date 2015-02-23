@@ -1,4 +1,3 @@
-<h1>_{titel}
 $if hinweis /= ""
   <h2>_{MsgAufgabeHinweis}
   <p>#{hinweis}

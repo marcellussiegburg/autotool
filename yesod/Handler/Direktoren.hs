@@ -14,7 +14,6 @@ postDirektorenR schule = do
   schule' <- lift $ SchuleDB.get_unr $ UNr schule
   let direktoren = liftM concat $ mapM DirektorDB.get_directors schule'
       studentenSeite = StudentenSeite {
-        titel = MsgDirektoren,
         nullStudenten = MsgKeineDirektoren,
         submit = BootstrapSubmit MsgDirektorAbsetzen "btn-danger btn-block" [],
         erfolgMsg = MsgDirektorAbgesetzt,

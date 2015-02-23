@@ -29,6 +29,8 @@
   <div #main role=main>
     $maybe msg <- mmsg
       <div #message>#{msg}
+    $maybe titel <- mtitel
+      <h1>_{titel}
     ^{widget}
 <footer>
   <div .container>

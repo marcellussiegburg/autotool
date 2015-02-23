@@ -55,6 +55,7 @@ AufgabeZeitNachher zeit@UTCTime: vorbei seit #{formatTime defaultTimeLocale "%d.
 AufgabeZeitVorher zeit@UTCTime: erst ab #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 Ausstehend: Ausstehend
 Austragen: Austragen
+Autotool: Autotool
 Bearbeiten: Bearbeiten
 Behalten: Behalten
 BeispielLaden: Beispiel laden
@@ -169,6 +170,7 @@ ServerWählen: Server wählen
 SpracheDE: Deutsch
 SpracheNL: Niederländisch
 SpracheUK: Britisches Englisch
+Statistik: Statistik
 StatistikAnzeigen: Statistik anzeigen
 StatusDemonstration: Demonstration
 StatusOptional: Optional

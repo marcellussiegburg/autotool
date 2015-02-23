@@ -1,34 +1,23 @@
-<h1>_{titel eigenschaften}
 $if null studentenForms
   <p>_{nullStudenten eigenschaften}
 $else
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
-        <th>
-          _{MsgIdentifikationsnummer}
-        <th>
-          _{MsgMatrikelnummer}
-        <th>
-          _{MsgVorname}
-        <th>
-          _{MsgName}
-        <th>
-          _{MsgEmail}
+        <th>_{MsgIdentifikationsnummer}
+        <th>_{MsgMatrikelnummer}
+        <th>_{MsgVorname}
+        <th>_{MsgName}
+        <th>_{MsgEmail}
         <th>
     <tbody>
       $forall (student, form) <- studentenForms
         <tr>
-          <td>
-            #{toString $ Student.snr student}
-          <td>
-            #{toString $ Student.mnr student}
-          <td>
-            #{toString $ Student.vorname student}
-          <td>
-            #{toString $ Student.name student}
-          <td>
-            #{toString $ Student.email student}
+          <td>#{toString $ Student.snr student}
+          <td>#{toString $ Student.mnr student}
+          <td>#{toString $ Student.vorname student}
+          <td>#{toString $ Student.name student}
+          <td>#{toString $ Student.email student}
           <td>
             <form .form-inline role="form" action=@{formRoute eigenschaften} method="post" enctype=#{snd form}>
               ^{fst form}
