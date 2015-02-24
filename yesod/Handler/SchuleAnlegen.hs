@@ -17,5 +17,5 @@ postSchuleAnlegenR = do
       _ <- lift $ SchuleDB.put Nothing schule'
       _ <- setMessageI MsgSchuleAngelegt
       redirect SchulenR -- ^ TODO: SchuleR verwenden (zu neu erstellter Schule gehen)
-  defaultLayout $ do
-    $(widgetFile "schuleAnlegen")
+  defaultLayout $
+    formToWidget SchuleAnlegenR Nothing formEnctype formWidget

@@ -11,7 +11,7 @@ postAufgabeBenutzerIdR server aufgabeTyp konfiguration = do
   case result of
     FormSuccess bid -> redirect $ AufgabeTestenR server aufgabeTyp konfiguration $ pack $ show bid
     _ -> defaultLayout $
-           $(widgetFile "aufgabeBenutzerId")
+           formToWidget (AufgabeBenutzerIdR server aufgabeTyp konfiguration) Nothing formEnctype formWidget
 
 benutzerIdForm :: Form Integer
 benutzerIdForm = renderBootstrap3 BootstrapBasicForm $

@@ -41,6 +41,12 @@ data Aktion = BeispielLaden | VorherigeEinsendungLaden deriving (Show, Read)
 aktion :: Text
 aktion = "aktion"
 
+eingeben :: Text
+eingeben = "eingeben"
+
+hochladen :: Text
+hochladen = "hochladen"
+
 getAufgabeR :: AufgabeId -> Handler Html
 getAufgabeR = postAufgabeR
 
@@ -86,11 +92,11 @@ postAufgabeR aufgabeId = do
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just $ fromMaybe beispiel mvorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm einsendungHochladenForm
   let hinweis = pack . T.toString $ Aufgabe.remark aufgabe
-      zielAdresse = AufgabeR aufgabeId
-      name = pack . T.toString $ Aufgabe.name aufgabe
       mfile = case resultUpload of
         FormSuccess f -> Just f
         _ -> Nothing
+      hochladenForm = formToWidget (AufgabeR aufgabeId) $ Just hochladen
+      eingebenForm = formToWidget (AufgabeR aufgabeId) $ Just eingeben
   mbewertung' <- getBewertung server signed' mfile
   let mbewertung = fmap snd mbewertung'
   mvorlageForm <- liftM Just $ generateFormPost $ identifyForm (pack $ show aktion) $ renderBootstrap3 BootstrapBasicForm vorlageForm

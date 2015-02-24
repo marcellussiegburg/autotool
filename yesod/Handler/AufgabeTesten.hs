@@ -2,7 +2,7 @@ module Handler.AufgabeTesten where
 
 import Import
 
-import Handler.Aufgabe (aufgabeEinsendenForm, checkEinsendung, getAufgabeInstanz, getBewertung, getCrc, einsendungHochladenForm)
+import Handler.Aufgabe (aufgabeEinsendenForm, checkEinsendung, eingeben, einsendungHochladenForm, getAufgabeInstanz, getBewertung, getCrc, hochladen)
 import Handler.AufgabeKonfiguration (checkKonfiguration)
 import Control.Types (VNr (VNr), MNr (MNr))
 
@@ -22,12 +22,14 @@ postAufgabeTestenR server typ konfiguration benutzerId = do
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just vorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ einsendungHochladenForm
   let hinweis = "" :: Text
-      zielAdresse = AufgabeTestenR server typ konfiguration benutzerId
       mfile = case resultUpload of
                 FormSuccess f -> Just f
                 _ -> Nothing
       mvorlageForm = Nothing :: Maybe (Widget, Enctype)
       mlog = Nothing :: Maybe (Text)
+      zielAdresse = AufgabeTestenR server typ konfiguration benutzerId
+      hochladenForm = formToWidget zielAdresse $ Just hochladen
+      eingebenForm = formToWidget zielAdresse $ Just eingeben
   mbewertung <- liftM (fmap snd) $ getBewertung server signed' mfile
   defaultLayout $ do
     $(widgetFile "aufgabe")

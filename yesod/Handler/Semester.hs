@@ -19,8 +19,8 @@ postSemesterR semester = do
     FormSuccess semester' -> do
       _ <- lift $ SemesterDB.put (Just $ enr semester') semester'
       setMessageI MsgSemesterBearbeitet
-  defaultLayout $ do
-    $(widgetFile "semester")
+  defaultLayout $
+    formToWidget (SemesterR semester) Nothing formEnctype formWidget
 
 semesterForm :: Maybe Semester -> Form Semester
 semesterForm msemester = do

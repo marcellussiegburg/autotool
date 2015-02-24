@@ -24,5 +24,5 @@ postVorlesungAnlegenR semester = do
       _ <- setMessageI MsgVorlesungAngelegt
       let ENr s = Semester.enr semester'
       redirect $ VorlesungenR s -- ^ TODO: VorlesungR verwenden (zu neu erstellter Vorlesung gehen)
-  defaultLayout $ do
-    $(widgetFile "vorlesungAnlegen")
+  defaultLayout $
+    [whamlet|^{formToWidget (VorlesungAnlegenR semester) Nothing formEnctype formWidget}|]

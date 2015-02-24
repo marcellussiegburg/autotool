@@ -1,2 +1,0 @@
-<form role="form" action=@{GruppeAnlegenR vorlesung} method="post" enctype=#{formEnctype}>
-  ^{formWidget}

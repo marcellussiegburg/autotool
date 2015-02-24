@@ -1,2 +1,0 @@
-<form role="form" action=@{SchuleAnlegenR} method="post" enctype=#{formEnctype}>
-  ^{formWidget}

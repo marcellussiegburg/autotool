@@ -41,7 +41,7 @@ postVorlesungR vorlesung = do
           setMessageI MsgVorlesungEntfernt
           let ENr s = enr vorlesung'
           redirect $ VorlesungenR s
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "vorlesung")
 
 vorlesungForm :: Maybe Vorlesung -> Form Vorlesung

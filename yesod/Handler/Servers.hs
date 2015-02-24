@@ -16,8 +16,8 @@ postServersR = do
   case result of
     FormSuccess s -> redirect $ ServerR s
     _ -> return ()
-  defaultLayout $ do
-    $(widgetFile "servers")
+  defaultLayout $
+    formToWidget ServersR Nothing formEnctype formWidget
 
 serversForm :: Maybe ServerUrl -> Form ServerUrl
 serversForm mserver = do

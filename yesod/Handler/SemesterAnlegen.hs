@@ -24,5 +24,5 @@ postSemesterAnlegenR schule = do
       _ <- setMessageI MsgSemesterAngelegt
       let UNr s = Schule.unr schule'
       redirect $ SemestersR s -- ^ TODO: SemesterR verwenden (zu neu erstelltem Semester gehen)
-  defaultLayout $ do
-    $(widgetFile "semesterAnlegen")
+  defaultLayout $
+    formToWidget (SemesterAnlegenR schule) Nothing formEnctype formWidget

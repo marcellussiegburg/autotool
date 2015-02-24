@@ -5,22 +5,19 @@ $if hinweis /= ""
 #{aufgabenstellung}
 <h2>_{MsgAufgabeLösungEinsenden}
 <div .tabs>
-  <div #hochladen>
-    <div #eingeben>
+  <div ##{hochladen}>
+    <div ##{eingeben}>
       <ul .nav .nav-tabs>
         <li>
-          <a href="#eingeben">_{MsgAufgabeEingeben}
+          <a href=##{eingeben}>_{MsgAufgabeEingeben}
         <li>
-          <a href="#hochladen">_{MsgAufgabeHochladen}
+          <a href=##{hochladen}>_{MsgAufgabeHochladen}
       <div .content>
         $maybe (widget, enctype) <- mvorlageForm
-          <form role="form" action=@{zielAdresse}#eingeben method="post" enctype=#{enctype}>
-            ^{widget}
-        <form role="form" action=@{zielAdresse}#eingeben method="post" enctype=#{formEnctype}>
-          ^{formWidget}
+          ^{eingebenForm enctype widget}
+        ^{eingebenForm formEnctype formWidget}
     <div .content>
-      <form role="form" action=@{zielAdresse}#hochladen method="post" enctype=#{formEnctypeUpload}>
-        ^{formWidgetUpload}
+      ^{hochladenForm formEnctypeUpload formWidgetUpload}
 $maybe bewertung <- mbewertung
   <h2>_{MsgAufgabeBewertung}
   #{bewertung}

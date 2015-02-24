@@ -143,6 +143,14 @@ instance YesodJquery Autotool where
     urlJqueryUiCss _ = Left $ StaticR css_jquery_ui_min_css
     urlJqueryUiDateTimePicker _ = Left $ StaticR js_jquery_ui_datetimepicker_js
 
+formToWidget :: Route Autotool -> Maybe Text -> Enctype -> Widget -> Widget
+formToWidget ziel manker enctype widget =
+  case manker of
+    Nothing ->
+      [whamlet|<form role="form" action=@{ziel} method="post" enctype=#{enctype}>^{widget}|]
+    Just anker ->
+      [whamlet|<form role="form" action=@{ziel}##{anker} method="post" enctype=#{enctype}>^{widget}|]
+
 getBevorzugteSprache :: MonadHandler m => m Sprache.Language
 getBevorzugteSprache = do
   langs <- languages

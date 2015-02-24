@@ -28,8 +28,8 @@ postSchuleR schule = do
     FormSuccess schule' -> do
       _ <- lift $ SchuleDB.put (Just $ unr schule') schule'
       setMessageI MsgSchuleBearbeitet
-  defaultLayout $ do
-    $(widgetFile "schule")
+  defaultLayout $
+    formToWidget (SchuleR schule) Nothing formEnctype formWidget
 
 schuleForm :: Maybe Schule -> Form Schule
 schuleForm mschule = do

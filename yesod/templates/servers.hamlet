@@ -1,2 +1,0 @@
-<form role="form" action=@{ServersR} method="post" enctype=#{formEnctype}>
-  ^{formWidget}

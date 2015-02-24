@@ -14,6 +14,6 @@ $maybe bewertung <- mbewertung
 $nothing
   _{MsgKeineBewertung}
 $if istTutor
-  <h2>_{MsgEinsendungBewerten}
-  <form role="form" action=@{EinsendungR aufgabeId studentId} method="post" enctype=#{formEnctype}>
+  <h2 #einsendung>_{MsgEinsendungBewerten}
+  <form role="form" action=@{EinsendungR aufgabeId studentId}#einsendung method="post" enctype=#{formEnctype}>
     ^{formWidget}

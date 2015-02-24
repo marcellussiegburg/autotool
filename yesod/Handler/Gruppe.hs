@@ -41,7 +41,7 @@ postGruppeR gruppe = do
           setMessageI MsgGruppeEntfernt
           let VNr s = vnr gruppe'
           redirect $ GruppenR s
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "gruppe")
 
 gruppeForm :: Maybe Gruppe -> Form Gruppe

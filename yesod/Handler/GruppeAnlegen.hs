@@ -24,5 +24,5 @@ postGruppeAnlegenR vorlesung = do
       _ <- setMessageI MsgGruppeAngelegt
       let VNr v = Vorlesung.vnr vorlesung'
       redirect $ GruppenR v -- ^ TODO: GruppeR verwenden (zu neu erstellter Übungsgruppe gehen)
-  defaultLayout $ do
-    $(widgetFile "gruppeAnlegen")
+  defaultLayout $
+    formToWidget (GruppeAnlegenR vorlesung) Nothing formEnctype formWidget
