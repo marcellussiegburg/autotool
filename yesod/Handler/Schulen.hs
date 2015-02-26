@@ -1,31 +1,26 @@
 module Handler.Schulen where
 
 import Import
-import Control.Schule.DB as SchuleDB
-import Control.Schule.Typ as Schule
-import Control.Types
 
 getSchulenR :: Handler Html
 getSchulenR = do
-  schulen <- lift $ SchuleDB.get
+  schulen <- runDB $ selectList [] []
   mid <- maybeAuthId
-  schulenAutorisiert' <- lift $ mapM (autorisiertSchule mid) schulen
+  schulenAutorisiert' <- mapM (autorisiertSchule mid) schulen
   let schulenAutorisiert = concat schulenAutorisiert'
   defaultLayout $ do
     $(widgetFile "schulen")
 
-autorisiertSchule :: Maybe (AuthId Autotool) -> Schule -> IO [(Text, Maybe (Route Autotool), Maybe (Route Autotool))]
+autorisiertSchule :: Maybe (AuthId Autotool) -> Entity Schule -> Handler [(Text, Maybe (Route Autotool), Maybe (Route Autotool))]
 autorisiertSchule mid schule = do
-  let UNr u = Schule.unr schule
-      Name sname = Schule.name schule
-      schuleRoute = SemestersR u
-      bearbeitenRoute = SchuleR u
+  let schuleRoute = SemestersR $ entityKey schule
+      bearbeitenRoute = SchuleR $ entityKey schule
       ist (Just True) route = Just route
       ist _ _ = Nothing
   autorisiertS <- istAutorisiert mid schuleRoute
   autorisiertB <- istAutorisiert mid bearbeitenRoute
   if autorisiertS == Just True || autorisiertB == Just True
-     then return [(pack sname
+     then return [(schuleName $ entityVal schule
                   ,ist autorisiertS schuleRoute
                   ,ist autorisiertB bearbeitenRoute)]
      else return []

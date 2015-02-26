@@ -14,7 +14,7 @@ getVorlesungenR semester = do
   vorlesungen <- lift $ get_at_semester $ ENr semester
   let vorlesungenSortiert = reverse $ sortBy Vorlesung.einschreibVon vorlesungen
   mid <- maybeAuthId
-  vorlesungenAutorisiert' <- lift $ mapM (autorisiertVorlesung mid) vorlesungenSortiert
+  vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungenSortiert
   let vorlesungenAutorisiert = concat vorlesungenAutorisiert'
       vname v = let Name n = Vorlesung.name v
                 in n
@@ -23,7 +23,7 @@ getVorlesungenR semester = do
   defaultLayout $ do
     $(widgetFile "vorlesungen")
 
-autorisiertVorlesung :: Maybe (AuthId Autotool) -> Vorlesung.Vorlesung -> IO [(Vorlesung.Vorlesung, Maybe (Route Autotool), Maybe (Route Autotool))]
+autorisiertVorlesung :: Maybe (AuthId Autotool) -> Vorlesung.Vorlesung -> Handler [(Vorlesung.Vorlesung, Maybe (Route Autotool), Maybe (Route Autotool))]
 autorisiertVorlesung mid vorlesung = do
   let VNr v = Vorlesung.vnr vorlesung
       vorlesungRoute = GruppenR v

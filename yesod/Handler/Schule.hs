@@ -1,9 +1,6 @@
 module Handler.Schule where
 
 import Import
-import qualified Control.Schule.DB as SchuleDB
-import Control.Schule.Typ as Schule
-import Control.Types
 import Autolib.Multilingual
 
 spracheMsg :: Language -> AutotoolMessage
@@ -19,26 +16,23 @@ getSchuleR :: SchuleId -> Handler Html
 getSchuleR = postSchuleR
 
 postSchuleR :: SchuleId -> Handler Html
-postSchuleR schule = do
-  mschule <- lift $ liftM listToMaybe $ SchuleDB.get_unr $ UNr schule
-  ((result, formWidget), formEnctype) <- runFormPost $ schuleForm mschule
+postSchuleR schuleId = do
+  schule <- runDB $ get404 schuleId
+  ((result, formWidget), formEnctype) <- runFormPost $ schuleForm $ Just schule
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess schule' -> do
-      _ <- lift $ SchuleDB.put (Just $ unr schule') schule'
+      runDB $ replace schuleId schule'
       setMessageI MsgSchuleBearbeitet
   defaultLayout $
-    formToWidget (SchuleR schule) Nothing formEnctype formWidget
+    formToWidget (SchuleR schuleId) Nothing formEnctype formWidget
 
 schuleForm :: Maybe Schule -> Form Schule
-schuleForm mschule = do
-  let fromName = pack . toString
-      toName = Name . unpack
+schuleForm mschule =
   renderBootstrap3 BootstrapBasicForm $ Schule
-    <$> pure (maybe undefined unr mschule)
-    <*> (toName <$> areq textField (bfs MsgSchuleName) (fromName . name <$> mschule))
-    <*> (toName . maybe "" id <$> aopt textField (bfs MsgSchuleSuffix) (Just . fromName . mail_suffix <$> mschule))
-    <*> pure (maybe False use_shibboleth mschule)
-    <*> areq (selectField spracheOptionen) (bfs MsgSchuleSprache) (preferred_language <$> mschule)
+    <$> areq textField (bfs MsgSchuleName) (schuleName <$> mschule)
+    <*> (maybe "" id <$> aopt textField (bfs MsgSchuleSuffix) (Just . schuleMailSuffix <$> mschule))
+    <*> pure (maybe False schuleUseShibboleth mschule)
+    <*> areq (selectField spracheOptionen) (bfs MsgSchuleSprache) (schulePreferredLanguage <$> mschule)
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgSchuleAnlegen (\ _ -> MsgSchuleBearbeiten) mschule) "btn-success" [])

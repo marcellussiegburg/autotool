@@ -2,7 +2,6 @@ module Handler.DirektorErnennen where
 
 import Import
 import qualified Control.Direktor.DB as DirektorDB
-import qualified Control.Schule.DB as SchuleDB
 import qualified Control.Student.DB as StudentDB
 import qualified Control.Student.Type as Student
 import Control.Student.Type (Student)
@@ -29,10 +28,11 @@ getDirektorErnennenR = postDirektorErnennenR
 
 postDirektorErnennenR :: SchuleId -> Handler Html
 postDirektorErnennenR schule = do
-  studenten' <- lift $ StudentDB.get_unr $ UNr schule
-  schule' <- lift $ SchuleDB.get_unr $ UNr schule
+  schule'' <- runDB $ get404 schule
+  studenten' <- lift $ StudentDB.get_unr $ UNr $ keyToInt schule
+  let schule' = entityToSchule schule schule''
   let keineDirektoren = do
-        direktoren <- liftM concat $ mapM DirektorDB.get_directors schule'
+        direktoren <- DirektorDB.get_directors schule'
         return $ deleteFirstsBy ((==) `on` Student.snr) studenten' direktoren
   let studentenSeite = StudentenSeite {
         nullStudenten = MsgKeineStudentenErnennen,
@@ -40,7 +40,7 @@ postDirektorErnennenR schule = do
         erfolgMsg = MsgDirektorErnannt,
         formRoute = DirektorErnennenR schule,
         getOp = keineDirektoren,
-        setOp = \stud -> sequence_ $ map (DirektorDB.put stud) schule'
+        setOp = \stud -> DirektorDB.put stud schule'
       }
   rolleSetzenListe studentenSeite
 

@@ -9,17 +9,17 @@ import Autolib.Util.Sort (sortBy)
 
 getSemestersR :: SchuleId -> Handler Html
 getSemestersR schule = do
-  semesters <- lift $ SemesterDB.get_at_school $ UNr schule
+  semesters <- lift $ SemesterDB.get_at_school $ UNr $ keyToInt schule
   let semestersSortiert = sortBy (\ s -> Semester.status s /= Current) semesters
   mid <- maybeAuthId
-  semestersAutorisiert' <- lift $ mapM (autorisiertSemester mid) semestersSortiert
+  semestersAutorisiert' <- mapM (autorisiertSemester mid) semestersSortiert
   let semestersAutorisiert = concat semestersAutorisiert'
       sname s = let Name n = Semester.name s
                 in n
   defaultLayout $ do
     $(widgetFile "semesters")
 
-autorisiertSemester :: Maybe (AuthId Autotool) -> Semester.Semester -> IO [(Semester.Semester, Maybe (Route Autotool), Maybe (Route Autotool))]
+autorisiertSemester :: Maybe (AuthId Autotool) -> Semester.Semester -> Handler [(Semester.Semester, Maybe (Route Autotool), Maybe (Route Autotool))]
 autorisiertSemester mid semester = do
   let ENr s = Semester.enr semester
       semesterRoute = VorlesungenR s

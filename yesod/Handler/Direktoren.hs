@@ -10,15 +10,16 @@ getDirektorenR :: SchuleId -> Handler Html
 getDirektorenR = postDirektorenR
 
 postDirektorenR :: SchuleId -> Handler Html
-postDirektorenR schule = do
-  schule' <- lift $ SchuleDB.get_unr $ UNr schule
-  let direktoren = liftM concat $ mapM DirektorDB.get_directors schule'
+postDirektorenR schuleId = do
+  schule <- runDB $ get404 schuleId
+  let schule' = entityToSchule schuleId schule
+      direktoren = DirektorDB.get_directors schule'
       studentenSeite = StudentenSeite {
         nullStudenten = MsgKeineDirektoren,
         submit = BootstrapSubmit MsgDirektorAbsetzen "btn-danger btn-block" [],
         erfolgMsg = MsgDirektorAbgesetzt,
-        formRoute = DirektorenR schule,
+        formRoute = DirektorenR schuleId,
         getOp = direktoren,
-        setOp = \stud -> sequence_ $ map (DirektorDB.delete stud) schule'
+        setOp = \stud -> DirektorDB.delete stud schule'
       }
   rolleSetzenListe studentenSeite

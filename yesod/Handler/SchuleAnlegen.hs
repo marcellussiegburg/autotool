@@ -2,7 +2,6 @@ module Handler.SchuleAnlegen where
 
 import Import
 import Handler.Schule (schuleForm)
-import Control.Schule.DB as SchuleDB
 
 getSchuleAnlegenR :: Handler Html
 getSchuleAnlegenR = postSchuleAnlegenR
@@ -14,8 +13,8 @@ postSchuleAnlegenR = do
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess schule' -> do
-      _ <- lift $ SchuleDB.put Nothing schule'
+      schuleId <- runDB $ insert schule'
       _ <- setMessageI MsgSchuleAngelegt
-      redirect SchulenR -- ^ TODO: SchuleR verwenden (zu neu erstellter Schule gehen)
+      redirect $ SchuleR schuleId
   defaultLayout $
     formToWidget SchuleAnlegenR Nothing formEnctype formWidget

@@ -16,12 +16,12 @@ postGruppenR vorlesung = do
   mid <- maybeAuthId
   gruppen <- lift $ GruppeDB.get_this $ VNr vorlesung
   gruppenBesucht <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr vorlesung) (SNr ms)) mid
-  istTutor' <- lift $ istAutorisiert mid $ VorlesungR vorlesung
+  istTutor' <- istAutorisiert mid $ VorlesungR vorlesung
   vorlesung' <- lift $ VorlesungDB.get_this $ VNr vorlesung
   _ <- mapM (formAuswerten mid gruppenBesucht) gruppen
   gruppenBesucht' <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr vorlesung) (SNr ms)) mid
   gruppenForms <- mapM (generiereForm gruppenBesucht') gruppen
-  darfGruppenSehen <- lift $ istAutorisiert mid $ AufgabenAktuellR vorlesung
+  darfGruppenSehen <- istAutorisiert mid $ AufgabenAktuellR vorlesung
   let istTutor = istTutor' == Just True
       fromName name = let Name n = name
                       in n

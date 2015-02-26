@@ -19,6 +19,7 @@ library
                      Settings.StaticFiles
                      Settings.Development
                      Model
+                     Derived
                      Handler.Home
                      Handler.Aufgabe
                      Handler.Aufgabe.Forms
@@ -110,6 +111,9 @@ library
                  , monad-logger                  >= 0.3        && < 0.4
                  , fast-logger                   >= 2.2        && < 2.3
                  , wai-logger                    >= 2.2        && < 2.3
+                 , persistent                    >= 2.0        && < 2.2
+                 , persistent-mysql              >= 2.0        && < 2.2
+                 , persistent-template           >= 2.0        && < 2.2
                  , containers
                  , time
                  , old-locale
@@ -173,4 +177,9 @@ test-suite test
                  , yesod-test >= 1.4 && < 1.5
                  , yesod-core
                  , yesod
+                 , persistent
+                 , persistent-mysql
+                 , resourcet
+                 , monad-logger
+                 , transformers
                  , hspec

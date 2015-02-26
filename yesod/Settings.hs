@@ -3,6 +3,7 @@ module Settings where
 import Prelude
 import Text.Shakespeare.Text (st)
 import Language.Haskell.TH.Syntax
+import Database.Persist.MySQL (MySQLConf)
 import Yesod.Default.Config
 import Yesod.Default.Util
 import Data.Text (Text)
@@ -11,6 +12,8 @@ import Control.Applicative
 import Settings.Development
 import Data.Default (def)
 import Text.Hamlet
+
+type PersistConf = MySQLConf
 
 -- | The location of static files on the system.
 staticDir :: FilePath

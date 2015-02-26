@@ -6,6 +6,10 @@ module Application
     ) where
 
 import Import
+import Control.Monad.Logger (runLoggingT)
+import qualified Database.Persist
+import Database.Persist.Sql (runMigration)
+import Database.Persist.MySQL (createMySQLPool, myConnInfo, myPoolSize)
 import Yesod.Default.Config
 import Yesod.Default.Main
 import Yesod.Default.Handlers
@@ -79,17 +83,31 @@ makeFoundation :: AppConfig DefaultEnv Extra -> IO Autotool
 makeFoundation conf = do
     manager <- newManager
     s <- staticSite
+    dbconf <- withYamlEnvironment "config/mysql.yml" (appEnv conf)
+              Database.Persist.loadConfig >>=
+              Database.Persist.applyEnv
 
     loggerSet' <- newStdoutLoggerSet defaultBufSize
     (getter, _) <- clockDateCacher
 
     let logger = Yesod.Core.Types.Logger loggerSet' getter
-        foundation = Autotool
+        mkFoundation p = Autotool
             { settings = conf
             , getStatic = s
+            , connPool = p
             , httpManager = manager
+            , persistConfig = dbconf
             , appLogger = logger
             }
+        tempFoundation = mkFoundation $ error "connPool forced in tempFoundation"
+        logFunc = messageLoggerSource tempFoundation logger
+
+    p <- flip runLoggingT logFunc
+       $ createMySQLPool (myConnInfo dbconf) (myPoolSize dbconf)
+    let foundation = mkFoundation p
+
+    flip runLoggingT logFunc
+        (Database.Persist.runPool dbconf (runMigration migrateAll) p)
 
     return foundation
 

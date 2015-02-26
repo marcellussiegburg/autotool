@@ -33,6 +33,8 @@ import Data.Text.Read (decimal, signed)
 import Data.Time (UTCTime, formatTime)
 import Data.Traversable (sequence)
 import Data.Tuple6
+import qualified Database.Persist
+import Database.Persist.Sql (SqlBackend)
 import System.Locale (defaultTimeLocale)
 import Model
 
@@ -57,7 +59,9 @@ import qualified Autolib.Multilingual as Sprache
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
     , getStatic :: Static
+    , connPool :: Database.Persist.PersistConfigPool Settings.PersistConf
     , httpManager :: Manager
+    , persistConfig :: Settings.PersistConf
     , appLogger :: Logger
     }
 
@@ -103,7 +107,7 @@ instance Yesod Autotool where
                 [ js_jquery_min_js
                 , js_bootstrap_js
                 ])
-            navMenu <- lift $ navigationMenu mroute maid
+            navMenu <- handlerToWidget $ navigationMenu mroute maid
             let navigation = $(widgetFile "navigation")
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
@@ -114,7 +118,7 @@ instance Yesod Autotool where
 
     isAuthorized route _ = do
       mid <- maybeAuthId
-      mautorisiert <- lift $ istAutorisiert mid route
+      mautorisiert <- istAutorisiert mid route
       case mautorisiert of
         Nothing -> return AuthenticationRequired
         Just hatZugriff ->
@@ -179,6 +183,13 @@ instance RenderMessage Autotool YesodAuthAutotoolMessage where
     renderMessage master (_:langs) = renderMessage master langs
     renderMessage _ [] = germanAuthAutotoolMessage
 
+instance YesodPersist Autotool where
+    type YesodPersistBackend Autotool = SqlBackend
+    runDB = defaultRunDB persistConfig connPool
+
+instance YesodPersistRunner Autotool where
+    getDBRunner = defaultGetDBRunner connPool
+
 instance YesodAuth Autotool where
     renderAuthMessage _ ("de":_) = AM.germanMessage
     renderAuthMessage _ ("en":_) = AM.englishMessage
@@ -226,7 +237,7 @@ getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
 
 -- | Gibt zurück, ob ein Nutzer berechtigt ist, auf eine Route @route@ zuzugreifen. Dabei wird 'Just True' geliefert, wenn der Nutzer berechtigt ist. 'Nothing' wird geliefert, wenn der Nutzer nicht angemeldet ist (@mid@ = 'Nothing') und Authentifizierung notwendig ist, um auf die Ressource zuzugreifen. 'Just False' wird geliefert, wenn der Nutzer authentifiziert ist, allerdings nicht die notwendige Autorisierung besitzt.
-istAutorisiert :: Maybe (AuthId Autotool) -> Route Autotool -> IO (Maybe Bool)
+istAutorisiert :: Maybe (AuthId Autotool) -> Route Autotool -> Handler (Maybe Bool)
 istAutorisiert mid route =
   let braucht a = if a `member` routeAttrs route
                   then [a] else []
@@ -242,15 +253,15 @@ istAutorisiert mid route =
            ) False attrs
 
 -- | Liefert 'True', wenn der Nutzer mit der Kennung @authId@ und der Rolle @rolle@ autorisiert ist, auf die Route @route@ zuzugreifen.
-autorisierungRolle:: Text -> Int -> Route Autotool -> IO Bool
+autorisierungRolle:: Text -> Int -> Route Autotool -> Handler Bool
 autorisierungRolle rolle authId route
   | rolle == "student" = do
       auth <- runEitherT $ do
         (mschule, _, _, _, _, _) <- lift $ routeInformation route
-        mstud <- lift $ StudDB.get_snr $ SNr authId
+        mstud <- lift $ liftIO $ StudDB.get_snr $ SNr authId
         stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
         schule <- fromMaybe (left False) $ fmap return mschule
-        return $ Student.unr stud == UNr schule
+        return $ Student.unr stud == UNr (keyToInt schule)
       return $ either id id auth
   | rolle == "studentEigene" = do
       auth <- runEitherT $ do
@@ -261,46 +272,46 @@ autorisierungRolle rolle authId route
   | rolle == "einschreibung" = do
       auth <- runEitherT $ do
         (mschule, _, mvorlesung, _, _, _) <- lift $ routeInformation route
-        mstud <- lift $ StudDB.get_snr $ SNr authId
+        mstud <- lift $ liftIO $ StudDB.get_snr $ SNr authId
         stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
-        schule <- fromMaybe (left False) $ fmap return mschule
+        schule <- fromMaybe (left False) $ fmap (return . keyToInt) mschule
         when (Student.unr stud /= UNr schule) $ left False
         vorlesung <- fromMaybe (left False) $ fmap return mvorlesung
-        vorlesungen <- lift $ VorlesungDB.get_attended $ SNr authId
+        vorlesungen <- lift $ liftIO $ VorlesungDB.get_attended $ SNr authId
         return $ elem (VNr vorlesung) $ map Vorlesung.vnr vorlesungen
       return $ either id id auth
   | rolle == "admin" = do
-      auth <- runMaybeT $ do
+      auth <- liftIO $ runMaybeT $ do
         mstud <- lift $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
         lift $ AdminDB.is_minister stud
       return $ maybe False id auth
   | rolle == "direktor" = do
       auth <- runMaybeT $ do
-        mstud <- lift $ StudDB.get_snr (SNr authId)
+        mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
-        schulen <- lift $ DirektorDB.get_directed stud
+        schulen <- lift $ liftIO $ DirektorDB.get_directed stud
         (mschule,_,_,_,_,_) <- lift $ routeInformation route
         schule <- MaybeT $ return mschule
-        return $ elem (UNr schule) $ map Schule.unr schulen
+        return $ elem (UNr $ keyToInt schule) $ map Schule.unr schulen
       return $ maybe False id auth
   | rolle == "tutor" = do
       auth <- runMaybeT $ do
-        mstud <- lift $ StudDB.get_snr (SNr authId)
+        mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
-        vorlesungen <- lift $ TutorDB.get_tutored stud
+        vorlesungen <- lift $ liftIO $ TutorDB.get_tutored stud
         (_,_,mvorlesung,_,_,_) <- lift $ routeInformation route
         vorlesung <- MaybeT $ return mvorlesung
         return $ elem (VNr vorlesung) $ map Vorlesung.vnr vorlesungen
       return $ maybe False id auth
   | rolle == "jederTutor" = do
       auth <- runMaybeT $ do
-        mstud <- lift $ StudDB.get_snr (SNr authId)
+        mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
-        vorlesungen <- lift $ TutorDB.get_tutored stud
+        vorlesungen <- lift $ liftIO $ TutorDB.get_tutored stud
         (mschule,_,_,_,_,_) <- lift $ routeInformation route
         schule <- MaybeT $ return mschule
-        return $ elem (UNr schule) $ map Vorlesung.unr vorlesungen
+        return $ elem (UNr $ keyToInt schule) $ map Vorlesung.unr vorlesungen
       return $ maybe False id auth
   | otherwise =
       return $ False
@@ -310,7 +321,7 @@ data NavigationMenu = NavigationMenu AutotoolMessage [NavigationEntry]
 data NavigationEntry = Trennstrich | Titel Text | Link (Route Autotool) (Maybe AutotoolMessage)
 
 -- | Liefert das Navigationsmenü, die zu verwendenden Einträge sind in dieser Methode definiert.
-navigationMenu :: Maybe (Route Autotool) -> Maybe Int -> IO [NavigationMenu]
+navigationMenu :: Maybe (Route Autotool) -> Maybe Int -> Handler [NavigationMenu]
 navigationMenu mroute authId = do
   let schule s = [SchuleR s, DirektorenR s, DirektorErnennenR s, WaisenkinderR s, SemestersR s, SemesterAnlegenR s]
       schulen = [SchulenR, SchuleAnlegenR] -- ^ TODO ++ [Persönliche Daten, Highscore]
@@ -349,11 +360,11 @@ navigationMenu mroute authId = do
   gruppe' <- filterBerechtigte $ gruppe <$> grup
   aufgabe' <- filterBerechtigte $ aufgabe <$> aufg
   einsendung' <- filterBerechtigte $ einsendung <$> aufg <*> stud
-  schuName <- schuleName schu
-  semName <- semesterName sem
-  vorlName <- vorlesungName vorl
-  grupName <- gruppeName grup
-  aufgName <- aufgabeName aufg
+  schuName <- schuleName' schu
+  semName <- liftIO $ semesterName sem
+  vorlName <- liftIO $ vorlesungName vorl
+  grupName <- liftIO $ gruppeName grup
+  aufgName <- liftIO $ aufgabeName aufg
   return [NavigationMenu MsgSchule $ trennstrich (addTitel schuName $ map zuLink schule') $ map zuLink schulen'
          ,NavigationMenu MsgSemester $ addTitel semName $ map zuLink semester'
          ,NavigationMenu MsgVorlesung $ addTitel vorlName $ map zuLink vorlesung'
@@ -361,8 +372,12 @@ navigationMenu mroute authId = do
          ,NavigationMenu MsgAufgabe $ trennstrich (addTitel aufgName $ map zuLink aufgabe') $ trennstrich (map zuLink einsendung') $ map zuLink $ servers ++ server']
 
 -- | Liefert den Schulnamen zur Id der Schule
-schuleName :: Maybe SchuleId -> IO (Maybe Text)
-schuleName = getName UNr SchuleDB.get_unr Schule.name
+schuleName' :: Maybe SchuleId -> Handler (Maybe Text)
+schuleName' mschuleId = runMaybeT $ do
+  schuleId <- MaybeT . return $ mschuleId
+  mschule <- lift $ runDB $ get schuleId
+  schule <- MaybeT . return $ mschule
+  return $ schuleName schule
 
 -- | Liefert den Semesternamen zur Id des Semesters
 semesterName :: Maybe SemesterId -> IO (Maybe Text)
@@ -390,40 +405,40 @@ getName konstruktor dbFunktion nameFunktion mvId = runMaybeT $ do
   return $ pack sname
 
 -- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge, abhängig von der angegebenen Route. Maybe (Route Autotool), weil Nothing für den Fall einer fehlerhaften URL vorgesehen ist.
-routeBrotkrumen :: Maybe (Route Autotool) -> Maybe Int -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
+routeBrotkrumen :: Maybe (Route Autotool) -> Maybe Int -> Handler (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
 routeBrotkrumen Nothing _ = return (Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)
 routeBrotkrumen (Just route) _ = routeInformation route
 
 -- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge abhängig von der angegebenen Route und unabhängig von der Relevanz für den Nutzer. Dient als Hilfsfunktion für @routeBrotkrumen@.
-routeInformation :: Route Autotool -> IO (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
+routeInformation :: Route Autotool -> Handler (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
 routeInformation route = case routeParameter route of
    Nothing -> return $ fromTuple6 Tuple6_0
    Just parameter -> case parameter of
      SchuleRoute schule -> return $ fromTuple6 $ Tuple6_1 schule
      SemesterRoute semester -> do
-       schule <- getSchule $ Just semester
+       schule <- liftIO $ getSchule $ Just semester
        return $ fromTuple6 $ toTuple6 (schule, Just semester, Nothing, Nothing, Nothing, Nothing)
      VorlesungRoute vorlesung -> do
-       semester <- getSemester $ Just vorlesung
-       schule <- getSchule semester
+       semester <- liftIO $ getSemester $ Just vorlesung
+       schule <- liftIO $ getSchule semester
        return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, Nothing, Nothing, Nothing)
      GruppeRoute gruppe -> do
-       vorlesung <- getVorlesung $ Just gruppe
-       semester <- getSemester vorlesung
-       schule <- getSchule semester
+       vorlesung <- liftIO $ getVorlesung $ Just gruppe
+       semester <- liftIO $ getSemester vorlesung
+       schule <- liftIO $ getSchule semester
        return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just gruppe, Nothing, Nothing)
      AufgabeRoute aufgabe -> do
-       vorlesung <- getVorlesungAufgabe $ Just aufgabe
-       semester <- getSemester vorlesung
-       schule <- getSchule semester
+       vorlesung <- liftIO $ getVorlesungAufgabe $ Just aufgabe
+       semester <- liftIO $ getSemester vorlesung
+       schule <- liftIO $ getSchule semester
        case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
          (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Nothing)
          _ -> return $ fromTuple6 Tuple6_0
      ServerRoute _ -> return $ fromTuple6 Tuple6_0
      EinsendungRoute aufgabe student -> do
-       vorlesung <- getVorlesungAufgabe $ Just aufgabe
-       semester <- getSemester vorlesung
-       schule <- getSchule semester
+       vorlesung <- liftIO $ getVorlesungAufgabe $ Just aufgabe
+       semester <- liftIO $ getSemester vorlesung
+       schule <- liftIO $ getSchule semester
        case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
          (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Just student)
          _ -> return $ fromTuple6 Tuple6_0
@@ -447,7 +462,7 @@ getSchule msemester = runMaybeT $ do
   semester <- MaybeT $ return msemester
   semesters <- lift $ SemesterDB.get_this $ ENr semester
   UNr schuleId <- MaybeT $ return $ listToMaybe $ map Semester.unr semesters
-  return schuleId
+  return $ intToKey schuleId
 
 -- | Liefert ggf. das Semester zu einer Vorlesung
 getSemester :: Maybe VorlesungId -> IO (Maybe SemesterId)
