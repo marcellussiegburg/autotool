@@ -32,7 +32,7 @@ schuleForm :: Maybe Schule -> Form Schule
 schuleForm mschule =
   renderBootstrap3 BootstrapBasicForm $ Schule
     <$> areq textField (bfs MsgSchuleName) (schuleName <$> mschule)
-    <*> (maybe "" id <$> aopt textField (bfs MsgSchuleSuffix) (Just . schuleMailSuffix <$> mschule))
+    <*> aopt textField (bfs MsgSchuleSuffix) (schuleMailSuffix <$> mschule)
     <*> pure (maybe False schuleUseShibboleth mschule)
     <*> areq (selectField spracheOptionen) (bfs MsgSchuleSprache) (schulePreferredLanguage <$> mschule)
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgSchuleAnlegen (\ _ -> MsgSchuleBearbeiten) mschule) "btn-success" [])

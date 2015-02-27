@@ -6,10 +6,10 @@ import Prelude (Integer, div, fromInteger, toInteger, (^), (*), (.))
 import Data.Bool (Bool)
 import Data.Either (Either (Right))
 import Data.Fixed (Fixed (MkFixed))
-import Data.Function (($))
+import Data.Function (id, ($))
 import Data.Functor (fmap)
 import Data.Int (Int)
-import Data.Maybe (Maybe (Just, Nothing))
+import Data.Maybe (Maybe (Just, Nothing), maybe)
 import Data.Text (Text, unpack, pack)
 import Data.Text.Read (decimal, signed)
 import Data.Time (Day, TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime, timeToTimeOfDay, todHour, todMin, todSec, toGregorian, utctDay, utctDayTime)
@@ -48,7 +48,7 @@ entityToSchule key entity = Schule.Schule {
     Schule.unr = UNr $ keyToInt key,
     Schule.name = Name $ unpack $ schuleName entity,
     Schule.preferred_language = schulePreferredLanguage entity,
-    Schule.mail_suffix = Name $ unpack $ schuleMailSuffix entity,
+    Schule.mail_suffix = Name $ unpack $ maybe "" id $ schuleMailSuffix entity,
     Schule.use_shibboleth = schuleUseShibboleth entity
   }
 

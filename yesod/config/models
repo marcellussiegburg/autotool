@@ -1,6 +1,6 @@
 Schule sql=schule
-  Id                         sql=UNr
-  name              Text     sql=Name
-  mailSuffix        Text     sql=Mail_Suffix
-  useShibboleth     Bool     sql=Use_Shibboleth
-  preferredLanguage Language sql=Preferred_Language
+  Id                           sql=UNr
+  name              Text       sql=Name
+  mailSuffix        Text Maybe sql=Mail_Suffix
+  useShibboleth     Bool       sql=Use_Shibboleth
+  preferredLanguage Language   sql=Preferred_Language

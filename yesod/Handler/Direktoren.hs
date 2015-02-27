@@ -3,8 +3,6 @@ module Handler.Direktoren where
 import Import
 import Handler.DirektorErnennen (StudentenSeite (..), rolleSetzenListe)
 import qualified Control.Direktor.DB as DirektorDB
-import qualified Control.Schule.DB as SchuleDB
-import Control.Types
 
 getDirektorenR :: SchuleId -> Handler Html
 getDirektorenR = postDirektorenR
