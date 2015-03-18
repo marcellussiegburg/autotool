@@ -1,8 +1,8 @@
 module Handler.Aufgabe.Forms (Aktion (Anlegen, Bearbeiten, Entfernen), AufgabeForm (ServerForm, AufgabeTypForm, AufgabeForm, VorlagenForm, KonfigurationForm, HochladenForm, TestenForm), aktionName, getId, getTitel, getUnsafePostParams, readAktion, serverForm, typForm, aufgabeForm, vorlagenForm, konfigurationForm, hochladenForm, testenForm) where
 
 import Import
-import qualified Handler.Aufgabe as A
-import qualified Handler.AufgabeEinstellungen as E (aufgabeForm)
+import qualified Handler.EinsendungAnlegen as E
+import qualified Handler.AufgabeEinstellungen as A (aufgabeForm)
 import Handler.AufgabeEinstellungen (AufgabeFormDaten)
 import qualified Handler.AufgabeKonfiguration as K (konfigurationForm)
 import Handler.AufgabeVorlagen (getVorlagen)
@@ -66,7 +66,7 @@ testenForm atyp msigned server typ vorlage konfiguration einstellungen mlösung 
      <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
      <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
      <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
-     <*> A.aufgabeEinsendenForm (A.checkEinsendung server signed) atyp mlösung
+     <*> E.aufgabeEinsendenForm (E.checkEinsendung server signed) atyp mlösung
 
 hochladenForm :: ServerUrl -> AufgabeTyp -> Maybe VorlageName -> AufgabeKonfiguration -> AufgabeFormDaten -> Form (ServerUrl, AufgabeTyp, Maybe VorlageName, AufgabeKonfiguration, AufgabeFormDaten, FileInfo)
 hochladenForm server typ vorlage konfiguration einstellungen =
@@ -76,7 +76,7 @@ hochladenForm server typ vorlage konfiguration einstellungen =
   <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
   <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
   <*> areq hiddenField (bfs $ pack $ show einstellungen) {fsName = Just $ getId AufgabeForm} (Just einstellungen)
-  <*> A.einsendungHochladenForm
+  <*> E.einsendungHochladenForm
 
 konfigurationForm :: ToMarkup t => t -> ServerUrl -> AufgabeTyp -> Maybe VorlageName -> Maybe AufgabeKonfiguration -> Form (ServerUrl, AufgabeTyp, Maybe VorlageName, AufgabeKonfiguration)
 konfigurationForm ktyp server typ vorlage mkonfiguration =
@@ -110,7 +110,7 @@ aufgabeForm eid server typ vorlage konfiguration maufgabe =
      <*> areq hiddenField (bfs $ typ) {fsName = Just $ getId AufgabeTypForm} (Just typ)
      <*> areq hiddenField (bfs $ pack $ show vorlage) {fsName = Just $ getId VorlagenForm} (Just vorlage)
      <*> areq hiddenField (bfs $ konfiguration) {fsName = Just $ getId KonfigurationForm} (Just konfiguration)
-     <*> E.aufgabeForm typ maufgabe
+     <*> A.aufgabeForm typ maufgabe
      <* bootstrapSubmit (BootstrapSubmit (either (const MsgAufgabeAnlegen) (const MsgAufgabeBearbeiten) eid) "btn-success" $ aktion $ either (const Anlegen) (const Bearbeiten) eid)
      <* either (\_ -> pure ()) (\_ -> bootstrapSubmit (BootstrapSubmit MsgLöschen "btn-danger" $ aktion Entfernen)) eid
 

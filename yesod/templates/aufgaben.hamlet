@@ -6,18 +6,12 @@ $else
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
-        <th>
-          _{MsgAufgabeName}
-        <th>
-          _{MsgAufgabeStatus}
-        <th>
-          _{MsgAufgabeHighscore}
-        <th>
-          _{MsgAufgabeBearbeitungszeit}
-        <th>
-          _{MsgAufgabeBewertungVorher}
-        <th colspan=2>
-          _{MsgAufgabeGesamtwertung}
+        <th>_{MsgAufgabeName}
+        <th>_{MsgAufgabeStatus}
+        <th>_{MsgAufgabeHighscore}
+        <th>_{MsgAufgabeBearbeitungszeit}
+        <th>_{MsgAufgabeBewertungVorher}
+        <th colspan=2>_{MsgAufgabeGesamtwertung}
         $if istEingeschrieben
           <th colspan=2>
         $if istTutor
@@ -75,7 +69,7 @@ $else
             <td>
               $case Aufgabe.timeStatus aufgabe
                 $of Current
-                  <a href=@{AufgabeR $ getAufgabe aufgabe} .btn .btn-success .btn-block role="button">_{MsgLösen}
+                  <a href=@{EinsendungAnlegenR $ getAufgabe aufgabe} .btn .btn-success .btn-block role="button">_{MsgLösen}
                 $of Late
                   <a href=@{AufgabeTestenR (pack $ toString $ Aufgabe.server aufgabe) (pack $ toString $ Aufgabe.typ aufgabe) (pack $ toString $ Aufgabe.config aufgabe) (pack mnr)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
                 $of Early
@@ -88,7 +82,7 @@ $else
                 $of Early
           $if istTutor
             <td>
-              <a href=@{AufgabeBearbeitenR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
+              <a href=@{AufgabeR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
             <td>
               <a href=@{StatistikR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgStatistikAnzeigen}
 <nav>
@@ -96,10 +90,10 @@ $else
     $if disp == fromList [Current]
       <li .previous>
         <a href=@{AufgabenR vorlesung}>
-          <span aria-hidden="true">&larr;&nbsp;
-          _{MsgAufgabenAlle}
+          <span aria-hidden="true">&larr;
+          \ _{MsgAufgabenAlle}
     $else
       <li .next>
         <a href=@{AufgabenAktuellR vorlesung}>
-          _{MsgAufgabenAktuell}
-          <span aria-hidden="true">&nbsp;&rarr;
+          _{MsgAufgabenAktuell} #
+          <span aria-hidden="true">&rarr;

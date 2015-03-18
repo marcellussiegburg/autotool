@@ -1,7 +1,7 @@
 module Handler.Statistik where
 
 import Import
-import Handler.Aufgabe (getDefaultParam)
+import Handler.EinsendungAnlegen (getDefaultParam)
 
 import qualified Control.Aufgabe.Typ as Aufgabe
 import qualified Control.Aufgabe.DB as AufgabeDB

@@ -2,7 +2,7 @@ module Handler.AufgabeTesten where
 
 import Import
 
-import Handler.Aufgabe (aufgabeEinsendenForm, checkEinsendung, eingeben, einsendungHochladenForm, getAufgabeInstanz, getBewertung, getCrc, hochladen)
+import Handler.EinsendungAnlegen (aufgabeEinsendenForm, checkEinsendung, eingeben, einsendungHochladenForm, getAufgabeInstanz, getBewertung, getCrc, hochladen)
 import Handler.AufgabeKonfiguration (checkKonfiguration)
 import Control.Types (VNr (VNr), MNr (MNr))
 

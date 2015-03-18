@@ -28,8 +28,8 @@
 /vorlesung/#VorlesungId/aufgaben          AufgabenR             GET              !tutor !einschreibung
 /vorlesung/#VorlesungId/aufgaben/aktuell  AufgabenAktuellR      GET              !tutor !einschreibung
 /gruppe/#GruppeId                         GruppeR               GET    POST      !tutor
-/aufgabe/#AufgabeId                       AufgabeBearbeitenR    GET    POST      !tutor
-/aufgabe/#AufgabeId/einsendung            AufgabeR              GET    POST      !einschreibung
+/aufgabe/#AufgabeId                       AufgabeR              GET    POST      !tutor
+/aufgabe/#AufgabeId/einsendung            EinsendungAnlegenR    GET    POST      !einschreibung
 /aufgabe/#AufgabeId/statistik             StatistikR            GET    POST      !tutor
 /einsendung/#AufgabeId/#StudentId         EinsendungR           GET    POST      !tutor !studentEigene
 

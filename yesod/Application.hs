@@ -27,7 +27,6 @@ import Yesod.Auth (getAuth)
 import Handler.Home
 import Handler.Aufgabe
 import Handler.AufgabeAnlegen
-import Handler.AufgabeBearbeiten
 import Handler.AufgabeBenutzerId
 import Handler.AufgabeBenutzerIdZufall
 import Handler.AufgabeKonfiguration
@@ -39,6 +38,7 @@ import Handler.AufgabeVorlagen
 import Handler.Direktoren
 import Handler.DirektorErnennen
 import Handler.Einsendung
+import Handler.EinsendungAnlegen
 import Handler.Gruppe
 import Handler.GruppeAnlegen
 import Handler.Gruppen

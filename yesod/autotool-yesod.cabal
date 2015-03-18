@@ -19,12 +19,11 @@ library
                      Settings.StaticFiles
                      Settings.Development
                      Model
-                     Derived
+                     Derive
                      Handler.Home
                      Handler.Aufgabe
                      Handler.Aufgabe.Forms
                      Handler.AufgabeAnlegen
-                     Handler.AufgabeBearbeiten
                      Handler.AufgabeBenutzerId
                      Handler.AufgabeBenutzerIdZufall
                      Handler.AufgabeEinstellungen
@@ -37,6 +36,7 @@ library
                      Handler.Direktoren
                      Handler.DirektorErnennen
                      Handler.Einsendung
+                     Handler.EinsendungAnlegen
                      Handler.Gruppe
                      Handler.GruppeAnlegen
                      Handler.Gruppen

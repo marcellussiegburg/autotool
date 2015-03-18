@@ -328,7 +328,7 @@ navigationMenu mroute authId = do
       semester s = [SemesterR s, VorlesungenR s, VorlesungAnlegenR s]
       vorlesung v = [VorlesungR v, TutorenR v, TutorErnennenR v, StudentenR v, ResultateR v, ResultatePflichtR v, GruppenR v, GruppeAnlegenR v, AufgabenR v, AufgabenAktuellR v, AufgabeAnlegenR v]
       gruppe g = [GruppeR g]
-      aufgabe a = [AufgabeBearbeitenR a, AufgabeR a, StatistikR a]
+      aufgabe a = [AufgabeR a, EinsendungAnlegenR a, StatistikR a]
       einsendung a s = [EinsendungR a s]
       servers = [ServersR]
       server s t v k i = concat $ map maybeToList
@@ -537,8 +537,8 @@ routeParameter route = case route of
   AufgabenR v                    -> Just $ VorlesungRoute v
   AufgabenAktuellR v             -> Just $ VorlesungRoute v
   GruppeR g                      -> Just $ GruppeRoute g
-  AufgabeBearbeitenR a           -> Just $ AufgabeRoute a
   AufgabeR a                     -> Just $ AufgabeRoute a
+  EinsendungAnlegenR a           -> Just $ AufgabeRoute a
   StatistikR a                   -> Just $ AufgabeRoute a
   EinsendungR a s                -> Just $ EinsendungRoute a s
   ServersR                       -> Nothing
@@ -583,8 +583,8 @@ routeLinkTitel route = case route of
   AufgabenR _                    -> Just MsgAufgaben
   AufgabenAktuellR _             -> Just MsgAufgabenAktuell
   GruppeR _                      -> Just MsgBearbeiten
-  AufgabeBearbeitenR _           -> Just MsgBearbeiten
-  AufgabeR _                     -> Just MsgLösen
+  AufgabeR _                     -> Just MsgBearbeiten
+  EinsendungAnlegenR _           -> Just MsgLösen
   StatistikR _                   -> Just MsgStatistikAnzeigen
   EinsendungR _ _                -> Just MsgEinsendungAnzeigen
   ServersR                       -> Just MsgServers
@@ -629,14 +629,14 @@ routeTitel route = case route of
   AufgabeAnlegenR _              -> return $ Just MsgAufgabeAnlegen
   AufgabenR _                    -> return $ Just MsgAufgabenAlle
   AufgabenAktuellR _             -> return $ Just MsgAufgabenAktuell
-  AufgabeBearbeitenR _           -> return $ Just MsgAufgabeBearbeiten
-  AufgabeR a                     -> do
+  AufgabeR _                     -> return $ Just MsgAufgabeBearbeiten
+  StatistikR _                   -> return $ Just MsgStatistik
+  EinsendungR _ _                -> return $ Just MsgEinsendung
+  EinsendungAnlegenR a           -> do
     maufgabe <- lift $ liftM listToMaybe $ AufgabeDB.get_this $ ANr a
     case maufgabe of
       Just aufgabe -> return $ Just $ MsgAufgabeXLösen $ pack $ toString $ Aufgabe.name aufgabe
       Nothing -> notFound
-  StatistikR _                   -> return $ Just MsgStatistik
-  EinsendungR _ _                -> return $ Just MsgEinsendung
   ServersR                       -> return $ Just MsgServers
   ServerR _                      -> return $ Just MsgAufgabeTyp
   AufgabeVorlagenR _ _           -> return $ Just MsgAufgabeVorlagen

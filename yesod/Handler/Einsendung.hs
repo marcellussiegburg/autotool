@@ -1,7 +1,7 @@
 module Handler.Einsendung where
 
 import Import
-import Handler.Aufgabe (getAufgabeInstanz, getCrc, getDefaultParam)
+import Handler.EinsendungAnlegen (getAufgabeInstanz, getCrc, getDefaultParam)
 import Handler.AufgabeKonfiguration (checkKonfiguration)
 import Handler.Statistik (tdRadioField)
 

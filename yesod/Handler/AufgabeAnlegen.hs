@@ -9,7 +9,7 @@ import Handler.Aufgabe.Forms
 import qualified Handler.AufgabeEinstellungen as AE (AufgabeFormDaten (..), aufgabeToFormDaten, formDatenToHiLo, formDatenToStatus)
 import Handler.AufgabeVorlage (getVorlageKonfiguration)
 import Handler.AufgabeKonfiguration (checkKonfiguration, getBeispielKonfiguration, getKonfigurationFehler)
-import Handler.Aufgabe (getAufgabeInstanz, getBewertung, getCrc)
+import Handler.EinsendungAnlegen (getAufgabeInstanz, getBewertung, getCrc)
 
 import qualified Control.Aufgabe.DB as AufgabeDB
 import qualified Control.Aufgabe.Typ as A (Aufgabe (..))
@@ -61,7 +61,7 @@ aufgabeTemplate eidAufgabe = do
         let aufgabe'' = aufgabe' { A.vnr = VNr vorlesungId }
         lift $ lift $ AufgabeDB.put Nothing aufgabe''
         lift $ setMessageI MsgAufgabeAngelegt
-        redirect $ AufgabenR vorlesungId -- ^ TODO: redirect $ AufgabeBearbeitenR aufgabeId
+        redirect $ AufgabenR vorlesungId -- ^ TODO: redirect $ AufgabeR aufgabeId
       Bearbeiten -> do
         aufgabe <- MaybeT . return $ rightToMaybe eidAufgabe
         aufgabe' <- MaybeT . return $ aufgabeBearbeiten results (fromCGI . signature <$> msignedK) $ Just aufgabe
@@ -122,7 +122,7 @@ getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung
   let ziel = case eidAufgabe of
         Left gruppe -> AufgabeAnlegenR gruppe
         Right aufgabe -> let ANr aufgabeId = A.anr aufgabe
-                         in AufgabeBearbeitenR aufgabeId
+                         in AufgabeR aufgabeId
       firstJust a b = maybe b Just a
       getServerForm ms = getForm ServerForm ziel [] $ serverForm ms
       getTypForm s mt = getForm AufgabeTypForm ziel [] $ typForm aufgabenTypen s mt
