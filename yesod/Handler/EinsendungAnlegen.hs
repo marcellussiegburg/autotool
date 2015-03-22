@@ -102,7 +102,7 @@ postEinsendungAnlegenR aufgabeId = do
   mvorlageForm <- liftM Just $ generateFormPost $ identifyForm (pack $ show aktion) $ renderBootstrap3 BootstrapBasicForm vorlageForm
   mlog <- logSchreiben mstudent aufgabe aufgabenstellung mbewertung' mfile
   defaultLayout $ do
-    $(widgetFile "aufgabe")
+    $(widgetFile "einsendungAnlegen")
 
 einsendungHochladenForm :: AForm Handler FileInfo
 einsendungHochladenForm =

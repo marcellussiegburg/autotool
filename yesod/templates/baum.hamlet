@@ -1,15 +1,16 @@
+$newline never
 $if null (subForest baum)
   <li>
     <a href=@{AufgabeVorlagenR server (rootLabel baum)}>
       <label>
         <i .glyphicon .glyphicon-leaf>
-        &nbsp;#{rootLabel baum}
+        \ #{rootLabel baum}
 $else
   <li>
     <input type="checkbox" id=#{inputId}>
     <label for=#{inputId}>
       <i .glyphicon .glyphicon-folder-open>
-      &nbsp;#{rootLabel baum}
+      \ #{rootLabel baum}
     <ul>
       $forall unterbaum' <- subForest baum
         ^{unterbaum server unterbaum' mName}

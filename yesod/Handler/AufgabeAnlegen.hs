@@ -161,18 +161,18 @@ getFormResults eidAufgabe = do
     return $ do {_ <- a; _ <- b; _ <- c; _ <- d; _ <- e; f}
   let (mserver', mtyp', mvorlage', mkonfiguration', meinstellungen', mtesten) = fromTuple6 $ either id id eingaben
       (mserver'', mtyp'', mvorlage'', mkonfiguration'', meinstellungen'', mhochladen) = fromTuple6 $ either id id hochladen
-  return $ case eidAufgabe of
-    Right aufgabe ->
-      (Just . pack . toString . A.server $ aufgabe,
-       Just . pack . toString . A.typ $ aufgabe,
-       Just . Just . pack . toString . A.name $ aufgabe,
-       Just . pack . toString . A.config $ aufgabe,
-       Just $ AE.aufgabeToFormDaten aufgabe,
-       mtesten,
-       mhochladen)
-    Left _ -> case mserver'' of
-      Nothing -> (mserver', mtyp', mvorlage', mkonfiguration', meinstellungen', mtesten, mhochladen)
-      Just _ -> (mserver'', mtyp'', mvorlage'', mkonfiguration'', meinstellungen'', mtesten, mhochladen)
+      (mserver, mtyp, mvorlage, mkonfiguration, meinstellungen) = case mserver'' of
+        Nothing -> (mserver', mtyp', mvorlage', mkonfiguration', meinstellungen')
+        Just _ -> (mserver'', mtyp'', mvorlage'', mkonfiguration'', meinstellungen'')
+      firstJust a b = maybe b Just a
+      maufgabe = either (const Nothing) Just eidAufgabe
+  return (firstJust mserver $ pack . toString . A.server <$> maufgabe,
+          firstJust mtyp $ pack . toString . A.typ <$> maufgabe,
+          firstJust mvorlage $ Just . pack . toString . A.name <$> maufgabe,
+          firstJust mkonfiguration $ pack . toString . A.config <$> maufgabe,
+          firstJust meinstellungen $ AE.aufgabeToFormDaten <$> maufgabe,
+          mtesten,
+          mhochladen)
 
 auswertenTyped ::
   (MonadHandler m, RenderMessage (HandlerSite m) FormMessage, a ~ ServerUrl, b ~ AufgabeTyp, c ~ (Maybe VorlageName),
@@ -216,6 +216,7 @@ tabWidget forms names = do
   let nameUndTitel ::  AutotoolForm -> (Text, AutotoolMessage)
       nameUndTitel a = (name a, titel a)
   [whamlet|
+  $newline never
   $if null forms
     <ul .nav .nav-tabs>
       $forall name' <- names

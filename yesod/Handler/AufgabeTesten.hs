@@ -32,4 +32,4 @@ postAufgabeTestenR server typ konfiguration benutzerId = do
       eingebenForm = formToWidget zielAdresse $ Just eingeben
   mbewertung <- liftM (fmap snd) $ getBewertung server signed' mfile
   defaultLayout $ do
-    $(widgetFile "aufgabe")
+    $(widgetFile "einsendungAnlegen")
