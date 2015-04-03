@@ -59,8 +59,8 @@ Library
         -- QuickCheck < 2.6,
         QuickCheck,
         hspec, hspec-smallcheck, hspec-core,
-        mueval>=0.8.1.1, hint, 
-        haskell-src-exts==1.15.*, 
+        mueval, hint, 
+        haskell-src-exts, 
         syb,
         -- comes with ghc:
         transformers==0.3.*,

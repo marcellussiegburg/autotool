@@ -35,7 +35,7 @@ import qualified Control.Exception
 import Control.Monad.IO.Class
 import Test.SmallCheck
 import System.IO.Temp
-import System.IO.UTF8
+-- import System.IO.UTF8
 import System.Random ( randomRIO )
 import qualified System.IO.Strict
 import qualified System.IO
@@ -119,7 +119,7 @@ run_total i b =
             let f = d ++ "/" ++ "Blueprint.hs"
             debug $ unwords 
                   [ "Blueprint tmpfile is", f ]
-            System.IO.UTF8.writeFile f b 
+            System.IO.writeFile f b 
 
             keepCurrentDir $ do
                 System.Directory.setCurrentDirectory d

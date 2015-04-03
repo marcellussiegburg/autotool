@@ -69,7 +69,7 @@ test m1' m2' = let
 
     -- check whether given declaration binds the function 'name'.
     matchBind :: Name -> Decl -> Bool
-    matchBind name (PatBind _ (PVar name') _ _ _) = name == name'
+    matchBind name (PatBind _ (PVar name') _ _) = name == name'
     matchBind name (FunBind xs) =
         and [name == name' | Match _ name' _ _ _ _ <- xs]
     matchBind _ _ = False
@@ -80,7 +80,7 @@ test m1' m2' = let
         go (d1 : ds1) (d2 : ds2) = case d1 of
             -- allow replacing  foo = undefined  by one or more
             -- bindings of  foo.
-            PatBind _ (PVar name) _ (UnGuardedRhs u) (BDecls [])
+            PatBind _ (PVar name) (UnGuardedRhs u) (BDecls [])
                 | matchUndef (Just u) && matchBind name d2
                 -> go ds1 (dropWhile (matchBind name) ds2)
             _ -> match d1 d2 >> go ds1 ds2
