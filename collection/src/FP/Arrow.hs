@@ -1,4 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE PatternSignatures #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module FP.Arrow 
 
@@ -49,7 +51,7 @@ parse_arrow vars = do
 
 arrow vars = do 
         let parrow = do string "->" ; my_whiteSpace
-        xs <- Autolib.Reader.sepBy1 ( atomic vars ) parrow
+        xs :: [ Term Identifier Identifier ] <- Autolib.Reader.sepBy1 ( atomic vars ) parrow
         let barrow from to = Node ( mkunary "Arrow" ) [ from, to ]
 	return $ foldr barrow ( last xs ) ( init xs )
 
@@ -82,6 +84,7 @@ basic vars = tuple vars
 name = checked_name Nothing
 bounded_name vars = checked_name ( Just vars )
 
+checked_name :: Maybe [Identifier] -> Parser Identifier
 checked_name mvars = do
     c <- letter
     cs <- many alphaNum

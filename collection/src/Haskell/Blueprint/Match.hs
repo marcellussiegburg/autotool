@@ -40,6 +40,9 @@ instance MonadPlus M where
             Continue -> runM b
             _ -> return a'
 
+instance Alternative M where
+  (<|>) = mplus
+  empty = mzero
 
 
 -- | test whether m1 is a suitable blueprint for module 2

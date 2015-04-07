@@ -52,7 +52,6 @@ Library
         array,
         pretty,
         utf8-string,
-        strict-io, 
         temporary,
         smallcheck, 
         -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
@@ -63,8 +62,8 @@ Library
         haskell-src-exts, 
         syb,
         -- comes with ghc:
-        transformers==0.3.*,
-        logict>=0.6.0.2,
+        transformers,
+        logict,
         lens,
         hashable,
         stm,

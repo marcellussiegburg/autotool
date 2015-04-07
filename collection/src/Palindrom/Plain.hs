@@ -1,7 +1,5 @@
 module Palindrom.Plain where
 
---  $Id$
-
 import Inter.Types
 import Inter.Quiz
 import Autolib.ToDoc
@@ -44,7 +42,7 @@ instance C.Partial Palindrom Int Integer where
 
 instance C.Measure Palindrom Int Integer where
     measure Palindrom e x = 
-        fromIntegral $ sum $ map ( read . return ) $ show x
+        sum $ map ( read . return ) $ show x
 
 ispali :: Integer -> Bool
 ispali x = let cs = show x 

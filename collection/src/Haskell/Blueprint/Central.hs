@@ -37,7 +37,7 @@ import Test.SmallCheck
 import System.IO.Temp
 -- import System.IO.UTF8
 import System.Random ( randomRIO )
-import qualified System.IO.Strict
+-- import qualified System.IO.Strict
 import qualified System.IO
 import qualified System.Directory
 import qualified System.Posix.Directory as SPD
