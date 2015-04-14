@@ -1,3 +1,8 @@
+{-# language MultiParamTypeClasses #-}
+{-# language FunctionalDependencies #-}
+{-# language FlexibleInstances #-}
+{-# language UndecidableInstances #-}
+
 module Machine.Class where
 
 import Autolib.Set

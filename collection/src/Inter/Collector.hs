@@ -165,8 +165,9 @@ import qualified Binpack.Interface
 import qualified Binpack.FFD
 import qualified KnapsackFraction.Central
 
-import qualified RM.Make
+-- import qualified RM.Make
 import qualified RAM.Make
+import qualified Goto.Make
 
 import qualified Program.General.Central
 import qualified Program.Array.Instance
@@ -441,8 +442,11 @@ tmakers =
 		    [ item Fun.Make.make
 		    , item Fun.Quiz.make
 		    ]
-                , item RAM.Make.make
-                , item RM.Make.make
+                , heading "Goto-Programme" [ item Goto.Make.make ]
+                , heading "While/Loop-Programme" [ item RAM.Make.make ]
+
+                -- , item RM.Make.make
+                  
                 , item Brainfuck.Make.computer
                 , heading "Peano-Zahlen und Folds"
                     [ item Peano.Make.make

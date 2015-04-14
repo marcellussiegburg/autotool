@@ -1,4 +1,6 @@
 {-# language OverlappingInstances #-}
+{-# language FlexibleInstances #-}
+{-# language UndecidableInstances #-}
 
 module Arithmetic.Op 
 
@@ -6,8 +8,6 @@ module Arithmetic.Op
 )
 
 where
-
---  $Id$
 
 import Expression.Op
 
