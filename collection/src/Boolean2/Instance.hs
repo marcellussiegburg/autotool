@@ -1,4 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# language DeriveDataTypeable #-}
+{-# language TypeSynonymInstances #-}
+{-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
 
 module Boolean2.Instance where
 
@@ -132,6 +136,7 @@ check b c = case c of
             inform $ text "prüfe erstes Argument für ite"
             subcheck_for First "ite" [] b
             
+subcheck :: Ops a => String -> [String] -> Exp a -> Reporter ()
 subcheck = subcheck_for All            
             
 data Positions = First | All
