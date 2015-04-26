@@ -521,6 +521,7 @@ Library
                  While.State,
                  While.Check,
                  While.Memory,
+                 Fractran.Machine,
                  Hanoi.Type,
                  Hanoi.Semantik,
                  Hanoi.Config,
