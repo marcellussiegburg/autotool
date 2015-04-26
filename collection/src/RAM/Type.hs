@@ -1,8 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module RAM.Type where
-
---   $Id$
 
 import RAM.Builtin
 
@@ -26,7 +27,9 @@ data Statement = Inc Var
 	 | Dec Var
 	 | Loop Var Program
 	 | While Var Program
-	 | Builtin { name :: Builtin, res :: Var, args :: [ Var ] }
+         | Assign Var Builtin [Var] -- ^ recommended
+
+	 | Builtin { name :: Builtin, res :: Var, args :: [ Var ] } -- ^ deprecated
     deriving ( Eq, Ord, Typeable )
 
 type Program = [ Statement ]
@@ -47,8 +50,5 @@ flatten ps = do
 
 $(derives [makeReader, makeToDoc] [''Statement])
 
--- Local variables:
--- mode: haskell;
--- end:
 
 

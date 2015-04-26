@@ -168,6 +168,7 @@ import qualified KnapsackFraction.Central
 -- import qualified RM.Make
 import qualified RAM.Make
 import qualified Goto.Make
+import qualified While.Make
 
 import qualified Program.General.Central
 import qualified Program.Array.Instance
@@ -442,8 +443,13 @@ tmakers =
 		    [ item Fun.Make.make
 		    , item Fun.Quiz.make
 		    ]
-                , heading "Goto-Programme" [ item Goto.Make.make ]
-                , heading "While/Loop-Programme" [ item RAM.Make.make ]
+                , heading "Goto-Programme"
+                    [ item Goto.Make.make
+                    ]
+                , heading "While/Loop-Programme"
+                  [ item While.Make.make 
+                  , item RAM.Make.make
+                  ]
 
                 -- , item RM.Make.make
                   

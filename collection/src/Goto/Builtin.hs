@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
--- | Eingebaute Standard Funktionen
-module RAM.Builtin 
+dontuse module Goto.Builtin 
 
 ( Table, Entry, Builtin (..)
 , table, get

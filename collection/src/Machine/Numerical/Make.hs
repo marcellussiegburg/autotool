@@ -1,3 +1,7 @@
+{-# language RankNTypes #-}
+{-# language ScopedTypeVariables #-}
+{-# language FlexibleContexts #-}
+
 module Machine.Numerical.Make where
 
 import Inter.Types
@@ -34,15 +38,15 @@ make ( defcon :: Con.Config c m ) =
     let t = "Machine.Numerical" ++ "." ++ Con.name defcon
     in Make N.Computer t
             ( \ ( conf :: Con.Config c m ) ->  Var 
-	          { problem = N.Computer
-		  , tag = t
-		  , key = \ matrikel -> return matrikel
+                  { problem = N.Computer
+                  , tag = t
+                  , key = \ matrikel -> return matrikel
                   -- , gen = \ _vnr _manr key _cache -> fnum conf key 
                   , generate = \ salt cachefun -> fnum conf salt -- FIXME: cachefun ?
-		  }
-	    )
-	    ( \ _con -> return () ) -- verify
-	    defcon
+                  }
+            )
+            ( \ _con -> return () ) -- verify
+            defcon
 
 
 fnum ::  ( Show c , Con.Check c m , Con.ConfigC c m , Machine m dat conf )
@@ -55,16 +59,16 @@ fnum conf key = do
     let xs = map M.Var [ 1 .. fromIntegral $ Con.arity conf ]
     return $ return $ N.Make { N.op = Con.op conf
               , N.key = fromIntegral key
-	      , N.fun_info = fsep 
-		     [ text "\\" , toDoc xs , text "->", toDoc $ Con.op conf ]
-	      , N.extra_info = vcat $
-		(text "Die Maschine soll die folgenden Bedingungen erfüllen:") 
-		 : 
-		(do c <- map show ( Con.checks conf) ++ Con.conditions conf
-		    return $ nest 4 $ text $ "* " ++ c
-		)
-	      , N.args = xss
-	    , N.cut = Con.cut conf
-	    , N.checks = Con.checks conf
-	    , N.start = Con.start conf
-	      }
+              , N.fun_info = fsep 
+                     [ text "\\" , toDoc xs , text "->", toDoc $ Con.op conf ]
+              , N.extra_info = vcat $
+                (text "Die Maschine soll die folgenden Bedingungen erfüllen:") 
+                 : 
+                (do c <- map show ( Con.checks conf) ++ Con.conditions conf
+                    return $ nest 4 $ text $ "* " ++ c
+                )
+              , N.args = xss
+            , N.cut = Con.cut conf
+            , N.checks = Con.checks conf
+            , N.start = Con.start conf
+              }

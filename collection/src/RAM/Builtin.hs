@@ -1,7 +1,6 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
 
--- | Eingebaute Standard Funktionen
+-- | Eingebaute Standard-Funktionen
 module RAM.Builtin 
 
 ( Table, Entry, Builtin (..)
