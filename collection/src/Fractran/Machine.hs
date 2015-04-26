@@ -41,7 +41,13 @@ data State = State
   , past :: [ State ]
   } deriving (Eq, Ord, Typeable)
 
-$(derives [makeToDoc] [''State])
+
+instance ToDoc State where
+  toDoc s = named_dutch_record (text "State")
+            [ text "schritt" <+> equals <+> toDoc (schritt s)
+            , text "memory" <+> equals <+> toDoc (memory s)
+            ]
+
 
 instance Size Rational where size _  = 1
 
