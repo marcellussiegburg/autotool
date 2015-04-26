@@ -39,7 +39,7 @@ data State = State
   { schritt :: Int
   , memory :: Memory
   , past :: [ State ]
-  } deriving (Eq, Ord)
+  } deriving (Eq, Ord, Typeable)
 
 $(derives [makeToDoc] [''State])
 
