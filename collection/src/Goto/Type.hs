@@ -28,9 +28,20 @@ data Statement
 
 type Program = [ Statement ]
 
+example =
+  [ GotoZ 1 4 , Inc 0 , Dec 1 , Goto 0 , Stop ]
+
 instance Size Program where 
     size = fromIntegral . length
 
+free_register :: Program -> Register
+free_register p = maximum $ 0 : map succ ( do
+  s <- p
+  case s of
+    Inc r -> [r] ; Dec r -> [r]
+    Assign res fin args -> res : args
+    GotoZ r _ -> [r]
+    _ -> [] )
 
 $(derives [makeReader, makeToDoc] [''Statement])
 
