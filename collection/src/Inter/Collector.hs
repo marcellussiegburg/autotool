@@ -169,6 +169,7 @@ import qualified KnapsackFraction.Central
 import qualified RAM.Make
 import qualified Goto.Make
 import qualified While.Make
+import qualified Markov.Make
 import qualified Fractran.Machine
 
 import qualified Program.General.Central
@@ -451,6 +452,9 @@ tmakers =
                   [ item While.Make.make 
                   , item RAM.Make.make
                   ]
+                , heading "Markov-Algorithmen"
+                    [ item Markov.Make.make
+                    ]
                 , heading "Fractran-Programme"
                     [ item Fractran.Machine.make
                     ]
