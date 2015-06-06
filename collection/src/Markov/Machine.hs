@@ -46,11 +46,12 @@ successors (Program rules) s = take 1 $ do
   guard $ mid == l
   return $ State { step = succ $ step s
                  , tape = Tape $ pre ++ r ++ post
+                 , earlier_info = s : earlier_info s
                  }
 
 instance In Program Tape State where
     input_reporter p s = do
-        return $ State { step = 0, tape = s }
+        return $ State { step = 0, tape = s, history = [] }
 instance Out Program Tape State where
     output_reporter p s = do
       let t = tape s
