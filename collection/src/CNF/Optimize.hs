@@ -64,8 +64,13 @@ instance Partial CNF_Optimize (F, Int) F where
 
     total _ (f,k) g = do
         inform $ text "prüfe konjunktive Normalform"
-        I.subcheck "&&" [ "&&", "||", "!" ] g
-        I.subcheck "||" [ "||", "!" ] g
+        let wrong = S.filter ( \ o -> not $ name o `elem` [ "&&", "||", "not" ] ) $ syms g
+        when (not $ S.null wrong) $ reject $ vcat
+          [ text "diese Operatoren sind nicht zugelassen:"
+          , nest 4 $ toDoc wrong
+          ]
+        I.subcheck "&&" [ "&&", "||", "not" ] g
+        I.subcheck "||" [ "||", "not" ] g
         I.subcheck "!"  [] g
 
         inform $ text "size(G)" <+> equals <+> toDoc (size g)
