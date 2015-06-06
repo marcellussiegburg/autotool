@@ -16,18 +16,19 @@ import Autolib.ToDoc
 import Autolib.Reporter
 import Autolib.Util.Splits
 import Data.List ( partition )
+import Data.Typeable
 
 import Numeric
 import Data.Char
 
 newtype Tape = Tape { unTape :: String }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Typeable)
 
 instance ToDoc Tape where toDoc t = toDoc $ unTape t
 
 data State =
   State { step :: Int, tape :: Tape, earlier_info :: [ State ] }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Typeable)
 
 $(derives [makeToDoc][''State])
 
