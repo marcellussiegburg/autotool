@@ -16,18 +16,19 @@ import Autolib.ToDoc
 import Autolib.Reporter
 import Autolib.Util.Splits
 import Data.List ( partition )
+import Data.Typeable
 
 import Numeric
 import Data.Char
 
 newtype Tape = Tape { unTape :: String }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Typeable)
 
 instance ToDoc Tape where toDoc t = toDoc $ unTape t
 
 data State =
   State { step :: Int, tape :: Tape, earlier_info :: [ State ] }
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Typeable)
 
 $(derives [makeToDoc][''State])
 
@@ -51,7 +52,7 @@ successors (Program rules) s = take 1 $ do
 
 instance In Program Tape State where
     input_reporter p s = do
-        return $ State { step = 0, tape = s, history = [] }
+        return $ State { step = 0, tape = s, earlier_info = [] }
 instance Out Program Tape State where
     output_reporter p s = do
       let t = tape s
@@ -61,10 +62,11 @@ instance Out Program Tape State where
       return t
 
 instance Encode Tape where
-    encode xs = Tape $ do
+    encode xs = Tape $ "#" ++ do
       x <- xs
-      showIntAtBase 2 intToDigit x "#"
-    
+      -- denn aus 0 soll nicht "0#" werden, sondern "#"
+      dropWhile (== '0') $ showIntAtBase 2 intToDigit x "#"
+
 instance Decode Tape where
     decode (Tape t) =
       foldl ( \ a c -> 2*a + fromIntegral (ord c - ord '0')) 0 t
