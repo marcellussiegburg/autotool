@@ -1,4 +1,5 @@
 {-# language FlexibleInstances #-}
+{-# language FlexibleContexts #-}
 {-# language MultiParamTypeClasses #-}
 {-# language NoMonomorphismRestriction #-}
 {-# language DeriveDataTypeable #-}
