@@ -3,9 +3,10 @@
 
 {-# LANGUAGE TemplateHaskell #-}
 
-module Fun.Poly.Type 
+module Fun.Tiered.Type 
 
-( Fun (..), Exp (..), Mark (..)
+( Tier (..), Arity (..)
+, Fun (..), tier, arity, Exp (..), Mark (..)
 , RAM.Builtin.Builtin (..)
 , Property (..)
 )
@@ -29,22 +30,49 @@ $(derives [makeReader, makeToDoc] [''Property])
 
 instance Show Property where show = render . toDoc
 
+newtype Tier = T Int deriving ( Eq, Ord ) 
+newtype Arity = A Int deriving ( Eq, Ord )
+
+$(derives [makeToDoc] [''Tier, ''Arity ])
+
+nat = do i <- my_integer ; guard (i>=0) ; return $ fromIntegral i
+  <?> "nonnegative literal"
+
+instance Reader Tier where
+  reader = my_reserved "T" *> (T <$> nat)
+
+instance Reader Arity where
+  reader = my_reserved "A" *> (A <$> nat)
+
+
 -- | first argument is tier, second is arity
 data Fun = 
          -- | Grundfunktionen
-           Zero Int Int
-         | Succ0 Int Int -- ^ x mapsto 2*x          
-         | Succ1 Int Int -- ^ x mapsto 2*x+1
-         | Proj Int Int Int
+           Zero Tier Arity
+         | Succ0 Tier Arity -- ^ x mapsto 2*x          
+         | Succ1 Tier Arity -- ^ x mapsto 2*x+1
+         | Proj Tier Arity Int
 
          -- | so tun, also ob Grundfunktion
-         | Builtin Int Int RAM.Builtin.Builtin
+         | Builtin Tier Arity RAM.Builtin.Builtin
 
          -- | Operatoren
-         | Sub Int Int [ Fun ]
-         | PR  Int Int [ Fun ]
+         | Sub Tier Arity [ Fun ]
+         | PR  Tier Arity [ Fun ]
 
     deriving (Eq, Ord, Typeable)
+
+tier :: Fun -> Tier
+tier f = case f of
+  Zero t _ -> t ; Succ0 t _ -> t ; Succ1 t _ -> t
+  Proj t _ _ -> t ; Builtin t _ _ -> t
+  Sub t _ _ -> t ; PR t _ _ -> t
+
+arity :: Fun -> Arity
+arity f = case f of
+  Zero _ a -> a ; Succ0 _ a -> a ; Succ1 _ a -> a
+  Proj _ a _ -> a ; Builtin _ a _ -> a
+  Sub _ a _ -> a ; PR _ a _ -> a
 
 instance Size Fun where
     size ( Sub _ _ fs ) = succ $ sum $ map size fs 

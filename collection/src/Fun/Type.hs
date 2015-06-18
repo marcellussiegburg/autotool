@@ -9,8 +9,6 @@ module Fun.Type
 
 where
 
---   $Id$
-
 import Autolib.ToDoc
 import Autolib.Reader
 import Autolib.Size
@@ -35,6 +33,9 @@ data Fun =
 	 | Decr Int -- ^ naja
 	 | Proj Int Int
 
+         | Binary_Succ0 Int
+         | Binary_Succ1 Int
+
 	 -- | so tun, also ob Grundfunktion
 	 | Builtin Int RAM.Builtin.Builtin
 
@@ -43,6 +44,7 @@ data Fun =
 	 | PR  Int [ Fun ]
 	 | Min Int [ Fun ]
 
+	 | Binary_PR  Int [ Fun ]
 
     deriving (Eq, Ord, Typeable)
 
@@ -76,9 +78,6 @@ $(derives [makeReader, makeToDoc] [''Fun])
 
 $(derives [makeReader, makeToDoc] [''Exp])
 
--- local variables:
--- mode: haskell
--- end:
 
 
 
