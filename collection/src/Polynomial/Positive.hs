@@ -6,6 +6,7 @@
 {-# language TypeSynonymInstances #-}
 {-# language FlexibleInstances #-}
 {-# language MultiParamTypeClasses #-}
+{-# language DeriveDataTypeable #-}
 
 module Polynomial.Positive where
 
@@ -38,7 +39,7 @@ instance ToDoc P where
   toDoc e = case e of
     Var i -> toDoc i ; Lit i -> toDoc i
     Parens e -> parens $ toDoc e
-    Plus x y -> toDoc x <+> text "+" <+> toDoc y
+    Plus  x y -> toDoc x <+> text "+" <+> toDoc y
     Minus x y -> toDoc x <+> text "-" <+> toDoc y
     Times x y -> toDoc x <+> text "*" <+> toDoc y
     Power x y -> toDoc x <+> text "^" <+> toDoc y
@@ -69,16 +70,21 @@ instance OrderScore Polynomial_Positive where
 instance Partial Polynomial_Positive P S where
 
   describe _ p = vcat
-    [ text "Assign integers to variables"
+    [ text "Assign nonnegative integers to variables"
     , text "such that the value of the polynomial is strictly positive:"
     , nest 4 $ toDoc p
     ]
 
   initial _ p = M.fromList
      $ zip (S.toList $ variables p)
-     $ concat $ repeat [ 2, -1, 0 ]
+     $ concat $ repeat [ 2, 1, 0 ]
 
   partial _ p s = do
+    let negative = M.filter (< 0) s
+    when (not $ M.null negative) $ reject $ vcat
+      [ text "these assignments are negative:"
+      , nest 4 $ toDoc negative
+      ]
     let needed = variables p
         provided = M.keysSet s
         missing = S.difference needed provided

@@ -335,6 +335,7 @@ Library
                  Polynomial.Unary.Op
                  Polynomial.Grobner.Compute
                  Polynomial.Task.Ideal
+                 Polynomial.Positive,
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,
