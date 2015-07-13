@@ -1,5 +1,7 @@
 module Baum.Reconstruct where
 
+import Prelude hiding ( traverse )
+
 import Baum.Type
 import Baum.Config
 import Baum.Traverse

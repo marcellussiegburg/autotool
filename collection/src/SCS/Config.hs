@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts, UndecidableInstances, TemplateHaskell #-}
 {-# language DeriveDataTypeable #-}
+{-# language DatatypeContexts #-}
 
 module SCS.Config where
 

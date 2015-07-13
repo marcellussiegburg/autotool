@@ -44,7 +44,7 @@ data (Symbol c, Ord c) => Interpretation c
     | Matrix_Interpretation_Arctic (Inter c (Multilinear D.Arctic))
     | Matrix_Interpretation_Tropical (Inter c (Multilinear D.Tropical))
     | Matrix_Interpretation_Fuzzy (Inter c (Multilinear D.Fuzzy))
-    | Polynomial_Interpretation (Inter c (P.Poly P.X))
+    | Polynomial_Interpretation (Inter c (P.Poly Integer P.X))
     deriving (Eq, Typeable)
 
 
@@ -106,8 +106,8 @@ inter int from dim t = explained t $ case t of
 
 -- | applied to a term where variables are renamed to [1,2..from]
 inter_poly :: (Symbol c, Ord c)
-      => Inter c (P.Poly P.X) 
-      -> Term Int c -> Reporter (P.Poly P.X)
+      => Inter c (P.Poly Integer P.X) 
+      -> Term Int c -> Reporter (P.Poly Integer P.X)
 inter_poly int t = explained t $ case t of
     Var to -> return $ P.variable $ P.X to
     Node f args -> case M.lookup f int of
@@ -117,7 +117,7 @@ inter_poly int t = explained t $ case t of
         Just fun -> do
             let syn = length args
             void $ sequence $ do 
-                (c,m) <- P.terms fun ; (P.X i,e) <- P.factors m 
+                (c,m) <- P.terms fun ; f  <- P.factors m ; let P.X i = f ^. P.var
                 return $ when ( i < 1 || i > syn ) $ reject $ vcat 
                     [ text "interpretation of symbol" <+> toDoc f
                     , text "uses non-existing argument" <+> toDoc (P.X i)
@@ -175,9 +175,9 @@ compute_order i = case i of
     Polynomial_Interpretation i -> order_poly i
 
 order_poly :: (Symbol c, Ord v )
-      => Inter c (P.Poly P.X) -> Int 
+      => Inter c (P.Poly Integer P.X) -> Int 
       -> Rule (Term v c) -> Reporter Comparison
-order_poly (int :: Inter c (P.Poly P.X)) dim u = do
+order_poly (int :: Inter c (P.Poly Integer P.X)) dim u = do
     let l = lhs u ; r = rhs u
         vs = S.union (vars l) (vars r)
         m = M.fromList $ zip ( S.toList vs) [1..]

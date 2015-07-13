@@ -13,6 +13,11 @@ import qualified Rewriting.Termination.Interpretation  as T
 import qualified Rewriting.Termination.Polynomial as P
 import qualified Polynomial.Type as P
 
+import Polynomial.Class hiding ( Step )
+import qualified Prelude
+import Prelude hiding 
+    ( Num (..), (/), Integer, null, gcd, divMod, div, mod )
+
 import Autolib.TES
 import Autolib.TES.Identifier
 import Autolib.TES.Unify 
@@ -63,8 +68,8 @@ data Symbol c => Run c = Run { order :: T.Order c
 run0 = Run
     { order = T.Interpretation 1  
             $ T.Polynomial_Interpretation
-            $ M.fromList [ (mk 1 "a", 1 + P.variable (P.X 1))
-                         , (mk 1 "b", 1 + P.variable (P.X 1))
+            $ M.fromList [ (mk 1 "a", fromInteger 1 + P.variable (P.X 1))
+                         , (mk 1 "b", fromInteger 1 + P.variable (P.X 1))
                          ]
     , steps = [ Orient { s = a(b(a(x))), t = x } ]
     }
@@ -186,7 +191,7 @@ make_fixed = direct Completion problem0
 
 repair :: Show c => Term v c -> Term Int c
 repair (Node f args) =
-    if null args && all isDigit (show f) 
+    if Prelude.null args && all isDigit (show f) 
     then Autolib.TES.Var (read $ show f)
     else Node f (map repair args)
 

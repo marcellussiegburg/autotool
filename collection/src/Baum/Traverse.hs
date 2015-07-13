@@ -1,12 +1,11 @@
 module Baum.Traverse where
 
---  $Id$
-
 import Baum.Type
 
 import Baum.Order
 import Autolib.ToDoc
 
+import Prelude hiding ( traverse )
 
 traverse :: Order -> Term a c -> [ c ]
 traverse o = case o of

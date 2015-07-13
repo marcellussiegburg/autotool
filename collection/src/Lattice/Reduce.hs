@@ -174,6 +174,8 @@ roll conf = do
            , bound = norm short
            }
 
+
+{-
 -- TODO: roll several times, 
 -- take p with largest min of norms
 roll_interesting conf = do
@@ -184,9 +186,10 @@ roll_interesting conf = do
             then do -- putStrLn "again"
                     roll_interesting conf
             else return p
+-}
 
 instance Generator Lattice_SVP Config Problem where
-    generator p conf key = roll_interesting conf
+    generator p conf key = roll conf
         
 instance Project Lattice_SVP Problem Problem where
     project _ p = p

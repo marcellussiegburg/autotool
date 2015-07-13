@@ -18,7 +18,7 @@ module Util.Datei
 where
 
 import Prelude hiding ( writeFile, readFile, appendFile )
-import System.IO.UTF8 ( writeFile, readFile, appendFile )
+import System.IO ( writeFile, readFile, appendFile )
 
 import Debug
 import Data.List (inits, intersperse)
@@ -108,7 +108,7 @@ anhaengen d inhalt = do
     debug "anhaengen"
     createDir d
     h <- home d
-    System.IO.UTF8.appendFile h inhalt
+    appendFile h inhalt
 
 loeschen :: Datei -> IO ()
 loeschen d  = do
@@ -128,7 +128,7 @@ schreiben d inhalt = do
 --    hPutStr f inhalt
 --    hClose f
     CE.evaluate (last inhalt)
-    System.IO.UTF8.writeFile h inhalt
+    writeFile h inhalt
 
     debug "... after writeFile"
     perm "go+r" h
@@ -164,7 +164,7 @@ lesen d  = do
             -- hSetEncoding f utf8
             -- cs <- hGetContents f
             -- hGetContents is lazy - force its result before closing the file
-            cs <- System.IO.UTF8.readFile h
+            cs <- readFile h
             CE.evaluate (last cs)
             -- hClose f
             debug "after lesen ..."

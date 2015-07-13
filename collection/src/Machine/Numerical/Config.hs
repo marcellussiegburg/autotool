@@ -1,4 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DatatypeContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Machine.Numerical.Config where
 
