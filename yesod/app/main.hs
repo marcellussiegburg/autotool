@@ -1,8 +1,12 @@
-import Prelude              (IO)
+import Prelude              (IO, (>>=))
 import Yesod.Default.Config (fromArgs)
-import Yesod.Default.Main   (defaultMainLog)
+import Yesod.Default.Main   (defaultMain)
 import Settings             (parseExtra)
 import Application          (makeApplication)
+import Network.Wai.Handler.CGI (run)
 
 main :: IO ()
-main = defaultMainLog (fromArgs parseExtra) makeApplication
+main = do
+  args <- fromArgs parseExtra
+  (app, log) <- makeApplication args
+  run app

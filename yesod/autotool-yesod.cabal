@@ -138,7 +138,7 @@ library
     if !os(windows)
         build-depends: unix
 
-executable         autotool-yesod
+executable         autotool-yesod.cgi
     if flag(library-only)
         Buildable: False
 
@@ -146,6 +146,7 @@ executable         autotool-yesod
     hs-source-dirs:    app
     build-depends:     base
                      , autotool-yesod
+                     , wai-extra
                      , yesod
 
     ghc-options:       -threaded -O2 -rtsopts -with-rtsopts=-N
