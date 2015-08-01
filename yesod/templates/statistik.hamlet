@@ -44,4 +44,4 @@ $else
             <button type="submit" .btn .btn-danger .btn-block role="button"name=#{aktion} value=#{show $ CacheLeeren $ matrikel eintrag}>
               _{MsgCacheLeeren}
           ^{fst $ form eintrag}
-  <button type="submit" .btn .btn-success name=#{aktion} value={show Bearbeiten}>_{MsgBearbeiten}
+  <button type="submit" .btn .btn-success name=#{aktion} value=#{show Bearbeiten}>_{MsgBearbeiten}

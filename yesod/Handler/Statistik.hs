@@ -36,6 +36,9 @@ data Ergebnis = Okay {punkte :: Int, größe :: Int} | Nein | Ausstehend
 aktion :: Text
 aktion = "aktion"
 
+neuBewertenLabel :: Int -> Text
+neuBewertenLabel number = mappend "neuBewerten" $ pack $ show number
+
 data Aktion = Bearbeiten | CacheLeeren Text deriving (Show, Read)
 
 getStatistikR :: AufgabeId -> Handler Html
@@ -78,13 +81,10 @@ cacheLeeren matrikel' vorlesungId aufgabeId = do
 bewertungenSchreiben :: [Student.Student] -> Aufgabe.Aufgabe -> Handler ()
 bewertungenSchreiben studenten aufgabe = do
   let fromSNr snr = let T.SNr s = snr in s
-      getResult s = liftM (fst . fst) $ runFormPost $ neuBewertenForm $ fromSNr $ Student.snr s
-      erfolgreich (FormSuccess r, s) = Just (r, s)
-      erfolgreich _ = Nothing
-  results <- sequence $ map (\s -> do r <- getResult s
-                                      return (r, s)) studenten
-  let relevant = concat $ map (maybeToList . erfolgreich) results
-  sequence_ $ map (\ (r, s) -> bewertungSchreiben s aufgabe r) relevant
+      getResult s = lookupPostParam $ neuBewertenLabel $ fromSNr $ Student.snr s
+  sequence_ $ map (\s -> do r <- getResult s
+                            let i = maybe 1 (read . unpack) r - 1
+                            bewertungSchreiben s aufgabe (snd $ optionen !! i)) studenten
 
 bewertungSchreiben :: Student.Student -> Aufgabe.Aufgabe -> Maybe T.Wert -> Handler Text
 bewertungSchreiben _ _ Nothing = return ""
@@ -127,8 +127,8 @@ optionen :: [(AutotoolMessage, Maybe T.Wert)]
 optionen = [(MsgBehalten, Nothing), (MsgNein, Just T.No)] ++ fmap (\ i -> (MsgTextToMsg (pack $ show i), Just $ T.Ok i)) [1..5]
 
 neuBewertenForm :: Int -> Form (Maybe T.Wert)
-neuBewertenForm student = identifyForm (pack $ "neuBewerten" ++ show student) $ renderRaw $
-  areq (tdRadioFieldNoLabel . optionsPairs $ optionen) "" $ Just Nothing
+neuBewertenForm student = identifyForm (neuBewertenLabel student) $ renderRaw $
+  areq ((tdRadioFieldNoLabel $ neuBewertenLabel student) . optionsPairs $ optionen) "" $ Just Nothing
 
 renderRaw :: Monad m => FormRender m a
 renderRaw aform fragment = do
@@ -176,19 +176,19 @@ $newline never
 
 -- | Es werden so viele Tabellenzellen erzeugt, wie es Auswahlmöglichkeiten gibt. Für eventuell benötigte Tabellenüberschriften und umliegende Tabellenzeilen, sowie die Tabelle selbst muss man sich selbst kümmern (ggf. @renderTableHead@ verwenden)
 tdRadioFieldNoLabel :: (Eq a, RenderMessage site FormMessage)
-                    => HandlerT site IO (OptionList a)
+                    => Text -> HandlerT site IO (OptionList a)
                     -> Field (HandlerT site IO) a
-tdRadioFieldNoLabel = selectFieldHelper
+tdRadioFieldNoLabel name = selectFieldHelper
     (\_theId _name _attrs inside -> [whamlet|
 $newline never
 ^{inside}
 |])
-    (\theId name isSel -> [whamlet|
+    (\theId _name isSel -> [whamlet|
 $newline never
 <td .text-center>
     <input id=#{theId}-none type=radio name=#{name} value=none :isSel:checked>
 |])
-    (\theId name attrs value isSel _text -> [whamlet|
+    (\theId _name attrs value isSel _text -> [whamlet|
 $newline never
 <td .text-center>
     <input id=#{theId}-#{value} type=radio name=#{name} value=#{value} :isSel:checked *{attrs}>
