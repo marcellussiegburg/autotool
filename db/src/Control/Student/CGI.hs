@@ -18,6 +18,8 @@ import qualified Debug
 import qualified Local
 
 import qualified Autolib.Multilingual as M
+import qualified Autolib.Multilingual.Html as H
+import qualified Autolib.Output as O
 
 login :: Maybe Schule -> Form IO Student
 login mschool = do
@@ -44,6 +46,7 @@ login mschool = do
 login_via_stored_password u = do
     lang <- get_preferred_language 
 
+    h3 "Login"
     mnr <- defaulted_textfield "Matrikel" ""
     pwd <- defaulted_password  "Passwort" ""
 
@@ -116,6 +119,7 @@ login_via_shibboleth_cont u school mnr = do
         plain $ show (school, U.mail_suffix u)
         mzero
     Just sn <- look_var "sn" ; Just gn <- look_var "givenName"
+    meppn <- look_var "eppn"
     when (null mnr) $ do
         maff <- look_var "affiliation"
         case maff of
@@ -130,8 +134,15 @@ login_via_shibboleth_cont u school mnr = do
                  plain "no Matrikelnummer and no staff@"
                  mzero
                  
-    plain $ unwords [ "Ihre Identifikation (Shibboleth):"
-                    , sn, gn, mnr, toString $ U.mail_suffix u ] 
+    -- plain $ unwords [ "Ihre Identifikation (Shibboleth):" , sn, gn, mnr, toString $ U.mail_suffix u, show meppn ] 
+    
+    open table 
+    open row 
+    plain $ "Ihre Shibboleth-Session:"  
+    html $ M.specialize M.DE $ ( O.render $ O.Link "/Shibboleth.sso/Session" :: H.Html )
+    close -- row
+    close -- table
+                 
     close -- btable    
     use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr)
       

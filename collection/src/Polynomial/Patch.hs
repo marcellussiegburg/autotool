@@ -36,7 +36,7 @@ class Pattern p where
      -- default_ :: Base p
      
 
-data Patch v = Any | This v deriving Typeable
+data Patch v = Any | This v deriving (Typeable, Eq)
 
 instance Functor Patch where
     fmap f p = case p of Any -> Any ; This x -> This $ f x

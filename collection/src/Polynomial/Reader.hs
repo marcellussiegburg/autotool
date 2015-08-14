@@ -1,17 +1,20 @@
 {-# language NoMonomorphismRestriction #-}
 {-# language FlexibleInstances #-}
+{-# language OverlappingInstances #-}
 
 module Polynomial.Reader where
 
 import Polynomial.Class
 import qualified Prelude
-import Prelude ( return, ($), Eq, Ord, read )
-import Polynomial.Data
-import Polynomial.Op
+import Prelude ( return, ($), Eq, Ord, Read, read )
+
+import Polynomial.Common
 
 import Autolib.Reader
+import Autolib.Reader.Link
 import Control.Applicative ((<$>),(<*>))
 import Control.Lens ( (^.) )
+import Control.DeepSeq
 
 import qualified Text.Parsec.Expr as E
 
@@ -37,10 +40,14 @@ table   = [ [prefix "-" Negate  ]
 binary  name fun assoc = E.Infix (do{ my_symbol name; return fun }) assoc
 prefix  name fun       = E.Prefix (do{ my_symbol name; return fun })
 
-instance (Ring r, Reader r, Ord v, Reader v) 
-         => Reader (Poly r v) where 
+instance (Ring r, Reader r, Ord v, Reader v )  => Reader (Poly r v) where 
     reader = expr Prelude.>>= buildR
 
+instance (Ring r, Reader r, Ord v, Reader v )  => Read (Poly r v) where
+    readsPrec = parsec_readsPrec
+
+-- | parse polynomial where coefficient domain is ring 
+-- (so we cannot use division, not even for constants)
 buildR e = case e of
     Const c -> return $ constant c
     Fact f -> return $ poly [(one, mono[f])]
@@ -50,11 +57,14 @@ buildR e = case e of
     Times p q -> (*) <$> buildR p <*> buildR q
     Divide p q -> Prelude.fail "cannot divive, coeffienct domain is not a field"
 
-instance (Ord v, Reader v) 
-         => Reader (Poly Rational v) where 
+instance (Ord v, Reader v )  => Reader (Poly Rational v) where 
     reader = expr Prelude.>>= buildF
 
-buildF :: Ord v => Exp Rational v -> Parser (Poly Rational v)
+instance (Ord v, Reader v )  => Read (Poly Rational v) where 
+    readsPrec = parsec_readsPrec
+
+-- | parse polynomial where coefficient domain is field
+-- (so we can use division, but only for constants)
 buildF e = case e of
     Const c -> return $ constant c
     Fact f -> return $ poly [(one, mono[f])]
@@ -64,13 +74,14 @@ buildF e = case e of
     Times p q -> (*) <$> buildF p <*> buildF q
     Divide p q -> do
         (a, n) <- splitAbsolute <$> buildF q 
-        if null n then do b <- buildF q ; return $ divF b a
+        if null n then do b <- buildF p ; return $ divF b a
             else Prelude.fail "cannot divide by non-constant"
         
 instance Reader v => Reader (Factor v) where
     reader = do 
-        v <- reader ; e <- option 1 $ do my_symbol "^" ; natural
-        return $ Factor { _var = v, _expo = e }
+        v <- reader
+        e <- option 1 $ do my_symbol "^" ; fromInteger <$> natural
+        return $ factor v e
 
 natural :: Parser Integer
 natural = do

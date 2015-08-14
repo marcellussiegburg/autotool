@@ -165,8 +165,12 @@ import qualified Binpack.Interface
 import qualified Binpack.FFD
 import qualified KnapsackFraction.Central
 
-import qualified RM.Make
+-- import qualified RM.Make
 import qualified RAM.Make
+import qualified Goto.Make
+import qualified While.Make
+import qualified Markov.Make
+import qualified Fractran.Machine
 
 import qualified Program.General.Central
 import qualified Program.Array.Instance
@@ -258,6 +262,8 @@ import qualified Lattice.LLL.Task
 import qualified Lattice.LLL.Inverse
 
 import qualified Polynomial.Euclid
+import qualified Polynomial.Task.Ideal
+import qualified Polynomial.Positive
 
 makers :: [ Make ]
 makers = do Right make <- flatten tmakers ; return make
@@ -440,8 +446,22 @@ tmakers =
 		    [ item Fun.Make.make
 		    , item Fun.Quiz.make
 		    ]
-                , item RAM.Make.make
-                , item RM.Make.make
+                , heading "Goto-Programme"
+                    [ item Goto.Make.make
+                    ]
+                , heading "While/Loop-Programme"
+                  [ item While.Make.make 
+                  , item RAM.Make.make
+                  ]
+                , heading "Markov-Algorithmen"
+                    [ item Markov.Make.make
+                    ]
+                , heading "Fractran-Programme"
+                    [ item Fractran.Machine.make
+                    ]
+
+                -- , item RM.Make.make
+                  
                 , item Brainfuck.Make.computer
                 , heading "Peano-Zahlen und Folds"
                     [ item Peano.Make.make
@@ -711,6 +731,9 @@ tmakers =
                 , item Lattice.LLL.Task.make_fixed
                 , item Lattice.LLL.Inverse.make_fixed
                 , item Lattice.LLL.Inverse.make_quiz
+                , item Polynomial.Task.Ideal.make_fixed
+                , item Polynomial.Task.Ideal.make_quiz
+                , item Polynomial.Positive.make_fixed
                 ]
 	  , heading "experimentell"
 	        [ item $ Algebraic2.Central.make Algebraic_Integer

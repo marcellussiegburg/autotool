@@ -1,4 +1,5 @@
 {-# language FlexibleInstances #-}
+{-# language FlexibleContexts #-}
 {-# language MultiParamTypeClasses #-}
 {-# language NoMonomorphismRestriction #-}
 {-# language DeriveDataTypeable #-}
@@ -22,9 +23,13 @@ import Test.SmallCheck.Series
 import Control.Applicative ((<$>), (<*>), (<*), (*>))
 import Data.Typeable
 
+import Control.DeepSeq
+
 infixl 7  *, /
 infixl 6  +, -
 
+-- * the class and its properties
+       
 class Prelude.Eq r => Ring r where
     zero :: r
     negate :: r -> r
@@ -32,7 +37,9 @@ class Prelude.Eq r => Ring r where
     one :: r
     (*) :: r -> r -> r
     fromInteger :: Prelude.Integer -> r
-
+    -- | this does not really belong here. it is used just for printing (the "-" sign)
+    negative :: r -> Prelude.Bool
+    
 associative f a b c = f (f a b) c == f a (f b c)
 commutative f a b = f a b == f b a
 left_distributive f g a b c = 
@@ -76,15 +83,29 @@ a ^ b | b Prelude.>= 0 =
 sum = Prelude.foldr (+) zero
 product = Prelude.foldr (*) one
 
+-- * instances for basic numerical types
+        
 type Integer = Prelude.Integer
 
 instance Ring Integer where
     zero = 0; (+) = (Prelude.+) ; negate = Prelude.negate 
     one = 1 ; (*) = (Prelude.*)
     fromInteger i = i
+    negative = (< 0)
 
+instance Ring Int where
+    zero = 0; (+) = (Prelude.+) ; negate = Prelude.negate 
+    one = 1 ; (*) = (Prelude.*)
+    fromInteger i = Prelude.fromInteger i
+    negative = (< 0)
+
+-- * ratios
+    
 data Ratio z = z :% z 
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
+
+instance NFData z => NFData (Ratio z) where
+  rnf (p :% q) = rnf p `seq` rnf q `seq` ()
 
 instance (Serial m z, Ring z, Normalize_Fraction z ) 
          => Serial m (Ratio z) where
@@ -94,10 +115,14 @@ instance (Serial m z, Ring z, Normalize_Fraction z )
 
 type Rational = Ratio Integer
 
-instance ToDoc z => ToDoc (Ratio z) where
-    toDoc (a :% b) = parens $ hsep [ toDoc a, text ":%", toDoc b ]
-instance (Normalize_Fraction z, Reader z) => Reader (Ratio z) where
-    reader = my_parens $ (%) <$> reader <* my_reservedOp ":%" <*> reader 
+-- FIXME: this instance is questionable. Print a rational as "(p/q)" (with parentheses)
+-- or as  "p" (without) (which is interpreted as   "(p/1)"
+instance (Ring z, ToDoc z) => ToDoc (Ratio z) where
+    toDoc (a :% b) = if b == one then toDoc a else parens $ hsep [ toDoc a, text "/", toDoc b ]
+
+instance (Ring z, Normalize_Fraction z, Reader z) => Reader (Ratio z) where
+    reader = ( my_parens $ (%) <$> reader <* my_reservedOp "/" <*> reader )
+        <|>  ( % one ) <$> reader 
 
 class Normalize_Fraction z where
     (%) :: z -> z -> Ratio z
@@ -111,24 +136,31 @@ instance Normalize_Fraction Integer where
 instance ( Normalize_Fraction z, Ring z ) 
          => Ring (Ratio z) where
     zero = zero % one 
-    (a :% b) + (c :% d) = (a * d + b * c) % (b * d)
+    (a :% b) + (c :% d) = if b == d then (a + c) % d else (a * d + b * c) % (b * d)
     negate (a :% b) = negate a % b
     one = one % one 
     (a :% b) * (c :% d) = (a * c) % (b * d)
     fromInteger i = fromInteger i % one
+    negative (a :% b) = negative a -- hmpf
 
+-- * complex numbers
+    
 data Complex r = r :+ r
      deriving (Prelude.Eq, Prelude.Ord, Prelude.Show, Typeable)
+
+instance NFData r => NFData (Complex r) where
+  rnf (p :+ q) = rnf p `seq` rnf q `seq` ()
 
 instance (Serial m z ) 
          => Serial m (Complex z) where
     series = (:+) <$> series <~> series
 
-instance ToDoc r => ToDoc (Complex r) where
-    toDoc (a :+ b) = 
+instance (Ring r, ToDoc r) => ToDoc (Complex r) where
+    toDoc (a :+ b) = if b == zero then toDoc a else
         parens $ hsep [ toDoc a, text ":+", toDoc b ]
-instance (Reader r) => Reader (Complex r) where
-    reader = my_parens $ (:+) <$> reader <* my_reservedOp ":+" <*> reader 
+instance (Ring r, Reader r) => Reader (Complex r) where
+    reader = ( my_parens $ (:+) <$> reader <* my_reservedOp ":+" <*> reader )
+        <|>  ( :+ zero ) <$> reader
 
 instance Ring r => Ring ( Complex r ) where
     zero = zero :+ zero
@@ -138,6 +170,8 @@ instance Ring r => Ring ( Complex r ) where
     (a :+ b) * (c :+ d) = (a * c - b * d) :+ (a * d + b * c)
     fromInteger i = fromInteger i :+ zero
 
+-- * Euclidean ring and easy instances
+    
 class Ring r => Euclidean_Ring r where
     norm :: r -> Prelude.Maybe Integer
     div :: r -> r -> r
@@ -166,7 +200,8 @@ euclidean_spec (_ :: r ) =
         if q /= (zero :: r) 
         then norm ( mod p q ) < norm q else True
 
-
+-- * the Field class
+  
 class Ring r => Field r where
     (/) :: r -> r -> r
 
@@ -180,6 +215,8 @@ instance Field a => Field (Complex a) where
             n = c * c + d * d
         in  (p / n) :+ (q / n)
 
+-- * GCD computations
+    
 data Step r = Step { quotient :: r, remainder :: r }
     deriving Typeable
 

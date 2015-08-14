@@ -52,21 +52,23 @@ Library
         array,
         pretty,
         utf8-string,
-        strict-io, 
         temporary,
         smallcheck, 
         -- http://www.haskell.org/pipermail/haskell-cafe/2013-March/107091.html
         -- QuickCheck < 2.6,
         QuickCheck,
-        hspec, hspec-smallcheck,
-        mueval>=0.8.1.1, hint, 
-        haskell-src-exts==1.15.*, 
+        hspec, hspec-smallcheck, hspec-core,
+        mueval, hint, 
+        haskell-src-exts, 
         syb,
+        -- comes with ghc:
         transformers,
-        logict>=0.6.0.2,
+        logict,
         lens,
         hashable,
-        stm
+        stm,
+        deepseq,
+        parallel
     GHC-Options:    -Wall -fglasgow-exts -fallow-undecidable-instances
     -- Extensions:
     --     DeriveDataTypeable
@@ -236,13 +238,6 @@ Library
                  Specify.Config,
                  Specify.Check,
                  Specify.Inter,
-                 RM.Type,
-                 RM.Step,
-                 RM.Machine,
-                 RM.Make,
-                 RM.State,
-                 RM.Check,
-                 RM.Memory,
                  FP.Reconstruct,
                  FP.Roll,
                  FP.Type,
@@ -319,8 +314,14 @@ Library
                  Rewriting.Abstract.Fixed,
                  Rewriting.Abstract.Quiz,
                  Polynomial.Class,
+                 Polynomial.Base,
                  Polynomial.Data
-                 Polynomial.Op
+                 Polynomial.Common
+                 Polynomial.Tree.Data
+                 Polynomial.Map.Data
+                 Polynomial.Map.Op
+                 Polynomial.List.Data
+                 Polynomial.List.Op
                  Polynomial.Reader
                  Polynomial.ToDoc
                  Polynomial.Type
@@ -332,6 +333,9 @@ Library
                  Polynomial.Unary.ToDoc
                  Polynomial.Unary.Data
                  Polynomial.Unary.Op
+                 Polynomial.Grobner.Compute
+                 Polynomial.Task.Ideal
+                 Polynomial.Positive,
                  Algebraic2.Central,
                  Algebraic2.Class,
                  Algebraic2.Config,
@@ -501,6 +505,27 @@ Library
                  RAM.Check,
                  RAM.Example,
                  RAM.Memory,
+                 Goto.Type,
+                 Goto.Step,
+                 Goto.Machine,
+                 Goto.Property,
+                 Goto.Make,
+                 Goto.State,
+                 Goto.Check,
+                 Goto.Example,
+                 Goto.Memory,
+                 While.Type,
+                 While.Step,
+                 While.Machine,
+                 While.Property,
+                 While.Make,
+                 While.State,
+                 While.Check,
+                 While.Memory,
+                 Markov.Type,
+                 Markov.Machine,
+                 Markov.Make,
+                 Fractran.Machine,
                  Hanoi.Type,
                  Hanoi.Semantik,
                  Hanoi.Config,

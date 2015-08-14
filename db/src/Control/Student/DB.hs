@@ -19,6 +19,14 @@ get_unr_mnr ( unr , mnr ) =
 	      , equals ( reed "student.MNr" ) ( toEx mnr )
 	      ]
 
+get_unr_name :: (UNr, Name, Name) -> IO [ CST.Student ]
+get_unr_name (unr, sn, gn) = do
+  get_where $ ands 
+              [ equals ( reed "student.UNr" ) ( toEx unr )
+              , equals ( reed "student.Name") (toEx sn)
+              , equals ( reed "student.Vorname") (toEx gn) 
+              ]
+  
 -- | wenn mnr = "", dann wird diese nicht geprueft,
 -- das ist fuer tutoren, die bisher mnr hatten, 
 -- aber ueber shibboleth keine bekommen.

@@ -8,7 +8,7 @@
 module Main where
 
 import Prelude hiding ( readFile, writeFile, appendFile )
-import System.IO.UTF8 ( readFile, writeFile, appendFile )
+import System.IO ( readFile, writeFile, appendFile )
 
 import Gateway.CGI
 
@@ -147,7 +147,7 @@ data Code = Stat | Auf | Einsch
 use_account mschool server = do
     lang <- get_preferred_language   
 
-    h3 "Login"
+    -- h3 "Login"
     -- für Student und Tutor gleicher Start
 
     svt @ ( stud, vor, status0, attends0 ) <- Operate.Login.form mschool

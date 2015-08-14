@@ -1,7 +1,6 @@
--- -*- mode: haskell -*-
 {-# LANGUAGE TemplateHaskell #-}
 
--- | Eingebaute Standard Funktionen
+-- | Eingebaute Standard-Funktionen
 module RAM.Builtin 
 
 ( Table, Entry, Builtin (..)
@@ -22,6 +21,7 @@ data Builtin = Copy
              | Times | Div | Mod
              | Paar  | Links | Rechts
              | Suc   | Pre
+             | Suc0 | Suc1
      deriving ( Eq, Ord, Enum, Ix, Typeable )
 
 $(derives [makeReader, makeToDoc] [''Builtin])
@@ -57,6 +57,8 @@ table = array ( Copy, Pre )
 
               , ( Suc , ( 1, \ [x   ] -> succ x ) )
               , ( Pre , ( 1, \ [x   ] -> max 0 $ pred x ) )
+              , ( Suc0 , ( 1, \ [x   ] -> 2 * x ) )
+              , ( Suc1 , ( 1, \ [x   ] -> 2 * x + 1 ) )
               ]
 
 

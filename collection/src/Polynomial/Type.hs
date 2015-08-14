@@ -1,19 +1,17 @@
 module Polynomial.Type 
 
-( Poly(), poly, nterms, terms, variable, absolute
-, Mono (), mono, factors
-, Factor (), var, expo
-, egcd, divMod, gcd
+( module Polynomial.Base
+, module Polynomial.Data
+, module Polynomial.Common
 , Identifier
-)
+)       
 
 where
 
-import Polynomial.Class
+import Polynomial.Base
 import Polynomial.Data
+import Polynomial.Common
 import Polynomial.ToDoc
 import Polynomial.Reader
-import Polynomial.Op
 import Autolib.TES.Identifier
-import qualified Prelude
 

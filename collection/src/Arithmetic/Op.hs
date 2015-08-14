@@ -1,4 +1,6 @@
 {-# language OverlappingInstances #-}
+{-# language FlexibleInstances #-}
+{-# language UndecidableInstances #-}
 
 module Arithmetic.Op 
 
@@ -6,8 +8,6 @@ module Arithmetic.Op
 )
 
 where
-
---  $Id$
 
 import Expression.Op
 
@@ -34,6 +34,21 @@ nullary = do
 		, inter = lift $ \ [] -> i
 		}
 
+sqrt_floor 0 = 0
+sqrt_floor 1 = 1
+sqrt_floor x =
+  let -- invariant: lo^2 <= x && x < hi^2
+      -- variant: hi - lo
+      f (lo,hi) =
+        if hi - lo <= 1 then lo
+        else let mi = div (lo+hi) 2
+             in if mi^2 <= x then f (mi,hi) else f (lo,mi)
+  in  f (0, x+1)
+
+log2_floor 0 = 0 -- naja
+log2_floor 1 = 0
+log2_floor x = succ $ log2_floor $ div  x 2
+
 unary :: ( Show a, Num a , Integral a ) =>  [ Op a ]
 unary = [ Op { name = "negate" , arity = 1
 	     , precedence = Just 10 , assoc = AssocNone
@@ -50,17 +65,25 @@ unary = [ Op { name = "negate" , arity = 1
 	     }
 	, Op { name = "sqrt" , arity = 1
 	     , precedence = Just 10 , assoc = AssocNone
-	     , inter = lift $ \ [x] ->
-                  floor $ (sqrt (fromIntegral x) :: Double)
+	     , inter = lift $ \ [x] -> sqrt_floor x
 	     }
 	, Op { name = "log2" , arity = 1
 	     , precedence = Just 10 , assoc = AssocNone
-	     , inter = lift $ \ [x] ->
-                  floor $ (logBase 2 (fromIntegral x) :: Double)
+	     , inter = lift $ \ [x] -> log2_floor x
 	     }
 	, Op { name = "fac" , arity = 1
 	     , precedence = Just 10 , assoc = AssocNone
 	     , inter = lift $ \ [x] -> product [1..(fromIntegral x)]
+	     }
+        , Op { name = "is_square" , arity = 1
+	     , precedence = Just 10 , assoc = AssocNone
+	     , inter = lift $ \ [x] ->
+             if x == sqrt_floor x ^ 2 then 1 else 0
+	     }
+        , Op { name = "is_power_of_2" , arity = 1
+	     , precedence = Just 10 , assoc = AssocNone
+	     , inter = lift $ \ [x] ->
+             if x == 2 ^ log2_floor x then 1 else 0
 	     }
 	, Op { name = "is_prime" , arity = 1
 	     , precedence = Just 10 , assoc = AssocNone

@@ -2,6 +2,7 @@
 *.o
 *.dyn_hi
 *.dyn_o
+*.p_o
 *~
 src/dist/
 src/Inter/Trial

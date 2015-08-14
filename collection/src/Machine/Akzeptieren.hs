@@ -1,8 +1,8 @@
+{-# language FlexibleContexts #-}
+
 module Machine.Akzeptieren 
 
 where
-
---   $Id$
 
 import Machine.Class
 -- import Machine.Vorrechnen
