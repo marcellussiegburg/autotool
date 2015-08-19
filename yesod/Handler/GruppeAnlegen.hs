@@ -23,6 +23,6 @@ postGruppeAnlegenR vorlesung = do
       _ <- lift $ GruppeDB.put Nothing gruppe' { vnr = Vorlesung.vnr vorlesung' }
       _ <- setMessageI MsgGruppeAngelegt
       let VNr v = Vorlesung.vnr vorlesung'
-      redirect $ GruppenR v -- ^ TODO: GruppeR verwenden (zu neu erstellter Übungsgruppe gehen)
+      redirect $ GruppenR v -- TODO: GruppeR verwenden (zu neu erstellter Übungsgruppe gehen)
   defaultLayout $
     formToWidget (GruppeAnlegenR vorlesung) Nothing formEnctype formWidget

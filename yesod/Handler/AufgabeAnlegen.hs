@@ -61,7 +61,7 @@ aufgabeTemplate eidAufgabe = do
         let aufgabe'' = aufgabe' { A.vnr = VNr vorlesungId }
         lift $ lift $ AufgabeDB.put Nothing aufgabe''
         lift $ setMessageI MsgAufgabeAngelegt
-        redirect $ AufgabenR vorlesungId -- ^ TODO: redirect $ AufgabeR aufgabeId
+        redirect $ AufgabenR vorlesungId -- TODO: redirect $ AufgabeR aufgabeId
       Bearbeiten -> do
         aufgabe <- MaybeT . return $ rightToMaybe eidAufgabe
         aufgabe' <- MaybeT . return $ aufgabeBearbeiten results (fromCGI . signature <$> msignedK) $ Just aufgabe
@@ -77,7 +77,7 @@ aufgabeTemplate eidAufgabe = do
     getBeispielKonfiguration <$> mserver <*> mtyp
   mvorlageKonfiguration <- sequence $ getVorlageKonfiguration <$> Just beispielKonfiguration <*> mtyp <*> (maybe "" id <$> mvorlage)
   mhinweisFehler <- liftM join $ sequence $ getKonfigurationFehler <$> mserver <*> mtyp <*> maybe mvorlageKonfiguration Just mkonfiguration
-  let matrikel = MNr "11111" -- ^ TODO auswählbar machen
+  let matrikel = MNr "11111" -- TODO auswählbar machen
       crc = case eidAufgabe of
         Left v -> getCrc (VNr v) Nothing matrikel
         Right aufgabe -> getCrc (A.vnr aufgabe) (Just $ A.anr aufgabe) matrikel
@@ -142,7 +142,7 @@ getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung
 
 getFormResults :: Either a A.Aufgabe -> Handler FormResults
 getFormResults eidAufgabe = do
-  (s_, t_, v_, k_, a_) <- getUnsafePostParams -- ^ Achtung: Werte können undefined sein
+  (s_, t_, v_, k_, a_) <- getUnsafePostParams -- Achtung: Werte können undefined sein
   ((serverResult, _), _) <- runFormPost $ serverForm Nothing
   ((typResult, _), _) <- runFormPost $ typForm [] s_ Nothing
   ((vorlageResult, _), _) <- runFormPost $ vorlagenForm s_ t_ Nothing

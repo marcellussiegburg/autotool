@@ -20,6 +20,6 @@ postSemesterAnlegenR schule = do
     FormSuccess semester' -> do
       _ <- lift $ SemesterDB.put Nothing semester' { unr = UNr $ keyToInt $ schule }
       _ <- setMessageI MsgSemesterAngelegt
-      redirect $ SemestersR schule -- ^ TODO: SemesterR verwenden (zu neu erstelltem Semester gehen)
+      redirect $ SemestersR schule -- TODO: SemesterR verwenden (zu neu erstelltem Semester gehen)
   defaultLayout $
     formToWidget (SemesterAnlegenR schule) Nothing formEnctype formWidget

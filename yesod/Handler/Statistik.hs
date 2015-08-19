@@ -89,7 +89,7 @@ bewertungenSchreiben studenten aufgabe = do
 bewertungSchreiben :: Student.Student -> Aufgabe.Aufgabe -> Maybe T.Wert -> Handler Text
 bewertungSchreiben _ _ Nothing = return ""
 bewertungSchreiben student aufgabe (Just bewertung) = do
-  let message = "Bewertung durch Tutor" :: Text -- ^ TODO: Übersetzung?
+  let message = "Bewertung durch Tutor" :: Text -- TODO: Übersetzung?
   lift $ liftM pack $ bank (getDefaultParam student aufgabe) {
       P.report = Just $ preEscapedToHtml message,
       P.mresult = Just bewertung

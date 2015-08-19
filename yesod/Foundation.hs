@@ -324,7 +324,7 @@ data NavigationEntry = Trennstrich | Titel Text | Link (Route Autotool) (Maybe A
 navigationMenu :: Maybe (Route Autotool) -> Maybe Int -> Handler [NavigationMenu]
 navigationMenu mroute authId = do
   let schule s = [SchuleR s, DirektorenR s, DirektorErnennenR s, WaisenkinderR s, SemestersR s, SemesterAnlegenR s]
-      schulen = [SchulenR, SchuleAnlegenR] -- ^ TODO ++ [Persönliche Daten, Highscore]
+      schulen = [SchulenR, SchuleAnlegenR] -- TODO ++ [Persönliche Daten, Highscore]
       semester s = [SemesterR s, VorlesungenR s, VorlesungAnlegenR s]
       vorlesung v = [VorlesungR v, TutorenR v, TutorErnennenR v, StudentenR v, ResultateR v, ResultatePflichtR v, GruppenR v, GruppeAnlegenR v, AufgabenR v, AufgabenAktuellR v, AufgabeAnlegenR v]
       gruppe g = [GruppeR g]

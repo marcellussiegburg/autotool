@@ -66,9 +66,9 @@ postEinsendungR aufgabeId studentId = do
     _ -> return ()
   input <- fixInput student aufgabe einsendung
   instant <- fixInstant student aufgabe einsendung
-  -- | INFO: Logging entfernt ("Super.view")
+  -- INFO: Logging entfernt ("Super.view")
   maufgabenstellung <- liftIO $ sequence $ fmap (liftM preEscapedToHtml . readFile . T.toString) instant
-  -- | INFO: Logging entfernt ("Super.view")
+  -- INFO: Logging entfernt ("Super.view")
   meinsendung' <- liftIO $ sequence $ fmap (readFile . T.toString) input
   defaultLayout $
     $(widgetFile "einsendung")
