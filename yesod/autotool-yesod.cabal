@@ -142,11 +142,23 @@ executable         autotool-yesod.cgi
     if flag(library-only)
         Buildable: False
 
-    main-is:           main.hs
+    main-is:           mainCgi.hs
     hs-source-dirs:    app
     build-depends:     base
                      , autotool-yesod
                      , wai-extra
+                     , yesod
+
+    ghc-options:       -threaded -O2 -rtsopts -with-rtsopts=-N
+
+executable         autotool-yesod
+    if flag(library-only)
+        Buildable: False
+
+    main-is:           main.hs
+    hs-source-dirs:    app
+    build-depends:     base
+                     , autotool-yesod
                      , yesod
 
     ghc-options:       -threaded -O2 -rtsopts -with-rtsopts=-N
