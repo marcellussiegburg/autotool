@@ -2,34 +2,31 @@ module Handler.Semesters where
 
 import Import
 
-import qualified Control.Semester.DB as SemesterDB
-import qualified Control.Semester.Typ as Semester
 import Control.Types
+import Data.Time (getCurrentTime)
 import Autolib.Util.Sort (sortBy)
 
 getSemestersR :: SchuleId -> Handler Html
-getSemestersR schule = do
-  semesters <- lift $ SemesterDB.get_at_school $ UNr $ keyToInt schule
-  let semestersSortiert = sortBy (\ s -> Semester.status s /= Current) semesters
+getSemestersR schuleId = do
+  semesters <- runDB $ selectList [SemesterSchuleId ==. schuleId] []
+  zeit <- liftIO $ getCurrentTime
+  let semestersSortiert = sortBy (\ s -> zeitStatus (semesterVon $ entityVal s) (semesterBis $ entityVal s) zeit /= Current) semesters
   mid <- maybeAuthId
   semestersAutorisiert' <- mapM (autorisiertSemester mid) semestersSortiert
   let semestersAutorisiert = concat semestersAutorisiert'
-      sname s = let Name n = Semester.name s
-                in n
   defaultLayout $ do
     $(widgetFile "semesters")
 
-autorisiertSemester :: Maybe (AuthId Autotool) -> Semester.Semester -> Handler [(Semester.Semester, Maybe (Route Autotool), Maybe (Route Autotool))]
+autorisiertSemester :: Maybe (AuthId Autotool) -> Entity Semester -> Handler [(Semester, Maybe (Route Autotool), Maybe (Route Autotool))]
 autorisiertSemester mid semester = do
-  let ENr s = Semester.enr semester
-      semesterRoute = VorlesungenR s
-      bearbeitenRoute = SemesterR s
+  let semesterRoute = VorlesungenR $ entityKey semester
+      bearbeitenRoute = SemesterR $ entityKey semester
       ist (Just True) route = Just route
       ist _ _ = Nothing
   autorisiertS <- istAutorisiert mid semesterRoute
   autorisiertB <- istAutorisiert mid bearbeitenRoute
   if autorisiertS == Just True || autorisiertB == Just True
-     then return [(semester
+     then return [(entityVal semester
                   ,ist autorisiertS semesterRoute
                   ,ist autorisiertB bearbeitenRoute)]
      else return []

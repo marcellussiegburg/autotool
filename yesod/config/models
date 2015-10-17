@@ -4,3 +4,10 @@ Schule sql=schule
   mailSuffix        Text Maybe sql=Mail_Suffix
   useShibboleth     Bool       sql=Use_Shibboleth
   preferredLanguage Language   sql=Preferred_Language
+
+Semester sql=semester
+  Id                           sql=ENr
+  schuleId          SchuleId   sql=UNr
+  name              Text       sql=Name
+  von               UTCTime    sql=Von
+  bis               UTCTime    sql=Bis

@@ -10,6 +10,7 @@ import Data.Function (id, ($))
 import Data.Functor (fmap)
 import Data.Int (Int)
 import Data.Maybe (Maybe (Just, Nothing), maybe)
+import Data.Ord ((<), (<=))
 import Data.Text (Text, unpack, pack)
 import Data.Text.Read (decimal, signed)
 import Data.Time (Day, TimeOfDay (TimeOfDay), UTCTime (UTCTime), fromGregorian, timeOfDayToTime, timeToTimeOfDay, todHour, todMin, todSec, toGregorian, utctDay, utctDayTime)
@@ -32,7 +33,6 @@ type AufgabeKonfiguration = Text
 type AufgabeTyp = Text
 type GruppeId = Int
 type VorlageName = Text
-type SemesterId = Int
 type ServerUrl = Text
 type StudentId = Int
 type VorlesungId = Int
@@ -85,3 +85,11 @@ taskTreeToTextTree taskTree = case taskTree of
       rootLabel = pack name,
       subForest = fmap taskTreeToTextTree $ taskTrees
     }
+
+zeitStatus :: UTCTime -> UTCTime -> UTCTime -> TimeStatus
+zeitStatus von bis time =
+  if time < von
+  then Early
+  else if time <= bis
+       then Current
+       else Late

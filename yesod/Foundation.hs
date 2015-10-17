@@ -47,8 +47,6 @@ import qualified Control.Gruppe.DB as GruppeDB
 import qualified Control.Gruppe.Typ as Gruppe
 import qualified Control.Schule.DB as SchuleDB
 import qualified Control.Schule.Typ as Schule
-import qualified Control.Semester.DB as SemesterDB
-import qualified Control.Semester.Typ as Semester
 import qualified Control.Student.DB as StudDB
 import qualified Control.Student.Type as Student
 import qualified Control.Tutor.DB as TutorDB
@@ -361,7 +359,7 @@ navigationMenu mroute authId = do
   aufgabe' <- filterBerechtigte $ aufgabe <$> aufg
   einsendung' <- filterBerechtigte $ einsendung <$> aufg <*> stud
   schuName <- schuleName' schu
-  semName <- liftIO $ semesterName sem
+  semName <- semesterName' sem
   vorlName <- liftIO $ vorlesungName vorl
   grupName <- liftIO $ gruppeName grup
   aufgName <- liftIO $ aufgabeName aufg
@@ -380,8 +378,12 @@ schuleName' mschuleId = runMaybeT $ do
   return $ schuleName schule
 
 -- | Liefert den Semesternamen zur Id des Semesters
-semesterName :: Maybe SemesterId -> IO (Maybe Text)
-semesterName = getName ENr SemesterDB.get_this Semester.name
+semesterName' :: Maybe SemesterId -> Handler (Maybe Text)
+semesterName' msemesterId = runMaybeT $ do
+  semesterId <- MaybeT . return $ msemesterId
+  msemester <- lift $ runDB $ get semesterId
+  semester <- MaybeT . return $ msemester
+  return $ semesterName semester
 
 -- | Liefert den Vorlesungsnamen zur Id der Vorlesung
 vorlesungName :: Maybe VorlesungId -> IO (Maybe Text)
@@ -416,21 +418,21 @@ routeInformation route = case routeParameter route of
    Just parameter -> case parameter of
      SchuleRoute schule -> return $ fromTuple6 $ Tuple6_1 schule
      SemesterRoute semester -> do
-       schule <- liftIO $ getSchule $ Just semester
+       schule <- getSchule $ Just semester
        return $ fromTuple6 $ toTuple6 (schule, Just semester, Nothing, Nothing, Nothing, Nothing)
      VorlesungRoute vorlesung -> do
        semester <- liftIO $ getSemester $ Just vorlesung
-       schule <- liftIO $ getSchule semester
+       schule <- getSchule semester
        return $ fromTuple6 $ toTuple6 (schule, semester, Just vorlesung, Nothing, Nothing, Nothing)
      GruppeRoute gruppe -> do
        vorlesung <- liftIO $ getVorlesung $ Just gruppe
        semester <- liftIO $ getSemester vorlesung
-       schule <- liftIO $ getSchule semester
+       schule <- getSchule semester
        return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just gruppe, Nothing, Nothing)
      AufgabeRoute aufgabe -> do
        vorlesung <- liftIO $ getVorlesungAufgabe $ Just aufgabe
        semester <- liftIO $ getSemester vorlesung
-       schule <- liftIO $ getSchule semester
+       schule <- getSchule semester
        case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
          (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Nothing)
          _ -> return $ fromTuple6 Tuple6_0
@@ -438,7 +440,7 @@ routeInformation route = case routeParameter route of
      EinsendungRoute aufgabe student -> do
        vorlesung <- liftIO $ getVorlesungAufgabe $ Just aufgabe
        semester <- liftIO $ getSemester vorlesung
-       schule <- liftIO $ getSchule semester
+       schule <- getSchule semester
        case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
          (Just _, Just _, Just _, _,_,_) -> return (schule, semester, vorlesung, Nothing, Just aufgabe, Just student)
          _ -> return $ fromTuple6 Tuple6_0
@@ -457,12 +459,12 @@ serverRouteInformation mroute = case mroute of
     _ -> (Nothing, Nothing, Nothing, Nothing, Nothing)
 
 -- | Liefert ggf. die Schule zu einem Semester
-getSchule :: Maybe SemesterId -> IO (Maybe SchuleId)
-getSchule msemester = runMaybeT $ do
-  semester <- MaybeT $ return msemester
-  semesters <- lift $ SemesterDB.get_this $ ENr semester
-  UNr schuleId <- MaybeT $ return $ listToMaybe $ map Semester.unr semesters
-  return $ intToKey schuleId
+getSchule :: Maybe SemesterId -> Handler (Maybe SchuleId)
+getSchule msemesterId = runMaybeT $ do
+  semesterId <- MaybeT $ return msemesterId
+  msemester <- lift $ runDB $ get semesterId
+  semester <- MaybeT . return $ msemester
+  return $ semesterSchuleId semester
 
 -- | Liefert ggf. das Semester zu einer Vorlesung
 getSemester :: Maybe VorlesungId -> IO (Maybe SemesterId)
@@ -470,7 +472,7 @@ getSemester mvorlesung = runMaybeT $ do
   vorlesung <- MaybeT $ return mvorlesung
   vorlesungen <- lift $ VorlesungDB.get_this $ VNr vorlesung
   ENr semesterId <- MaybeT $ return $ listToMaybe $ map Vorlesung.enr vorlesungen
-  return semesterId
+  return $ intToKey semesterId
 
 -- | Liefert ggf. die Vorlesung zu einer Gruppe
 getVorlesung :: Maybe GruppeId -> IO (Maybe VorlesungId)

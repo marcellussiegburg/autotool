@@ -40,7 +40,7 @@ postVorlesungR vorlesung = do
           lift $ VorlesungDB.delete $ vnr vorlesung'
           setMessageI MsgVorlesungEntfernt
           let ENr s = enr vorlesung'
-          redirect $ VorlesungenR s
+          redirect $ VorlesungenR $ intToKey s
   defaultLayout $
     $(widgetFile "vorlesung")
 
@@ -55,10 +55,10 @@ vorlesungForm mvorlesung = do
     <*> (toName <$> areq textField (bfs MsgVorlesungName) (fromName . name <$> mvorlesung))
     <*> ((\day time -> utcTimeToTime $ UTCTime day time)
          <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungBeginnDatum) (utctDay . timeToUTCTime . einschreibVon <$> mvorlesung)
-         <*> (timeOfDayToTime <$> areq timeField (bfs MsgEinschreibungBeginnZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . einschreibVon <$> mvorlesung)))
+         <*> (timeOfDayToTime <$> areq timeFieldTypeTime (bfs MsgEinschreibungBeginnZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . einschreibVon <$> mvorlesung)))
     <*> ((\day time -> utcTimeToTime $ UTCTime day time)
          <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungEndeDatum) (utctDay . timeToUTCTime . einschreibBis <$> mvorlesung)
-         <*> (timeOfDayToTime <$> areq timeField (bfs MsgEinschreibungEndeZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . einschreibBis <$> mvorlesung)))
+         <*> (timeOfDayToTime <$> areq timeFieldTypeTime (bfs MsgEinschreibungEndeZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . einschreibBis <$> mvorlesung)))
     <*> pure undefined
     <*> (toName . maybe "" id <$> aopt textField (bfs MsgTagesNachricht) (Just . fromName . motd  <$> mvorlesung))
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgVorlesungAnlegen (\ _ -> MsgVorlesungBearbeiten) mvorlesung) "btn-success" [])

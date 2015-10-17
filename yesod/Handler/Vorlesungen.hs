@@ -11,7 +11,7 @@ import Autolib.Util.Sort (sortBy)
 
 getVorlesungenR :: SemesterId -> Handler Html
 getVorlesungenR semester = do
-  vorlesungen <- lift $ get_at_semester $ ENr semester
+  vorlesungen <- lift $ get_at_semester $ ENr $ keyToInt semester
   let vorlesungenSortiert = reverse $ sortBy Vorlesung.einschreibVon vorlesungen
   mid <- maybeAuthId
   vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungenSortiert

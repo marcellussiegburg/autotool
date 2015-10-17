@@ -3,23 +3,19 @@ module Handler.SemesterAnlegen where
 import Import
 import Handler.Semester (semesterForm)
 
-import qualified Control.Semester.DB as SemesterDB
-import Control.Semester.Typ
-import Control.Types
-
 getSemesterAnlegenR :: SchuleId -> Handler Html
 getSemesterAnlegenR = postSemesterAnlegenR
 
 postSemesterAnlegenR :: SchuleId -> Handler Html
-postSemesterAnlegenR schule = do
-  _ <- runDB $ get404 schule
+postSemesterAnlegenR schuleId = do
+  _ <- runDB $ get404 schuleId
   ((result, formWidget), formEnctype) <- runFormPost $ semesterForm Nothing
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess semester' -> do
-      _ <- lift $ SemesterDB.put Nothing semester' { unr = UNr $ keyToInt $ schule }
+      semester <- runDB $ insert semester' { semesterSchuleId = schuleId }
       _ <- setMessageI MsgSemesterAngelegt
-      redirect $ SemestersR schule -- TODO: SemesterR verwenden (zu neu erstelltem Semester gehen)
+      redirect $ SemesterR semester
   defaultLayout $
-    formToWidget (SemesterAnlegenR schule) Nothing formEnctype formWidget
+    formToWidget (SemesterAnlegenR schuleId) Nothing formEnctype formWidget
