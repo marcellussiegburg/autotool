@@ -40,7 +40,7 @@ postGruppeR gruppe = do
           lift $ GruppeDB.delete $ gnr gruppe'
           setMessageI MsgGruppeEntfernt
           let VNr s = vnr gruppe'
-          redirect $ GruppenR s
+          redirect $ GruppenR $ intToKey s
   defaultLayout $
     $(widgetFile "gruppe")
 

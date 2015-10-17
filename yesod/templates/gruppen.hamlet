@@ -5,13 +5,13 @@
   $else
     _{MsgIstEingeschrieben}
 $if darfGruppenSehen == Just True
-  <a href=@{AufgabenAktuellR $ vorlesung} .btn .btn-default .btn-block role="button">_{MsgZuAufgaben}
+  <a href=@{AufgabenAktuellR $ vorlesungId} .btn .btn-default .btn-block role="button">_{MsgZuAufgaben}
 $if null gruppen
   <p>_{MsgKeineGruppen}
 $else
-  $maybe vorlesung'' <- listToMaybe vorlesung'
-    $if Vorlesung.einschreib vorlesung'' /= Current
-      <p>_{MsgEinschreibungDauer (timeToUTCTime $ Vorlesung.einschreibVon vorlesung'') $ timeToUTCTime $ Vorlesung.einschreibBis vorlesung''}
+  $maybe vorlesung <- mvorlesung
+    $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit /= Current
+      <p>_{MsgEinschreibungDauer (vorlesungVon vorlesung) $ vorlesungBis vorlesung}
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
@@ -37,9 +37,9 @@ $else
           <td>
             #{Gruppe.maxStudents gruppe}
           <td>
-            $maybe vorlesung'' <- listToMaybe vorlesung'
-              $if Vorlesung.einschreib vorlesung'' == Current
-                <form .form-inline role="form" action=@{GruppenR vorlesung} method="post" enctype=#{snd form}>
+            $maybe vorlesung <- mvorlesung
+              $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit == Current
+                <form .form-inline role="form" action=@{GruppenR vorlesungId} method="post" enctype=#{snd form}>
                   ^{fst form}
           <td>
             $if istTutor

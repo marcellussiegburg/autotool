@@ -3,10 +3,6 @@ module Handler.VorlesungAnlegen where
 import Import
 import Handler.Vorlesung (vorlesungForm)
 
-import qualified Control.Vorlesung.DB as VorlesungDB
-import Control.Vorlesung.Typ
-import Control.Types
-
 getVorlesungAnlegenR :: SemesterId -> Handler Html
 getVorlesungAnlegenR = postVorlesungAnlegenR
 
@@ -18,8 +14,8 @@ postVorlesungAnlegenR semesterId = do
     FormFailure _ -> return ()
     FormSuccess vorlesung' -> do
       Just semester <- runDB $ get semesterId
-      _ <- lift $ VorlesungDB.put Nothing vorlesung' { unr = UNr $ keyToInt $ semesterSchuleId semester, enr = ENr $ keyToInt semesterId }
+      vorlesungId <- runDB $ insert vorlesung' { vorlesungSchuleId = semesterSchuleId semester, vorlesungSemesterId = semesterId }
       _ <- setMessageI MsgVorlesungAngelegt
-      redirect $ VorlesungenR semesterId -- TODO: VorlesungR verwenden (zu neu erstellter Vorlesung gehen)
+      redirect $ VorlesungR vorlesungId
   defaultLayout $
     [whamlet|^{formToWidget (VorlesungAnlegenR semesterId) Nothing formEnctype formWidget}|]

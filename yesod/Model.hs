@@ -24,6 +24,7 @@ import Derive()
 
 import Autolib.Multilingual (Language (..))
 import qualified Control.Schule.Typ as Schule
+import qualified Control.Vorlesung.Typ as Vorlesung
 import Control.Types
 import Control.Time.Typ (Time (Time))
 import Types.TaskTree (TaskTree (Category, Task))
@@ -35,7 +36,6 @@ type GruppeId = Int
 type VorlageName = Text
 type ServerUrl = Text
 type StudentId = Int
-type VorlesungId = Int
 
 keyToInt = fromInteger . toInteger . fromSqlKey
 
@@ -50,6 +50,17 @@ entityToSchule key entity = Schule.Schule {
     Schule.preferred_language = schulePreferredLanguage entity,
     Schule.mail_suffix = Name $ unpack $ maybe "" id $ schuleMailSuffix entity,
     Schule.use_shibboleth = schuleUseShibboleth entity
+  }
+
+entityToVorlesung key entity = Vorlesung.Vorlesung {
+    Vorlesung.vnr = VNr $ keyToInt key,
+    Vorlesung.name = Name $ unpack $ vorlesungName entity,
+    Vorlesung.einschreibVon = utcTimeToTime $ vorlesungVon entity,
+    Vorlesung.einschreibBis = utcTimeToTime $ vorlesungBis entity,
+    Vorlesung.unr = UNr $ keyToInt $ vorlesungSchuleId entity,
+    Vorlesung.enr = ENr $ keyToInt $ vorlesungSemesterId entity,
+    Vorlesung.motd = Name $ unpack $ maybe "" id $ vorlesungNachricht entity,
+    Vorlesung.einschreib = Current
   }
 
 instance PathPiece UNr where

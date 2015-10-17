@@ -11,3 +11,12 @@ Semester sql=semester
   name              Text       sql=Name
   von               UTCTime    sql=Von
   bis               UTCTime    sql=Bis
+
+Vorlesung sql=vorlesung
+  Id                           sql=VNr
+  schuleId         SchuleId    sql=unr
+  semesterId       SemesterId  sql=ENr
+  name             Text        sql=Name
+  von              UTCTime     sql=EinschreibVon
+  bis              UTCTime     sql=EinschreibBis
+  nachricht        Text Maybe  sql=motd

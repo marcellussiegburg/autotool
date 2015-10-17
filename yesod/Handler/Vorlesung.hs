@@ -2,10 +2,6 @@ module Handler.Vorlesung where
 
 import Import
 
-import Control.Vorlesung.DB as VorlesungDB
-import Control.Vorlesung.Typ
-import Control.Types
-
 erstellen :: Text
 erstellen = "erstellen"
 
@@ -16,14 +12,14 @@ getVorlesungR :: VorlesungId -> Handler Html
 getVorlesungR = postVorlesungR
 
 postVorlesungR :: VorlesungId -> Handler Html
-postVorlesungR vorlesung = do
-  mvorlesung <- lift $ liftM listToMaybe $ VorlesungDB.get_this $ VNr vorlesung
-  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm erstellen $ vorlesungForm mvorlesung
+postVorlesungR vorlesungId = do
+  vorlesung <- runDB $ get404 vorlesungId
+  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm erstellen $ vorlesungForm $ Just vorlesung
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess vorlesung' -> do
-      _ <- lift $ VorlesungDB.put (Just $ vnr vorlesung') vorlesung'
+      _ <- runDB $ replace vorlesungId vorlesung'
       setMessageI MsgVorlesungBearbeitet
   ((entfernenResult, _), _) <- runFormPost $ identifyForm entfernen $ entfernenForm Nothing
   (entfernenWidget, entfernenEnctype) <- case entfernenResult of
@@ -32,35 +28,25 @@ postVorlesungR vorlesung = do
     FormFailure _ ->
       generateFormPost $ identifyForm entfernen $ entfernenForm $ Just entfernen
     FormSuccess _ -> do
-      case mvorlesung of
-        Nothing -> do
-          setMessageI MsgFehler
-          redirect SchulenR
-        Just vorlesung' -> do
-          lift $ VorlesungDB.delete $ vnr vorlesung'
-          setMessageI MsgVorlesungEntfernt
-          let ENr s = enr vorlesung'
-          redirect $ VorlesungenR $ intToKey s
+      runDB $ delete vorlesungId
+      setMessageI MsgVorlesungEntfernt
+      redirect $ VorlesungenR $ vorlesungSemesterId vorlesung
   defaultLayout $
     $(widgetFile "vorlesung")
 
 vorlesungForm :: Maybe Vorlesung -> Form Vorlesung
 vorlesungForm mvorlesung = do
-  let fromName = pack . toString
-      toName = Name . unpack
   renderBootstrap3 BootstrapBasicForm $ Vorlesung
-    <$> pure (maybe undefined vnr mvorlesung)
-    <*> pure (maybe undefined unr mvorlesung)
-    <*> pure (maybe undefined enr mvorlesung)
-    <*> (toName <$> areq textField (bfs MsgVorlesungName) (fromName . name <$> mvorlesung))
-    <*> ((\day time -> utcTimeToTime $ UTCTime day time)
-         <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungBeginnDatum) (utctDay . timeToUTCTime . einschreibVon <$> mvorlesung)
-         <*> (timeOfDayToTime <$> areq timeFieldTypeTime (bfs MsgEinschreibungBeginnZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . einschreibVon <$> mvorlesung)))
-    <*> ((\day time -> utcTimeToTime $ UTCTime day time)
-         <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungEndeDatum) (utctDay . timeToUTCTime . einschreibBis <$> mvorlesung)
-         <*> (timeOfDayToTime <$> areq timeFieldTypeTime (bfs MsgEinschreibungEndeZeit) (timeToTimeOfDay . utctDayTime . timeToUTCTime . einschreibBis <$> mvorlesung)))
-    <*> pure undefined
-    <*> (toName . maybe "" id <$> aopt textField (bfs MsgTagesNachricht) (Just . fromName . motd  <$> mvorlesung))
+    <$> pure (maybe undefined vorlesungSchuleId mvorlesung)
+    <*> pure (maybe undefined vorlesungSemesterId mvorlesung)
+    <*> (areq textField (bfs MsgVorlesungName) (vorlesungName <$> mvorlesung))
+    <*> (UTCTime
+         <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungBeginnDatum) (utctDay . vorlesungVon <$> mvorlesung)
+         <*> (timeOfDayToTime <$> areq timeFieldTypeTime (bfs MsgEinschreibungBeginnZeit) (timeToTimeOfDay . utctDayTime . vorlesungVon <$> mvorlesung)))
+    <*> (UTCTime
+         <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungEndeDatum) (utctDay . vorlesungBis <$> mvorlesung)
+         <*> (timeOfDayToTime <$> areq timeFieldTypeTime (bfs MsgEinschreibungEndeZeit) (timeToTimeOfDay . utctDayTime . vorlesungBis <$> mvorlesung)))
+    <*> aopt textField (bfs MsgTagesNachricht) (vorlesungNachricht  <$> mvorlesung)
     <* bootstrapSubmit (BootstrapSubmit (maybe MsgVorlesungAnlegen (\ _ -> MsgVorlesungBearbeiten) mvorlesung) "btn-success" [])
 
 entfernenForm :: Maybe Text -> Form Text

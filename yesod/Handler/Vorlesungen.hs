@@ -4,41 +4,28 @@ import Import
 
 import Handler.Semesters (listGroupItemClass)
 
-import Control.SQL (equals, reed, toEx)
-import qualified Control.Vorlesung as Vorlesung
-import Control.Types
-import Autolib.Util.Sort (sortBy)
+import Data.Time (getCurrentTime)
 
 getVorlesungenR :: SemesterId -> Handler Html
 getVorlesungenR semester = do
-  vorlesungen <- lift $ get_at_semester $ ENr $ keyToInt semester
-  let vorlesungenSortiert = reverse $ sortBy Vorlesung.einschreibVon vorlesungen
+  vorlesungen <- runDB $ selectList [VorlesungSemesterId ==. semester] [Desc VorlesungVon]
   mid <- maybeAuthId
-  vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungenSortiert
+  vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungen
   let vorlesungenAutorisiert = concat vorlesungenAutorisiert'
-      vname v = let Name n = Vorlesung.name v
-                in n
-      vmotd v = let Name m = Vorlesung.motd v
-                in m
+  zeit <- liftIO $ getCurrentTime
   defaultLayout $ do
     $(widgetFile "vorlesungen")
 
-autorisiertVorlesung :: Maybe (AuthId Autotool) -> Vorlesung.Vorlesung -> Handler [(Vorlesung.Vorlesung, Maybe (Route Autotool), Maybe (Route Autotool))]
+autorisiertVorlesung :: Maybe (AuthId Autotool) -> Entity Vorlesung -> Handler [(Vorlesung, Maybe (Route Autotool), Maybe (Route Autotool))]
 autorisiertVorlesung mid vorlesung = do
-  let VNr v = Vorlesung.vnr vorlesung
-      vorlesungRoute = GruppenR v
-      bearbeitenRoute = VorlesungR v
+  let vorlesungRoute = GruppenR $ entityKey vorlesung
+      bearbeitenRoute = VorlesungR $ entityKey vorlesung
       ist (Just True) route = Just route
       ist _ _ = Nothing
   autorisiertS <- istAutorisiert mid vorlesungRoute
   autorisiertB <- istAutorisiert mid bearbeitenRoute
   if autorisiertS == Just True || autorisiertB == Just True
-     then return [(vorlesung
+     then return [(entityVal vorlesung
                   ,ist autorisiertS vorlesungRoute
                   ,ist autorisiertB bearbeitenRoute)]
      else return []
-
-get_at_semester :: ENr -> IO [ Vorlesung.Vorlesung ]
-get_at_semester enr =
-    Vorlesung.get_from_where (map reed ["vorlesung"])
-           (equals (reed "vorlesung.ENr") (toEx enr))

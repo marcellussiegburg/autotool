@@ -23,11 +23,11 @@ aufgabenListe disp vorlesung = do
   Just (MNr mnr) <- liftM (fmap Student.mnr . listToMaybe) $ lift $ StudentDB.get_unr $ UNr stud
   istTutor <- do
     vorlesungen <- lift $ VorlesungDB.get_tutored $ SNr stud
-    return $ VNr vorlesung `elem` map Vorlesung.vnr vorlesungen
+    return $ VNr (keyToInt vorlesung) `elem` map Vorlesung.vnr vorlesungen
   istEingeschrieben <- do
-    einschreibungen <- lift $ VorlesungDB.snr_teilnehmer $ VNr vorlesung
+    einschreibungen <- lift $ VorlesungDB.snr_teilnehmer $ VNr $ keyToInt vorlesung
     return $ SNr stud `elem` einschreibungen
-  aufgaben <- lift $ AufgabeDB.get $ Just $ VNr vorlesung
+  aufgaben <- lift $ AufgabeDB.get $ Just $ VNr $ keyToInt vorlesung
   ergebnisse <- sequence $ do
     aufgabe <- aufgaben
     return $ do

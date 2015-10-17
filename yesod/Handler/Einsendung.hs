@@ -148,7 +148,7 @@ updateSignatur aufgabe =
       Left fehler -> do
         setMessage fehler
         let T.VNr vorlesungId = Aufgabe.vnr aufgabe
-        redirectWith temporaryRedirect307 $ VorlesungR vorlesungId
+        redirectWith temporaryRedirect307 $ VorlesungR $ intToKey vorlesungId
       Right signed -> do
         let aufgabe'' = aufgabe { Aufgabe.signature = T.fromCGI $ signature signed }
         liftIO $ AufgabeDB.put_signature (Just $ Aufgabe.anr aufgabe'') aufgabe''

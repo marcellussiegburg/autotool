@@ -51,10 +51,10 @@ getStudentenR :: VorlesungId -> Handler Html
 getStudentenR = studentenListe KeineAufgaben
 
 studentenListe :: Aufgaben -> VorlesungId -> Handler Html
-studentenListe auswahl vorlesung = do
-  einschreibungen <- liftIO $ VorlesungDB.snr_gnr_teilnehmer $ T.VNr vorlesung
+studentenListe auswahl vorlesungId = do
+  einschreibungen <- liftIO $ VorlesungDB.snr_gnr_teilnehmer $ T.VNr $ keyToInt vorlesungId
   gruppen <- liftIO $ liftM concat $ mapM GruppeDB.get_gnr $ nub $ fmap snd einschreibungen
-  alleAufgaben <- liftIO $ AufgabeDB.get $ Just $ T.VNr vorlesung
+  alleAufgaben <- liftIO $ AufgabeDB.get $ Just $ T.VNr $ keyToInt vorlesungId
   let aufgaben = do
         aufgabe <- alleAufgaben
         guard $ case auswahl of

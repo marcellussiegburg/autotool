@@ -3,22 +3,21 @@ module Handler.Tutoren where
 import Import
 import Handler.DirektorErnennen (StudentenSeite (..), rolleSetzenListe)
 import qualified Control.Tutor.DB as TutorDB
-import qualified Control.Vorlesung.DB as VorlesungDB
-import Control.Types
 
 getTutorenR :: VorlesungId -> Handler Html
 getTutorenR = postTutorenR
 
 postTutorenR :: VorlesungId -> Handler Html
-postTutorenR vorlesung = do
-  vorlesung' <- lift $ VorlesungDB.get_this $ VNr vorlesung
-  let tutoren = liftM concat $ mapM TutorDB.get_tutors vorlesung'
+postTutorenR vorlesungId = do
+  mvorlesung <- runDB $ get vorlesungId
+  let mvorlesung' = maybeToList $ fmap (entityToVorlesung vorlesungId) mvorlesung
+  let tutoren = liftM concat $ mapM TutorDB.get_tutors $ mvorlesung'
       studentenSeite = StudentenSeite {
         nullStudenten = MsgKeineTutoren,
         submit = BootstrapSubmit MsgTutorAbsetzen "btn-danger btn-block" [],
         erfolgMsg = MsgTutorAbgesetzt,
-        formRoute = TutorenR vorlesung,
+        formRoute = TutorenR vorlesungId,
         getOp = tutoren,
-        setOp = \stud -> sequence_ $ map (TutorDB.delete stud) vorlesung'
+        setOp = \stud -> sequence_ $ fmap (TutorDB.delete stud) mvorlesung'
       }
   rolleSetzenListe studentenSeite

@@ -77,7 +77,7 @@ postEinsendungAnlegenR aufgabeId = do
     Left fehler -> do
       setMessage fehler
       let T.VNr vorlesungId = Aufgabe.vnr aufgabe
-      redirect $ AufgabenR vorlesungId
+      redirect $ AufgabenR $ intToKey vorlesungId
     Right signed' -> return signed'
   mvorherigeEinsendung <- runMaybeT $ do
     maktion <- lookupPostParam $ pack $ show aktion

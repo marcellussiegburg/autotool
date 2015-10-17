@@ -67,10 +67,10 @@ $else
 <nav>
   <ul .pager>
     <li .previous>
-      <a href=@{link (davor auswahl) vorlesung}>
+      <a href=@{link (davor auswahl) vorlesungId}>
         <span aria-hidden="true">&larr;
         &nbsp;_{titel $ davor auswahl}
     <li .next>
-      <a href=@{link (danach auswahl) vorlesung}>
+      <a href=@{link (danach auswahl) vorlesungId}>
         _{titel $ danach auswahl}&nbsp;
         <span aria-hidden="true">&rarr;

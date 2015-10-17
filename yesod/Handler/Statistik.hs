@@ -58,7 +58,7 @@ postStatistikR aufgabeId = do
       Bearbeiten -> bewertungenSchreiben studenten aufgabe
       CacheLeeren m ->
         let T.VNr vorlesungId = Aufgabe.vnr aufgabe
-        in cacheLeeren m vorlesungId aufgabeId
+        in cacheLeeren m (intToKey vorlesungId) aufgabeId
   einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr aufgabeId
   ergebnisse <- getErgebnisListe einsendungen studenten
   optionen' <- optionsPairs optionen

@@ -58,7 +58,7 @@ aufgabeTemplate eidAufgabe = do
       Anlegen -> do
         vorlesungId <- MaybeT . return $ leftToMaybe eidAufgabe
         aufgabe' <- MaybeT . return $ aufgabeBearbeiten results (fromCGI . signature <$> msignedK) Nothing
-        let aufgabe'' = aufgabe' { A.vnr = VNr vorlesungId }
+        let aufgabe'' = aufgabe' { A.vnr = VNr $ keyToInt vorlesungId }
         lift $ lift $ AufgabeDB.put Nothing aufgabe''
         lift $ setMessageI MsgAufgabeAngelegt
         redirect $ AufgabenR vorlesungId -- TODO: redirect $ AufgabeR aufgabeId
@@ -72,14 +72,14 @@ aufgabeTemplate eidAufgabe = do
         lift $ lift $ AufgabeDB.delete $ A.anr aufgabe
         lift $ setMessageI MsgAufgabeEntfernt
         let VNr vorlesungId = A.vnr aufgabe
-        redirect $ AufgabenR vorlesungId
+        redirect $ AufgabenR $ intToKey vorlesungId
   (beispielKonfiguration, ktyp) <- maybe (return ("","")) id $
     getBeispielKonfiguration <$> mserver <*> mtyp
   mvorlageKonfiguration <- sequence $ getVorlageKonfiguration <$> Just beispielKonfiguration <*> mtyp <*> (maybe "" id <$> mvorlage)
   mhinweisFehler <- liftM join $ sequence $ getKonfigurationFehler <$> mserver <*> mtyp <*> maybe mvorlageKonfiguration Just mkonfiguration
   let matrikel = MNr "11111" -- TODO auswählbar machen
       crc = case eidAufgabe of
-        Left v -> getCrc (VNr v) Nothing matrikel
+        Left v -> getCrc (VNr $ keyToInt v) Nothing matrikel
         Right aufgabe -> getCrc (A.vnr aufgabe) (Just $ A.anr aufgabe) matrikel
   (msignedA, meinsendung, atyp, maufgabenstellung) <-
     liftM (maybe (Nothing, Nothing, "" :: Html, Nothing)

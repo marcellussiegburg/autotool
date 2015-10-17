@@ -4,29 +4,29 @@ import Import
 import qualified Control.Gruppe.DB as GruppeDB
 import qualified Control.Gruppe.Typ as Gruppe
 import qualified Control.Stud_Grp.DB as EinschreibungDB
-import qualified Control.Vorlesung.DB as VorlesungDB
-import qualified Control.Vorlesung.Typ as Vorlesung
 import Control.Types
+import Data.Time (getCurrentTime)
 
 getGruppenR :: VorlesungId -> Handler Html
 getGruppenR = postGruppenR
 
 postGruppenR :: VorlesungId -> Handler Html
-postGruppenR vorlesung = do
+postGruppenR vorlesungId = do
   mid <- maybeAuthId
-  gruppen <- lift $ GruppeDB.get_this $ VNr vorlesung
-  gruppenBesucht <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr vorlesung) (SNr ms)) mid
-  istTutor' <- istAutorisiert mid $ VorlesungR vorlesung
-  vorlesung' <- lift $ VorlesungDB.get_this $ VNr vorlesung
+  gruppen <- lift $ GruppeDB.get_this $ VNr $ keyToInt vorlesungId
+  gruppenBesucht <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr $ keyToInt vorlesungId) (SNr ms)) mid
+  istTutor' <- istAutorisiert mid $ VorlesungR vorlesungId
+  mvorlesung <- runDB $ get vorlesungId
   _ <- mapM (formAuswerten mid gruppenBesucht) gruppen
-  gruppenBesucht' <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr vorlesung) (SNr ms)) mid
+  gruppenBesucht' <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr $ keyToInt vorlesungId) (SNr ms)) mid
   gruppenForms <- mapM (generiereForm gruppenBesucht') gruppen
-  darfGruppenSehen <- istAutorisiert mid $ AufgabenAktuellR vorlesung
+  darfGruppenSehen <- istAutorisiert mid $ AufgabenAktuellR vorlesungId
   let istTutor = istTutor' == Just True
       fromName name = let Name n = name
                       in n
       fromGNr gnr = let GNr nr = gnr
                     in nr
+  zeit <- liftIO $ getCurrentTime
   defaultLayout $ do
     $(widgetFile "gruppen")
 
