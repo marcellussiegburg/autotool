@@ -14,7 +14,7 @@ getVorlesungR = postVorlesungR
 postVorlesungR :: VorlesungId -> Handler Html
 postVorlesungR vorlesungId = do
   vorlesung <- runDB $ get404 vorlesungId
-  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm erstellen $ vorlesungForm $ Just vorlesung
+  ((result, formWidget), formEnctype) <- runFormPost $ identifyForm erstellen $ vorlesungForm (vorlesungSchuleId vorlesung) (vorlesungSemesterId vorlesung) $ Just vorlesung
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
@@ -34,11 +34,11 @@ postVorlesungR vorlesungId = do
   defaultLayout $
     $(widgetFile "vorlesung")
 
-vorlesungForm :: Maybe Vorlesung -> Form Vorlesung
-vorlesungForm mvorlesung = do
+vorlesungForm :: SchuleId -> SemesterId -> Maybe Vorlesung -> Form Vorlesung
+vorlesungForm schuleId semesterId mvorlesung = do
   renderBootstrap3 BootstrapBasicForm $ Vorlesung
-    <$> pure (maybe undefined vorlesungSchuleId mvorlesung)
-    <*> pure (maybe undefined vorlesungSemesterId mvorlesung)
+    <$> pure schuleId
+    <*> pure semesterId
     <*> (areq textField (bfs MsgVorlesungName) (vorlesungName <$> mvorlesung))
     <*> (UTCTime
          <$> areq (jqueryDayField def) (bfsFormControl MsgEinschreibungBeginnDatum) (utctDay . vorlesungVon <$> mvorlesung)

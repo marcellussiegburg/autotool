@@ -8,7 +8,7 @@ getSemesterR = postSemesterR
 postSemesterR :: SemesterId -> Handler Html
 postSemesterR semesterId = do
   semester <- runDB $ get404 semesterId
-  ((result, formWidget), formEnctype) <- runFormPost $ semesterForm $ Just semester
+  ((result, formWidget), formEnctype) <- runFormPost $ semesterForm (semesterSchuleId semester) $ Just semester
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
@@ -18,10 +18,10 @@ postSemesterR semesterId = do
   defaultLayout $
     formToWidget (SemesterR semesterId) Nothing formEnctype formWidget
 
-semesterForm :: Maybe Semester -> Form Semester
-semesterForm msemester = do
+semesterForm :: SchuleId -> Maybe Semester -> Form Semester
+semesterForm schuleId msemester = do
   renderBootstrap3 BootstrapBasicForm $ Semester
-    <$> pure (maybe undefined semesterSchuleId msemester)
+    <$> pure schuleId
     <*> areq textField (bfs MsgSemesterName) (semesterName <$> msemester)
     <*> (UTCTime
          <$> areq (jqueryDayField def) (bfsFormControl MsgSemesterBeginnDatum) (utctDay . semesterVon <$> msemester)

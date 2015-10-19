@@ -8,13 +8,13 @@ getVorlesungAnlegenR = postVorlesungAnlegenR
 
 postVorlesungAnlegenR :: SemesterId -> Handler Html
 postVorlesungAnlegenR semesterId = do
-  ((result, formWidget), formEnctype) <- runFormPost $ vorlesungForm Nothing
+  Just semester <- runDB $ get semesterId
+  ((result, formWidget), formEnctype) <- runFormPost $ vorlesungForm (semesterSchuleId semester) semesterId Nothing
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess vorlesung' -> do
-      Just semester <- runDB $ get semesterId
-      vorlesungId <- runDB $ insert vorlesung' { vorlesungSchuleId = semesterSchuleId semester, vorlesungSemesterId = semesterId }
+      vorlesungId <- runDB $ insert vorlesung'
       _ <- setMessageI MsgVorlesungAngelegt
       redirect $ VorlesungR vorlesungId
   defaultLayout $

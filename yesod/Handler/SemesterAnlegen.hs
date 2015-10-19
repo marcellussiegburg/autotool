@@ -9,7 +9,7 @@ getSemesterAnlegenR = postSemesterAnlegenR
 postSemesterAnlegenR :: SchuleId -> Handler Html
 postSemesterAnlegenR schuleId = do
   _ <- runDB $ get404 schuleId
-  ((result, formWidget), formEnctype) <- runFormPost $ semesterForm Nothing
+  ((result, formWidget), formEnctype) <- runFormPost $ semesterForm schuleId Nothing
   case result of
     FormMissing -> return ()
     FormFailure _ -> return ()
