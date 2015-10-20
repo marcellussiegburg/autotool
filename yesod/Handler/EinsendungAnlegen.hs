@@ -79,22 +79,26 @@ postEinsendungAnlegenR aufgabeId = do
       let T.VNr vorlesungId = Aufgabe.vnr aufgabe
       redirect $ AufgabenR $ intToKey vorlesungId
     Right signed' -> return signed'
+  ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm einsendungHochladenForm
+  let mfile = case resultUpload of
+        FormSuccess f -> Just f
+        _ -> Nothing
   mvorherigeEinsendung <- runMaybeT $ do
     maktion <- lookupPostParam $ pack $ show aktion
-    aktion' <- MaybeT . return $ maktion
-    case read $ unpack aktion' of
-      VorherigeEinsendungLaden -> do
-        mvorherigeEinsendung' <- lift $ getVorherigeEinsendung mstudent aufgabe
-        MaybeT . return $ mvorherigeEinsendung'
-      BeispielLaden -> MaybeT . return $ Nothing
+    let vorher = do
+          mvorherigeEinsendung' <- lift $ getVorherigeEinsendung mstudent aufgabe
+          maktuelleEinsendung <- lift $ getMaybeEinsendung mfile
+          MaybeT . return $ maybe mvorherigeEinsendung' Just maktuelleEinsendung
+    case maktion of
+      Nothing -> vorher
+      Just aktion' ->
+        case read $ unpack aktion' of
+          VorherigeEinsendungLaden -> vorher
+          BeispielLaden -> MaybeT . return $ Nothing
   (signed', beispiel, atyp, aufgabenstellung) <-
     getAufgabeInstanz server signed $ getCrc (Aufgabe.vnr aufgabe) (Just $ Aufgabe.anr aufgabe) (Student.mnr student)
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just $ fromMaybe beispiel mvorherigeEinsendung
-  ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm einsendungHochladenForm
   let hinweis = pack . T.toString $ Aufgabe.remark aufgabe
-      mfile = case resultUpload of
-        FormSuccess f -> Just f
-        _ -> Nothing
       hochladenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just hochladen
       eingebenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just eingeben
   mbewertung' <- getBewertung server signed' mfile
