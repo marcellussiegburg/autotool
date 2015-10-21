@@ -3,7 +3,7 @@
 module Model where
 
 import Prelude (Integer, div, fromInteger, toInteger, (^), (*), (.))
-import Data.Bool (Bool)
+import Data.Bool (Bool, otherwise)
 import Data.Either (Either (Right))
 import Data.Fixed (Fixed (MkFixed))
 import Data.Function (id, ($))
@@ -98,9 +98,7 @@ taskTreeToTextTree taskTree = case taskTree of
     }
 
 zeitStatus :: UTCTime -> UTCTime -> UTCTime -> TimeStatus
-zeitStatus von bis time =
-  if time < von
-  then Early
-  else if time <= bis
-       then Current
-       else Late
+zeitStatus von bis time
+  | time < von = Early
+  | time <= bis = Current
+  | otherwise = Late

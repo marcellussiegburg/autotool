@@ -3,6 +3,7 @@
 /robots.txt                               RobotsR               GET
 
 /auth                                     AuthR                 Auth   getAuth
+/sprache/#Text/#Text                      SpracheR              GET
 
 /                                         HomeR                 GET
 /schule                                   SchuleAnlegenR        GET    POST      !admin

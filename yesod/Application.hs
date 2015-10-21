@@ -60,6 +60,7 @@ import Handler.Vorlesung
 import Handler.VorlesungAnlegen
 import Handler.Vorlesungen
 import Handler.Waisenkinder
+import Handler.Sprache
 
 mkYesodDispatch "Autotool" resourcesAutotool
 

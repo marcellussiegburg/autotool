@@ -3,6 +3,9 @@ Default: &defaults
   port: 3000
   approot: ""
   copyright: Autotool is Free Software released under the GNU / GPL License.
+  languages:
+    - "de"
+    - "en"
   #analytics: UA-YOURCODE
 
 Development:

@@ -140,7 +140,7 @@ aufgabeEinsendenForm checkMethode typ meinsendung =
     einsendenField = checkMMap (\ (Textarea einsendung) -> do
         check' <- checkMethode einsendung
         case check' of
-          Left _ -> return $ Left MsgFehler
+          Left _ -> return $ Left MsgEinsendungFalsch
           Right _ -> return $ Right einsendung
       ) Textarea textareaField
 

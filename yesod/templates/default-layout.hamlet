@@ -23,14 +23,20 @@
               <form .navbar-form role="form" method="get" action=@{AuthR LoginR}>
                 <button type="submit" .btn .btn-success>_{MsgAnmelden}
           <li>
-            <a href="#language" .flagg>
-              <img src=@{StaticR img_flags_48_de_png}>
+            <a href=@{SpracheR nextLang $ pack $ show route} .flagg>
+              $maybe flag <- getFlag nextLang
+                <img src=@{StaticR flag}>
+              $nothing
+                nextLang
 <div .container>
   <div #main role=main>
     $maybe msg <- mmsg
-      <div #message>#{msg}
+      <div #message .alert .alert-info role="alert">
+        <button type="button" .close data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;
+        #{msg}
     $maybe titel <- mtitel
-      <h1>_{titel}
+      <div .page-header>
+        <h1>_{titel}
     ^{widget}
 <footer>
   <div .container>

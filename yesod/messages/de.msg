@@ -84,6 +84,7 @@ EinsendungBewerten: Neu Bewerten
 EinsendungBewertung: Bewertung
 EinsendungBewertungAlt: Alte Bewertung
 EinsendungBewertungNotwendig: Das Bewertungsfeld darf nicht leer sein.
+EinsendungFalsch: Die Einsendung ist keine Lösung der Aufgabenstellung. Bitte die Hinweise beachten!
 Email: E-Mail
 Fehler: Ein Fehler ist aufgetreten
 Gesamtpunktzahl: Total
@@ -131,6 +132,7 @@ Matrikelnummer: Matrikelnummer
 Name: Name
 Nein: Nein
 Neins: Nein
+NeueSprache: Deutsch wurde als Sprache der Oberfläche gewählt.
 NichtAutorisiert: Sie sind für diese Anfrage leider nicht autorisiert. Die Anfrage wurde zurückgewiesen und der Zugriff verweigert.
 Okay: Okay
 Okays: Okay

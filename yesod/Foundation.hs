@@ -91,8 +91,19 @@ instance Yesod Autotool where
         maid <- maybeAuthId
         mroute <- getCurrentRoute
         mmtitel <- sequence $ fmap routeTitel mroute
+        extra <- getExtra
         let mtitel = join mmtitel
-        lang <- fmap (\langs -> if langs == [] then "de" else head langs) languages
+            defaultLang = if null $ extraLanguages extra
+                             then "de"
+                             else head $ extraLanguages extra
+            route = fromMaybe HomeR mroute
+        lang <- fmap (\langs -> if null langs
+                                   then defaultLang
+                                   else head langs) languages
+        let lang' = dropWhile (lang /=) $ extraLanguages extra
+            nextLang = if null lang' || length lang' == 1
+                          then defaultLang
+                          else lang' !! 1
         pc <- widgetToPageContent $ do
             maybe (return ()) setTitleI mtitel
             $(combineStylesheets 'StaticR
@@ -651,3 +662,10 @@ routeTitel route = case route of
   AufgabeBenutzerIdR _ _ _       -> return $ Just MsgAufgabeBenutzerId
   AufgabeBenutzerIdZufallR _ _ _ -> return $ Just MsgAufgabeBenutzerIdZufall
   AufgabeTestenR _ t _ _         -> return $ Just $ MsgAufgabeXTesten t
+
+getFlag :: Text -> Maybe StaticRoute
+getFlag lang =
+  case lang of
+    "de" -> Just img_flags_48_de_png
+    "en" -> Just img_flags_48_en_png
+    _    -> Nothing

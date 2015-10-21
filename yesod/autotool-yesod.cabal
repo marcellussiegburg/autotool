@@ -58,6 +58,7 @@ library
                      Handler.VorlesungAnlegen
                      Handler.Vorlesungen
                      Handler.Waisenkinder
+                     Handler.Sprache
                      Data.Tuple6
                      Yesod.Auth.Autotool
                      Yesod.Auth.Autotool.Message
