@@ -27,7 +27,7 @@
               $maybe flag <- getFlag nextLang
                 <img src=@{StaticR flag}>
               $nothing
-                nextLang
+                #{nextLang}
 <div .container>
   <div #main role=main>
     $maybe msg <- mmsg

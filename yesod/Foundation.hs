@@ -175,7 +175,8 @@ getBevorzugteSprache' :: [String] -> Sprache.Language
 getBevorzugteSprache' [] = Sprache.DE
 getBevorzugteSprache' (l:ls) =
   case take 2 (map toUpper l) of
-    "UK" -> Sprache.UK
+    "DE" -> Sprache.DE
+    "EN" -> Sprache.UK
     l' -> case reads l' of
             (l'',_):_ -> l''
             _ -> getBevorzugteSprache' ls
