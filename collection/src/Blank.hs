@@ -3,6 +3,12 @@
 -- und damit (schriftliche \/ mündliche) Seminar-Aufgaben bewerten 
 -- Vorteil ist, daß die dann mit in der Auswertung auftauchen
 
+{-# language TemplateHaskell #-}
+{-# language DeriveDataTypeable #-}
+{-# language FlexibleInstances #-}
+{-# language MultiParamTypeClasses #-}
+{-# language DisambiguateRecordFields #-}
+
 module Blank where
 
 import Inter.Types
@@ -10,8 +16,14 @@ import Autolib.ToDoc
 import Autolib.Reporter
 import qualified Challenger as C
 import Data.Typeable
+import Autolib.ToDoc
+import Autolib.Reader
 
-data Blank = Blank deriving ( Eq, Ord, Show, Read, Typeable )
+data Blank = Blank deriving Typeable 
+
+$(derives [makeReader, makeToDoc] [''Blank ])
+
+instance Show Blank where show = render . toDoc
 
 instance OrderScore Blank where
     scoringOrder _ = None
@@ -24,8 +36,8 @@ instance C.Partial Blank () () where
 	 , text "Es ist zwecklos, hier eine Lösung einzugeben."
 	 ]
     initial Blank () = ()
+    partial Blank () () = reject $ empty
     total Blank () () = reject $ empty
-
 
 instance C.Measure Blank () () where
     measure _ _ _ = 1

@@ -22,7 +22,9 @@ ttmakers = mkTaskForest (T.subForest tmakers) where
     mkTaskTree (T.Node (Left label) sub) = [Category label (mkTaskForest sub)]
     mkTaskTree (T.Node (Right task) [])  = [Task (show task) | validTask (show task)]
     mkTaskTree _ = error "malformed task tree in Inter.Collector"
-    validTask x = not $ x `elem` ["Blank-Direct", "Upload-Direct"]
+    validTask x = True
+      -- http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=384
+      -- not $ x `elem` ["Blank-Direct", "Upload-Direct"]
 
 lookupTask :: String -> Maybe Make
 lookupTask name = listToMaybe
