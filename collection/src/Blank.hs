@@ -17,7 +17,7 @@ instance OrderScore Blank where
     scoringOrder _ = None
 
 instance C.Partial Blank () () where
-    report Blank () = inform $ vcat
+    describe Blank () = vcat
 	 [ text "Das ist eine schriftliche oder mündliche Aufgabe."
 	 , text "Das autotool verwaltet lediglich die dabei erzielten Punkte."
 	 , text "Diese werden von Ihrem Dozenten direkt in die Datenbank eingetragen."

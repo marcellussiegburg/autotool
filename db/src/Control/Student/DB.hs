@@ -26,6 +26,12 @@ get_unr_name (unr, sn, gn) = do
               , equals ( reed "student.Name") (toEx sn)
               , equals ( reed "student.Vorname") (toEx gn) 
               ]
+
+get_email :: Email -> IO [ CST.Student ]
+get_email em = do
+  get_where $ ands 
+              [ equals ( reed "student.Email" ) ( toEx em )
+              ]
   
 -- | wenn mnr = "", dann wird diese nicht geprueft,
 -- das ist fuer tutoren, die bisher mnr hatten, 
@@ -33,7 +39,7 @@ get_unr_name (unr, sn, gn) = do
 --
 -- extra basteleien wegen
 -- http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=360
-get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) = do
+get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, meppn ) = do
     let mnrs = digest mnr
     candidates <- get_where $ ands $
               [ equals ( reed "student.UNr" ) ( toEx unr )
