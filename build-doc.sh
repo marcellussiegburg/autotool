@@ -10,5 +10,6 @@ standalone-haddock \
     --hyperlink-source \
     -o /var/www/autotool/docs \
     --package-db $HOME/.ghc/x86_64-linux-$GHC/package.conf.d \
+    --package-db /usr/local/lib/ghc-$GHC/package.conf.d \
     $(for lib in $LIBS ; do echo "../autolib/$lib" ; done ) \
     interface collection

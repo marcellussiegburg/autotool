@@ -277,8 +277,10 @@ item i = Node ( Right i ) []
 tmakers :: Tree ( Either String Make )
 tmakers = 
     heading "Aufgaben" 
-         [ item Blank.make
-	 , item Upload.make
+         [ heading "Spezialfälle"
+             [ item Blank.make
+	     , item Upload.make
+             ]
          , heading "Automaten und Formale Sprachen" 
                 [ heading "endliche Automaten"
                      [ item NFA.Convert.make
@@ -411,7 +413,7 @@ tmakers =
 		  , item Rushhour.Central.make
 		  ]
 	        -- , item Rushhour.Central.qmake
-	        , item Hanoi.Semantik.make
+                , item Hanoi.Semantik.make
 	        , item Hanoi.Quiz.make
                 , heading "lange gemeinsame Teilfolge" 
                           [ item LCS.Instance.make_fixed
