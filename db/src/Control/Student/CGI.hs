@@ -8,6 +8,8 @@ import Control.Student.Type as T
 import Control.Student.DB
 import qualified Control.Schule
 
+import Debug ( debug )
+
 import Control.Monad
 import Data.List ( partition, isSuffixOf, isPrefixOf )
 import Data.Char ( isAlphaNum, toUpper )
@@ -20,6 +22,28 @@ import qualified Local
 import qualified Autolib.Multilingual as M
 import qualified Autolib.Multilingual.Html as H
 import qualified Autolib.Output as O
+
+{- | Benutzeridentifikation:
+
+alt: über Schule und Matrikelnummer, die der Benutzer
+     selbst eintippt.
+
+zwischen: über Schule (vorgegeben) und Matrikelnummer (vom Shibboleth-IdP) 
+
+          Probleme dabei:
+          * nicht jeder hat eine Matrikelnr (z.B. Mitarbeiter haben keine)
+          * Matrikelnummern ändern sich im Studentenleben (Wechsel von Bachelor zu Master)
+          
+neu: über EduPersonPrincipalName , 
+     das sollte global eindeutig sein, 
+     OPAL verwendet das aus diesem Grund auch.
+     
+     Probleme dabei: 
+     * gleitender Wechsel vom alten System (für HTWK-Studenten)
+     * "alt" soll für Externe weiterhin möglich sein (?)
+
+-}
+
 
 login :: Maybe Schule -> Form IO Student
 login mschool = do
@@ -117,7 +141,8 @@ login_via_shibboleth_mnr u = do
     Just (school,mat) -> do
       login_via_shibboleth_cont u school mat
 
--- | das soll eigentlich der DB-Schlüssel sein: edu-person-principal-name
+-- | das soll eigentlich der DB-Schlüssel sein: 
+-- edu-person-principal-name
 login_via_shibboleth_eppn u = do
   show_session_info
   meppn <- look_var "eppn"
@@ -169,14 +194,20 @@ show_session_info = do
     close -- table
   
 
--- | das wird nur bei shibboleth-auth aufgerufen, also haben wir eppn
+-- | Account in DB suchen oder einfügen, 
+-- in jedem Fall den Account zurückgeben.
+-- das wird nur bei shibboleth-auth aufgerufen, 
+-- also haben wir eppn
 use_or_make_account unr sn gn mnr eppn = do
+    let inputs = unwords 
+         [ show  unr, show sn, show gn, show mnr, show eppn ]
     studs <- io $ Control.Student.DB.get_unr_sn_gn_mnr_meppn
              ( unr , sn, gn, mnr, Just eppn )
     studs <- 
         if (null studs) then do
-             plain "Account existiert nicht => wird angelegt"
-             
+             let msg = "Account existiert nicht => wird angelegt: " ++ inputs
+             plain msg
+             io $ debug msg
              let stud = Student { T.snr = error "noch nicht"
                                      , T.unr = unr
                                      , T.mnr =  mnr
@@ -196,12 +227,22 @@ use_or_make_account unr sn gn mnr eppn = do
              plain "kein Account (Anlegen fehlgeschlagen)"
              mzero
          xs -> do
-             plain "Mehrere Accounts mit diesen Merkmalen"
-             plain $ show $ map T.snr xs
-             mzero
+           let msg = unwords 
+                 [ "Mehrere Accounts mit diesen Merkmalen"
+                 , inputs, show $ map T.snr xs
+                 ] 
+           plain msg ; io $ debug msg
+           mzero
 
-    return stud
+    if (T.email stud == fromCGI "use shibboleth"  ) 
+       then do
+         let msg = "EPPN wird erstmalig zugeordnet " ++ inputs
+         io $ debug msg
 
+         let stud' = stud { T.email = fromCGI eppn }
+         io $ Control.Student.DB.put (Just $ T.snr stud) stud'
+         return stud'
+       else return stud 
 
 use_first_passwort stud = 
     if ( Operate.Crypt.is_empty $ next_passwort stud ) 
