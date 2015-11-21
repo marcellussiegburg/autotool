@@ -11,7 +11,8 @@ import qualified Control.Schule
 import Debug ( debug )
 
 import Control.Monad
-import Data.List ( partition, isSuffixOf, isPrefixOf )
+import Data.List ( partition, isSuffixOf, isPrefixOf, sortBy )
+import Data.Function (on)
 import Data.Char ( isAlphaNum, toUpper )
 import Data.Maybe ( isNothing , isJust , fromJust )
 
@@ -158,8 +159,8 @@ login_via_shibboleth_eppn u = do
       Just sn <- look_var "sn" ; Just gn <- look_var "givenName"
       mpuc <- analyze_puc
       let mnr = case mpuc of Nothing -> "?" ; Just (school,mnr) -> mnr
-      use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) eppn
-      
+      use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) (fromCGI  eppn)
+
 login_via_shibboleth_cont u school mnr = do
     when (not $ isSuffixOf school $ toString $ U.mail_suffix u) $ do
         plain "puc school attribute and mail_suffix differ"
@@ -183,7 +184,7 @@ login_via_shibboleth_cont u school mnr = do
                  
     show_session_info
     close -- btable    
-    use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) eppn
+    use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) (fromCGI  eppn)
 
 show_session_info = do
     open table 
@@ -213,7 +214,7 @@ use_or_make_account unr sn gn mnr eppn = do
                                      , T.mnr =  mnr
                                      , T.name =  sn
                                      , T.vorname =  gn
-                                     , T.email = fromCGI eppn
+                                     , T.email = eppn
                                      , T.passwort = Crypt "use shibboleth"
                                      , T.next_passwort = Crypt "use shibboleth"
                                      }
@@ -227,19 +228,22 @@ use_or_make_account unr sn gn mnr eppn = do
              plain "kein Account (Anlegen fehlgeschlagen)"
              mzero
          xs -> do
+           let ys = sortBy (flip Prelude.compare `on` T.snr) xs
            let msg = unwords 
                  [ "Mehrere Accounts mit diesen Merkmalen"
-                 , inputs, show $ map T.snr xs
+                 , inputs, show $ map T.snr ys
+                 , "using most recent" , show $ head ys
                  ] 
-           plain msg ; io $ debug msg
-           mzero
+           -- plain msg 
+           io $ debug msg
+           return $ head ys
 
     if (T.email stud == fromCGI "use shibboleth"  ) 
        then do
          let msg = "EPPN wird erstmalig zugeordnet " ++ inputs
          io $ debug msg
 
-         let stud' = stud { T.email = fromCGI eppn }
+         let stud' = stud { T.email = eppn }
          io $ Control.Student.DB.put (Just $ T.snr stud) stud'
          return stud'
        else return stud 

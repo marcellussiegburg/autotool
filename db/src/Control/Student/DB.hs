@@ -34,21 +34,24 @@ get_email em = do
               ]
 
 -- | studenten mit übereinstimmender eppn.
--- wenn kein solcher gespeicher ist ("use shibboleth"),
--- dann studenten mit übereinstimmenden Schule, Vornamen, Namen
--- (Matrikelnr. wird nicht benutzt, weil es mglw. keine gibt oder diese
--- gewechselt hat (bachelor/master))
+-- wenn kein solcher gespeichert ist (sondern "use shibboleth"),
+-- dann studenten mit übereinstimmenden Schule, Vornamen, Namen.
+-- Matrikelnr. wird nicht benutzt, 
+--   weil es mglw. keine gibt (Staff)
+--   oder diese gewechselt hat (Student: bachelor/master)
 get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, meppn ) = do
-  eppn_matchs <- case meppn of
+  eppn_matches <- case meppn of
     Nothing -> return []
-    Just eppn -> get_where $ ands [ equals ( read "student.EMail" ) (toEx eppn) ]
+    Just eppn -> get_where $ ands 
+        [ equals ( read "student.EMail" ) (toEx eppn) 
+        ]
   if not $ null eppn_matches
-    then eppn_matches
+    then return eppn_matches
     else get_where $ ands 
         [ equals ( reed "student.UNr" ) ( toEx unr )
         , equals ( reed "student.Name") (toEx sn)
         , equals ( reed "student.Vorname") (toEx gn)
-        , equals ( reed "student.Email") (toEx "use shibboleth")
+        , equals ( reed "student.Email") (EString "use shibboleth")
         ]
   
 -- | wenn mnr = "", dann wird diese nicht geprueft,
