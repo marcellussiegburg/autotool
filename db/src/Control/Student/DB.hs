@@ -32,6 +32,24 @@ get_email em = do
   get_where $ ands 
               [ equals ( reed "student.Email" ) ( toEx em )
               ]
+
+-- | studenten mit übereinstimmender eppn.
+-- wenn kein solcher gespeicher ist ("use shibboleth"),
+-- dann studenten mit übereinstimmenden Schule, Vornamen, Namen
+-- (Matrikelnr. wird nicht benutzt, weil es mglw. keine gibt oder diese
+-- gewechselt hat (bachelor/master))
+get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, meppn ) = do
+  eppn_matchs <- case meppn of
+    Nothing -> return []
+    Just eppn -> get_where $ ands [ equals ( read "student.EMail" ) (toEx eppn) ]
+  if not $ null eppn_matches
+    then eppn_matches
+    else get_where $ ands 
+        [ equals ( reed "student.UNr" ) ( toEx unr )
+        , equals ( reed "student.Name") (toEx sn)
+        , equals ( reed "student.Vorname") (toEx gn)
+        , equals ( reed "student.Email") (toEx "use shibboleth")
+        ]
   
 -- | wenn mnr = "", dann wird diese nicht geprueft,
 -- das ist fuer tutoren, die bisher mnr hatten, 
@@ -39,7 +57,7 @@ get_email em = do
 --
 -- extra basteleien wegen
 -- http://nfa.imn.htwk-leipzig.de/bugzilla/show_bug.cgi?id=360
-get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, meppn ) = do
+get_unr_sn_gn_mnr ( unr , sn, gn, mnr ) = do
     let mnrs = digest mnr
     candidates <- get_where $ ands $
               [ equals ( reed "student.UNr" ) ( toEx unr )
