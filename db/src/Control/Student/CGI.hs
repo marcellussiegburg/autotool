@@ -152,7 +152,7 @@ login_via_shibboleth_eppn u = do
       plain "missing shibboleth attribute: eduPersonPrincipalName"
       mzero
     Just eppn -> do
-      when (not $ isSuffixOf eppn $ toString $ U.mail_suffix u) $ do
+      when (not $ isSuffixOf (toString $ U.mail_suffix u) eppn ) $ do
         plain "eduPersonPrincipalName does not end with required suffix"
         mzero
       close -- btable
@@ -162,6 +162,7 @@ login_via_shibboleth_eppn u = do
       use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) (fromCGI  eppn)
 
 login_via_shibboleth_cont u school mnr = do
+    -- FIXME: following "isSuffixOf" possibly broken
     when (not $ isSuffixOf school $ toString $ U.mail_suffix u) $ do
         plain "puc school attribute and mail_suffix differ"
         plain $ show (school, U.mail_suffix u)
