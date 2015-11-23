@@ -8,6 +8,9 @@ import Control.Student.Type as T
 import Control.Student.DB
 import qualified Control.Schule
 
+import qualified Control.Stud_Grp as CSG
+import qualified Control.Stud_Aufg as CSA
+
 import Debug ( debug )
 
 import Control.Monad
@@ -223,8 +226,8 @@ use_or_make_account unr sn gn mnr eppn = do
              io $ Control.Student.DB.get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, Just eppn )
         else return studs     
              
-    stud <- case studs of
-         [ stud ] -> return stud
+    (stud , others) <- case studs of
+         [ stud ] -> return (stud, [])
          [ ] -> do
              plain "kein Account (Anlegen fehlgeschlagen)"
              mzero
@@ -237,17 +240,27 @@ use_or_make_account unr sn gn mnr eppn = do
                  ] 
            -- plain msg 
            io $ debug msg
-           return $ head ys
+           return ( head ys, tail ys )
 
-    if (T.email stud == fromCGI "use shibboleth"  ) 
+    if (T.email stud == fromCGI "use shibboleth"  )
+       --  in der DB steht noch keine EPPN:
        then do
          let msg = "EPPN wird erstmalig zugeordnet " ++ inputs
          io $ debug msg
 
          let stud' = stud { T.email = eppn }
          io $ Control.Student.DB.put (Just $ T.snr stud) stud'
+
+         when ( not $ null others ) $ io $ do
+           let msg = "alte Accounts werden umgeschrieben "
+                 ++ show (map T.snr others) ++ " => " ++ show (T.snr stud')
+           debug msg
+           void $ forM others $ \ other -> CSG.update_snr (T.snr other) (T.snr stud')
+           void $ forM others $ \ other -> CSA.update_snr (T.snr other) (T.snr stud')
+         
          return stud'
-       else return stud 
+       else do -- EPPN schon in DB, wir ändern nichts.
+         return stud 
 
 use_first_passwort stud = 
     if ( Operate.Crypt.is_empty $ next_passwort stud ) 

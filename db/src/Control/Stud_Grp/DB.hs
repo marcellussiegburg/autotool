@@ -1,7 +1,5 @@
 module Control.Stud_Grp.DB where
 
---  $Id$
-
 import Control.SQL
 import Control.Types hiding ( ok )
 import Control.Stud_Grp.Typ
@@ -22,6 +20,15 @@ insert snr gnr = do
 			  )
 			  [ ]
     disconnect conn
+
+update_snr :: SNr -> SNr -> IO ()
+update_snr old new = do
+  conn <- myconnect
+  stat <- squery conn $ Query
+    ( Update (reed "stud_grp") [ ( reed "SNr", toEx new ) ] )
+    [ Where $ equals ( reed "stud_grp.SNr" ) ( toEx old ) ]
+  disconnect conn
+
 
 try :: IO a -> IO (Either CE.SomeException a)
 try = CE.try
