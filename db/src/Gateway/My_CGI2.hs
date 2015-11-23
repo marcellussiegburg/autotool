@@ -5,8 +5,6 @@ module Gateway.My_CGI2
 ( wrapper
 )
 
---  $Id$
-
 where
 
 import Network.CGI hiding ( wrapper )
