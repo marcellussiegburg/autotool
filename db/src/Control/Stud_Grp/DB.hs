@@ -29,6 +29,13 @@ update_snr old new = do
     [ Where $ equals ( reed "stud_grp.SNr" ) ( toEx old ) ]
   disconnect conn
 
+drop_snr :: SNr -> IO ()
+drop_snr old = do
+  conn <- myconnect
+  stat <- squery conn $ Query
+    ( Delete (reed "stud_grp")  )
+    [ Where $ equals ( reed "stud_grp.SNr" ) ( toEx old ) ]
+  disconnect conn         
 
 try :: IO a -> IO (Either CE.SomeException a)
 try = CE.try

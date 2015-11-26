@@ -255,9 +255,13 @@ use_or_make_account unr sn gn mnr eppn = do
            let msg = "alte Accounts werden umgeschrieben "
                  ++ show (map T.snr others) ++ " => " ++ show (T.snr stud')
            debug msg
-           void $ forM others $ \ other -> CSG.update_snr (T.snr other) (T.snr stud')
-           void $ forM others $ \ other -> CSA.update_snr (T.snr other) (T.snr stud')
-         
+           let new = T.snr stud'                 
+           void $ forM others $ \ other -> do
+             CSG.update_snr (T.snr other) new
+             CSG.drop_snr (T.snr other) 
+           void $ forM others $ \ other -> do
+             CSA.update_snr (T.snr other) new
+
          return stud'
        else do -- EPPN schon in DB, wir ändern nichts.
          return stud 
