@@ -1,6 +1,6 @@
 module Debug where
 
-import System.IO
+import System.IO.UTF8
 import System.Directory
 import System.Time
 
@@ -17,7 +17,7 @@ debug msg = do
     d <- doesFileExist "/tmp/tool.debug"
     when d $ do
         now <- jetzt
-        System.IO.appendFile "/tmp/tool.log" $ unlines [ now, msg ]
+        appendFile "/tmp/tool.log" $ unlines [ now, msg ]
         -- hPutStrLn stderr cs
         -- hFlush stderr
 
