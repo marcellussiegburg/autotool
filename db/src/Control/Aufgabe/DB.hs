@@ -109,7 +109,7 @@ put manr auf = do
             ( Insert (reed "aufgabe") common ) 
 	    [ ]
          Just anr -> squery conn $ Query
-            ( Update (reed "aufgabe") common ) 
+            ( Update [] (reed "aufgabe") common ) 
 	    [ Where $ equals ( reed "aufgabe.ANr" ) ( toEx anr ) ]
     disconnect conn
 
@@ -123,7 +123,7 @@ put_signature manr auf = do
             ( Insert (reed "aufgabe") common ) 
 	    [ ]
          Just anr -> squery conn $ Query
-            ( Update (reed "aufgabe") common ) 
+            ( Update [] (reed "aufgabe") common ) 
 	    [ Where $ equals ( reed "aufgabe.ANr" ) ( toEx anr ) ]
     disconnect conn
 

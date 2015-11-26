@@ -6,7 +6,7 @@ module Control.SQL
 ( squery, query, logged, reed
 , myconnect, collectRows, disconnect
 , Statement, getFieldValue, getFieldValueMB, getFieldValue', getFieldsTypes 
-, Query (..), Action (..), Modifier (..)
+, Query (..), Action (..), Modifier (..), Flag (..)
 , Id (..), Bind (..)
 , Expression (..), ToEx (..), Control.SQL.equals, ands
 
@@ -126,12 +126,18 @@ instance R.Reader Bind where
 
 
 ----------------------------------------------------------------------------
+        
+data Flag = Ignore deriving Typeable 
+
+instance T.ToDoc Flag where
+  toDoc f = case f of
+              Ignore -> T.text "IGNORE"
 
 data Action = Select [ Bind ]
 	    | Insert Id [(Id, Expression)]
-	    | Update Id [(Id, Expression)]
-	    | Delete Id
-  deriving Typeable
+     	    | Update [Flag] Id [(Id, Expression)]
+            | Delete Id
+    deriving Typeable
 
 instance T.ToDoc Action where
     toDoc (Select bs) = T.text "SELECT" 
@@ -140,11 +146,13 @@ instance T.ToDoc Action where
         [ T.text "INTO" <+> T.toDoc tab <+> T.dutch_tuple ( map ( T.toDoc . fst ) pairs )
 	, T.text "VALUES" <+> T.dutch_tuple ( map ( T.toDoc . snd ) pairs )
 	]
-    toDoc (Update tab pairs) = T.text "UPDATE" <+> T.toDoc tab 
-         <+> T.text "SET" <+> T.sepBy T.comma ( do
-         (e, v) <- pairs
-	 return $ hsep [ T.toDoc e, T.equals, T.toDoc v ]
-       )
+    toDoc (Update flags tab pairs) = 
+      T.text "UPDATE" <+> hsep (map T.toDoc flags) 
+      <+> T.toDoc tab 
+           <+> T.text "SET" <+> T.sepBy T.comma ( do
+           (e, v) <- pairs
+           return $ hsep [ T.toDoc e, T.equals, T.toDoc v ]
+         )
     toDoc (Delete tab) = T.text "DELETE" <+> T.text "FROM" <+> T.toDoc tab
 
 instance R.Reader Action where

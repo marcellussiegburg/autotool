@@ -124,7 +124,7 @@ put mgnr gruppe = do
             ( Insert (reed "gruppe") common ) 
 	    [ ]
          Just gnr -> squery conn $ Query
-            ( Update (reed "gruppe") common ) 
+            ( Update [] (reed "gruppe") common ) 
 	    [ Where $ equals ( reed "gruppe.GNr" ) ( toEx gnr ) ]
     disconnect conn
 

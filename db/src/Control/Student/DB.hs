@@ -173,7 +173,7 @@ put msnr stud = do
             ) 
 	    [ ]
          Just snr -> squery conn $ Query
-            ( Update (reed "student") common ) 
+            ( Update [ ] (reed "student") common ) 
 	    [ Where $ equals ( reed "student.SNr" ) ( toEx snr ) ]
     disconnect conn
 
@@ -182,11 +182,11 @@ switch_passwort :: CST.Student -> IO ()
 switch_passwort stud = do
     conn <- myconnect
     squery conn $ Query
-           ( Update ( reed "student" )
-                    [ ( reed "Passwort", reed "Next_Passwort" ) ] )
+           ( Update [] ( reed "student" )
+                    [ ( reed "Passwort", reed "Next_Passwort" ) ]  )
            [ Where $ equals ( reed "student.SNr" ) ( toEx $ CST.snr stud ) ]
     squery conn $ Query
-           ( Update ( reed "student" )
+           ( Update [] ( reed "student" )
                     [ ( reed "Passwort", toEx $ Crypt "" ) ] )
            [ Where $ equals ( reed "student.SNr" ) ( toEx $ CST.snr stud ) ]
     disconnect conn

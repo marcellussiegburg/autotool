@@ -89,7 +89,7 @@ put menr sem = do
             ( Insert (reed "semester") common ) 
 	    [ ]
          Just enr -> squery conn $ Query
-            ( Update (reed "semester") common ) 
+            ( Update [] (reed "semester") common ) 
 	    [ Where $ equals ( reed "semester.ENr" ) ( toEx enr ) ]
     disconnect conn
 

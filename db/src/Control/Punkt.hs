@@ -117,7 +117,7 @@ bepunkteStudentDB snr anr minstant mbewert highlow minput mreport = do
 
    when ( not $ null set ) $ do
        squery conn $ Query 
-	   ( Update ( reed "stud_aufg" )
+	   ( Update [ ] ( reed "stud_aufg" )
 	            set
 	   ) 
            [ Where $ ands

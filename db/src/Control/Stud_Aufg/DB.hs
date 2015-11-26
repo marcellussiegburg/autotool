@@ -42,7 +42,7 @@ update_snr :: SNr -> SNr -> IO ()
 update_snr old new = do
   conn <- myconnect
   stat <- squery conn $ Query
-    ( Update (reed "stud_aufg") [ ( reed "SNr", toEx new ) ] )
+    ( Update [Ignore] (reed "stud_aufg") [ ( reed "SNr", toEx new ) ] )
     [ Where $ equals ( reed "stud_aufg.SNr" ) ( toEx old ) ]
   disconnect conn
 
