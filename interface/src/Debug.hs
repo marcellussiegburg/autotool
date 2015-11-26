@@ -1,5 +1,6 @@
 module Debug where
 
+import Prelude hiding (appendFile)
 import System.IO.UTF8
 import System.Directory
 import System.Time
