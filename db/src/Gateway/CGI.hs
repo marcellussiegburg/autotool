@@ -77,6 +77,7 @@ import qualified Autolib.Multilingual.Html
 import Prelude hiding ( catch )
 import Control.Exception as CE
 import Debug ( debug )
+import Control.Applicative
 import Control.Monad 
 import Control.Monad.Fix
 
@@ -182,10 +183,13 @@ instance ( Monad m ) => Functor (Form m) where
 	 ( s', x ) <- f s
 	 return ( s', fmap g x )
 
+instance Monad m => Applicative (Form m) where
+  pure x = Form $ \ s -> do
+	 return ( s , return x )
+  (<*>) = ap
 
 instance ( Monad m ) => Monad ( Form m ) where
-    return x = Form $ \ s -> do
-	 return ( s , return x )
+    return = pure
     Form f >>= g = Form $ \ s0 -> do
          ( s1, mx ) <- f s0
          case mx of
@@ -214,6 +218,10 @@ wrap ( Form f ) = Form $ \ s0 -> do
     let top = unwind $ stack s1
         st = push top $ make glue
     return ( s1 { stack = [ st ] } , Just mx )
+
+instance Monad m => Alternative (Form m) where
+  empty = mzero
+    
 
 instance ( Monad m ) => MonadPlus ( Form m )  where
     mzero = Form $ \ s -> return ( s , mzero )

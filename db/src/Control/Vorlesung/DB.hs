@@ -181,7 +181,7 @@ put mvnr vor = do
             ( Insert (reed "vorlesung") common ) 
 	    [ ]
          Just vnr -> squery conn $ Query
-            ( Update (reed "vorlesung") common ) 
+            ( Update [] (reed "vorlesung") common ) 
 	    [ Where $ equals ( reed "vorlesung.VNr" ) ( toEx vnr ) ]
     disconnect conn
 

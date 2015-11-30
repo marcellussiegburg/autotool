@@ -1,7 +1,5 @@
 module Control.Stud_Aufg.DB where
 
---  $Id$
-
 import Control.SQL
 import Control.Types hiding ( ok )
 import Control.Stud_Aufg.Typ
@@ -39,6 +37,14 @@ get_snr_anr snr anr =
     get_where [ equals ( reed "stud_aufg.ANr" ) ( toEx anr ) 
 	      , equals ( reed "stud_aufg.SNr" ) ( toEx snr ) 
 	      ]
+
+update_snr :: SNr -> SNr -> IO ()
+update_snr old new = do
+  conn <- myconnect
+  stat <- squery conn $ Query
+    ( Update [Ignore] (reed "stud_aufg") [ ( reed "SNr", toEx new ) ] )
+    [ Where $ equals ( reed "stud_aufg.SNr" ) ( toEx old ) ]
+  disconnect conn
 
 get_where :: [ Expression ] -> IO [ Stud_Aufg ]
 get_where wh = do

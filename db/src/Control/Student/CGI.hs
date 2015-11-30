@@ -8,8 +8,14 @@ import Control.Student.Type as T
 import Control.Student.DB
 import qualified Control.Schule
 
+import qualified Control.Stud_Grp as CSG
+import qualified Control.Stud_Aufg as CSA
+
+import Debug ( debug )
+
 import Control.Monad
-import Data.List ( partition, isSuffixOf, isPrefixOf )
+import Data.List ( partition, isSuffixOf, isPrefixOf, sortBy )
+import Data.Function (on)
 import Data.Char ( isAlphaNum, toUpper )
 import Data.Maybe ( isNothing , isJust , fromJust )
 
@@ -20,6 +26,28 @@ import qualified Local
 import qualified Autolib.Multilingual as M
 import qualified Autolib.Multilingual.Html as H
 import qualified Autolib.Output as O
+
+{- | Benutzeridentifikation:
+
+alt: über Schule und Matrikelnummer, die der Benutzer
+     selbst eintippt.
+
+zwischen: über Schule (vorgegeben) und Matrikelnummer (vom Shibboleth-IdP) 
+
+          Probleme dabei:
+          * nicht jeder hat eine Matrikelnr (z.B. Mitarbeiter haben keine)
+          * Matrikelnummern ändern sich im Studentenleben (Wechsel von Bachelor zu Master)
+          
+neu: über EduPersonPrincipalName , 
+     das sollte global eindeutig sein, 
+     OPAL verwendet das aus diesem Grund auch.
+     
+     Probleme dabei: 
+     * gleitender Wechsel vom alten System (für HTWK-Studenten)
+     * "alt" soll für Externe weiterhin möglich sein (?)
+
+-}
+
 
 login :: Maybe Schule -> Form IO Student
 login mschool = do
@@ -40,7 +68,7 @@ login mschool = do
 	    return ( toString $ Control.Schule.name u , u )
         
     if U.use_shibboleth u 
-       then login_via_shibboleth u
+       then login_via_shibboleth_eppn u
        else login_via_stored_password u
 
 login_via_stored_password u = do
@@ -95,31 +123,55 @@ cut_at c w =
       let (pre, post) = span (/= c) w
       in  pre : if null post then [] else cut_at c $ tail post
 
-login_via_shibboleth u = do
+analyze_puc = do
     mpuc <- look_var "puc"
-    -- example: "urn:mace:terena.org:schac:personalUniqueCode:de:htwk-leipzig.de:Matrikelnummer:"
-    
+    -- "urn:mace:terena.org:schac:personalUniqueCode:de:htwk-leipzig.de:Matrikelnummer:"
     case mpuc of
       Nothing -> do 
-        plain "missing puc (personal unique code)"
-        mzero
+        return Nothing
       Just puc -> do
         let pucs = cut_at ':' puc
         case pucs of
           [ "urn", "mace", "terena.org", "schac", "personalUniqueCode", "de"
-            , school, "Matrikelnummer", mat ] -> login_via_shibboleth_cont u school mat
-          _ -> do
-            plain "malformed puc"
-            plain $ show pucs
-            mzero
+            , school, "Matrikelnummer", mat ] -> return $ Just (school, mat)
+          _ -> return Nothing                                          
+
+login_via_shibboleth_mnr u = do
+  res <- analyze_puc
+  case res of
+    Nothing -> do 
+      plain "missing or malformed PersonalUniqueCode"
+      mzero
+    Just (school,mat) -> do
+      login_via_shibboleth_cont u school mat
+
+-- | das soll eigentlich der DB-Schlüssel sein: 
+-- edu-person-principal-name
+login_via_shibboleth_eppn u = do
+  show_session_info
+  meppn <- look_var "eppn"
+  case meppn of
+    Nothing -> do
+      plain "missing shibboleth attribute: eduPersonPrincipalName"
+      mzero
+    Just eppn -> do
+      when (not $ isSuffixOf (toString $ U.mail_suffix u) eppn ) $ do
+        plain "eduPersonPrincipalName does not end with required suffix"
+        mzero
+      close -- btable
+      Just sn <- look_var "sn" ; Just gn <- look_var "givenName"
+      mpuc <- analyze_puc
+      let mnr = case mpuc of Nothing -> "?" ; Just (school,mnr) -> mnr
+      use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) (fromCGI  eppn)
 
 login_via_shibboleth_cont u school mnr = do
+    -- FIXME: following "isSuffixOf" possibly broken
     when (not $ isSuffixOf school $ toString $ U.mail_suffix u) $ do
         plain "puc school attribute and mail_suffix differ"
         plain $ show (school, U.mail_suffix u)
         mzero
     Just sn <- look_var "sn" ; Just gn <- look_var "givenName"
-    meppn <- look_var "eppn"
+    Just eppn <- look_var "eppn"
     when (null mnr) $ do
         maff <- look_var "affiliation"
         case maff of
@@ -134,49 +186,85 @@ login_via_shibboleth_cont u school mnr = do
                  plain "no Matrikelnummer and no staff@"
                  mzero
                  
-    -- plain $ unwords [ "Ihre Identifikation (Shibboleth):" , sn, gn, mnr, toString $ U.mail_suffix u, show meppn ] 
-    
+    show_session_info
+    close -- btable    
+    use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr) (fromCGI  eppn)
+
+show_session_info = do
     open table 
     open row 
     plain $ "Ihre Shibboleth-Session:"  
     html $ M.specialize M.DE $ ( O.render $ O.Link "/Shibboleth.sso/Session" :: H.Html )
     close -- row
     close -- table
-                 
-    close -- btable    
-    use_or_make_account (U.unr u) (fromCGI sn) (fromCGI gn) (fromCGI mnr)
-      
-use_or_make_account unr sn gn mnr = do
-    studs <- io $ Control.Student.DB.get_unr_sn_gn_mnr ( unr , sn, gn, mnr )
+  
+
+-- | Account in DB suchen oder einfügen, 
+-- in jedem Fall den Account zurückgeben.
+-- das wird nur bei shibboleth-auth aufgerufen, 
+-- also haben wir eppn
+use_or_make_account unr sn gn mnr eppn = do
+    let inputs = unwords 
+         [ show  unr, show sn, show gn, show mnr, show eppn ]
+    studs <- io $ Control.Student.DB.get_unr_sn_gn_mnr_meppn
+             ( unr , sn, gn, mnr, Just eppn )
     studs <- 
         if (null studs) then do
-             plain "Account existiert nicht => wird angelegt"
-             
+             let msg = "Account existiert nicht => wird angelegt: " ++ inputs
+             plain msg
+             io $ debug msg
              let stud = Student { T.snr = error "noch nicht"
                                      , T.unr = unr
                                      , T.mnr =  mnr
                                      , T.name =  sn
                                      , T.vorname =  gn
-                                     , T.email = fromCGI "use shibboleth"
+                                     , T.email = eppn
                                      , T.passwort = Crypt "use shibboleth"
                                      , T.next_passwort = Crypt "use shibboleth"
                                      }
              io $ Control.Student.DB.put Nothing stud 
-             io $ Control.Student.DB.get_unr_sn_gn_mnr ( unr , sn, gn, mnr )
+             io $ Control.Student.DB.get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, Just eppn )
         else return studs     
              
-    stud <- case studs of
-         [ stud ] -> return stud
+    (stud , others) <- case studs of
+         [ stud ] -> return (stud, [])
          [ ] -> do
              plain "kein Account (Anlegen fehlgeschlagen)"
              mzero
          xs -> do
-             plain "Mehrere Accounts mit diesen Merkmalen"
-             plain $ show $ map T.snr xs
-             mzero
+           let ys = sortBy (flip Prelude.compare `on` T.snr) xs
+           let msg = unwords 
+                 [ "Mehrere Accounts mit diesen Merkmalen"
+                 , inputs, show $ map T.snr ys
+                 , "using most recent" , show $ head ys
+                 ] 
+           -- plain msg 
+           io $ debug msg
+           return ( head ys, tail ys )
 
-    return stud
+    if (T.email stud == fromCGI "use shibboleth"  )
+       --  in der DB steht noch keine EPPN:
+       then do
+         let msg = "EPPN wird erstmalig zugeordnet " ++ inputs
+         io $ debug msg
 
+         let stud' = stud { T.email = eppn }
+         io $ Control.Student.DB.put (Just $ T.snr stud) stud'
+
+         when ( not $ null others ) $ io $ do
+           let msg = "alte Accounts werden umgeschrieben "
+                 ++ show (map T.snr others) ++ " => " ++ show (T.snr stud')
+           debug msg
+           let new = T.snr stud'                 
+           void $ forM others $ \ other -> do
+             CSG.update_snr (T.snr other) new
+             CSG.drop_snr (T.snr other) 
+           void $ forM others $ \ other -> do
+             CSA.update_snr (T.snr other) new
+
+         return stud'
+       else do -- EPPN schon in DB, wir ändern nichts.
+         return stud 
 
 use_first_passwort stud = 
     if ( Operate.Crypt.is_empty $ next_passwort stud ) 

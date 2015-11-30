@@ -1,3 +1,5 @@
+{-# language CPP #-}
+
 module Util.Datei 
 
 (  schreiben, mschreiben
@@ -18,7 +20,12 @@ module Util.Datei
 where
 
 import Prelude hiding ( writeFile, readFile, appendFile )
+
+#if __GLASGOW_HASKELL__ < 710
+import System.IO.UTF8 ( writeFile, readFile, appendFile )
+#else
 import System.IO ( writeFile, readFile, appendFile )
+#endif
 
 import Debug
 import Data.List (inits, intersperse)

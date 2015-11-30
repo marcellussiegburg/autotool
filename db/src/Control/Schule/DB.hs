@@ -1,7 +1,5 @@
 module Control.Schule.DB where
 
---  $Id$
-
 import Control.SQL
 import Control.Types
 import Control.Schule.Typ
@@ -68,7 +66,7 @@ put munr vor = do
             ( Insert (reed "schule") common ) 
 	    [ ]
          Just unr -> squery conn $ Query
-            ( Update (reed "schule") common ) 
+            ( Update [] (reed "schule") common ) 
 	    [ Where $ equals ( reed "schule.UNr" ) ( toEx unr ) ]
     disconnect conn
 

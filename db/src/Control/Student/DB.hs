@@ -26,6 +26,33 @@ get_unr_name (unr, sn, gn) = do
               , equals ( reed "student.Name") (toEx sn)
               , equals ( reed "student.Vorname") (toEx gn) 
               ]
+
+get_email :: Email -> IO [ CST.Student ]
+get_email em = do
+  get_where $ ands 
+              [ equals ( reed "student.Email" ) ( toEx em )
+              ]
+
+-- | studenten mit übereinstimmender eppn.
+-- wenn kein solcher gespeichert ist (sondern "use shibboleth"),
+-- dann studenten mit übereinstimmenden Schule, Vornamen, Namen.
+-- Matrikelnr. wird nicht benutzt, 
+--   weil es mglw. keine gibt (Staff)
+--   oder diese gewechselt hat (Student: bachelor/master)
+get_unr_sn_gn_mnr_meppn ( unr , sn, gn, mnr, meppn ) = do
+  eppn_matches <- case meppn of
+    Nothing -> return []
+    Just eppn -> get_where $ ands 
+        [ equals ( read "student.EMail" ) (toEx eppn) 
+        ]
+  if not $ null eppn_matches
+    then return eppn_matches
+    else get_where $ ands 
+        [ equals ( reed "student.UNr" ) ( toEx unr )
+        , equals ( reed "student.Name") (toEx sn)
+        , equals ( reed "student.Vorname") (toEx gn)
+        , equals ( reed "student.Email") (EString "use shibboleth")
+        ]
   
 -- | wenn mnr = "", dann wird diese nicht geprueft,
 -- das ist fuer tutoren, die bisher mnr hatten, 
@@ -146,7 +173,7 @@ put msnr stud = do
             ) 
 	    [ ]
          Just snr -> squery conn $ Query
-            ( Update (reed "student") common ) 
+            ( Update [ ] (reed "student") common ) 
 	    [ Where $ equals ( reed "student.SNr" ) ( toEx snr ) ]
     disconnect conn
 
@@ -155,11 +182,11 @@ switch_passwort :: CST.Student -> IO ()
 switch_passwort stud = do
     conn <- myconnect
     squery conn $ Query
-           ( Update ( reed "student" )
-                    [ ( reed "Passwort", reed "Next_Passwort" ) ] )
+           ( Update [] ( reed "student" )
+                    [ ( reed "Passwort", reed "Next_Passwort" ) ]  )
            [ Where $ equals ( reed "student.SNr" ) ( toEx $ CST.snr stud ) ]
     squery conn $ Query
-           ( Update ( reed "student" )
+           ( Update [] ( reed "student" )
                     [ ( reed "Passwort", toEx $ Crypt "" ) ] )
            [ Where $ equals ( reed "student.SNr" ) ( toEx $ CST.snr stud ) ]
     disconnect conn

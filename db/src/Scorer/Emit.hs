@@ -1,6 +1,5 @@
 module Scorer.Emit where
 
---   $Id$
 
 import Scorer.Config
 import Scorer.Einsendung
@@ -70,10 +69,11 @@ realize es = take scoreItems -- genau 10 stück
     
 -- | FIXME: this is badly broken
 -- und zwar für Matrikelnummern, die keine Zahlen sind
+isadmin :: ToString r => Obfuscated r -> Bool
 isadmin m = 
     let cs = toString $ internal m
     in  if all isDigit cs
-        then 1023 > read cs
+        then 1023 > ( read cs :: Int )
         else False
 
 -- | druckt Auswertung einer Aufgabe

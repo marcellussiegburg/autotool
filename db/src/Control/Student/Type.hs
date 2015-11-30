@@ -17,7 +17,9 @@ data Student =
 	     , mnr :: MNr
 	     , name :: Name
 	     , vorname :: Name
-             , email :: Email
+             , email :: Email -- ^ falls Auth über Shibboleth,
+               -- dann ist das EduPersonPrincipalName,
+               -- (falls pseudonym, dann TargetedId?)
 	     , passwort :: Crypt
              , next_passwort :: Crypt
 	     }
