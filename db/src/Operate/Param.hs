@@ -1,7 +1,5 @@
 module Operate.Param where
 
---   $Id$
-
 import qualified Control.Passwort 
 import Control.Types ( Wert )
 
@@ -17,7 +15,8 @@ data Type =
     Param { -- | configured
             makers :: [ Make ]
           , input_width :: Int
-	  -- | user input
+          
+	  -- | user input (deprecated identification)
           , mmatrikel :: Maybe MNr
           , mpasswort :: Maybe Control.Passwort.Type
 
@@ -61,6 +60,7 @@ passwort p = case mpasswort p of
 smatrikel p = toString $ matrikel p 
 saufgabe p = toString $ aufgabe p 
 styp p = toString $ typ p 
+sident p = toString $ ident p
 
 subject p = toString (vnr p) ++ "-" ++ toString (anr p)
 

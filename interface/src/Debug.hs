@@ -1,7 +1,11 @@
+{-# LANGUAGE CPP #-}
+
 module Debug where
 
+#if (__GLASGOW_HASKELL__<710)
 import Prelude hiding (appendFile)
 import System.IO.UTF8
+#endif
 import System.Directory
 import System.Time
 

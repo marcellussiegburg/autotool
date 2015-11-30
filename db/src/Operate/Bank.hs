@@ -32,26 +32,34 @@ bank p = do
 	    return "(kein Resultat => kein Eintrag)"
 	Just res -> do
 	    time <- zeit
-	    let msg = logline  time pid p res
-
+	    let msg_mnr = logline_mnr  time pid p res
+                msg_snr = logline_snr  time pid p res
             d <- datum
-	    let logcgi = Datei	{ pfad = [ "autotool", "log" ] ++ d
-			, name = "CGI"
-			, extension = ""
-			}
-	    anhaengen logcgi msg
-	    return msg
+	    let logcgi = Datei	
+                  { pfad = [ "autotool", "log" ] ++ d
+                  , name = "CGI" , extension = "" }
+            anhaengen logcgi msg_mnr
+            anhaengen logcgi msg_snr
+            return msg_snr
 
 
-logline time pid p res = unwords [ time
-		      , "(",  pid, ")"
-		      , "cgi-" ++ P.smatrikel p
-		     , "(", P.smatrikel p, ")"
-		      , P.subject p , ":"
-		     , result_string res
-		     , "\n"
-		     ]
-
+logline_mnr time pid p res = unwords [ time
+                      , "(",  pid, ")"
+                      , "cgi-" ++ P.smatrikel p
+                     , "(", P.smatrikel p, ")"
+                      , P.subject p , ":"
+                     , result_string res
+                     , "\n"
+                     ] 
+                     
+logline_snr time pid p res = unwords [ time
+                       , "(",  pid, ")"
+                       , "snr-" ++ P.sident p
+                      , "(", P.sident p, ")"
+                       , P.subject p , ":"
+                      , result_string res
+                      , "\n"
+                      ]
 result_string :: Wert -> String
 result_string mres = case mres of
     Pending -> "Pending"
