@@ -3,12 +3,16 @@
 
 -- TODO: hack this module into pieces
 
-{-# LANGUAGE PatternSignatures, DeriveDataTypeable #-}
+{-# LANGUAGE PatternSignatures, DeriveDataTypeable, CPP #-}
 
 module Main where
 
 import Prelude hiding ( readFile, writeFile, appendFile )
+#if (__GLASGOW_HASKELL__ < 710)
+import System.IO.UTF8 ( readFile, writeFile, appendFile )
+#else
 import System.IO ( readFile, writeFile, appendFile )
+#endif
 
 import Gateway.CGI
 
