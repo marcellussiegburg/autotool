@@ -542,6 +542,7 @@ routeParameter route = case route of
   SemesterAnlegenR s             -> Just $ SchuleRoute s
   SemesterR s                    -> Just $ SemesterRoute s
   VorlesungenR s                 -> Just $ SemesterRoute s
+  VorlesungenSortiertR s _       -> Just $ SemesterRoute s
   VorlesungAnlegenR s            -> Just $ SemesterRoute s
   VorlesungR v                   -> Just $ VorlesungRoute v
   GruppeAnlegenR v               -> Just $ VorlesungRoute v
@@ -588,6 +589,7 @@ routeLinkTitel route = case route of
   SemesterAnlegenR _             -> Just MsgSemesterAnlegen
   SemesterR _                    -> Just MsgBearbeiten
   VorlesungenR _                 -> Just MsgVorlesungen
+  VorlesungenSortiertR _ _       -> Just MsgVorlesungen
   VorlesungAnlegenR _            -> Just MsgVorlesungAnlegen
   VorlesungR _                   -> Just MsgBearbeiten
   GruppeAnlegenR _               -> Just MsgGruppeAnlegen
@@ -634,6 +636,7 @@ routeTitel route = case route of
   SemesterAnlegenR _             -> return $ Just MsgSemesterAnlegen
   SemesterR _                    -> return $ Just MsgSemesterBearbeiten
   VorlesungenR _                 -> return $ Just MsgVorlesungen
+  VorlesungenSortiertR _ _       -> return $ Just MsgVorlesungen
   VorlesungAnlegenR _            -> return $ Just MsgVorlesungAnlegen
   VorlesungR _                   -> return $ Just MsgVorlesungBearbeiten
   GruppeAnlegenR _               -> return $ Just MsgGruppeAnlegen

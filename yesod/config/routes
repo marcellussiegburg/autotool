@@ -42,3 +42,4 @@
 /server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/id       AufgabeBenutzerIdR       GET    POST
 /server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/zufallId AufgabeBenutzerIdZufallR GET
 /server/#ServerUrl/aufgabe/#AufgabeTyp/konfiguration/#AufgabeKonfiguration/id/#Text AufgabeTestenR           GET    POST
+/semester/#SemesterId/vorlesungen/ordnung/+[Int] VorlesungenSortiertR GET

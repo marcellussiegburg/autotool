@@ -5,6 +5,13 @@ import Import
 import Control.Types (TimeStatus (Early, Late, Current))
 import Data.Time (getCurrentTime)
 
+newLink :: [Int] -> Int -> [Int]
+newLink ints int =
+  if int `elem` map abs ints
+  then let ints' = takeWhile (int /=) $ map abs ints
+       in ints' ++ [(ints !! length ints') * (-1)]
+  else ints ++ [int]
+
 getVorlesungenR :: SemesterId -> Handler Html
 getVorlesungenR semester = do
   vorlesungen <- runDB $ selectList [VorlesungSemesterId ==. semester] [Desc VorlesungVon]
@@ -12,6 +19,7 @@ getVorlesungenR semester = do
   vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungen
   let vorlesungenAutorisiert = concat vorlesungenAutorisiert'
   zeit <- liftIO getCurrentTime
+  let ints = []
   defaultLayout $
     $(widgetFile "vorlesungen")
 

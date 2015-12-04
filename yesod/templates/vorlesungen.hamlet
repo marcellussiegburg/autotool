@@ -4,10 +4,14 @@ $else
   <table .table .table-striped .table-hover .table-responsive>
     <thead>
       <tr>
-        <th>_{MsgName}
-        <th>Einschreibung (von)
-        <th>Einschreibung (bis)
-        <th>_{MsgTagesNachricht}
+        <th>
+          <a href=@{VorlesungenSortiertR semester (newLink ints 1)}>_{MsgName}
+        <th>
+          <a href=@{VorlesungenSortiertR semester (newLink ints 2)}>Einschreibung (von)
+        <th>
+          <a href=@{VorlesungenSortiertR semester (newLink ints 3)}>Einschreibung (bis)
+        <th>
+          <a href=@{VorlesungenSortiertR semester (newLink ints 4)}>_{MsgTagesNachricht}
         <th>
         <th>
     <tbody>
