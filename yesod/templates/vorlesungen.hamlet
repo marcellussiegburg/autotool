@@ -1,30 +1,29 @@
 $if null vorlesungenAutorisiert
   _{MsgKeineVorlesungen}
 $else
-  <ul .list-group>
-    $forall (vorlesung, mvorlesungLink, mbearbeitenLink) <- vorlesungenAutorisiert
-      <li .list-group-item .#{listGroupItemClass $ zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit}>
-        $maybe vorlesungLink <- mvorlesungLink
-          <a href=@{vorlesungLink} .btn .btn-default .btn-block .fill-width-cell>
-            <h4 .list-group-heading>#{vorlesungName vorlesung}
-            <p .list-group-item-text>
-              _{MsgEinschreibungDauer (vorlesungVon vorlesung) $ vorlesungBis vorlesung}
+  <table .table .table-striped .table-hover .table-responsive>
+    <thead>
+      <tr>
+        <th>_{MsgName}
+        <th>Einschreibung (von)
+        <th>Einschreibung (bis)
+        <th>_{MsgTagesNachricht}
+        <th>
+        <th>
+    <tbody>
+      $forall (vorlesung, mvorlesungLink, mbearbeitenLink) <- vorlesungenAutorisiert
+        <tr .#{statusClass $ zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit}>
+          <td>#{vorlesungName vorlesung}
+          <td>_{MsgDatumZeit $ vorlesungVon vorlesung}
+          <td>_{MsgDatumZeit $ vorlesungBis vorlesung}
+          <td>
             $maybe nachricht <- vorlesungNachricht vorlesung
-              <p .list-group-item-text>
-                _{MsgTagesNachricht}: #{nachricht}
-        $nothing
-          <a href=# .btn .btn-default .btn-block .fill-width-cell .disabled>
-            <h4 .list-group-heading>#{vorlesungName vorlesung}
-            <p .list-group-item-text>
-              _{MsgEinschreibungDauer (vorlesungVon vorlesung) $ vorlesungBis vorlesung}
-            $maybe nachricht <- vorlesungNachricht vorlesung
-              <p .list-group-item-text>
-                _{MsgTagesNachricht}: #{nachricht}
-        $maybe bearbeitenLink <- mbearbeitenLink
-          <div .cell>
-            <div .table-padding>
-          <div .cell>
-            <a href=@{bearbeitenLink} .btn .btn-primary .btn-block>
-              _{MsgBearbeiten}
-        $nothing
-          <div .cell>
+              #{nachricht}
+          <td>
+            $maybe vorlesungLink <- mvorlesungLink
+              <a href=@{vorlesungLink} .btn .btn-default .btn-block role="button">
+                Besuchen
+          <td>
+            $maybe bearbeitenLink <- mbearbeitenLink
+              <a href=@{bearbeitenLink} .btn .btn-primary .btn-block role="button">
+                _{MsgBearbeiten}

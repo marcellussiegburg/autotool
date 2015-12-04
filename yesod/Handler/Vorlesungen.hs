@@ -2,8 +2,7 @@ module Handler.Vorlesungen where
 
 import Import
 
-import Handler.Semesters (listGroupItemClass)
-
+import Control.Types (TimeStatus (Early, Late, Current))
 import Data.Time (getCurrentTime)
 
 getVorlesungenR :: SemesterId -> Handler Html
@@ -12,8 +11,8 @@ getVorlesungenR semester = do
   mid <- maybeAuthId
   vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungen
   let vorlesungenAutorisiert = concat vorlesungenAutorisiert'
-  zeit <- liftIO $ getCurrentTime
-  defaultLayout $ do
+  zeit <- liftIO getCurrentTime
+  defaultLayout $
     $(widgetFile "vorlesungen")
 
 autorisiertVorlesung :: Maybe (AuthId Autotool) -> Entity Vorlesung -> Handler [(Vorlesung, Maybe (Route Autotool), Maybe (Route Autotool))]
@@ -29,3 +28,9 @@ autorisiertVorlesung mid vorlesung = do
                   ,ist autorisiertS vorlesungRoute
                   ,ist autorisiertB bearbeitenRoute)]
      else return []
+
+statusClass :: TimeStatus -> Text
+statusClass status = case status of
+  Early -> "warning"
+  Late -> "danger"
+  Current -> "success"

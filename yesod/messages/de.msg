@@ -67,6 +67,7 @@ BewertungOkay punkte@Integer size@Integer: Okay (P: #{show punkte}, G: #{show si
 BewertungReset: Zurückgesetzt
 CacheLeeren: Cache leeren
 CacheGeleert pfad@Text: Cache wurde geleert (#{pfad})
+DatumZeit zeit@UTCTime: #{formatTime defaultTimeLocale "%d.%m.%Y %H:%M:%S" zeit} Uhr
 Direktoren: Direktoren
 DirektorAbsetzen: Direktor absetzen
 DirektorAbgesetzt: Direktor abgesetzt
