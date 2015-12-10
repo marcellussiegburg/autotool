@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, OverloadedStrings, CPP #-}
 
 module Gateway.Help (
     Help (..),
@@ -8,6 +8,11 @@ module Gateway.Help (
 
 import Autolib.Output
 
+#if ( __GLASGOW_HASKELL__ >= 710 )
+-- must be created with:  autotool-package-translator > ./src/Package_Translator.hs
+import Package_Translator
+#endif
+    
 import Data.Typeable
 import Data.List ( intersperse, isPrefixOf )
 import Data.Char (isDigit)
@@ -43,7 +48,13 @@ tycon_link tyc =
        hackage = "http://hackage.haskell.org/package/"
        ty = tyConName tyc
        mod = redot $ undot $ tyConModule tyc
-       pack = unversion $ tyConPackage tyc
+       pack =
+#if (__GLASGOW_HASKELL__ >= 710 )
+         case M.lookup (tyConPackage tyc) package_translator of
+           Nothing -> tyConPackage tyc ; Just s -> s
+#else
+         unversion $ tyConPackage tyc
+#endif
        unversion = reverse
            . dropWhile ( \ c -> isDigit c || c == '.' || c == '-' )
            . reverse

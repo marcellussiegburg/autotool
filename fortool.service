@@ -27,6 +27,8 @@ function stamp() {
 . ~/.bashrc
 shopt -s expand_aliases
 
+autotool-package-translator > interface/src/Package_Translator.hs 
+
 for pkg in $PACKAGES; do
     [ -n "$VERBOSE" ] && echo === $(stamp) === $pkg ===
     if ! [ -d $pkg ]; then
