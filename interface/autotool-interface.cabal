@@ -18,7 +18,7 @@ Library
     Build-Depends:
         base, directory, unix, process, 
         old-time, time,
-        utf8-string, parsec,
+        utf8-string, parsec, containers,
         autolib-output,
         autolib-reader,
         autolib-reporter,
@@ -54,3 +54,4 @@ Library
         Util.FailDoc, Util.Cache
         Debug
         Local
+        Package_Translator

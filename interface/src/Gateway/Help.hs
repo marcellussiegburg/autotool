@@ -11,6 +11,7 @@ import Autolib.Output
 #if ( __GLASGOW_HASKELL__ >= 710 )
 -- must be created with:  autotool-package-translator > ./src/Package_Translator.hs
 import Package_Translator
+import qualified Data.Map as M
 #endif
     
 import Data.Typeable
