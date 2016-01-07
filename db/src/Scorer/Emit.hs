@@ -35,11 +35,14 @@ emit :: Bool -- ^ obfuscate Matrikelnummers?
 emit deco u vor fm0 = do
 
     studs <- V.steilnehmer $ V.vnr vor
-    let smnrs = mkSet $ map S.mnr studs
+    let ssnrs = mkSet $ map S.snr studs
+        smnrs = mkSet $ map S.mnr studs
+        registered (Left mnr) = internal mnr `elementOf` smnrs
+        registered (Right snr) =internal snr `elementOf` ssnrs
     let fm = mapFM ( \ key val -> do
-		  e <- val
-		  return ( e { visible = internal ( matrikel e ) `elementOf` smnrs } )
-	      ) fm0
+	    e <- val
+	    return ( e { visible = registered $ matrikel e  } )
+	  ) fm0
                                   
     if ( 0 < sizeFM fm )
        then do
@@ -102,13 +105,13 @@ single deco u arg @( anr, es ) = do
 
 
 decorate :: UNr -> Einsendung -> IO SE
-decorate u e = do
-
-   studs <- S.get_unr_mnr ( u , internal $ matrikel e ) 
-
-   case studs of 
+decorate u e = case matrikel e of
+   Left mnr -> do
+     studs <- S.get_unr_mnr ( u , internal mnr )
+     case studs of 
        []    -> return $ SE ( read "SNr 0" ) e 
        (s:_) -> return $ SE ( S.snr s      ) e 
+   Right snr -> return $ SE ( internal snr ) e
 
 totalize :: Bool -> UNr -> DataFM -> IO Output
 totalize deco u fm = do
@@ -119,7 +122,9 @@ totalize deco u fm = do
                        (i,(p,ps)) <- infos
 		       return $ text $ unwords [ stretch 10 $ show p
 					, ":"
-					, stretch 10 $ toString i
+					, stretch 10 $ case i of 
+                                          Left m -> toString m
+                                          Right s -> toString s
 					, ":" 
 					, pshow ps
 					]
@@ -142,7 +147,8 @@ fshow pfm = unwords $ do
 collect :: Bool 
         -> UNr
 	-> DataFM 
-	->  IO [ ( Obfuscated MNr , (Int , [Int] ) ) ] -- ^ ( Matrikel, Punkt, Plätze )
+	->  IO [ ( Either (Obfuscated MNr) (Obfuscated SNr)
+                 , (Int , [Int] ) ) ] -- ^ ( Matrikel, Punkt, Plätze )
 collect deco u fm = do
 
     let nice (e,p) = 
