@@ -45,7 +45,9 @@ precompute = do
          s <- BS.readFile f
          case A.parseOnly ( slurp_deco decorate  ) s of
              Right es -> return 
-                         $ filter Scorer.Einsendung.okay es
+                         $ filter Scorer.Einsendung.traditional
+                         $ filter Scorer.Einsendung.okay 
+                         $ es
              Left err -> do
                hPutStrLn stderr err
                return []

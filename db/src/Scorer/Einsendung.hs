@@ -2,7 +2,8 @@
 
 module Scorer.Einsendung 
 
-( Einsendung (..), size, Scorer.Einsendung.okay
+( Einsendung (..), size
+, Scorer.Einsendung.okay, Scorer.Einsendung.traditional
 , Obfuscated (..)
 , SE (..)
 , slurp_deco -- datei-inhalt verarbeiten
