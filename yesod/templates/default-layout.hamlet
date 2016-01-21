@@ -17,9 +17,6 @@
                 <button type="submit" .btn .btn-danger>_{MsgAbmelden}
           $nothing
             <li>
-              <form .navbar-form role="form" method="get" action=@{AuthR createAccountR}>
-                <button type="submit" .btn .btn-primary>_{MsgRegistrieren}
-            <li>
               <form .navbar-form role="form" method="get" action=@{AuthR LoginR}>
                 <button type="submit" .btn .btn-success>_{MsgAnmelden}
           <li>

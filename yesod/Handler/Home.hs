@@ -1,7 +1,9 @@
 module Handler.Home where
 
 import Import
-import Handler.Schulen (getSchulenR)
+import Yesod.Auth
 
 getHomeR :: Handler Html
-getHomeR = getSchulenR
+getHomeR =
+  defaultLayout
+    $(widgetFile "home")

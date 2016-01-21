@@ -1,0 +1,14 @@
+<p>
+  Herzlich Willkommen zur Testversion des Autotools!
+<p>
+  Das <a href="http://www.imn.htwk-leipzig.de/~waldmann/autotool/">Autotool</a> ist eine e-Learning-Platform zur Konfiguration personalisierter Aufgaben und automatischer Auswertung von Einsendungen. Das Autotool wird aktiv in der Lehre eingesetzt. Die Weiterentwicklung des Autotools betreut maßgeblich <a href="http://www.imn.htwk-leipzig.de/~waldmann/">Prof. Dr. Johannes Waldmann</a>. Im Rahmen der Masterarbeit von <a href="https://www.linkedin.com/in/marcellussiegburg">Marellus Siegburg</a> hat das Autotool durch eine Refaktorisierung des Webservers diese neue Benutzeroberfläche erhalten.
+<p>
+  Zur Benutzung kann sich jedes Mitglied des <a href="https://www.dfn.de/">DFN</a> an diesem Server anmelden. Dazu wählt man nach Click auf <a href=@{AuthR LoginR}>Anmelden</a> seine Einrichtung aus und meldet sich dort an. Es erscheint eine Anfrage zur Weiterleitung von Daten, dieser muss man zustimmen, um erfolgreich im Autotool-Test authentifiziert zu werden.
+<p>
+  Das DFN bietet auch Test-Accounts, mit welchen man sich authentifizieren kann, wenn man keiner Einrichtung im DFN angehört (zum Beispiel <b>DNF Test-Idp 2</b> auswählen).
+<p>
+  Nach erfolgter Authentifizierung, sind die <a href="Shibboleth.sso/Session">Session-Daten</a> einsehbar. Wenn man sich aus dem Autotool wieder <a href=@{AuthR LogoutR}>ausloggt</a> wird die Shibboleth-Session nicht beendet. Ebenso ist es möglich, dass die Autotool-Session besteht, obwohl die Shibboleth-Session bereits abgelaufen ist. Die Shibboleth-Session endet automatisch. Eine Autotool-Session endet nur durch klick auf <a href=@{AuthR LogoutR}>Abmelden</a>.
+<p>
+  Diese Webseite verwendet Cookies zur Authentifizierung. Mit Ihrer Nutzung dieser Webseite stimmen Sie der Speicherung und Nutzung von Cookies zu. Beachten Sie, dass Sie sich nicht authentifizieren könnnen, falls Sie diese Cookies ablehnen.
+<p>
+  Bei Interesse zur Verwendung des Autotools an Ihrer Einrichtung, melden Sie sich bitte bei <a href="http://www.imn.htwk-leipzig.de/~waldmann/">Prof. Dr. Johannes Waldmann</a>.

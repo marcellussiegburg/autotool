@@ -4,6 +4,7 @@ import Prelude hiding (sequence)
 import Yesod
 import Yesod.Auth
 import Yesod.Auth.Autotool
+import Yesod.Auth.Shibboleth
 import qualified Yesod.Auth.Message as AM
 import Yesod.Static
 import Yesod.Default.Config
@@ -27,6 +28,7 @@ import Control.Monad.Trans.Either (EitherT (runEitherT), left)
 import Data.Char (toUpper)
 import Data.Foldable (foldlM)
 import Data.Maybe (fromMaybe, listToMaybe, maybeToList)
+import Database.Persist.Sql (fromSqlKey)
 import Data.Set (member)
 import Data.Text (Text, pack, unpack)
 import Data.Text.Read (decimal, signed)
@@ -53,6 +55,7 @@ import qualified Control.Tutor.DB as TutorDB
 import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Vorlesung.DB as VorlesungDB
 import qualified Autolib.Multilingual as Sprache
+import Operate.Crypt (Crypt (Crypt))
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -208,13 +211,13 @@ instance YesodAuth Autotool where
     type AuthId Autotool = Int
     loginDest _ = SchulenR
     logoutDest _ = SchulenR
-    getAuthId creds = liftIO $ do
+    getAuthId creds = liftIO $
       case signed decimal $ credsIdent creds of
         Right (s, "") -> do
           x <- StudDB.get_snr $ SNr s
           case x of
-            [_] -> return $ Just $ s
-            _ -> return $ Nothing
+            [_] -> return $ Just s
+            _ -> return Nothing
         _ -> return Nothing
     maybeAuthId = do
       ms <- lookupSession credsKey
@@ -228,19 +231,57 @@ instance YesodAuth Autotool where
                 case mstud of
                   [_] -> return $ Just s
                   _ -> return Nothing
-    authPlugins _ = [authAutotool $ Nothing]
+    authPlugins _ = [authShibboleth, authAutotool Nothing]
     authHttpManager = httpManager
 
+instance YesodAuthShibboleth Autotool where
+    getSchoolByName name = do
+      mschule <- runDB $ selectFirst [SchuleName ==. name, SchuleUseShibboleth ==. True] []
+      case mschule of
+        Nothing -> do
+          -- use of Nothing for MailSuffix breaks compatibility to cgi-Autotool and thus breaks usage of autotool
+          let schule = Schule name (Just "") True Sprache.DE
+          key <- runDB $ insert schule
+          return key
+        Just schule -> return $ entityKey schule
+    getAccountByName school vorname name matrikel = do
+      mschule <- runDB $ selectFirst [SchuleId ==. school, SchuleUseShibboleth ==. True] []
+      case mschule of
+        Nothing -> return Nothing
+        Just schule -> do
+          let schuleId = fromInteger $ toInteger $ fromSqlKey $ entityKey schule
+              schuleParams = (UNr schuleId, Name $ unpack name, Name $ unpack vorname, MNr $ unpack matrikel)
+          studenten <- lift $ StudDB.get_unr_sn_gn_mnr schuleParams
+          studenten' <-
+            if null studenten
+            then do
+              lift $ StudDB.put Nothing Student.Student {
+                Student.unr = UNr schuleId,
+                Student.snr = error "No SNr in Foundation.hs (YesodAuthShibboleth instance declaration)",
+                Student.mnr =  MNr $ unpack matrikel,
+                Student.name =  Name $ unpack name,
+                Student.vorname = Name $ unpack vorname,
+                Student.email = Email $ unpack matrikel,
+                Student.passwort = Crypt "use shibboleth",
+                Student.next_passwort = Crypt "use shibboleth"
+              }
+              studenten' <- lift $ StudDB.get_unr_sn_gn_mnr schuleParams
+              return studenten'
+            else
+              return studenten
+          let fromSNr (SNr s) = s
+          return $ fmap (fromSNr . Student.snr) $ listToMaybe studenten'
+
 instance YesodAuthAutotool Autotool where
-   type AuthSchool = UNr
-   type AuthStudent = MNr
-   getStudentByMNr u m = liftIO $ StudDB.get_unr_mnr (u, m)
-   getStudentByAuthStudent u m = liftIO $ StudDB.get_unr_mnr (u, m)
-   getSchools = liftIO SchuleDB.get
-   getSchool = maybe (return Nothing) $ \u' -> liftIO $ SchuleDB.get_unr u' >>= return . listToMaybe
-   toSchool u' = liftIO $ SchuleDB.get_unr (UNr u') >>= return . listToMaybe
-   studentToAuthStudent = return . Student.mnr
-   schoolToAuthSchool = return . Schule.unr
+    type AuthSchool = UNr
+    type AuthStudent = MNr
+    getStudentByMNr u m = liftIO $ StudDB.get_unr_mnr (u, m)
+    getStudentByAuthStudent u m = liftIO $ StudDB.get_unr_mnr (u, m)
+    getSchools = liftIO SchuleDB.get
+    getSchool = maybe (return Nothing) $ \u' -> liftIO $ liftM listToMaybe $ SchuleDB.get_unr u'
+    toSchool u' = liftIO $ liftM listToMaybe $ SchuleDB.get_unr (UNr u')
+    studentToAuthStudent = return . Student.mnr
+    schoolToAuthSchool = return . Schule.unr
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
@@ -249,9 +290,8 @@ getExtra = fmap (appExtra . settings) getYesod
 -- | Gibt zurück, ob ein Nutzer berechtigt ist, auf eine Route @route@ zuzugreifen. Dabei wird 'Just True' geliefert, wenn der Nutzer berechtigt ist. 'Nothing' wird geliefert, wenn der Nutzer nicht angemeldet ist (@mid@ = 'Nothing') und Authentifizierung notwendig ist, um auf die Ressource zuzugreifen. 'Just False' wird geliefert, wenn der Nutzer authentifiziert ist, allerdings nicht die notwendige Autorisierung besitzt.
 istAutorisiert :: Maybe (AuthId Autotool) -> Route Autotool -> Handler (Maybe Bool)
 istAutorisiert mid route =
-  let braucht a = if a `member` routeAttrs route
-                  then [a] else []
-      attrs = concat $ map braucht ["admin", "direktor", "jederTutor", "tutor", "student", "einschreibung", "studentEigene"]
+  let braucht a = [a | a `member` routeAttrs route]
+      attrs = concatMap braucht ["admin", "direktor", "jederTutor", "tutor", "student", "einschreibung", "studentEigene"]
   in case attrs of
        [] -> return $ Just True
        _ -> runMaybeT $ do
@@ -269,24 +309,24 @@ autorisierungRolle rolle authId route
       auth <- runEitherT $ do
         (mschule, _, _, _, _, _) <- lift $ routeInformation route
         mstud <- lift $ liftIO $ StudDB.get_snr $ SNr authId
-        stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
-        schule <- fromMaybe (left False) $ fmap return mschule
+        stud <- maybe (left False) return $ listToMaybe mstud
+        schule <- maybe (left False) return mschule
         return $ Student.unr stud == UNr (keyToInt schule)
       return $ either id id auth
   | rolle == "studentEigene" = do
       auth <- runEitherT $ do
         (_, _, _, _, _, mstudentId) <- lift $ routeInformation route
-        studentId <- fromMaybe (left False) $ fmap return mstudentId
+        studentId <- maybe (left False) return mstudentId
         return $ studentId == authId
       return $ either id id auth
   | rolle == "einschreibung" = do
       auth <- runEitherT $ do
         (mschule, _, mvorlesung, _, _, _) <- lift $ routeInformation route
         mstud <- lift $ liftIO $ StudDB.get_snr $ SNr authId
-        stud <- fromMaybe (left False) $ fmap return $ listToMaybe mstud
-        schule <- fromMaybe (left False) $ fmap (return . keyToInt) mschule
+        stud <- maybe (left False) return $ listToMaybe mstud
+        schule <- maybe (left False) (return . keyToInt) mschule
         when (Student.unr stud /= UNr schule) $ left False
-        vorlesung <- fromMaybe (left False) $ fmap return mvorlesung
+        vorlesung <- maybe (left False) return mvorlesung
         vorlesungen <- lift $ liftIO $ VorlesungDB.get_attended $ SNr authId
         return $ elem (VNr $ keyToInt vorlesung) $ map Vorlesung.vnr vorlesungen
       return $ either id id auth
@@ -295,7 +335,7 @@ autorisierungRolle rolle authId route
         mstud <- lift $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
         lift $ AdminDB.is_minister stud
-      return $ maybe False id auth
+      return $ fromMaybe False auth
   | rolle == "direktor" = do
       auth <- runMaybeT $ do
         mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
@@ -304,7 +344,7 @@ autorisierungRolle rolle authId route
         (mschule,_,_,_,_,_) <- lift $ routeInformation route
         schule <- MaybeT $ return mschule
         return $ elem (UNr $ keyToInt schule) $ map Schule.unr schulen
-      return $ maybe False id auth
+      return $ fromMaybe False auth
   | rolle == "tutor" = do
       auth <- runMaybeT $ do
         mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
@@ -313,7 +353,7 @@ autorisierungRolle rolle authId route
         (_,_,mvorlesung,_,_,_) <- lift $ routeInformation route
         vorlesung <- MaybeT $ return mvorlesung
         return $ elem (VNr $ keyToInt vorlesung) $ map Vorlesung.vnr vorlesungen
-      return $ maybe False id auth
+      return $ fromMaybe False auth
   | rolle == "jederTutor" = do
       auth <- runMaybeT $ do
         mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
@@ -322,9 +362,9 @@ autorisierungRolle rolle authId route
         (mschule,_,_,_,_,_) <- lift $ routeInformation route
         schule <- MaybeT $ return mschule
         return $ elem (UNr $ keyToInt schule) $ map Vorlesung.unr vorlesungen
-      return $ maybe False id auth
+      return $ fromMaybe False auth
   | otherwise =
-      return $ False
+      return False
 
 data NavigationMenu = NavigationMenu AutotoolMessage [NavigationEntry]
 
@@ -341,7 +381,7 @@ navigationMenu mroute authId = do
       aufgabe a = [AufgabeR a, EinsendungAnlegenR a, StatistikR a]
       einsendung a s = [EinsendungR a s]
       servers = [ServersR]
-      server s t v k i = concat $ map maybeToList
+      server s t v k i = concatMap maybeToList
         [ServerR <$> s
         ,AufgabeVorlagenR <$> s <*> t
         ,AufgabeVorlageR <$> s <*> t <*> v

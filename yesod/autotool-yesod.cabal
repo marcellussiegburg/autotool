@@ -64,6 +64,8 @@ library
                      Yesod.Auth.Autotool.Message
                      Yesod.Auth.Autotool.Type
                      Yesod.Auth.Autotool.Widget
+                     Yesod.Auth.Shibboleth
+                     Yesod.Auth.Shibboleth.Type
                      Yesod.Form.Fields.PreField
                      Yesod.Form.Fields.TreeValueField
 
