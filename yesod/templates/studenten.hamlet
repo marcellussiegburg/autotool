@@ -29,7 +29,7 @@ $else
         $if auswahl == KeineAufgaben
           <th>
         $forall aufgabe <- aufgaben
-          <th colspan=2>#{T.toString $ Aufgabe.name aufgabe}
+          <th colspan=2>#{aufgabeName $ entityVal aufgabe}
     <tbody>
       $forall bewertung <- bewertungen
         <tr>

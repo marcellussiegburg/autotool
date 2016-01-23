@@ -21,7 +21,7 @@ postAufgabeTestenR server typ konfiguration benutzerId = do
     getAufgabeInstanz server signed $ getCrc (VNr 42) Nothing $ MNr $ unpack benutzerId
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just vorherigeEinsendung
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm $ einsendungHochladenForm
-  let hinweis = "" :: Text
+  let mhinweis = Just "" :: Maybe Text
       mfile = case resultUpload of
                 FormSuccess f -> Just f
                 _ -> Nothing
@@ -31,5 +31,5 @@ postAufgabeTestenR server typ konfiguration benutzerId = do
       hochladenForm = formToWidget zielAdresse $ Just hochladen
       eingebenForm = formToWidget zielAdresse $ Just eingeben
   mbewertung <- liftM (fmap snd) $ getBewertung server signed' mfile
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "einsendungAnlegen")

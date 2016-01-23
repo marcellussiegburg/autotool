@@ -14,12 +14,11 @@ import Data.Text.Lazy (toStrict)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import Text.Blaze.Html5.Attributes (class_)
 import Text.Blaze.Html ((!))
+import Data.Time.Clock (getCurrentTime)
 import Util.Xml.Output (xmlStringToOutput)
 
 import Autolib.Output (render)
 import Autolib.Multilingual (specialize)
-import qualified Control.Aufgabe.DB as AufgabeDB (get_this)
-import qualified Control.Aufgabe.Typ as Aufgabe
 import qualified Control.Student.DB as StudentDB (get_snr)
 import qualified Control.Student.Type as Student
 import qualified Control.Types as T
@@ -52,13 +51,15 @@ getEinsendungAnlegenR = postEinsendungAnlegenR
 
 postEinsendungAnlegenR :: AufgabeId -> Handler Html
 postEinsendungAnlegenR aufgabeId = do
-  maufgabe <- lift $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabeId
+  aktuelleZeit <- lift getCurrentTime
+  maufgabe <- runDB $ get aufgabeId
   aufgabe <- case maufgabe of
     Nothing -> notFound
     Just a -> return a
-  let server = pack . T.toString $ Aufgabe.server aufgabe
-      typ = pack . T.toString $ Aufgabe.typ aufgabe
-      konfiguration = pack . T.toString $ Aufgabe.config aufgabe
+  let server = aufgabeServer aufgabe
+      typ = aufgabeTyp aufgabe
+      konfiguration = aufgabeKonfiguration aufgabe
+      mhinweis = aufgabeHinweis aufgabe
   studentId <- requireAuthId
   mstudent <- lift $ liftM listToMaybe $ StudentDB.get_snr $ T.SNr studentId
   student <- case mstudent of
@@ -66,7 +67,7 @@ postEinsendungAnlegenR aufgabeId = do
       -- Benutzer nicht in DB gefunden (passiert nie)
       redirect $ AufgabeTestenR server typ konfiguration ""
     Just s -> return s
-  case Aufgabe.timeStatus aufgabe of
+  case zeitStatus (aufgabeVon aufgabe) (aufgabeBis aufgabe) aktuelleZeit of
     T.Late -> do
       setMessageI MsgAufgabeVorbei
       redirect $ AufgabeTestenR server typ konfiguration $ pack . T.toString . Student.mnr $ student
@@ -76,8 +77,7 @@ postEinsendungAnlegenR aufgabeId = do
   signed <- case esigned of
     Left fehler -> do
       setMessage fehler
-      let T.VNr vorlesungId = Aufgabe.vnr aufgabe
-      redirect $ AufgabenR $ intToKey vorlesungId
+      redirect $ AufgabenR $ aufgabeVorlesungId aufgabe
     Right signed' -> return signed'
   ((resultUpload, formWidgetUpload), formEnctypeUpload) <- runFormPost $ identifyForm "hochladen" $ renderBootstrap3 BootstrapBasicForm einsendungHochladenForm
   let mfile = case resultUpload of
@@ -86,7 +86,7 @@ postEinsendungAnlegenR aufgabeId = do
   mvorherigeEinsendung <- runMaybeT $ do
     maktion <- lookupPostParam $ pack $ show aktion
     let vorher = do
-          mvorherigeEinsendung' <- lift $ getVorherigeEinsendung mstudent aufgabe
+          mvorherigeEinsendung' <- lift $ getVorherigeEinsendung mstudent aufgabe aufgabeId
           maktuelleEinsendung <- lift $ getMaybeEinsendung mfile
           MaybeT . return $ maybe mvorherigeEinsendung' Just maktuelleEinsendung
     case maktion of
@@ -96,15 +96,14 @@ postEinsendungAnlegenR aufgabeId = do
           VorherigeEinsendungLaden -> vorher
           BeispielLaden -> MaybeT . return $ Nothing
   (signed', beispiel, atyp, aufgabenstellung) <-
-    getAufgabeInstanz server signed $ getCrc (Aufgabe.vnr aufgabe) (Just $ Aufgabe.anr aufgabe) (Student.mnr student)
+    getAufgabeInstanz server signed $ getCrc (T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe) (Just $ T.ANr $ keyToInt aufgabeId) (Student.mnr student)
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just $ fromMaybe beispiel mvorherigeEinsendung
-  let hinweis = pack . T.toString $ Aufgabe.remark aufgabe
-      hochladenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just hochladen
+  let hochladenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just hochladen
       eingebenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just eingeben
   mbewertung' <- getBewertung server signed' mfile
   let mbewertung = fmap snd mbewertung'
   mvorlageForm <- liftM Just $ generateFormPost $ identifyForm (pack $ show aktion) $ renderBootstrap3 BootstrapBasicForm vorlageForm
-  mlog <- logSchreiben mstudent aufgabe aufgabenstellung mbewertung' mfile
+  mlog <- logSchreiben mstudent aufgabe aufgabeId aufgabenstellung mbewertung' mfile
   defaultLayout $ do
     $(widgetFile "einsendungAnlegen")
 
@@ -176,39 +175,39 @@ getBewertung server signed mfile = runMaybeT $ do
       mwert = either (const Nothing) (Just . round . contents) bewertung
   return (mwert, hinweis'')
 
-getVorherigeEinsendung :: Maybe Student.Student -> Aufgabe.Aufgabe -> Handler (Maybe Text)
-getVorherigeEinsendung mstudent aufgabe = runMaybeT $ do
+getVorherigeEinsendung :: Maybe Student.Student -> Aufgabe -> AufgabeId -> Handler (Maybe Text)
+getVorherigeEinsendung mstudent aufgabe aufgabeId = runMaybeT $ do
   let stringToMaybeText t = if null t then Nothing else Just $ pack t
   student <- MaybeT . return $ mstudent
-  mvorherigeEinsendung <- lift $ lift $ Store.latest Store.Input (getDefaultParam student aufgabe)
+  mvorherigeEinsendung <- lift $ lift $ Store.latest Store.Input (getDefaultParam student aufgabe aufgabeId)
     `Exception.catch` \ (Exception.SomeException _) -> return []
   MaybeT . return $ stringToMaybeText mvorherigeEinsendung
 
-logSchreiben :: Maybe Student.Student -> Aufgabe.Aufgabe -> Html -> Maybe (Maybe Integer, Html) -> Maybe FileInfo -> Handler (Maybe Text)
-logSchreiben mstudent aufgabe aufgabenstellung mbewertung mfile = runMaybeT $ do
+logSchreiben :: Maybe Student.Student -> Aufgabe -> AufgabeId -> Html -> Maybe (Maybe Integer, Html) -> Maybe FileInfo -> Handler (Maybe Text)
+logSchreiben mstudent aufgabe aufgabeId aufgabenstellung mbewertung mfile = runMaybeT $ do
   bewertung <- MaybeT . return $ mbewertung
   student <- MaybeT . return $ mstudent
   meinsendung <- lift $ getMaybeEinsendung mfile
   einsendung <- MaybeT . return $ meinsendung
-  lift $ lift $ liftM pack $ bank (getDefaultParam student aufgabe) {
+  lift $ lift $ liftM pack $ bank (getDefaultParam student aufgabe aufgabeId) {
       P.minstant = Just aufgabenstellung,
       P.input = Just $ unpack einsendung,
       P.report = Just $ snd bewertung,
       P.mresult = Just $ maybe T.No T.ok $ fst bewertung
     }
 
-getDefaultParam :: Student.Student -> Aufgabe.Aufgabe -> P.Type
-getDefaultParam student aufgabe =
+getDefaultParam :: Student.Student -> Aufgabe -> AufgabeId -> P.Type
+getDefaultParam student aufgabe aufgabeId =
   P.Param { P.makers = [],
     P.mmatrikel = Just $ Student.mnr student,
     P.ident = Student.snr student,
     P.mpasswort = Nothing,
 
-    P.aufgabe = Aufgabe.name aufgabe,
-    P.typ = Aufgabe.typ aufgabe,
-    P.anr = Aufgabe.anr aufgabe,
-    P.vnr = Aufgabe.vnr aufgabe,
-    P.highscore = Aufgabe.highscore aufgabe,
+    P.aufgabe = T.Name $ unpack $ aufgabeName aufgabe,
+    P.typ = T.Typ $ unpack $ aufgabeTyp aufgabe,
+    P.anr = T.ANr $ keyToInt aufgabeId,
+    P.vnr = T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe,
+    P.highscore = aufgabeHighscore aufgabe,
 
     P.minstant = Nothing,
     P.input = Nothing,

@@ -15,3 +15,4 @@ class YesodAuth site => YesodAuthShibboleth site where
   getSchoolByName :: Text -> HandlerT site IO SchuleId
   -- ^ Parameter: Schoolname, Name, Surname, matrikel
   getAccountByName :: SchuleId -> Text -> Text -> Text  -> HandlerT site IO (Maybe StudentId)
+  getAccountByEppn :: SchuleId -> Text -> HandlerT site IO (Maybe StudentId)

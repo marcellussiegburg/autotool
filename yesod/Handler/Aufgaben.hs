@@ -2,8 +2,7 @@ module Handler.Aufgaben where
 
 import Import
 import Data.Set (Set, fromList, member)
-import qualified Control.Aufgabe.DB as AufgabeDB
-import qualified Control.Aufgabe.Typ as Aufgabe
+import Data.Time.Clock (getCurrentTime)
 import qualified Control.Student.DB as StudentDB
 import qualified Control.Student.Type as Student
 import qualified Control.Stud_Aufg.DB as EinsendungDB
@@ -17,8 +16,7 @@ getAufgabenR = aufgabenListe $ fromList [Current, Early, Late]
 
 aufgabenListe :: Set TimeStatus -> VorlesungId -> Handler Html
 aufgabenListe disp vorlesung = do
-  let getAufgabe a = let ANr anr = Aufgabe.anr a
-                     in anr
+  aktuelleZeit <- lift getCurrentTime
   stud <- requireAuthId
   Just (MNr mnr) <- liftM (fmap Student.mnr . listToMaybe) $ lift $ StudentDB.get_unr $ UNr stud
   istTutor <- do
@@ -27,25 +25,27 @@ aufgabenListe disp vorlesung = do
   istEingeschrieben <- do
     einschreibungen <- lift $ VorlesungDB.snr_teilnehmer $ VNr $ keyToInt vorlesung
     return $ SNr stud `elem` einschreibungen
-  aufgaben <- lift $ AufgabeDB.get $ Just $ VNr $ keyToInt vorlesung
+  aufgaben <- runDB $ selectList [AufgabeVorlesungId ==. vorlesung] []
   ergebnisse <- sequence $ do
-    aufgabe <- aufgaben
+    aufgabe' <- aufgaben
+    let aufgabeId = entityKey aufgabe'
+        aufgabe = entityVal aufgabe'
     return $ do
-      einsendungen <- lift $ EinsendungDB.get_snr_anr (SNr stud) (Aufgabe.anr aufgabe)
+      einsendungen <- lift $ EinsendungDB.get_snr_anr (SNr stud) $ ANr $ keyToInt aufgabeId
       let okno = case einsendungen of
             [eins] ->  (Einsendung.ok eins, Einsendung.no eins, Einsendung.result eins)
             _ ->  (Oks 0, Nos 0 , Nothing)
-      return (aufgabe, okno)
-  let ergebnisse' = filter (\(a,_) -> Aufgabe.timeStatus a `member` disp) ergebnisse
+      return (aufgabe, aufgabeId, okno)
+  let ergebnisse' = filter (\(a,_,_) -> zeitStatus (aufgabeVon a) (aufgabeBis a) aktuelleZeit `member` disp) ergebnisse
       goal = sum $ do
-        (aufgabe, _) <- ergebnisse
-        guard $ Aufgabe.status aufgabe == Mandatory
+        (aufgabe, _, _) <- ergebnisse
+        guard $ aufgabeStatus aufgabe == Mandatory
         return 1
       done = sum $ do
-        (aufgabe, (oks, _, _)) <- ergebnisse
-        guard $ Aufgabe.status aufgabe == Mandatory
+        (aufgabe, _, (oks, _, _)) <- ergebnisse
+        guard $ aufgabeStatus aufgabe == Mandatory
         guard $ oks > Oks 0
         return 1
       percent = (100 * done) `div` goal
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "aufgaben")

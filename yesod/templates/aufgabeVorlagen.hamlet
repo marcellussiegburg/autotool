@@ -1,3 +1,3 @@
-<a href=@{AufgabeVorlageR server aufgabeTyp ""} .btn .btn-default role="button">_{MsgAufgabeVorlageStandard}
+<a href=@{AufgabeVorlageR server typ ""} .btn .btn-default role="button">_{MsgAufgabeVorlageStandard}
 $forall vorlage <- vorlagen
-  <a href=@{AufgabeVorlageR server aufgabeTyp vorlage} .btn .btn-default role="button">#{vorlage}
+  <a href=@{AufgabeVorlageR server typ vorlage} .btn .btn-default role="button">#{vorlage}

@@ -1,9 +1,7 @@
 module Handler.AufgabeVorlage where
 
-import qualified Control.Exception as Exception
 import Import
 import Handler.AufgabeKonfiguration (getBeispielKonfiguration)
-import qualified Control.Aufgabe.DB as AufgabeDB
 import Control.Aufgabe.Typ (Aufgabe (name, config))
 import Control.Types
 
@@ -15,9 +13,7 @@ getAufgabeVorlageR server aufgabeTyp vorlageName = do
 
 getVorlageKonfiguration :: AufgabeKonfiguration -> AufgabeTyp -> VorlageName -> Handler AufgabeKonfiguration
 getVorlageKonfiguration beispielKonfiguration aufgabeTyp vorlageName = do
-  aufgaben <- lift $ AufgabeDB.get_typed (fromCGI $ unpack aufgabeTyp)
-      `Exception.catch` \ (Exception.SomeException _) -> return []
-  let maufgabe = listToMaybe $ filter (\a -> vorlageName == (pack $ toString $ name a)) aufgaben
-  case maufgabe of
+  aufgaben <- runDB $ selectList [AufgabeTyp ==. aufgabeTyp, AufgabeName ==. vorlageName] []
+  case listToMaybe aufgaben of
     Nothing -> return beispielKonfiguration
-    Just aufgabe -> return $ pack $ toString $ config aufgabe
+    Just aufgabe -> return $ aufgabeKonfiguration $ entityVal aufgabe

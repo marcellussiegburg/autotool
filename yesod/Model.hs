@@ -23,13 +23,13 @@ import Yesod.Core.Dispatch (PathPiece, fromPathPiece, toPathPiece)
 import Derive()
 
 import Autolib.Multilingual (Language (..))
+import qualified Control.Aufgabe.Typ as Aufgabe
 import qualified Control.Schule.Typ as Schule
 import qualified Control.Vorlesung.Typ as Vorlesung
 import Control.Types
 import Control.Time.Typ (Time (Time))
 import Types.TaskTree (TaskTree (Category, Task))
 
-type AufgabeId = Int
 type AufgabeKonfiguration = Text
 type AufgabeTyp = Text
 type GruppeId = Int
@@ -38,11 +38,25 @@ type ServerUrl = Text
 type StudentId = Int
 
 keyToInt = fromInteger . toInteger . fromSqlKey
-
 intToKey = toSqlKey . fromInteger . toInteger
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"]
   $(persistFileWith lowerCaseSettings "config/models")
+
+entityToAufgabe key entity = Aufgabe.Aufgabe {
+    Aufgabe.anr       = ANr $ keyToInt key,
+    Aufgabe.name      = Name $ unpack $ aufgabeName entity,
+    Aufgabe.vnr       = VNr $ keyToInt $ aufgabeVorlesungId entity,
+    Aufgabe.highscore = aufgabeHighscore entity,
+    Aufgabe.von       = utcTimeToTime $ aufgabeVon entity,
+    Aufgabe.bis       = utcTimeToTime $ aufgabeBis entity,
+    Aufgabe.config    = Config $ unpack $ aufgabeKonfiguration entity,
+    Aufgabe.remark    = Remark $ maybe "" unpack $ aufgabeHinweis entity,
+    Aufgabe.typ       = Typ $ unpack $ aufgabeTyp entity,
+    Aufgabe.status    = aufgabeStatus entity,
+    Aufgabe.server    = Server $  unpack $ aufgabeServer entity,
+    Aufgabe.signature = Signature $ unpack $ aufgabeSignatur entity
+  }
 
 entityToSchule key entity = Schule.Schule {
     Schule.unr = UNr $ keyToInt key,

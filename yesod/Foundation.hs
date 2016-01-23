@@ -42,8 +42,6 @@ import Model
 
 import Control.Types
 import qualified Control.Admin.DB as AdminDB
-import qualified Control.Aufgabe.DB as AufgabeDB
-import qualified Control.Aufgabe.Typ as Aufgabe
 import qualified Control.Direktor.DB as DirektorDB
 import qualified Control.Gruppe.DB as GruppeDB
 import qualified Control.Gruppe.Typ as Gruppe
@@ -56,6 +54,8 @@ import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Vorlesung.DB as VorlesungDB
 import qualified Autolib.Multilingual as Sprache
 import Operate.Crypt (Crypt (Crypt))
+import Control.SQL
+import Control.Student.DB
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -271,6 +271,31 @@ instance YesodAuthShibboleth Autotool where
               return studenten
           let fromSNr (SNr s) = s
           return $ fmap (fromSNr . Student.snr) $ listToMaybe studenten'
+    getAccountByEppn school eppn = do
+      mschule <- runDB $ selectFirst [SchuleId ==. school, SchuleUseShibboleth ==. True] []
+      case mschule of
+        Nothing -> return Nothing
+        Just schule -> do
+          let schuleId = fromInteger $ toInteger $ fromSqlKey $ entityKey schule
+          studenten <- lift $ get_where $ ands [ equals ( read "student.Email") (toEx $ Email $ unpack eppn)]
+          studenten' <-
+            if null studenten
+            then do
+              lift $ StudDB.put Nothing Student.Student {
+                Student.unr = UNr schuleId,
+                Student.snr = error "No SNr in Foundation.hs (YesodAuthShibboleth instance declaration)",
+                Student.mnr =  MNr $ unpack eppn,
+                Student.name =  Name $ unpack eppn,
+                Student.vorname = Name $ unpack eppn,
+                Student.email = Email $ unpack eppn,
+                Student.passwort = Crypt "use shibboleth",
+                Student.next_passwort = Crypt "use shibboleth"
+              }
+              lift $ get_where $ ands [ equals ( read "student.EMail") (toEx $ Email $ unpack eppn)]
+            else
+              return studenten
+          let fromSNr (SNr s) = s
+          return $ fmap (fromSNr . Student.snr) $ listToMaybe studenten'
 
 instance YesodAuthAutotool Autotool where
     type AuthSchool = UNr
@@ -414,7 +439,7 @@ navigationMenu mroute authId = do
   semName <- semesterName' sem
   vorlName <- vorlesungName' vorl
   grupName <- liftIO $ gruppeName grup
-  aufgName <- liftIO $ aufgabeName aufg
+  aufgName <- aufgabeName' aufg
   return [NavigationMenu MsgSchule $ trennstrich (addTitel schuName $ map zuLink schule') $ map zuLink schulen'
          ,NavigationMenu MsgSemester $ addTitel semName $ map zuLink semester'
          ,NavigationMenu MsgVorlesung $ addTitel vorlName $ map zuLink vorlesung'
@@ -450,8 +475,12 @@ gruppeName :: Maybe GruppeId -> IO (Maybe Text)
 gruppeName = getName GNr GruppeDB.get_gnr Gruppe.name
 
 -- | Liefert den Aufgabenamen zur Id der Aufgabe
-aufgabeName :: Maybe AufgabeId -> IO (Maybe Text)
-aufgabeName = getName ANr AufgabeDB.get_this Aufgabe.name
+aufgabeName' :: Maybe AufgabeId -> Handler (Maybe Text)
+aufgabeName' maufgabeId = runMaybeT $ do
+  aufgabeId <- MaybeT . return $ maufgabeId
+  maufgabe <- lift $ runDB $ get aufgabeId
+  aufgabe <- MaybeT . return $ maufgabe
+  return $ aufgabeName aufgabe
 
 -- | Liefert den Namen zu Werten von DB-Einträgen. Benötigt den @konstruktor@, der Schlüsselwerte, die @dbFunktion@ zum Abrufen der DB-Einträge, die Funktion @nameFunktion@, die die Namen der DB-Einträge liefert und die Id, die dem Konstruktor übergeben wird @mvId@ (kann Nothing sein).
 getName :: Monad m => (a -> b) -> (b -> m [c]) -> (c -> Name) -> Maybe a -> m (Maybe Text)
@@ -486,7 +515,7 @@ routeInformation route = case routeParameter route of
        schule <- getSchule semester
        return $ fromTuple6 $ toTuple6 (schule, semester, vorlesung, Just gruppe, Nothing, Nothing)
      AufgabeRoute aufgabe -> do
-       vorlesung <- liftIO $ getVorlesungAufgabe $ Just aufgabe
+       vorlesung <- getVorlesungAufgabe $ Just aufgabe
        semester <- getSemester vorlesung
        schule <- getSchule semester
        case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
@@ -494,7 +523,7 @@ routeInformation route = case routeParameter route of
          _ -> return $ fromTuple6 Tuple6_0
      ServerRoute _ -> return $ fromTuple6 Tuple6_0
      EinsendungRoute aufgabe student -> do
-       vorlesung <- liftIO $ getVorlesungAufgabe $ Just aufgabe
+       vorlesung <- getVorlesungAufgabe $ Just aufgabe
        semester <- getSemester vorlesung
        schule <- getSchule semester
        case fromTuple6 $ toTuple6 (schule, semester, vorlesung, Nothing, Nothing, Nothing) of
@@ -539,12 +568,12 @@ getVorlesung mgruppe  = runMaybeT $ do
   return $ intToKey vorlesungId
 
 -- | Liefert ggf. die Vorlesung zu einer Aufgabe
-getVorlesungAufgabe :: Maybe AufgabeId -> IO (Maybe VorlesungId)
-getVorlesungAufgabe maufgabe  = runMaybeT $ do
+getVorlesungAufgabe :: Maybe AufgabeId -> Handler (Maybe VorlesungId)
+getVorlesungAufgabe maufgabeId  = runMaybeT $ do
+  aufgabeId <- MaybeT $ return maufgabeId
+  maufgabe <- lift $ runDB $ get aufgabeId
   aufgabe <- MaybeT $ return maufgabe
-  aufgaben <- lift $ AufgabeDB.get_this $ ANr aufgabe
-  VNr vorlesungId <- MaybeT $ return $ listToMaybe $ map Aufgabe.vnr aufgaben
-  return $ intToKey vorlesungId
+  return $ aufgabeVorlesungId aufgabe
 
 data RouteParameter =
     SchuleRoute SchuleId
@@ -691,9 +720,9 @@ routeTitel route = case route of
   StatistikR _                   -> return $ Just MsgStatistik
   EinsendungR _ _                -> return $ Just MsgEinsendung
   EinsendungAnlegenR a           -> do
-    maufgabe <- lift $ liftM listToMaybe $ AufgabeDB.get_this $ ANr a
+    maufgabe <- runDB $ get a
     case maufgabe of
-      Just aufgabe -> return $ Just $ MsgAufgabeXLösen $ pack $ toString $ Aufgabe.name aufgabe
+      Just aufgabe -> return $ Just $ MsgAufgabeXLösen $ aufgabeName aufgabe
       Nothing -> notFound
   ServersR                       -> return $ Just MsgServers
   ServerR _                      -> return $ Just MsgAufgabeTyp

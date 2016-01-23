@@ -11,8 +11,6 @@ import System.IO (readFile)
 import System.Directory
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import qualified Control.Aufgabe.Typ as Aufgabe
-import qualified Control.Aufgabe.DB as AufgabeDB
 import Control.Punkt (bepunkteStudentDB)
 import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
@@ -33,8 +31,8 @@ getEinsendungR = postEinsendungR
 
 postEinsendungR :: AufgabeId -> StudentId -> Handler Html
 postEinsendungR aufgabeId studentId = do
-  meinsendung <- liftIO $ liftM listToMaybe $ EinsendungDB.get_snr_anr (T.SNr studentId) $ T.ANr aufgabeId
-  maufgabe <- liftIO $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabeId
+  meinsendung <- liftIO $ liftM listToMaybe $ EinsendungDB.get_snr_anr (T.SNr studentId) $ T.ANr $ keyToInt aufgabeId
+  maufgabe <- runDB $ get aufgabeId
   mstudent <- liftIO $ liftM listToMaybe $ StudentDB.get_snr $ T.SNr studentId
   (aufgabe, student) <- do
     mval <- runMaybeT $ do
@@ -45,13 +43,13 @@ postEinsendungR aufgabeId studentId = do
       Nothing -> permissionDeniedI MsgNichtAutorisiert
       Just v -> return v
   tutored <- liftIO $ TutorDB.get_tutored student
-  let istTutor = Aufgabe.vnr aufgabe `elem` fmap Vorlesung.vnr tutored
-  einsendung <- liftIO $ maybe (EinsendungDB.put_blank (Student.snr student) (Aufgabe.anr aufgabe)) return meinsendung
+  let istTutor = T.VNr (keyToInt $ aufgabeVorlesungId aufgabe) `elem` fmap Vorlesung.vnr tutored
+  einsendung <- liftIO $ maybe (EinsendungDB.put_blank (Student.snr student) (T.ANr $ keyToInt aufgabeId)) return meinsendung
   mbewertung <- liftIO $ sequence $ fmap (liftM preEscapedToHtml . readFile . T.toString) $ Einsendung.report einsendung
   ((formResult, formWidget), formEnctype) <- runFormPost $ bewertungBearbeitenForm mbewertung
   case formResult of
     FormSuccess (mneueBewertung, mneuerWert) -> do
-      let param = getDefaultParam student aufgabe
+      let param = getDefaultParam student aufgabe aufgabeId
           continue = case mneuerWert of
             Just T.Pending -> True
             _ -> isJust mneueBewertung
@@ -64,8 +62,8 @@ postEinsendungR aufgabeId studentId = do
            setMessage $ toHtml $ pack msg
          else setMessageI $ MsgEinsendungBewertungNotwendig
     _ -> return ()
-  input <- fixInput student aufgabe einsendung
-  instant <- fixInstant student aufgabe einsendung
+  input <- fixInput student aufgabe aufgabeId einsendung
+  instant <- fixInstant student aufgabe aufgabeId einsendung
   -- INFO: Logging entfernt ("Super.view")
   maufgabenstellung <- liftIO $ sequence $ fmap (liftM preEscapedToHtml . readFile . T.toString) instant
   -- INFO: Logging entfernt ("Super.view")
@@ -87,12 +85,12 @@ bewertungBearbeitenForm mbewertung =
 optionen :: [(AutotoolMessage, Maybe T.Wert)]
 optionen = [(MsgBehalten, Nothing), (MsgNein, Just T.No), (MsgAusstehend, Just T.Pending)] ++ fmap (\ i -> (MsgTextToMsg (pack $ show i), Just $ T.Ok i)) [1..10]
 
-fixInput :: Student.Student -> Aufgabe.Aufgabe -> Einsendung.Stud_Aufg -> Handler (Maybe T.File)
-fixInput student aufgabe einsendung = case Einsendung.input einsendung of
+fixInput :: Student.Student -> Aufgabe -> AufgabeId -> Einsendung.Stud_Aufg -> Handler (Maybe T.File)
+fixInput student aufgabe aufgabeId einsendung = case Einsendung.input einsendung of
   Just file -> return $ Just file
   Nothing -> liftIO $ do
     -- fix location of previous einsendung
-    let p = getDefaultParam student aufgabe
+    let p = getDefaultParam student aufgabe aufgabeId
         d = Store.location Store.Input
                  p "latest" False
     file <- D.home d
@@ -108,21 +106,21 @@ fixInput student aufgabe einsendung = case Einsendung.input einsendung of
           (Just inf)
           Nothing
         return $ Just inf
-      else return $ Nothing
+      else return Nothing
 
-fixInstant :: Student.Student -> Aufgabe.Aufgabe -> Einsendung.Stud_Aufg -> Handler (Maybe T.File)
-fixInstant student aufgabe einschreibung = case Einsendung.instant einschreibung of
+fixInstant :: Student.Student -> Aufgabe -> AufgabeId -> Einsendung.Stud_Aufg -> Handler (Maybe T.File)
+fixInstant student aufgabe aufgabeId einschreibung = case Einsendung.instant einschreibung of
   Just file -> return $ Just file
   Nothing -> do
     -- transitional:
     -- (try to) re-generate previous instance
-    aufgabe' <- updateSignatur aufgabe
+    aufgabe' <- updateSignatur aufgabe aufgabeId
     (_, _, _, aufgabenstellung) <-
       getAufgabeInstanz
-        (pack $ T.toString $ Aufgabe.server aufgabe')
-        (signed_task_config aufgabe')
-        (getCrc (Aufgabe.vnr aufgabe) (Just $ Aufgabe.anr aufgabe) (Student.mnr student))
-    let p = getDefaultParam student aufgabe'
+        (aufgabeServer aufgabe')
+        (signed_task_config $ entityToAufgabe aufgabeId aufgabe')
+        (getCrc (T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe) (Just $ T.ANr $ keyToInt aufgabeId) (Student.mnr student))
+    let p = getDefaultParam student aufgabe' aufgabeId
         d = Store.location Store.Instant
                p "latest" False
     file <- liftIO $ D.schreiben d $ show aufgabenstellung
@@ -135,23 +133,21 @@ fixInstant student aufgabe einschreibung = case Einsendung.instant einschreibung
       Nothing
     return $ Just inst
 
-updateSignatur :: Aufgabe.Aufgabe -> Handler Aufgabe.Aufgabe
-updateSignatur aufgabe =
-  if T.toString (Aufgabe.signature aufgabe) == "missing"
+updateSignatur :: Aufgabe -> AufgabeId -> Handler Aufgabe
+updateSignatur aufgabe aufgabeId =
+  if aufgabeSignatur aufgabe == "missing"
   then do
     esigned <-
       checkKonfiguration
-        (pack $ T.toString $ Aufgabe.server aufgabe)
-        (pack $ T.toString $ Aufgabe.typ aufgabe)
-        (pack $ T.toString $ Aufgabe.config aufgabe)
+        (aufgabeServer aufgabe)
+        (aufgabeTyp aufgabe)
+        (aufgabeKonfiguration aufgabe)
     case esigned of
       Left fehler -> do
         setMessage fehler
-        let T.VNr vorlesungId = Aufgabe.vnr aufgabe
-        redirectWith temporaryRedirect307 $ VorlesungR $ intToKey vorlesungId
+        redirectWith temporaryRedirect307 $ VorlesungR $ aufgabeVorlesungId aufgabe
       Right signed -> do
-        let aufgabe'' = aufgabe { Aufgabe.signature = T.fromCGI $ signature signed }
-        liftIO $ AufgabeDB.put_signature (Just $ Aufgabe.anr aufgabe'') aufgabe''
+        aufgabe'' <- runDB $ updateGet aufgabeId [AufgabeSignatur =. pack (signature signed)]
         setMessageI MsgAufgabeSignaturUpdate
         return aufgabe''
   else return aufgabe

@@ -1,6 +1,7 @@
-$if hinweis /= ""
-  <h2>_{MsgAufgabeHinweis}
-  <p>#{hinweis}
+$maybe hinweis <- mhinweis
+  $if hinweis /= ""
+    <h2>_{MsgAufgabeHinweis}
+    <p>#{hinweis}
 <h2>_{MsgAufgabeAufgabe}
 #{aufgabenstellung}
 <h2>_{MsgAufgabeLösungEinsenden}

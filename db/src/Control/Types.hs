@@ -20,10 +20,10 @@ module Control.Types
 -- , ClockTime -- wer braucht das?
 
 -- , Typ, Config, Remark, Name, File, Email
-, Typ, Config, Remark, Name(..), File, Email(..)
+, Typ (..), Config (..), Remark (..), Name(..), File, Email(..)
 , Oks (..), Nos (..)
 , Time
-, Signature , Server
+, Signature (..), Server (..)
 
 , TimeStatus (..), timer
 , FromCGI (..)

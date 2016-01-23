@@ -11,11 +11,12 @@ import Data.Eq ((==), (/=))
 import Data.Function (($), (.))
 import qualified Data.List as L (length)
 import Data.Maybe (Maybe (Just, Nothing), maybe)
+import Data.Monoid ((<>))
 import System.IO (IO)
 import Data.Ord ((<))
 import Data.Text (cons, empty, head, length, pack, split, tail)
 import Data.Text.Encoding (decodeUtf8)
-import Text.Blaze.Html (Html)
+import Text.Blaze.Html (Html, toHtml)
 import Text.Show (show)
 import Yesod.Auth (AuthPlugin (AuthPlugin), AuthRoute, Creds (Creds), Route, YesodAuth, loginDest, setCreds)
 import Yesod.Core (getRouteToParent, defaultLayout)
@@ -45,7 +46,7 @@ getLogin _tp = do
   --schulen <- handlerToWidget $ runDB $ selectList [SchuleMailSuffix ==. Just suffix] []
   let vorname = cons (toUpper $ head loginname) empty
       name = cons (toUpper $ head $ tail loginname) $ tail $ tail loginname
-  mstudent <- handlerToWidget $ getAccountByName school vorname name loginname
+  mstudent <- handlerToWidget $ getAccountByEppn school $ decodeUtf8 eppn
   maffiliation <- lookupHeader' "X-Shibboleth-Affiliation"
   student <- maybe (redirectWith "Login Failed - Could not create Student") return mstudent
   handlerToWidget $ setCreds False $ Creds "shibboleth" (pack $ show student) []

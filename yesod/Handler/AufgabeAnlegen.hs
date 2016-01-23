@@ -6,13 +6,11 @@ import Data.List (head, tail)
 import Data.Tuple6
 
 import Handler.Aufgabe.Forms
-import qualified Handler.AufgabeEinstellungen as AE (AufgabeFormDaten (..), aufgabeToFormDaten, formDatenToHiLo, formDatenToStatus)
+import qualified Handler.AufgabeEinstellungen as AE (AufgabeFormDaten (..), aufgabeToFormDaten)
 import Handler.AufgabeVorlage (getVorlageKonfiguration)
 import Handler.AufgabeKonfiguration (checkKonfiguration, getBeispielKonfiguration, getKonfigurationFehler)
 import Handler.EinsendungAnlegen (getAufgabeInstanz, getBewertung, getCrc)
 
-import qualified Control.Aufgabe.DB as AufgabeDB
-import qualified Control.Aufgabe.Typ as A (Aufgabe (..))
 import Control.Types
 import Service.Interface (get_task_types)
 import Types.Basic (Task)
@@ -44,10 +42,10 @@ postAufgabeAnlegenR :: VorlesungId -> Handler Html
 postAufgabeAnlegenR vorlesung = do
   aufgabeTemplate (Left vorlesung)
 
-aufgabeTemplate :: Either VorlesungId A.Aufgabe -> Handler Html
-aufgabeTemplate eidAufgabe = do
+aufgabeTemplate :: Either VorlesungId AufgabeId -> Handler Html
+aufgabeTemplate eidAufgabeId = do
   let mhinweis = Nothing :: Maybe Text
-  results <- getFormResults eidAufgabe
+  results <- getFormResults eidAufgabeId
   let (mserver, mtyp, mvorlage, mkonfiguration, _, _, mhochladen) = results
   maktion <- liftM (fmap readAktion) $ lookupPostParam aktionName
   msignedK <- liftM (>>= rightToMaybe) $
@@ -56,79 +54,90 @@ aufgabeTemplate eidAufgabe = do
     aktion <- MaybeT . return $ maktion
     case aktion of
       Anlegen -> do
-        vorlesungId <- MaybeT . return $ leftToMaybe eidAufgabe
-        aufgabe' <- MaybeT . return $ aufgabeBearbeiten results (fromCGI . signature <$> msignedK) Nothing
-        let aufgabe'' = aufgabe' { A.vnr = VNr $ keyToInt vorlesungId }
-        lift $ lift $ AufgabeDB.put Nothing aufgabe''
-        lift $ setMessageI MsgAufgabeAngelegt
-        redirect $ AufgabenR vorlesungId -- TODO: redirect $ AufgabeR aufgabeId
+        vorlesungId <- MaybeT . return $ leftToMaybe eidAufgabeId
+        aufgabeBearbeiten results (fromCGI . signature <$> msignedK) $ Left vorlesungId
       Bearbeiten -> do
-        aufgabe <- MaybeT . return $ rightToMaybe eidAufgabe
-        aufgabe' <- MaybeT . return $ aufgabeBearbeiten results (fromCGI . signature <$> msignedK) $ Just aufgabe
-        lift $ lift $ AufgabeDB.put (Just $ A.anr aufgabe) aufgabe'
-        lift $ setMessageI MsgAufgabeBearbeitet
+        aufgabeId <- MaybeT . return $ rightToMaybe eidAufgabeId
+        aufgabeBearbeiten results (fromCGI . signature <$> msignedK) $ Right aufgabeId
       Entfernen -> do
-        aufgabe <- MaybeT . return $ rightToMaybe eidAufgabe
-        lift $ lift $ AufgabeDB.delete $ A.anr aufgabe
+        aufgabeId <- MaybeT . return $ rightToMaybe eidAufgabeId
+        aufgabe <- lift $ runDB $ get404 aufgabeId
+        lift $ runDB $ delete aufgabeId
         lift $ setMessageI MsgAufgabeEntfernt
-        let VNr vorlesungId = A.vnr aufgabe
-        redirect $ AufgabenR $ intToKey vorlesungId
+        redirect $ AufgabenR $ aufgabeVorlesungId aufgabe
   (beispielKonfiguration, ktyp) <- maybe (return ("","")) id $
     getBeispielKonfiguration <$> mserver <*> mtyp
   mvorlageKonfiguration <- sequence $ getVorlageKonfiguration <$> Just beispielKonfiguration <*> mtyp <*> (maybe "" id <$> mvorlage)
   mhinweisFehler <- liftM join $ sequence $ getKonfigurationFehler <$> mserver <*> mtyp <*> maybe mvorlageKonfiguration Just mkonfiguration
   let matrikel = MNr "11111" -- TODO auswählbar machen
-      crc = case eidAufgabe of
-        Left v -> getCrc (VNr $ keyToInt v) Nothing matrikel
-        Right aufgabe -> getCrc (A.vnr aufgabe) (Just $ A.anr aufgabe) matrikel
+  crc <- case eidAufgabeId of
+    Left v -> return $ getCrc (VNr $ keyToInt v) Nothing matrikel
+    Right aufgabeId -> do
+      aufgabe <- runDB $ get404 aufgabeId
+      return $ getCrc (VNr $ keyToInt $ aufgabeVorlesungId aufgabe) (Just $ ANr $ keyToInt aufgabeId) matrikel
   (msignedA, meinsendung, atyp, maufgabenstellung) <-
     liftM (maybe (Nothing, Nothing, "" :: Html, Nothing)
         (\ (a, b, c, d) -> (Just a, Just b, c, Just d))) $
     sequence $ getAufgabeInstanz <$> mserver <*> msignedK <*> Just crc
   mbewertung <- liftM (fmap snd . join) $ sequence $ getBewertung <$> mserver <*> msignedA <*> Just mhochladen
-  forms <- getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung
+  forms <- getForms results eidAufgabeId ktyp msignedA atyp mvorlageKonfiguration meinsendung
   defaultLayout $ do
     addStylesheet $ StaticR css_tree_css
     $(widgetFile "aufgabeAnlegen")
 
-aufgabeBearbeiten :: FormResults -> Maybe Signature -> Maybe A.Aufgabe -> Maybe A.Aufgabe
-aufgabeBearbeiten results msignatur maufgabe = do
+aufgabeBearbeiten :: FormResults -> Maybe Signature -> Either VorlesungId AufgabeId -> MaybeT Handler ()
+aufgabeBearbeiten results msignatur eidAufgabeId = do
   let (mserver, mtyp, _, mkonfiguration, meinstellungen, _, _) = results
-  server        <- mserver
-  typ           <- mtyp
-  konfiguration <- mkonfiguration
-  einstellungen <- meinstellungen
-  signatur      <- msignatur
-  return $ A.Aufgabe {
-    A.anr = maybe undefined A.anr maufgabe,
-    A.vnr = maybe undefined A.vnr maufgabe,
-    A.name = Name . unpack $ AE.name einstellungen,
-    A.server = fromCGI $ unpack server,
-    A.typ = fromCGI $ unpack typ,
-    A.config = fromCGI $ unpack konfiguration,
-    A.signature = signatur,
-    A.remark = fromCGI $ unpack $ maybe "" id $ AE.hinweis einstellungen,
-    A.highscore = AE.formDatenToHiLo $ AE.highscore einstellungen,
-    A.status = AE.formDatenToStatus $ AE.status einstellungen,
-    A.von = dayTimeToTime (AE.beginn einstellungen) $ AE.beginnZeit einstellungen,
-    A.bis = dayTimeToTime (AE.ende einstellungen) $ AE.endeZeit einstellungen,
-    A.timeStatus = undefined
-  }
+  server        <- MaybeT . return $ mserver
+  typ           <- MaybeT . return $ mtyp
+  konfiguration <- MaybeT . return $ mkonfiguration
+  einstellungen <- MaybeT . return $ meinstellungen
+  Signature signatur <- MaybeT . return $ msignatur
+  case eidAufgabeId of
+    Left vorlesungId -> do
+      let aufgabe = Aufgabe {
+              aufgabeVorlesungId = vorlesungId,
+              aufgabeName = AE.name einstellungen,
+              aufgabeHinweis = AE.hinweis einstellungen,
+              aufgabeHighscore = AE.highscore einstellungen,
+              aufgabeStatus = AE.status einstellungen,
+              aufgabeVon = AE.beginn einstellungen,
+              aufgabeBis = AE.ende einstellungen,
+              aufgabeServer = server,
+              aufgabeTyp = typ,
+              aufgabeKonfiguration = konfiguration,
+              aufgabeSignatur = pack signatur
+            }
+      aufgabeId <- lift $ runDB $ insert aufgabe
+      lift $ setMessageI MsgAufgabeAngelegt
+      lift $ redirect $ AufgabeR aufgabeId
+    Right aufgabeId -> do
+      lift $ runDB $ update aufgabeId
+        [AufgabeName =. AE.name einstellungen,
+         AufgabeHinweis =. AE.hinweis einstellungen,
+         AufgabeHighscore =. AE.highscore einstellungen,
+         AufgabeStatus =. AE.status einstellungen,
+         AufgabeVon =. AE.beginn einstellungen,
+         AufgabeBis =. AE.ende einstellungen,
+         AufgabeServer =. server,
+         AufgabeTyp =. typ,
+         AufgabeKonfiguration =. konfiguration,
+         AufgabeSignatur =. pack signatur]
+      lift $ setMessageI MsgAufgabeBearbeitet
 
-getForms :: FormResults -> Either VorlesungId A.Aufgabe -> Html -> Maybe (Signed (Task, Instance)) -> Html -> Maybe AufgabeKonfiguration -> Maybe Text -> Handler [AutotoolForm]
-getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung = do
+getForms :: FormResults -> Either VorlesungId AufgabeId -> Html -> Maybe (Signed (Task, Instance)) -> Html -> Maybe AufgabeKonfiguration -> Maybe Text -> Handler [AutotoolForm]
+getForms results eidAufgabeId ktyp msignedA atyp mvorlageKonfiguration meinsendung = do
   let (mserver, mtyp, mvorlage, mkonfiguration, meinstellungen, mtesten, _) = results
   aufgabenTypen <- liftM (fmap taskTreeToTextTree . concat) $ mapM (lift . get_task_types . unpack) $ maybeToList mserver
-  let ziel = case eidAufgabe of
+  let ziel = case eidAufgabeId of
         Left gruppe -> AufgabeAnlegenR gruppe
-        Right aufgabe -> let ANr aufgabeId = A.anr aufgabe
-                         in AufgabeR aufgabeId
+        Right aufgabeId -> AufgabeR aufgabeId
       firstJust a b = maybe b Just a
       getServerForm ms = getForm ServerForm ziel [] $ serverForm ms
       getTypForm s mt = getForm AufgabeTypForm ziel [] $ typForm aufgabenTypen s mt
       getVorlagenForm s t mv = getForm VorlagenForm ziel [("class", "form-inline")] $ vorlagenForm s t mv
       getKonfigurationForm s t v mk = getForm KonfigurationForm ziel [] $ konfigurationForm ktyp s t v mk
-      getAufgabeForm s t v k ma = getForm AufgabeForm ziel [] $ aufgabeForm eidAufgabe s t v k ma
+      getAufgabeForm s t v k ma = getForm AufgabeForm ziel [] $ aufgabeForm eidAufgabeId s t v k ma
       getHochladenForm s t v k a = getForm HochladenForm ziel [] $ hochladenForm s t v k a
       getTestenForm s t v k a ml = getForm TestenForm ziel [] $ testenForm atyp msignedA s t v k a ml
   sequence $ concat $ fmap maybeToList
@@ -140,14 +149,14 @@ getForms results eidAufgabe ktyp msignedA atyp mvorlageKonfiguration meinsendung
      getHochladenForm <$> mserver <*> mtyp <*> mvorlage <*> mkonfiguration <*> meinstellungen,
      getTestenForm <$> mserver <*> mtyp <*> mvorlage <*> mkonfiguration <*> meinstellungen <*> Just (firstJust mtesten meinsendung)]
 
-getFormResults :: Either a A.Aufgabe -> Handler FormResults
-getFormResults eidAufgabe = do
+getFormResults :: Either a AufgabeId -> Handler FormResults
+getFormResults eidAufgabeId = do
   (s_, t_, v_, k_, a_) <- getUnsafePostParams -- Achtung: Werte können undefined sein
   ((serverResult, _), _) <- runFormPost $ serverForm Nothing
   ((typResult, _), _) <- runFormPost $ typForm [] s_ Nothing
   ((vorlageResult, _), _) <- runFormPost $ vorlagenForm s_ t_ Nothing
   ((konfigurationResult, _), _) <- runFormPost $ konfigurationForm ("" :: Text) s_ t_ (Just v_) Nothing
-  ((einstellungenResult, _), _) <- runFormPost $ aufgabeForm eidAufgabe s_ t_ (Just v_) k_ Nothing
+  ((einstellungenResult, _), _) <- runFormPost $ aufgabeForm eidAufgabeId s_ t_ (Just v_) k_ Nothing
   ((hochladenResult, _), _) <- runFormPost $ hochladenForm s_ t_ (Just v_) k_ a_
   ((testenResult, _), _) <- runFormPost $ testenForm ("" :: Text) Nothing s_ t_ (Just v_) k_ a_ Nothing
   hochladen <- auswerten hochladenResult Tuple6_6 [ServerForm, AufgabeTypForm, VorlagenForm, KonfigurationForm, AufgabeForm]
@@ -165,11 +174,11 @@ getFormResults eidAufgabe = do
         Nothing -> (mserver', mtyp', mvorlage', mkonfiguration', meinstellungen')
         Just _ -> (mserver'', mtyp'', mvorlage'', mkonfiguration'', meinstellungen'')
       firstJust a b = maybe b Just a
-      maufgabe = either (const Nothing) Just eidAufgabe
-  return (firstJust mserver $ pack . toString . A.server <$> maufgabe,
-          firstJust mtyp $ pack . toString . A.typ <$> maufgabe,
-          firstJust mvorlage $ Just . pack . toString . A.name <$> maufgabe,
-          firstJust mkonfiguration $ pack . toString . A.config <$> maufgabe,
+  maufgabe <- either (return $ return Nothing) (runDB . get) eidAufgabeId
+  return (firstJust mserver $ aufgabeServer <$> maufgabe,
+          firstJust mtyp $ aufgabeTyp <$> maufgabe,
+          firstJust mvorlage $ Just . aufgabeName <$> maufgabe,
+          firstJust mkonfiguration $ aufgabeKonfiguration <$> maufgabe,
           firstJust meinstellungen $ AE.aufgabeToFormDaten <$> maufgabe,
           mtesten,
           mhochladen)

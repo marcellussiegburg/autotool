@@ -1,8 +1,8 @@
-^{formToWidget (AufgabeKonfigurationR server aufgabeTyp konfiguration) Nothing formEnctype formWidget}
+^{formToWidget (AufgabeKonfigurationR server aTyp konfiguration) Nothing formEnctype formWidget}
 $maybe hinweis <- mhinweis
   <h2>_{MsgAufgabeKonfigurationFehler}
   #{hinweis}
 $nothing
-  <a .btn .btn-primary href=@{AufgabeBenutzerIdZufallR server aufgabeTyp konfiguration}>_{MsgAufgabeTesten}
+  <a .btn .btn-primary href=@{AufgabeBenutzerIdZufallR server aTyp konfiguration}>_{MsgAufgabeTesten}
   &nbsp;
-  <a .btn .btn-primary href=@{AufgabeBenutzerIdR server aufgabeTyp konfiguration}>_{MsgAufgabeTestenMitId}
+  <a .btn .btn-primary href=@{AufgabeBenutzerIdR server aTyp konfiguration}>_{MsgAufgabeTestenMitId}

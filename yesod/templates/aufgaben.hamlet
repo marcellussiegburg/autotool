@@ -17,12 +17,12 @@ $else
         $if istTutor
           <th colspan=2>
     <tbody>
-      $forall (aufgabe, (ok, nein, mbewertung)) <- ergebnisse'
+      $forall (aufgabe, aufgabeId, (ok, nein, mbewertung)) <- ergebnisse'
         <tr>
           <td>
-            #{toString $ Aufgabe.name aufgabe}
+            #{aufgabeName aufgabe}
           <td>
-            $case Aufgabe.status aufgabe
+            $case aufgabeStatus aufgabe
               $of Demo
                 _{MsgStatusDemonstration}
               $of Optional
@@ -30,7 +30,7 @@ $else
               $of Mandatory
                 _{MsgStatusPflicht}
           <td>
-            $case Aufgabe.highscore aufgabe
+            $case aufgabeHighscore aufgabe
               $of High
                 _{MsgHighscoreHoch}
               $of Low
@@ -38,13 +38,13 @@ $else
               $of Keine
                 _{MsgHighscoreKeine}
           <td>
-            $case Aufgabe.timeStatus aufgabe
+            $case zeitStatus (aufgabeVon aufgabe) (aufgabeBis aufgabe) aktuelleZeit
               $of Early
-                _{MsgAufgabeZeitVorher $ timeToUTCTime $ Aufgabe.von aufgabe}
+                _{MsgAufgabeZeitVorher $ aufgabeVon aufgabe}
               $of Current
-                _{MsgAufgabeZeitAktuell $ timeToUTCTime $ Aufgabe.bis aufgabe}
+                _{MsgAufgabeZeitAktuell $ aufgabeBis aufgabe}
               $of Late
-                _{MsgAufgabeZeitNachher $ timeToUTCTime $ Aufgabe.bis aufgabe}
+                _{MsgAufgabeZeitNachher $ aufgabeBis aufgabe}
           <td>
             $maybe vorher <- mbewertung
               $case vorher
@@ -67,24 +67,24 @@ $else
             <td .warning colspan=2>
           $if istEingeschrieben
             <td>
-              $case Aufgabe.timeStatus aufgabe
+              $case zeitStatus (aufgabeVon aufgabe) (aufgabeBis aufgabe) aktuelleZeit
                 $of Current
-                  <a href=@{EinsendungAnlegenR $ getAufgabe aufgabe} .btn .btn-success .btn-block role="button">_{MsgLösen}
+                  <a href=@{EinsendungAnlegenR aufgabeId} .btn .btn-success .btn-block role="button">_{MsgLösen}
                 $of Late
-                  <a href=@{AufgabeTestenR (pack $ toString $ Aufgabe.server aufgabe) (pack $ toString $ Aufgabe.typ aufgabe) (pack $ toString $ Aufgabe.config aufgabe) (pack mnr)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
+                  <a href=@{AufgabeTestenR (aufgabeServer aufgabe) (aufgabeTyp aufgabe) (aufgabeKonfiguration aufgabe) (pack mnr)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
                 $of Early
             <td>
-              $case Aufgabe.timeStatus aufgabe
+              $case zeitStatus (aufgabeVon aufgabe) (aufgabeBis aufgabe) aktuelleZeit
                 $of Current
-                  <a href=@{EinsendungR (getAufgabe aufgabe) stud} .btn .btn-info .btn-block role="button">_{MsgAnzeigen}
+                  <a href=@{EinsendungR aufgabeId stud} .btn .btn-info .btn-block role="button">_{MsgAnzeigen}
                 $of Late
-                  <a href=@{EinsendungR (getAufgabe aufgabe) stud} .btn .btn-info .btn-block role="button">_{MsgAnzeigen}
+                  <a href=@{EinsendungR aufgabeId stud} .btn .btn-info .btn-block role="button">_{MsgAnzeigen}
                 $of Early
           $if istTutor
             <td>
-              <a href=@{AufgabeR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
+              <a href=@{AufgabeR aufgabeId} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
             <td>
-              <a href=@{StatistikR $ getAufgabe aufgabe} .btn .btn-primary .btn-block role="button">_{MsgStatistikAnzeigen}
+              <a href=@{StatistikR aufgabeId} .btn .btn-primary .btn-block role="button">_{MsgStatistikAnzeigen}
 <nav>
   <ul .pager>
     $if disp == fromList [Current]

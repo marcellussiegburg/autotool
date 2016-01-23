@@ -3,8 +3,6 @@ module Handler.Statistik where
 import Import
 import Handler.EinsendungAnlegen (getDefaultParam)
 
-import qualified Control.Aufgabe.Typ as Aufgabe
-import qualified Control.Aufgabe.DB as AufgabeDB
 import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Student.Type as Student
@@ -46,20 +44,18 @@ getStatistikR = postStatistikR
 
 postStatistikR :: AufgabeId -> Handler Html
 postStatistikR aufgabeId = do
-  maufgabe <- liftIO $ liftM listToMaybe $ AufgabeDB.get_this $ T.ANr aufgabeId
+  maufgabe <- runDB $ get aufgabeId
   aufgabe <- case maufgabe of
     Nothing -> permissionDeniedI MsgNichtAutorisiert
     Just a -> return a
-  studenten <- liftIO $ VorlesungDB.steilnehmer $ Aufgabe.vnr aufgabe
+  studenten <- liftIO $ VorlesungDB.steilnehmer $ T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe
   _ <- runMaybeT $ do
     maktion <- lookupPostParam aktion
     aktion' <- MaybeT . return $ maktion
     lift $ case read $ unpack aktion' of
-      Bearbeiten -> bewertungenSchreiben studenten aufgabe
-      CacheLeeren m ->
-        let T.VNr vorlesungId = Aufgabe.vnr aufgabe
-        in cacheLeeren m (intToKey vorlesungId) aufgabeId
-  einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr aufgabeId
+      Bearbeiten -> bewertungenSchreiben studenten aufgabe aufgabeId
+      CacheLeeren m -> cacheLeeren m (aufgabeVorlesungId aufgabe) aufgabeId
+  einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr $ keyToInt aufgabeId
   ergebnisse <- getErgebnisListe einsendungen studenten
   optionen' <- optionsPairs optionen
   defaultLayout $ do
@@ -78,19 +74,19 @@ cacheLeeren matrikel' vorlesungId aufgabeId = do
   lift $ D.loeschen d `catch` \ (SomeException _) -> return ()
   setMessageI $ MsgCacheGeleert $ pack $ show d
 
-bewertungenSchreiben :: [Student.Student] -> Aufgabe.Aufgabe -> Handler ()
-bewertungenSchreiben studenten aufgabe = do
+bewertungenSchreiben :: [Student.Student] -> Aufgabe -> AufgabeId -> Handler ()
+bewertungenSchreiben studenten aufgabe aufgabeId = do
   let fromSNr snr = let T.SNr s = snr in s
       getResult s = lookupPostParam $ neuBewertenLabel $ fromSNr $ Student.snr s
   sequence_ $ map (\s -> do r <- getResult s
                             let i = maybe 1 (read . unpack) r - 1
-                            bewertungSchreiben s aufgabe (snd $ optionen !! i)) studenten
+                            bewertungSchreiben s aufgabe aufgabeId (snd $ optionen !! i)) studenten
 
-bewertungSchreiben :: Student.Student -> Aufgabe.Aufgabe -> Maybe T.Wert -> Handler Text
-bewertungSchreiben _ _ Nothing = return ""
-bewertungSchreiben student aufgabe (Just bewertung) = do
+bewertungSchreiben :: Student.Student -> Aufgabe -> AufgabeId -> Maybe T.Wert -> Handler Text
+bewertungSchreiben _ _ _ Nothing = return ""
+bewertungSchreiben student aufgabe aufgabeId (Just bewertung) = do
   let message = "Bewertung durch Tutor" :: Text -- TODO: Übersetzung?
-  lift $ liftM pack $ bank (getDefaultParam student aufgabe) {
+  lift $ liftM pack $ bank (getDefaultParam student aufgabe aufgabeId) {
       P.report = Just $ preEscapedToHtml message,
       P.mresult = Just bewertung
     }
