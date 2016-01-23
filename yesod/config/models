@@ -22,15 +22,21 @@ Vorlesung sql=vorlesung
   nachricht         Text Maybe  sql=motd
 
 Aufgabe sql=aufgabe
-  Id                            sql=ANr
-  name              Text        sql=Name
-  vorlesungId       VorlesungId sql=VNr
-  highscore         HiLo        sql=Highscore
-  von               UTCTime     sql=Von
-  bis               UTCTime     sql=Bis
-  konfiguration     Text        sql=Config
-  hinweis           Text Maybe  sql=Remark
-  typ               Text        sql=Typ
-  status            Status      sql=Status
-  server            Text        sql=server
-  signatur          Text        sql=signature
+  Id                                     sql=ANr
+  name              Text                 sql=Name
+  vorlesungId       VorlesungId          sql=VNr
+  highscore         HiLo                 sql=Highscore
+  von               UTCTime              sql=Von
+  bis               UTCTime              sql=Bis
+  konfiguration     AufgabeKonfiguration sql=Config
+  hinweis           Text Maybe           sql=Remark
+  typ               AufgabeTyp           sql=Typ
+  status            Status               sql=Status
+  server            ServerUrl            sql=server
+  signatur          Text                 sql=signature
+
+Tutor sql=tutor
+  studentId         StudentId            sql=SNr
+  vorlesungId       VorlesungId          sql=VNr
+  Primary studentId vorlesungId
+  UniqueTutor studentId vorlesungId

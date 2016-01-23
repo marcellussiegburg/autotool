@@ -17,7 +17,7 @@ postDirektorenR schuleId = do
         submit = BootstrapSubmit MsgDirektorAbsetzen "btn-danger btn-block" [],
         erfolgMsg = MsgDirektorAbgesetzt,
         formRoute = DirektorenR schuleId,
-        getOp = direktoren,
-        setOp = \stud -> DirektorDB.delete stud schule'
+        getOp = lift direktoren,
+        setOp = \stud -> lift $ DirektorDB.delete stud schule'
       }
   rolleSetzenListe studentenSeite

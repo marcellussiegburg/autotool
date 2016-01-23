@@ -12,7 +12,7 @@ getVorlesungenR semester = do
   mid <- maybeAuthId
   vorlesungenAutorisiert' <- mapM (autorisiertVorlesung mid) vorlesungen
   let vorlesungenAutorisiert = concat vorlesungenAutorisiert'
-  zeit <- liftIO $ getCurrentTime
+  zeit <- liftIO getCurrentTime
   defaultLayout $ do
     $(widgetFile "vorlesungen")
 

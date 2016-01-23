@@ -27,8 +27,8 @@ import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
 import Control.Monad.Trans.Either (EitherT (runEitherT), left)
 import Data.Char (toUpper)
 import Data.Foldable (foldlM)
-import Data.Maybe (fromMaybe, listToMaybe, maybeToList)
-import Database.Persist.Sql (fromSqlKey)
+import Data.Maybe (catMaybes, fromMaybe, listToMaybe, maybeToList)
+import Database.Persist.Sql (SqlBackend, fromSqlKey)
 import Data.Set (member)
 import Data.Text (Text, pack, unpack)
 import Data.Text.Read (decimal, signed)
@@ -36,7 +36,6 @@ import Data.Time (UTCTime, formatTime)
 import Data.Traversable (sequence)
 import Data.Tuple6
 import qualified Database.Persist
-import Database.Persist.Sql (SqlBackend)
 import System.Locale (defaultTimeLocale)
 import Model
 
@@ -49,7 +48,6 @@ import qualified Control.Schule.DB as SchuleDB
 import qualified Control.Schule.Typ as Schule
 import qualified Control.Student.DB as StudDB
 import qualified Control.Student.Type as Student
-import qualified Control.Tutor.DB as TutorDB
 import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Vorlesung.DB as VorlesungDB
 import qualified Autolib.Multilingual as Sprache
@@ -374,19 +372,21 @@ autorisierungRolle rolle authId route
       auth <- runMaybeT $ do
         mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
-        vorlesungen <- lift $ liftIO $ TutorDB.get_tutored stud
+        let SNr studId = Student.snr stud
         (_,_,mvorlesung,_,_,_) <- lift $ routeInformation route
         vorlesung <- MaybeT $ return mvorlesung
-        return $ elem (VNr $ keyToInt vorlesung) $ map Vorlesung.vnr vorlesungen
+        lift $ runDB $ return . not . null =<< selectList [TutorStudentId ==. studId, TutorVorlesungId ==. vorlesung] []
       return $ fromMaybe False auth
   | rolle == "jederTutor" = do
       auth <- runMaybeT $ do
         mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
         stud <- MaybeT $ return $ listToMaybe mstud
-        vorlesungen <- lift $ liftIO $ TutorDB.get_tutored stud
+        let SNr studId = Student.snr stud
+        tutored <- lift $ runDB $ selectList [TutorStudentId ==. studId] []
+        vorlesungen <- lift $ mapM (runDB . get . tutorVorlesungId . entityVal) tutored
         (mschule,_,_,_,_,_) <- lift $ routeInformation route
         schule <- MaybeT $ return mschule
-        return $ elem (UNr $ keyToInt schule) $ map Vorlesung.unr vorlesungen
+        return $ schule `elem` (vorlesungSchuleId <$> catMaybes vorlesungen)
       return $ fromMaybe False auth
   | otherwise =
       return False

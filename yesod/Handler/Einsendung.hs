@@ -16,7 +16,6 @@ import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Student.DB as StudentDB
 import qualified Control.Student.Type as Student
-import qualified Control.Tutor.DB as TutorDB
 import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Types as T
 import Operate.Bank (bank)
@@ -42,8 +41,8 @@ postEinsendungR aufgabeId studentId = do
     case mval of
       Nothing -> permissionDeniedI MsgNichtAutorisiert
       Just v -> return v
-  tutored <- liftIO $ TutorDB.get_tutored student
-  let istTutor = T.VNr (keyToInt $ aufgabeVorlesungId aufgabe) `elem` fmap Vorlesung.vnr tutored
+  let T.SNr studId = Student.snr student
+  istTutor <- runDB $ return . not . null =<< selectList [TutorStudentId ==. studId, TutorVorlesungId ==. aufgabeVorlesungId aufgabe] []
   einsendung <- liftIO $ maybe (EinsendungDB.put_blank (Student.snr student) (T.ANr $ keyToInt aufgabeId)) return meinsendung
   mbewertung <- liftIO $ sequence $ fmap (liftM preEscapedToHtml . readFile . T.toString) $ Einsendung.report einsendung
   ((formResult, formWidget), formEnctype) <- runFormPost $ bewertungBearbeitenForm mbewertung

@@ -18,10 +18,8 @@ aufgabenListe :: Set TimeStatus -> VorlesungId -> Handler Html
 aufgabenListe disp vorlesung = do
   aktuelleZeit <- lift getCurrentTime
   stud <- requireAuthId
-  Just (MNr mnr) <- liftM (fmap Student.mnr . listToMaybe) $ lift $ StudentDB.get_unr $ UNr stud
-  istTutor <- do
-    vorlesungen <- lift $ VorlesungDB.get_tutored $ SNr stud
-    return $ VNr (keyToInt vorlesung) `elem` map Vorlesung.vnr vorlesungen
+  Just (MNr mnr) <- liftM (fmap Student.mnr . listToMaybe) $ lift $ StudentDB.get_snr $ SNr stud
+  istTutor <- runDB $ return . not . null =<< selectList [TutorStudentId ==. stud, TutorVorlesungId ==. vorlesung] []
   istEingeschrieben <- do
     einschreibungen <- lift $ VorlesungDB.snr_teilnehmer $ VNr $ keyToInt vorlesung
     return $ SNr stud `elem` einschreibungen

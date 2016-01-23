@@ -19,8 +19,8 @@ data StudentenSeite = StudentenSeite {
   submit :: BootstrapSubmit AutotoolMessage,
   erfolgMsg :: AutotoolMessage,
   formRoute :: Route Autotool,
-  getOp :: IO [Student],
-  setOp :: Student -> IO ()
+  getOp :: Handler [Student],
+  setOp :: Student -> Handler ()
 }
 
 getDirektorErnennenR :: SchuleId -> Handler Html
@@ -39,8 +39,8 @@ postDirektorErnennenR schule = do
         submit = BootstrapSubmit MsgDirektorErnennen "btn-success btn-block" [],
         erfolgMsg = MsgDirektorErnannt,
         formRoute = DirektorErnennenR schule,
-        getOp = keineDirektoren,
-        setOp = \stud -> DirektorDB.put stud schule'
+        getOp = lift keineDirektoren,
+        setOp = \stud -> lift $ DirektorDB.put stud schule'
       }
   rolleSetzenListe studentenSeite
 
@@ -49,9 +49,9 @@ postDirektorErnennenR schule = do
 rolleSetzenListe :: StudentenSeite -> Handler Html
 rolleSetzenListe eigenschaften = do
   studentenForms <- do
-    studenten' <- lift $ (getOp eigenschaften)
+    studenten' <- getOp eigenschaften
     _ <- mapM (formAuswerten eigenschaften) studenten'
-    studenten'' <- lift $ (getOp eigenschaften)
+    studenten'' <- getOp eigenschaften
     mapM (generiereForm (submit eigenschaften)) studenten''
   defaultLayout $ do
     $(widgetFile "studentenFunktion")
@@ -65,7 +65,7 @@ formAuswerten eigenschaften student = do
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess _ -> do
-      _ <- lift $ (setOp eigenschaften) student
+      _ <- (setOp eigenschaften) student
       setMessageI $ erfolgMsg eigenschaften
 
 -- | Erzeugt ein Formular mit einem Butten zum Ernennen bzw. Absetzen des Studenten @student@ für eine bestimmte Rolle. @submit@ legt Layout und Text des Submit-Buttons fest.
