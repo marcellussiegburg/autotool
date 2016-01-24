@@ -1,7 +1,5 @@
 module Operate.Store where
 
---  $Id$
-
 import Util.Datei
 import qualified System.Posix
 import qualified Operate.Param as P
@@ -48,7 +46,7 @@ location ty p pid flag =
     Datei { pfad = [ "autotool", "done"
 			    , toString $ P.vnr p
 		            , toString $ P.anr p
-			    , P.smatrikel p
+			    , P.sident p
 			    , if flag then "OK" else "NO"
 			    ]
                    , name = pid

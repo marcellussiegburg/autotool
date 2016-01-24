@@ -15,7 +15,7 @@ Library
     Hs-Source-Dirs: src 
     GHC-Options:    -Wall -fglasgow-exts
     Build-Depends:
-        autotool-interface,
+        -- autotool-interface,
         autolib-transport,
         autolib-todoc,
         autolib-output,

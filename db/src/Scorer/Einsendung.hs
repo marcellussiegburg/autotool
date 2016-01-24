@@ -2,7 +2,8 @@
 
 module Scorer.Einsendung 
 
-( Einsendung (..), size, Scorer.Einsendung.okay
+( Einsendung (..), size
+, Scorer.Einsendung.okay, Scorer.Einsendung.traditional
 , Obfuscated (..)
 , SE (..)
 , slurp_deco -- datei-inhalt verarbeiten
@@ -19,6 +20,10 @@ Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7
 Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO 
 Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3 
 
+-- oder jetzt so (Snr statt Mnr)
+
+Mon Jan  4 22:12:59 CET 2016 ( 17065 ) snr-3038 ( 3038 ) 229-2397 : OK # Size: 250 Punkte: 1 
+
 -}
 
 import Scorer.Util hiding ( size )
@@ -26,6 +31,7 @@ import Scorer.Util hiding ( size )
 import Autolib.FiniteMap
 import Control.Monad ( guard )
 import Data.Maybe ( isJust )
+import Data.Either ( isLeft )
 
 -- import Text.Parsec
 -- import Text.Parsec.String
@@ -45,7 +51,7 @@ data Einsendung = Einsendung
           { msize     :: ! (Maybe Int)
 	  , date     :: ! [Int]
 	  , time     :: ! String -- ^ original time entry
-	  , matrikel :: ! (Obfuscated MNr) -- ^ Datenschutz
+	  , matrikel :: ! (Either (Obfuscated MNr) (Obfuscated SNr)) -- ^ Datenschutz
 	  , auf	     :: ! ANr
 	  , vor      :: ! VNr
 	  , pid	     :: ! String
@@ -59,20 +65,23 @@ size e = case msize e of
 okay :: Einsendung -> Bool
 okay = isJust . msize
 
+traditional :: Einsendung -> Bool
+traditional = isLeft . matrikel
+
 data Obfuscated a = Obfuscated 
         { internal :: ! a
         , external :: ! String
         } deriving ( Eq, Ord, Show )
 
-nobfuscate :: MNr -> Obfuscated MNr
+-- nobfuscate :: MNr -> Obfuscated MNr
 nobfuscate mnr = Obfuscated { internal = mnr, external = toString mnr }
 
-obfuscate :: MNr -> Obfuscated MNr
+-- obfuscate :: MNr -> Obfuscated MNr
 obfuscate mnr = Obfuscated 
               { internal = mnr
               , external = do
                     let cs = toString mnr
-                    ( k, c, s ) <- zip3 ( reverse $ take ( length cs ) [ 0 .. ] )
+                    ( k, c, s ) <- zip3 ( reverse $ take ( length cs ) [ 0 :: Int .. ] )
                                         cs $ repeat '*'
                     return $ if 0 == k `mod` 3 then s else c
               }
@@ -98,7 +107,9 @@ instance Show SE where
 instance Show Einsendung where
     show i = unwords 
         [ spaci 10 $ show $ abs $ size i
-	, spaci 12 $ toString $ matrikel i
+	, spaci 12 $ case matrikel i of
+          Left mnr -> toString mnr 
+          Right snr -> toString snr
 	,    (nulli 2 $ date i !! 2) ++ "."
 		  ++ (nulli 2 $ (date i) !! 1) ++ "."
 		  ++ (nulli 4 $ (date i) !! 0) 
@@ -131,12 +142,15 @@ Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO
 Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3 
 -}
 
-test1, test2, test3 :: BS.ByteString
+test1, test2, test3, test4 :: BS.ByteString
 test1 = "Fri Nov 28 18:33:49 CET 2003 ( 2425 ) cgi-318 ( 318 ) 3-11 : OK # Size: 7"
 test2 = "Fri Nov 14 13:43:49 CET 2014 ( 19549 ) cgi- (  ) 212-2199 : NO"
 test3 = "Fri Nov 14 13:44:10 CET 2014 ( 19557 ) cgi- (  ) 212-2199 : OK # Size: 3"
+test4 = "Mon Jan  4 22:12:59 CET 2016 ( 17065 ) snr-3038 ( 3038 ) 229-2397 : OK # Size: 250 Punkte: 1"
 
-
+author = 
+     do A.string "cgi-"; matrikelnr ; mnr <- parens $ matrikelnr ; return $ Left mnr
+ <|> do A.string "snr-"; natural ; snr <- parens $ natural ; return $ Right $ SNr snr
 
 entry :: Bool -> A.Parser Einsendung
 entry deco = do
@@ -149,8 +163,7 @@ entry deco = do
     tz <- identifier 
     year <- natural
     p <- parens $ natural
-    A.string "cgi-" ; matrikelnr
-    mnr <- parens  $ matrikelnr
+    au <- author
     v <- natural ; A.string "-" 
     a <- natural ; reserved ":"
     res <- do reserved "NO" ; return Nothing
@@ -160,6 +173,7 @@ entry deco = do
               return $ Just s
 
     A.endOfLine
+    let obf x = if deco then obfuscate x else nobfuscate x
     return $ Einsendung
 	      {	time = concat
                      $ intersperse ":" 
@@ -167,7 +181,9 @@ entry deco = do
               , date = [ year, monthNum month, date
                        , h, m, s ]
 	      , msize     = res 
-	      , matrikel = ( if deco then obfuscate else nobfuscate ) mnr
+	      , matrikel = case au of
+                  Left mnr -> Left $ obf mnr
+                  Right snr -> Right $ obf snr
 	      , auf	 = fromCGI $ show a
 	      , vor      = fromCGI $ show v
 	      , pid      = show p
@@ -186,6 +202,7 @@ natural = A.decimal <* spaces
 parens p = reserved "(" *> p <* reserved ")"
 p <|> q = A.choice [p,q]
 
+{- OBSOLETE ?
 
 -- instance Read Einsendung where 
 --    readsPrec p cs = do
@@ -224,6 +241,8 @@ read_deco deco cs = do
 	      , visible  = False
               }
 	return ( e, rest )
+
+-}
 
 -------------------------------------------------------------------------------
 -- | komisch, aber ich habs nirgendwo gefunden

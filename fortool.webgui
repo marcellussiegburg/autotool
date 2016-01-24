@@ -1,6 +1,6 @@
 #! /bin/bash
 
-PACKAGES=$(echo {interface,server-interface,db})
+PACKAGES=$(echo {server-interface,db})
 
 function usage() {
     cat <<EOF

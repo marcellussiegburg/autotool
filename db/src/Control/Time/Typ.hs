@@ -39,7 +39,7 @@ instance Reader Time where
 		if inRange bnd n
 		   then return n
 		   else unexpected ( tag ++ " nicht im Bereich " ++ show bnd )
-        y <- get "Jahr" ( 2000, 2015 ) 
+        y <- get "Jahr" ( 2000, 2025 ) 
 	Autolib.Reader.char '-'
 	m <- get "Monat" ( 1, 12 )
 	Autolib.Reader.char '-' 
