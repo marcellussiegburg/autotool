@@ -16,7 +16,6 @@ import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Student.DB as StudentDB
 import qualified Control.Student.Type as Student
-import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Types as T
 import Operate.Bank (bank)
 import qualified Operate.Param as P

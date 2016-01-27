@@ -27,10 +27,11 @@ getDirektorErnennenR :: SchuleId -> Handler Html
 getDirektorErnennenR = postDirektorErnennenR
 
 postDirektorErnennenR :: SchuleId -> Handler Html
-postDirektorErnennenR schule = do
-  schule'' <- runDB $ get404 schule
-  studenten' <- lift $ StudentDB.get_unr $ UNr $ keyToInt schule
-  let schule' = entityToSchule schule schule''
+postDirektorErnennenR schuleId = do
+  schule <- runDB $ get404 schuleId
+  studenten' <- lift $ StudentDB.get_unr $ UNr $ keyToInt schuleId
+  let schule' = entityToSchule schuleId schule
+      fromSNr (SNr snr) = snr
   let keineDirektoren = do
         direktoren <- DirektorDB.get_directors schule'
         return $ deleteFirstsBy ((==) `on` Student.snr) studenten' direktoren
@@ -38,9 +39,9 @@ postDirektorErnennenR schule = do
         nullStudenten = MsgKeineStudentenErnennen,
         submit = BootstrapSubmit MsgDirektorErnennen "btn-success btn-block" [],
         erfolgMsg = MsgDirektorErnannt,
-        formRoute = DirektorErnennenR schule,
+        formRoute = DirektorErnennenR schuleId,
         getOp = lift keineDirektoren,
-        setOp = \stud -> lift $ DirektorDB.put stud schule'
+        setOp = \stud -> runDB $ insert_ $ Direktor (fromSNr $ Student.snr stud) schuleId
       }
   rolleSetzenListe studentenSeite
 

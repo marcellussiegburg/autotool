@@ -8,7 +8,6 @@ import qualified Control.Student.Type as Student
 import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Vorlesung.DB as VorlesungDB
-import qualified Control.Vorlesung.Typ as Vorlesung
 import Control.Types
 
 getAufgabenR :: VorlesungId -> Handler Html

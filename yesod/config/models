@@ -39,4 +39,8 @@ Tutor sql=tutor
   studentId         StudentId            sql=SNr
   vorlesungId       VorlesungId          sql=VNr
   Primary studentId vorlesungId
-  UniqueTutor studentId vorlesungId
+
+Direktor sql=direktor
+  studentId         StudentId            sql=SNr
+  schuleId          SchuleId             sql=UNr
+  Primary studentId schuleId

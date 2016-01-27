@@ -25,6 +25,6 @@ postTutorErnennenR vorlesungId = do
         getOp = keineTutoren,
         setOp = \stud ->
             let SNr studId = Student.snr stud
-            in runDB $ deleteBy $ UniqueTutor studId vorlesungId
+            in runDB $ delete $ TutorKey studId vorlesungId
       }
   rolleSetzenListe studentenSeite

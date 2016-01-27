@@ -3,8 +3,6 @@ module Handler.GruppeAnlegen where
 import Import
 import Handler.Gruppe (gruppeForm)
 
-import qualified Control.Vorlesung.DB as VorlesungDB
-import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Gruppe.DB as GruppeDB
 import Control.Gruppe.Typ
 import Control.Types
