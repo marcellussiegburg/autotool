@@ -44,3 +44,7 @@ Direktor sql=direktor
   studentId         StudentId            sql=SNr
   schuleId          SchuleId             sql=UNr
   Primary studentId schuleId
+
+Admin sql=minister
+  studentId         StudentId            sql=SNr
+  Primary studentId

@@ -27,7 +27,7 @@ import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
 import Control.Monad.Trans.Either (EitherT (runEitherT), left)
 import Data.Char (toUpper)
 import Data.Foldable (foldlM)
-import Data.Maybe (catMaybes, fromMaybe, listToMaybe, maybeToList)
+import Data.Maybe (catMaybes, fromMaybe, isJust, listToMaybe, maybeToList)
 import Database.Persist.Sql (SqlBackend, fromSqlKey)
 import Data.Set (member)
 import Data.Text (Text, pack, unpack)
@@ -40,8 +40,6 @@ import System.Locale (defaultTimeLocale)
 import Model
 
 import Control.Types
-import qualified Control.Admin.DB as AdminDB
-import qualified Control.Direktor.DB as DirektorDB
 import qualified Control.Gruppe.DB as GruppeDB
 import qualified Control.Gruppe.Typ as Gruppe
 import qualified Control.Schule.DB as SchuleDB
@@ -354,35 +352,25 @@ autorisierungRolle rolle authId route
         return $ elem (VNr $ keyToInt vorlesung) $ map Vorlesung.vnr vorlesungen
       return $ either id id auth
   | rolle == "admin" = do
-      auth <- liftIO $ runMaybeT $ do
-        mstud <- lift $ StudDB.get_snr (SNr authId)
-        stud <- MaybeT $ return $ listToMaybe mstud
-        lift $ AdminDB.is_minister stud
-      return $ fromMaybe False auth
+      madmin <- runDB $ get (AdminKey authId)
+      return $ isJust madmin
   | rolle == "direktor" = do
-      auth <- runMaybeT $ do
-        mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
-        stud <- MaybeT $ return $ listToMaybe mstud
-        schulen <- lift $ liftIO $ DirektorDB.get_directed stud
-        (mschule,_,_,_,_,_) <- lift $ routeInformation route
-        schule <- MaybeT $ return mschule
-        return $ elem (UNr $ keyToInt schule) $ map Schule.unr schulen
-      return $ fromMaybe False auth
+      (mschule,_,_,_,_,_) <- routeInformation route
+      case mschule of
+        Nothing -> return False
+        Just schule -> do
+          mminister <- runDB $ get $ DirektorKey authId schule
+          return $ isJust mminister
   | rolle == "tutor" = do
-      auth <- runMaybeT $ do
-        mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
-        stud <- MaybeT $ return $ listToMaybe mstud
-        let SNr studId = Student.snr stud
-        (_,_,mvorlesung,_,_,_) <- lift $ routeInformation route
-        vorlesung <- MaybeT $ return mvorlesung
-        lift $ runDB $ return . not . null =<< selectList [TutorStudentId ==. studId, TutorVorlesungId ==. vorlesung] []
-      return $ fromMaybe False auth
+      (_,_,mvorlesung,_,_,_) <- routeInformation route
+      case mvorlesung of
+        Nothing -> return False
+        Just vorlesung -> do
+          mtutor <- runDB $ get $ TutorKey authId vorlesung
+          return $ isJust mtutor
   | rolle == "jederTutor" = do
       auth <- runMaybeT $ do
-        mstud <- lift $ liftIO $ StudDB.get_snr (SNr authId)
-        stud <- MaybeT $ return $ listToMaybe mstud
-        let SNr studId = Student.snr stud
-        tutored <- lift $ runDB $ selectList [TutorStudentId ==. studId] []
+        tutored <- lift $ runDB $ selectList [TutorStudentId ==. authId] []
         vorlesungen <- lift $ mapM (runDB . get . tutorVorlesungId . entityVal) tutored
         (mschule,_,_,_,_,_) <- lift $ routeInformation route
         schule <- MaybeT $ return mschule
