@@ -9,9 +9,8 @@ $if darfGruppenSehen == Just True
 $if null gruppen
   <p>_{MsgKeineGruppen}
 $else
-  $maybe vorlesung <- mvorlesung
-    $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit /= Current
-      <p>_{MsgEinschreibungDauer (vorlesungVon vorlesung) $ vorlesungBis vorlesung}
+  $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit /= Current
+    <p>_{MsgEinschreibungDauer (vorlesungVon vorlesung) $ vorlesungBis vorlesung}
   <table .table .table-striped .table-hover>
     <thead>
       <tr>
@@ -37,11 +36,10 @@ $else
           <td>
             #{Gruppe.maxStudents gruppe}
           <td>
-            $maybe vorlesung <- mvorlesung
-              $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit == Current
-                <form .form-inline role="form" action=@{GruppenR vorlesungId} method="post" enctype=#{snd form}>
-                  ^{fst form}
+            $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit == Current
+              <form .form-inline role="form" action=@{GruppenR vorlesungId} method="post" enctype=#{snd form}>
+                ^{fst form}
           <td>
             $if istTutor
-              <a href=@{GruppeR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
+              <a href=@{GruppeR $ intToKey $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
                 _{MsgBearbeiten}

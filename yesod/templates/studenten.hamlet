@@ -10,13 +10,13 @@ $else
         <th>_{MsgReferent}
         <th>
     <tbody>
-      $forall gruppe <- gruppen
+      $forall (gruppeId, gruppe) <- gruppen
         <tr>
-          <td>#{show $ fromGNr $ Gruppe.gnr gruppe}
-          <td>#{T.toString $ Gruppe.name gruppe}
-          <td>#{T.toString $ Gruppe.referent gruppe}
+          <td>#{show gruppeId}
+          <td>#{gruppeName gruppe}
+          <td>#{gruppeReferent gruppe}
           <td>
-            <a href=@{GruppeR $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
+            <a href=@{GruppeR gruppeId} .btn .btn-primary .btn-block role="button">_{MsgBearbeiten}
   <h2>_{MsgStudenten}
   <table .table .table-striped .table-hover>
     <thead>

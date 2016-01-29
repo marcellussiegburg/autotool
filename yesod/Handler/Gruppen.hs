@@ -12,11 +12,11 @@ getGruppenR = postGruppenR
 
 postGruppenR :: VorlesungId -> Handler Html
 postGruppenR vorlesungId = do
+  vorlesung <- runDB $ get404 vorlesungId
   mid <- maybeAuthId
   gruppen <- lift $ GruppeDB.get_this $ VNr $ keyToInt vorlesungId
   gruppenBesucht <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr $ keyToInt vorlesungId) (SNr ms)) mid
   istTutor' <- istAutorisiert mid $ VorlesungR vorlesungId
-  mvorlesung <- runDB $ get vorlesungId
   _ <- mapM (formAuswerten mid gruppenBesucht) gruppen
   gruppenBesucht' <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr $ keyToInt vorlesungId) (SNr ms)) mid
   gruppenForms <- mapM (generiereForm gruppenBesucht') gruppen
@@ -36,15 +36,15 @@ formAuswerten mid gruppenBesucht gruppe = do
       maybeChange f g = mapM (\ms -> lift $ f (SNr ms) g) mid
   if Gruppe.gnr gruppe `elem` map Gruppe.gnr gruppenBesucht
     then do
-      ((austragenResult, _), _) <- runFormPost $ austragenForm gnr
+      ((austragenResult, _), _) <- runFormPost $ austragenForm $ intToKey gnr
       case austragenResult of
         FormMissing -> return ()
         FormFailure _ -> return ()
         FormSuccess g -> do
-          _ <- maybeChange EinschreibungDB.delete $ GNr g
+          _ <- maybeChange EinschreibungDB.delete $ GNr $ keyToInt g
           setMessageI MsgGruppeAusgetragen
     else do
-      ((einschreibenResult, _), _) <- runFormPost $ einschreibenForm gnr
+      ((einschreibenResult, _), _) <- runFormPost $ einschreibenForm $ intToKey gnr
       case einschreibenResult of
         FormMissing -> return ()
         FormFailure _ -> return ()
@@ -54,7 +54,7 @@ formAuswerten mid gruppenBesucht gruppe = do
              then do
                setMessageI MsgGruppeVoll
              else do
-               _ <- maybeChange EinschreibungDB.insert $ GNr g
+               _ <- maybeChange EinschreibungDB.insert $ GNr $ keyToInt g
                _ <- mapM ((maybeChange EinschreibungDB.delete) . Gruppe.gnr) gruppenBesucht
                setMessageI MsgGruppeEingeschrieben
 
@@ -64,8 +64,8 @@ generiereForm gruppenBesucht gruppe = do
   einschreibungen <- lift $ EinschreibungDB.attendance $ Gruppe.gnr gruppe
   form <-
     if Gruppe.gnr gruppe `elem` map Gruppe.gnr gruppenBesucht
-      then generateFormPost $ austragenForm gnr
-      else generateFormPost $ einschreibenForm gnr
+      then generateFormPost $ austragenForm $ intToKey gnr
+      else generateFormPost $ einschreibenForm $ intToKey gnr
   return (gruppe, einschreibungen, form)
 
 einschreibenForm :: GruppeId -> Form GruppeId

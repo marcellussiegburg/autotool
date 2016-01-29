@@ -5,7 +5,6 @@ import Handler.AufgabeVorlagen (getVorlagen)
 
 import Data.List (delete)
 
-import qualified Control.Aufgabe.Typ as A
 import qualified Control.Types as T
 
 data AufgabeFormDaten = AufgabeFormDaten {
@@ -41,7 +40,7 @@ stati :: [(AutotoolMessage, T.Status)]
 stati = [(MsgStatusDemonstration, T.Demo), (MsgStatusPflicht, T.Mandatory), (MsgStatusOptional, T.Optional)]
 
 aufgabeForm :: AufgabeTyp -> Maybe AufgabeFormDaten -> AForm Handler AufgabeFormDaten
-aufgabeForm aufgabeTyp maufgabe = AufgabeFormDaten
+aufgabeForm aTyp maufgabe = AufgabeFormDaten
     <$> areq nameField (bfs MsgAufgabeName) (name <$> maufgabe)
     <*> (fmap unTextarea <$> aopt textareaField (bfs MsgAufgabeHinweis) (fmap Textarea . hinweis <$> maufgabe))
     <*> areq (selectFieldList highscores) (bfs MsgAufgabeHighscore) (highscore <$> maufgabe)
@@ -55,7 +54,7 @@ aufgabeForm aufgabeTyp maufgabe = AufgabeFormDaten
     <* bootstrapSubmit (BootstrapSubmit MsgAufgabeEinstellen "btn-success" [])
   where
     nameField = flip checkM textField $ \ n -> do
-      vorlagen <- getVorlagen aufgabeTyp
+      vorlagen <- getVorlagen aTyp
       let vorlagen' = maybe vorlagen ((flip delete vorlagen) . name) maufgabe
       if n `elem` vorlagen'
         then return $ Left MsgAufgabeNameVergeben

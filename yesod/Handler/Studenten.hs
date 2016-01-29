@@ -3,8 +3,6 @@ module Handler.Studenten where
 import Import
 import Data.List (nub)
 
-import qualified Control.Gruppe.DB as GruppeDB
-import qualified Control.Gruppe.Typ as Gruppe
 import qualified Control.Student.DB as StudentDB
 import qualified Control.Student.Type as Student
 import qualified Control.Stud_Aufg.DB as EinsendungDB
@@ -50,8 +48,15 @@ getStudentenR = studentenListe KeineAufgaben
 
 studentenListe :: Aufgaben -> VorlesungId -> Handler Html
 studentenListe auswahl vorlesungId = do
+  let fromGNr (T.GNr gnr) = gnr
+      zipClear list1 list2 = concat $ foldr (\(a, ma) b ->
+          case ma of
+            Nothing -> []
+            Just a' -> [(a, a')]:b
+        ) [] $ zip list1 list2
   einschreibungen <- liftIO $ VorlesungDB.snr_gnr_teilnehmer $ T.VNr $ keyToInt vorlesungId
-  gruppen <- liftIO $ liftM concat $ mapM GruppeDB.get_gnr $ nub $ fmap snd einschreibungen
+  let gruppenIds = nub $ fmap (intToKey . fromGNr . snd) einschreibungen :: [GruppeId]
+  gruppen <- liftM (zipClear gruppenIds) $ mapM (runDB . get) $ gruppenIds
   alleAufgaben <- runDB $ selectList [AufgabeVorlesungId ==. vorlesungId] []
   let aufgaben = do
         aufgabe <- alleAufgaben
@@ -67,6 +72,5 @@ studentenListe auswahl vorlesungId = do
       student' <- MaybeT . return . listToMaybe $ mstudent
       einsendungen <- lift $ mapM (EinsendungDB.get_snr_anr snr . T.ANr . keyToInt . entityKey) aufgaben
       return $ BewertungEintrag student' gruppeId 0 $ fmap (maybe Nothing Einsendung.result . listToMaybe) einsendungen
-  let fromGNr gnr = let T.GNr g = gnr in g
   defaultLayout $
     $(widgetFile "studenten")

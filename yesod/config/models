@@ -48,3 +48,10 @@ Direktor sql=direktor
 Admin sql=minister
   studentId         StudentId            sql=SNr
   Primary studentId
+
+Gruppe sql=gruppe
+  Id                                     sql=GNr
+  vorlesungId       VorlesungId          sql=VNr
+  name              Text                 sql=Name
+  plaetze           Int                  sql=MaxStudents
+  referent          Text                 sql=Referent

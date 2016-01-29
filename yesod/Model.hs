@@ -34,7 +34,6 @@ import Types.TaskTree (TaskTree (Category, Task))
 
 type AufgabeKonfiguration = Text
 type AufgabeTyp = Text
-type GruppeId = Int
 type VorlageName = Text
 type ServerUrl = Text
 type StudentId = Int
