@@ -1,11 +1,11 @@
 <p>
   _{MsgGruppenHinweis}&nbsp;
-  $if null gruppenBesucht'
+  $if null $ filter id wirdBesucht
     _{MsgKeineEinschreibung}
   $else
     _{MsgIstEingeschrieben}
 $if darfGruppenSehen == Just True
-  <a href=@{AufgabenAktuellR $ vorlesungId} .btn .btn-default .btn-block role="button">_{MsgZuAufgaben}
+  <a href=@{AufgabenAktuellR vorlesungId} .btn .btn-default .btn-block role="button">_{MsgZuAufgaben}
 $if null gruppen
   <p>_{MsgKeineGruppen}
 $else
@@ -25,21 +25,21 @@ $else
         <th>
         <th>
     <tbody>
-      $forall (gruppe, besucher, form) <- gruppenForms
+      $forall (gruppe, darfBearbeiten, besucher, form) <- gruppenForms
         <tr>
           <td>
-            #{fromName $ Gruppe.name gruppe}
+            #{gruppeName $ entityVal gruppe}
           <td>
-            #{fromName $ Gruppe.referent gruppe}
+            #{gruppeReferent $ entityVal gruppe}
           <td>
             #{besucher}
           <td>
-            #{Gruppe.maxStudents gruppe}
+            #{gruppePlaetze $ entityVal gruppe}
           <td>
             $if zeitStatus (vorlesungVon vorlesung) (vorlesungBis vorlesung) zeit == Current
               <form .form-inline role="form" action=@{GruppenR vorlesungId} method="post" enctype=#{snd form}>
                 ^{fst form}
           <td>
-            $if istTutor
-              <a href=@{GruppeR $ intToKey $ fromGNr $ Gruppe.gnr gruppe} .btn .btn-primary .btn-block role="button">
+            $if darfBearbeiten
+              <a href=@{GruppeR $ entityKey gruppe} .btn .btn-primary .btn-block role="button">
                 _{MsgBearbeiten}

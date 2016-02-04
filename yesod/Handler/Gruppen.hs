@@ -1,9 +1,6 @@
 module Handler.Gruppen where
 
 import Import
-import qualified Control.Gruppe.DB as GruppeDB
-import qualified Control.Gruppe.Typ as Gruppe
-import qualified Control.Stud_Grp.DB as EinschreibungDB
 import Control.Types
 import Data.Time (getCurrentTime)
 
@@ -12,61 +9,55 @@ getGruppenR = postGruppenR
 
 postGruppenR :: VorlesungId -> Handler Html
 postGruppenR vorlesungId = do
+  authId <- requireAuthId
   vorlesung <- runDB $ get404 vorlesungId
-  mid <- maybeAuthId
-  gruppen <- lift $ GruppeDB.get_this $ VNr $ keyToInt vorlesungId
-  gruppenBesucht <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr $ keyToInt vorlesungId) (SNr ms)) mid
-  istTutor' <- istAutorisiert mid $ VorlesungR vorlesungId
-  _ <- mapM (formAuswerten mid gruppenBesucht) gruppen
-  gruppenBesucht' <- lift $ fmap (concat . maybeToList) $ mapM (\ms -> GruppeDB.get_attended (VNr $ keyToInt vorlesungId) (SNr ms)) mid
-  gruppenForms <- mapM (generiereForm gruppenBesucht') gruppen
-  darfGruppenSehen <- istAutorisiert mid $ AufgabenAktuellR vorlesungId
-  let istTutor = istTutor' == Just True
-      fromName name = let Name n = name
-                      in n
-      fromGNr gnr = let GNr nr = gnr
-                    in nr
+  gruppen <- runDB $ selectList [GruppeVorlesungId ==. vorlesungId] []
+  einschreibungen <- runDB $ selectKeysList [EinschreibungId <-. map (EinschreibungKey authId . entityKey) gruppen] []
+  let gs `haben` es = map (\g -> EinschreibungKey authId (entityKey g) `elem` es) gs
+  _ <- mapM (formAuswerten authId einschreibungen) $ zip (gruppen `haben` einschreibungen) gruppen
+  einschreibungen' <- runDB $ selectKeysList [EinschreibungId <-. map (EinschreibungKey authId . entityKey) gruppen] []
+  let wirdBesucht = gruppen `haben` einschreibungen'
+  gruppenForms <- mapM (generiereForm authId) $ zip wirdBesucht gruppen
+  darfGruppenSehen <- istAutorisiert (Just authId) $ AufgabenAktuellR vorlesungId
   zeit <- liftIO $ getCurrentTime
   defaultLayout $ do
     $(widgetFile "gruppen")
 
-formAuswerten :: Maybe (AuthId Autotool) -> [Gruppe.Gruppe] -> Gruppe.Gruppe -> Handler ()
-formAuswerten mid gruppenBesucht gruppe = do
-  let gnr = let GNr nr = Gruppe.gnr gruppe in nr
-      maybeChange f g = mapM (\ms -> lift $ f (SNr ms) g) mid
-  if Gruppe.gnr gruppe `elem` map Gruppe.gnr gruppenBesucht
-    then do
-      ((austragenResult, _), _) <- runFormPost $ austragenForm $ intToKey gnr
-      case austragenResult of
-        FormMissing -> return ()
-        FormFailure _ -> return ()
-        FormSuccess g -> do
-          _ <- maybeChange EinschreibungDB.delete $ GNr $ keyToInt g
-          setMessageI MsgGruppeAusgetragen
-    else do
-      ((einschreibenResult, _), _) <- runFormPost $ einschreibenForm $ intToKey gnr
-      case einschreibenResult of
-        FormMissing -> return ()
-        FormFailure _ -> return ()
-        FormSuccess g -> do
-          einschreibungen <- lift $ EinschreibungDB.attendance $ Gruppe.gnr gruppe
-          if Gruppe.maxStudents gruppe <= einschreibungen
-             then do
-               setMessageI MsgGruppeVoll
-             else do
-               _ <- maybeChange EinschreibungDB.insert $ GNr $ keyToInt g
-               _ <- mapM ((maybeChange EinschreibungDB.delete) . Gruppe.gnr) gruppenBesucht
-               setMessageI MsgGruppeEingeschrieben
+formAuswerten :: AuthId Autotool -> [EinschreibungId] -> (Bool, Entity Gruppe) -> Handler ()
+formAuswerten authId gruppenBesucht (eingeschrieben, gruppe) =
+  if eingeschrieben
+  then do
+    ((austragenResult, _), _) <- runFormPost $ austragenForm $ entityKey gruppe
+    case austragenResult of
+      FormMissing -> return ()
+      FormFailure _ -> return ()
+      FormSuccess g -> do
+        runDB $ delete $ EinschreibungKey authId g
+        setMessageI MsgGruppeAusgetragen
+  else do
+    ((einschreibenResult, _), _) <- runFormPost $ einschreibenForm $ entityKey gruppe
+    case einschreibenResult of
+      FormMissing -> return ()
+      FormFailure _ -> return ()
+      FormSuccess g -> do
+        einschreibungen <- liftM length $ runDB $ selectList [EinschreibungGruppeId ==. entityKey gruppe] []
+        if gruppePlaetze (entityVal gruppe) <= einschreibungen
+           then do
+             setMessageI MsgGruppeVoll
+           else do
+             _ <- runDB $ insert $ Einschreibung authId g
+             runDB $ deleteWhere [EinschreibungId <-. gruppenBesucht]
+             setMessageI MsgGruppeEingeschrieben
 
-generiereForm :: [Gruppe.Gruppe] -> Gruppe.Gruppe -> Handler (Gruppe.Gruppe, Integer, (Widget, Enctype))
-generiereForm gruppenBesucht gruppe = do
-  let gnr = let GNr nr = Gruppe.gnr gruppe in nr
-  einschreibungen <- lift $ EinschreibungDB.attendance $ Gruppe.gnr gruppe
+generiereForm :: AuthId Autotool -> (Bool, Entity Gruppe) -> Handler (Entity Gruppe, Bool, Int, (Widget, Enctype))
+generiereForm authId (eingeschrieben, gruppe) = do
+  einschreibungen <- liftM length $ runDB $ selectList [EinschreibungGruppeId ==. entityKey gruppe] []
+  darfGruppeBearbeiten <- (== Just True) <$> (istAutorisiert (Just authId) $ GruppeR $ entityKey gruppe)
   form <-
-    if Gruppe.gnr gruppe `elem` map Gruppe.gnr gruppenBesucht
-      then generateFormPost $ austragenForm $ intToKey gnr
-      else generateFormPost $ einschreibenForm $ intToKey gnr
-  return (gruppe, einschreibungen, form)
+    if eingeschrieben
+       then generateFormPost $ austragenForm $ entityKey gruppe
+       else generateFormPost $ einschreibenForm $ entityKey gruppe
+  return (gruppe, darfGruppeBearbeiten, einschreibungen, form)
 
 einschreibenForm :: GruppeId -> Form GruppeId
 einschreibenForm gruppe = identifyForm (pack $ show gruppe ++ "-1") $ renderDivs $

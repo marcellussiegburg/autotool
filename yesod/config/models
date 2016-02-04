@@ -55,3 +55,8 @@ Gruppe sql=gruppe
   name              Text                 sql=Name
   plaetze           Int                  sql=MaxStudents
   referent          Text                 sql=Referent
+
+Einschreibung sql=stud_grp
+  studentId         StudentId            sql=SNr
+  gruppeId          GruppeId             sql=GNr
+  Primary studentId gruppeId
