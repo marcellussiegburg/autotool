@@ -11,7 +11,7 @@ import Text.Blaze.Html as Import (ToMarkup, preEscapedToHtml)
 import Text.Shakespeare.Text as Import (toText)
 
 import Control.Applicative as Import (pure, (<$>), (<*>), (<*), (*>))
-import Control.Monad as Import (guard, join, liftM)
+import Control.Monad as Import (guard, join, liftM, mplus)
 import Control.Monad.Trans.Maybe as Import (MaybeT (MaybeT), runMaybeT)
 import Data.Either.Combinators as Import (leftToMaybe, rightToMaybe)
 import Data.Foldable as Import (foldl, foldr)

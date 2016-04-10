@@ -1,11 +1,6 @@
 module Handler.DirektorErnennen where
 
 import Import
-import qualified Control.Direktor.DB as DirektorDB
-import qualified Control.Student.DB as StudentDB
-import qualified Control.Student.Type as Student
-import Control.Student.Type (Student)
-import Control.Types
 
 -- | Definiert die Parameter für eine Html-Seite zum Setzen einer Rolle für Studenten. Dient als Hilfsdatenstruktur für 'rolleSetzenListe'.
 -- * @nullStudenten@ ist die Nachricht, die ausgegeben werden soll, wenn kein Student zur entsprechenden Rollenänderung zur Verfügung steht.
@@ -19,8 +14,8 @@ data StudentenSeite = StudentenSeite {
   submit :: BootstrapSubmit AutotoolMessage,
   erfolgMsg :: AutotoolMessage,
   formRoute :: Route Autotool,
-  getOp :: Handler [Student],
-  setOp :: Student -> Handler ()
+  getOp :: Handler [Entity Student],
+  setOp :: Entity Student -> Handler ()
 }
 
 getDirektorErnennenR :: SchuleId -> Handler Html
@@ -28,20 +23,18 @@ getDirektorErnennenR = postDirektorErnennenR
 
 postDirektorErnennenR :: SchuleId -> Handler Html
 postDirektorErnennenR schuleId = do
-  schule <- runDB $ get404 schuleId
-  studenten' <- lift $ StudentDB.get_unr $ UNr $ keyToInt schuleId
-  let schule' = entityToSchule schuleId schule
-      fromSNr (SNr snr) = snr
+  _ <- runDB $ get404 schuleId
   let keineDirektoren = do
-        direktoren <- DirektorDB.get_directors schule'
-        return $ deleteFirstsBy ((==) `on` Student.snr) studenten' direktoren
+        studenten <- selectList [StudentSchuleId ==. schuleId] []
+        direktoren <- selectList [DirektorSchuleId ==. schuleId] []
+        return $ filter ((`notElem` fmap (direktorStudentId . entityVal) direktoren) . entityKey) studenten
   let studentenSeite = StudentenSeite {
         nullStudenten = MsgKeineStudentenErnennen,
         submit = BootstrapSubmit MsgDirektorErnennen "btn-success btn-block" [],
         erfolgMsg = MsgDirektorErnannt,
         formRoute = DirektorErnennenR schuleId,
-        getOp = lift keineDirektoren,
-        setOp = \stud -> runDB $ insert_ $ Direktor (fromSNr $ Student.snr stud) schuleId
+        getOp = runDB keineDirektoren,
+        setOp = \stud -> runDB $ insert_ $ Direktor (entityKey stud) schuleId
       }
   rolleSetzenListe studentenSeite
 
@@ -54,30 +47,27 @@ rolleSetzenListe eigenschaften = do
     _ <- mapM (formAuswerten eigenschaften) studenten'
     studenten'' <- getOp eigenschaften
     mapM (generiereForm (submit eigenschaften)) studenten''
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "studentenFunktion")
 
 -- | Wertet das Formular aus, wobei bei erfolgreichem Submit des Formulares, der Student @student@ die per @setOp@ in @eigenschaften@ festgelegte Rolle für die Schule @schule@ erhält, bzw. verliert (je nach @setOp@).
-formAuswerten :: StudentenSeite -> Student -> Handler ()
+formAuswerten :: StudentenSeite -> Entity Student -> Handler ()
 formAuswerten eigenschaften student = do
-  let SNr snr = Student.snr student
-  ((ernennenResult, _), _) <- runFormPost $ form (submit eigenschaften) snr
+  ((ernennenResult, _), _) <- runFormPost $ form (submit eigenschaften) $ entityKey student
   case ernennenResult of
     FormMissing -> return ()
     FormFailure _ -> return ()
     FormSuccess _ -> do
-      _ <- (setOp eigenschaften) student
+      _ <- setOp eigenschaften student
       setMessageI $ erfolgMsg eigenschaften
 
 -- | Erzeugt ein Formular mit einem Butten zum Ernennen bzw. Absetzen des Studenten @student@ für eine bestimmte Rolle. @submit@ legt Layout und Text des Submit-Buttons fest.
-generiereForm :: BootstrapSubmit AutotoolMessage -> Student -> Handler (Student, (Widget, Enctype))
+generiereForm :: BootstrapSubmit AutotoolMessage -> Entity Student -> Handler (Entity Student, (Widget, Enctype))
 generiereForm submit' student = do
-  let SNr snr = Student.snr student
-  form' <- generateFormPost $ form submit' snr
+  form' <- generateFormPost $ form submit' $ entityKey student
   return (student, form')
 
 form :: BootstrapSubmit AutotoolMessage -> StudentId -> Form StudentId
 form submit' student = identifyForm (pack $ show student ++ "-1") $ renderDivs $
   areq hiddenField "" (Just student)
   <* bootstrapSubmit submit'
-

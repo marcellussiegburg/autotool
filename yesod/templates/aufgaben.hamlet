@@ -71,7 +71,7 @@ $else
                 $of Current
                   <a href=@{EinsendungAnlegenR aufgabeId} .btn .btn-success .btn-block role="button">_{MsgLösen}
                 $of Late
-                  <a href=@{AufgabeTestenR (aufgabeServer aufgabe) (aufgabeTyp aufgabe) (aufgabeKonfiguration aufgabe) (pack mnr)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
+                  <a href=@{AufgabeTestenR (aufgabeServer aufgabe) (aufgabeTyp aufgabe) (aufgabeKonfiguration aufgabe) (studentMatrikelNummer student)} .btn .btn-primary .btn-block role="button">_{MsgTesten}
                 $of Early
             <td>
               $case zeitStatus (aufgabeVon aufgabe) (aufgabeBis aufgabe) aktuelleZeit

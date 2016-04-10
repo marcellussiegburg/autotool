@@ -1,25 +1,6 @@
-Schule sql=schule
-  Id                            sql=UNr
-  name              Text        sql=Name
-  mailSuffix        Text Maybe  sql=Mail_Suffix
-  useShibboleth     Bool        sql=Use_Shibboleth
-  preferredLanguage Language    sql=Preferred_Language
-
-Semester sql=semester
-  Id                            sql=ENr
-  schuleId          SchuleId    sql=UNr
-  name              Text        sql=Name
-  von               UTCTime     sql=Von
-  bis               UTCTime     sql=Bis
-
-Vorlesung sql=vorlesung
-  Id                            sql=VNr
-  schuleId          SchuleId    sql=unr
-  semesterId        SemesterId  sql=ENr
-  name              Text        sql=Name
-  von               UTCTime     sql=EinschreibVon
-  bis               UTCTime     sql=EinschreibBis
-  nachricht         Text Maybe  sql=motd
+Admin sql=minister
+  studentId         StudentId            sql=SNr
+  Primary studentId
 
 Aufgabe sql=aufgabe
   Id                                     sql=ANr
@@ -35,19 +16,15 @@ Aufgabe sql=aufgabe
   server            ServerUrl            sql=server
   signatur          Text                 sql=signature
 
-Tutor sql=tutor
-  studentId         StudentId            sql=SNr
-  vorlesungId       VorlesungId          sql=VNr
-  Primary studentId vorlesungId
-
 Direktor sql=direktor
   studentId         StudentId            sql=SNr
   schuleId          SchuleId             sql=UNr
   Primary studentId schuleId
 
-Admin sql=minister
+Einschreibung sql=stud_grp
   studentId         StudentId            sql=SNr
-  Primary studentId
+  gruppeId          GruppeId             sql=GNr
+  Primary studentId gruppeId
 
 Gruppe sql=gruppe
   Id                                     sql=GNr
@@ -56,7 +33,41 @@ Gruppe sql=gruppe
   plaetze           Int                  sql=MaxStudents
   referent          Text                 sql=Referent
 
-Einschreibung sql=stud_grp
+Schule sql=schule
+  Id                            sql=UNr
+  name              Text        sql=Name
+  mailSuffix        Text Maybe  sql=Mail_Suffix
+  useShibboleth     Bool        sql=Use_Shibboleth
+  preferredLanguage Language    sql=Preferred_Language
+
+Semester sql=semester
+  Id                            sql=ENr
+  schuleId          SchuleId    sql=UNr
+  name              Text        sql=Name
+  von               UTCTime     sql=Von
+  bis               UTCTime     sql=Bis
+
+Student sql=student
+  Id                                     sql=SNr
+  matrikelNummer    Text                 sql=MNr
+  name              Text                 sql=Name
+  vorname           Text                 sql=Vorname
+  email             Email                sql=Email
+  status            Text MigrationOnly   sql=Status default='inaktiv' sqltype=varchar(10)
+  passwort          Crypt                sql=Passwort
+  schuleId          SchuleId             sql=UNr
+  nextPasswort      Crypt                sql=Next_Passwort
+
+Tutor sql=tutor
   studentId         StudentId            sql=SNr
-  gruppeId          GruppeId             sql=GNr
-  Primary studentId gruppeId
+  vorlesungId       VorlesungId          sql=VNr
+  Primary studentId vorlesungId
+
+Vorlesung sql=vorlesung
+  Id                            sql=VNr
+  schuleId          SchuleId    sql=unr
+  semesterId        SemesterId  sql=ENr
+  name              Text        sql=Name
+  von               UTCTime     sql=EinschreibVon
+  bis               UTCTime     sql=EinschreibBis
+  nachricht         Text Maybe  sql=motd

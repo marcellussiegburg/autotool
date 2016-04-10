@@ -22,13 +22,13 @@ import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
 
 import Control.Applicative ((<$>), (<*>))
-import Control.Monad (filterM, join, liftM, when)
+import Control.Monad (filterM, join, liftM)
 import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
 import Control.Monad.Trans.Either (EitherT (runEitherT), left)
 import Data.Char (toUpper)
 import Data.Foldable (foldlM)
 import Data.Maybe (catMaybes, fromMaybe, isJust, listToMaybe, maybeToList)
-import Database.Persist.Sql (SqlBackend, fromSqlKey)
+import Database.Persist.Sql (SqlBackend, toSqlKey)
 import Data.Set (member)
 import Data.Text (Text, pack, unpack)
 import Data.Text.Read (decimal, signed)
@@ -48,8 +48,6 @@ import qualified Control.Vorlesung.Typ as Vorlesung
 import qualified Control.Vorlesung.DB as VorlesungDB
 import qualified Autolib.Multilingual as Sprache
 import Operate.Crypt (Crypt (Crypt))
-import Control.SQL
-import Control.Student.DB
 
 data Autotool = Autotool
     { settings :: AppConfig DefaultEnv Extra
@@ -202,16 +200,15 @@ instance YesodAuth Autotool where
     renderAuthMessage _ ("en":_) = AM.englishMessage
     renderAuthMessage master (_:langs) = renderAuthMessage master langs
     renderAuthMessage _ [] = AM.defaultMessage
-    type AuthId Autotool = Int
+    type AuthId Autotool = StudentId
     loginDest _ = SchulenR
     logoutDest _ = SchulenR
-    getAuthId creds = liftIO $
+    getAuthId creds = runDB $
       case signed decimal $ credsIdent creds of
         Right (s, "") -> do
-          x <- StudDB.get_snr $ SNr s
-          case x of
-            [_] -> return $ Just s
-            _ -> return Nothing
+          let sid = toSqlKey s :: StudentId
+          ms <- get sid
+          return $ fmap (const sid) ms
         _ -> return Nothing
     maybeAuthId = do
       ms <- lookupSession credsKey
@@ -220,12 +217,8 @@ instance YesodAuth Autotool where
         Just session ->
             case fromPathPiece session of
               Nothing -> return Nothing
-              Just s -> do
-                mstud <- liftIO $ StudDB.get_snr $ SNr s
-                case mstud of
-                  [_] -> return $ Just s
-                  _ -> return Nothing
-    authPlugins _ = [authShibboleth, authAutotool Nothing]
+              Just (s :: StudentId) -> liftM (maybe Nothing $ const $ Just s) $ runDB $ get s
+    authPlugins _ = [authShibboleth] --, authAutotool Nothing]
     authHttpManager = httpManager
 
 instance YesodAuthShibboleth Autotool where
@@ -242,54 +235,42 @@ instance YesodAuthShibboleth Autotool where
       mschule <- runDB $ selectFirst [SchuleId ==. school, SchuleUseShibboleth ==. True] []
       case mschule of
         Nothing -> return Nothing
-        Just schule -> do
-          let schuleId = fromInteger $ toInteger $ fromSqlKey $ entityKey schule
-              schuleParams = (UNr schuleId, Name $ unpack name, Name $ unpack vorname, MNr $ unpack matrikel)
-          studenten <- lift $ StudDB.get_unr_sn_gn_mnr schuleParams
-          studenten' <-
-            if null studenten
+        Just _schule -> do
+          studenten <- runDB $ selectKeysList [StudentSchuleId ==. school, StudentName ==. name, StudentVorname ==. vorname, StudentMatrikelNummer ==. matrikel] []
+          if null studenten
             then do
-              lift $ StudDB.put Nothing Student.Student {
-                Student.unr = UNr schuleId,
-                Student.snr = error "No SNr in Foundation.hs (YesodAuthShibboleth instance declaration)",
-                Student.mnr =  MNr $ unpack matrikel,
-                Student.name =  Name $ unpack name,
-                Student.vorname = Name $ unpack vorname,
-                Student.email = Email $ unpack matrikel,
-                Student.passwort = Crypt "use shibboleth",
-                Student.next_passwort = Crypt "use shibboleth"
-              }
-              studenten' <- lift $ StudDB.get_unr_sn_gn_mnr schuleParams
-              return studenten'
+              let student = Student {
+                      studentSchuleId = school,
+                      studentMatrikelNummer =  matrikel,
+                      studentName =  name,
+                      studentVorname = vorname,
+                      studentEmail = matrikel,
+                      studentPasswort = Crypt "use shibboleth",
+                      studentNextPasswort = Crypt "use shibboleth"
+                    }
+              liftM Just $ runDB $ insert student
             else
-              return studenten
-          let fromSNr (SNr s) = s
-          return $ fmap (fromSNr . Student.snr) $ listToMaybe studenten'
+              return $ Just $ head studenten
     getAccountByEppn school eppn = do
       mschule <- runDB $ selectFirst [SchuleId ==. school, SchuleUseShibboleth ==. True] []
       case mschule of
         Nothing -> return Nothing
-        Just schule -> do
-          let schuleId = fromInteger $ toInteger $ fromSqlKey $ entityKey schule
-          studenten <- lift $ get_where $ ands [ equals ( read "student.Email") (toEx $ Email $ unpack eppn)]
-          studenten' <-
-            if null studenten
+        Just _schule -> do
+          studenten <- runDB $ selectKeysList [StudentEmail ==. eppn] []
+          if null studenten
             then do
-              lift $ StudDB.put Nothing Student.Student {
-                Student.unr = UNr schuleId,
-                Student.snr = error "No SNr in Foundation.hs (YesodAuthShibboleth instance declaration)",
-                Student.mnr =  MNr $ unpack eppn,
-                Student.name =  Name $ unpack eppn,
-                Student.vorname = Name $ unpack eppn,
-                Student.email = Email $ unpack eppn,
-                Student.passwort = Crypt "use shibboleth",
-                Student.next_passwort = Crypt "use shibboleth"
-              }
-              lift $ get_where $ ands [ equals ( read "student.EMail") (toEx $ Email $ unpack eppn)]
+              let student = Student {
+                      studentSchuleId = school,
+                      studentMatrikelNummer = eppn,
+                      studentName = eppn,
+                      studentVorname = eppn,
+                      studentEmail = eppn,
+                      studentPasswort = Crypt "use shibboleth",
+                      studentNextPasswort = Crypt "use shibboleth"
+                    }
+              liftM Just $ runDB $ insert student
             else
-              return studenten
-          let fromSNr (SNr s) = s
-          return $ fmap (fromSNr . Student.snr) $ listToMaybe studenten'
+              return $ Just $ head studenten
 
 instance YesodAuthAutotool Autotool where
     type AuthSchool = UNr
@@ -322,15 +303,14 @@ istAutorisiert mid route =
            ) False attrs
 
 -- | Liefert 'True', wenn der Nutzer mit der Kennung @authId@ und der Rolle @rolle@ autorisiert ist, auf die Route @route@ zuzugreifen.
-autorisierungRolle:: Text -> Int -> Route Autotool -> Handler Bool
+autorisierungRolle:: Text -> StudentId -> Route Autotool -> Handler Bool
 autorisierungRolle rolle authId route
   | rolle == "student" = do
       auth <- runEitherT $ do
         (mschule, _, _, _, _, _) <- lift $ routeInformation route
-        mstud <- lift $ liftIO $ StudDB.get_snr $ SNr authId
-        stud <- maybe (left False) return $ listToMaybe mstud
         schule <- maybe (left False) return mschule
-        return $ Student.unr stud == UNr (keyToInt schule)
+        mstud <- lift $ runDB $ selectFirst [StudentId ==. authId, StudentSchuleId ==. schule] []
+        return $ isJust mstud
       return $ either id id auth
   | rolle == "studentEigene" = do
       auth <- runEitherT $ do
@@ -340,13 +320,9 @@ autorisierungRolle rolle authId route
       return $ either id id auth
   | rolle == "einschreibung" = do
       auth <- runEitherT $ do
-        (mschule, _, mvorlesung, _, _, _) <- lift $ routeInformation route
-        mstud <- lift $ liftIO $ StudDB.get_snr $ SNr authId
-        stud <- maybe (left False) return $ listToMaybe mstud
-        schule <- maybe (left False) (return . keyToInt) mschule
-        when (Student.unr stud /= UNr schule) $ left False
+        (_, _, mvorlesung, _, _, _) <- lift $ routeInformation route
         vorlesung <- maybe (left False) return mvorlesung
-        vorlesungen <- lift $ liftIO $ VorlesungDB.get_attended $ SNr authId
+        vorlesungen <- lift $ liftIO $ VorlesungDB.get_attended $ SNr $ keyToInt authId
         return $ elem (VNr $ keyToInt vorlesung) $ map Vorlesung.vnr vorlesungen
       return $ either id id auth
   | rolle == "admin" = do
@@ -382,7 +358,7 @@ data NavigationMenu = NavigationMenu AutotoolMessage [NavigationEntry]
 data NavigationEntry = Trennstrich | Titel Text | Link (Route Autotool) (Maybe AutotoolMessage)
 
 -- | Liefert das Navigationsmenü, die zu verwendenden Einträge sind in dieser Methode definiert.
-navigationMenu :: Maybe (Route Autotool) -> Maybe Int -> Handler [NavigationMenu]
+navigationMenu :: Maybe (Route Autotool) -> Maybe StudentId -> Handler [NavigationMenu]
 navigationMenu mroute authId = do
   let schule s = [SchuleR s, DirektorenR s, DirektorErnennenR s, WaisenkinderR s, SemestersR s, SemesterAnlegenR s]
       schulen = [SchulenR, SchuleAnlegenR] -- TODO ++ [Persönliche Daten, Highscore]
@@ -448,7 +424,7 @@ getName konstruktor dbFunktion nameFunktion mvId = runMaybeT $ do
   return $ pack sname
 
 -- | Liefert die für die Navigation notwendigen Ids der Datenbankeinträge, abhängig von der angegebenen Route. Maybe (Route Autotool), weil Nothing für den Fall einer fehlerhaften URL vorgesehen ist.
-routeBrotkrumen :: Maybe (Route Autotool) -> Maybe Int -> Handler (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
+routeBrotkrumen :: Maybe (Route Autotool) -> Maybe StudentId -> Handler (Maybe SchuleId, Maybe SemesterId, Maybe VorlesungId, Maybe GruppeId, Maybe AufgabeId, Maybe StudentId)
 routeBrotkrumen Nothing _ = return (Nothing, Nothing, Nothing, Nothing, Nothing, Nothing)
 routeBrotkrumen (Just route) _ = routeInformation route
 

@@ -48,7 +48,9 @@ postStatistikR aufgabeId = do
   aufgabe <- case maufgabe of
     Nothing -> permissionDeniedI MsgNichtAutorisiert
     Just a -> return a
-  studenten <- liftIO $ VorlesungDB.steilnehmer $ T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe
+  studenten' <- liftIO $ VorlesungDB.steilnehmer $ T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe
+  studenten'' <- runDB $ mapM (\(T.SNr s) -> selectList [StudentId ==. intToKey s] []) $ fmap Student.snr studenten'
+  let studenten = concat studenten''
   _ <- runMaybeT $ do
     maktion <- lookupPostParam aktion
     aktion' <- MaybeT . return $ maktion
@@ -58,7 +60,7 @@ postStatistikR aufgabeId = do
   einsendungen <- liftIO $ EinsendungDB.get_anr $ T.ANr $ keyToInt aufgabeId
   ergebnisse <- getErgebnisListe einsendungen studenten
   optionen' <- optionsPairs optionen
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "statistik")
 
 cacheLeeren :: Text -> VorlesungId -> AufgabeId -> Handler ()
@@ -68,51 +70,49 @@ cacheLeeren matrikel' vorlesungId aufgabeId = do
                , show vorlesungId
                , show aufgabeId
                ]
-    , D.name = unpack $ matrikel'
+    , D.name = unpack matrikel'
     , D.extension = "cache"
     }
   lift $ D.loeschen d `catch` \ (SomeException _) -> return ()
   setMessageI $ MsgCacheGeleert $ pack $ show d
 
-bewertungenSchreiben :: [Student.Student] -> Aufgabe -> AufgabeId -> Handler ()
+bewertungenSchreiben :: [Entity Student] -> Aufgabe -> AufgabeId -> Handler ()
 bewertungenSchreiben studenten aufgabe aufgabeId = do
-  let fromSNr snr = let T.SNr s = snr in s
-      getResult s = lookupPostParam $ neuBewertenLabel $ fromSNr $ Student.snr s
-  sequence_ $ map (\s -> do r <- getResult s
-                            let i = maybe 1 (read . unpack) r - 1
-                            bewertungSchreiben s aufgabe aufgabeId (snd $ optionen !! i)) studenten
+  let getResult s = lookupPostParam $ neuBewertenLabel $ keyToInt $ entityKey s
+  mapM_ (\s -> do r <- getResult s
+                  let i = maybe 1 (read . unpack) r - 1
+                  bewertungSchreiben s aufgabe aufgabeId (snd $ optionen !! i)) studenten
 
-bewertungSchreiben :: Student.Student -> Aufgabe -> AufgabeId -> Maybe T.Wert -> Handler Text
+bewertungSchreiben :: Entity Student -> Aufgabe -> AufgabeId -> Maybe T.Wert -> Handler Text
 bewertungSchreiben _ _ _ Nothing = return ""
 bewertungSchreiben student aufgabe aufgabeId (Just bewertung) = do
   let message = "Bewertung durch Tutor" :: Text -- TODO: Übersetzung?
-  lift $ liftM pack $ bank (getDefaultParam student aufgabe aufgabeId) {
+  lift $ pack <$> bank (getDefaultParam (entityVal student) (entityKey student) aufgabe aufgabeId) {
       P.report = Just $ preEscapedToHtml message,
       P.mresult = Just bewertung
     }
 
-getErgebnisListe :: [Einsendung.Stud_Aufg] -> [Student.Student] -> Handler [ErgebnisEintrag]
+getErgebnisListe :: [Einsendung.Stud_Aufg] -> [Entity Student] -> Handler [ErgebnisEintrag]
 getErgebnisListe einsendungen studenten =
   let einsender = fromList $ fmap Einsendung.snr einsendungen
-      getStudent e = find (\ s -> Student.snr s == Einsendung.snr e) studenten
+      getStudent e = find (\ s -> T.SNr (keyToInt $ entityKey s) == Einsendung.snr e) studenten
       getEintrag e =
         let s = getStudent e
         in maybeToList $ fmap (\ s' -> getErgebnisEintrag s' $ Just e) s
       einsendungen' = concat $ fmap getEintrag einsendungen
-      keineEinsendungen = concat $ fmap (\s -> if Student.snr s `member` einsender then [] else [getErgebnisEintrag s Nothing]) studenten
+      keineEinsendungen = concat $ fmap (\s -> if T.SNr (keyToInt $ entityKey s) `member` einsender then [] else [getErgebnisEintrag s Nothing]) studenten
   in sequence $ einsendungen' ++ keineEinsendungen
 
-getErgebnisEintrag :: Student.Student -> Maybe Einsendung.Stud_Aufg -> Handler ErgebnisEintrag
+getErgebnisEintrag :: Entity Student -> Maybe Einsendung.Stud_Aufg -> Handler ErgebnisEintrag
 getErgebnisEintrag student meinsendung = do
   let fromOks oks = let T.Oks i = oks in i
       fromNos nos = let T.Nos i = nos in i
-      fromSNr snr = let T.SNr s = snr in s
-  form' <- generateFormPost $ neuBewertenForm $ fromSNr $ Student.snr student
-  return $ ErgebnisEintrag {
-    studentId = fromSNr $ Student.snr student,
-    matrikel = pack $ T.toString $ Student.mnr student,
-    vorname = pack $ T.toString $ Student.vorname student,
-    nachname = pack $ T.toString $ Student.name student,
+  form' <- generateFormPost $ neuBewertenForm $ keyToInt $ entityKey student
+  return ErgebnisEintrag {
+    studentId = entityKey student,
+    matrikel = studentMatrikelNummer $ entityVal student,
+    vorname = studentVorname $ entityVal student,
+    nachname = studentName $ entityVal student,
     okays = fmap (fromOks . Einsendung.ok) meinsendung,
     neins = fmap (fromNos . Einsendung.no) meinsendung,
     mergebnis = join $ fmap Einsendung.result meinsendung,
@@ -124,7 +124,7 @@ optionen = [(MsgBehalten, Nothing), (MsgNein, Just T.No)] ++ fmap (\ i -> (MsgTe
 
 neuBewertenForm :: Int -> Form (Maybe T.Wert)
 neuBewertenForm student = identifyForm (neuBewertenLabel student) $ renderRaw $
-  areq ((tdRadioFieldNoLabel $ neuBewertenLabel student) . optionsPairs $ optionen) "" $ Just Nothing
+  areq (tdRadioFieldNoLabel (neuBewertenLabel student) . optionsPairs $ optionen) "" $ Just Nothing
 
 renderRaw :: Monad m => FormRender m a
 renderRaw aform fragment = do
@@ -227,15 +227,15 @@ selectFieldHelper outside onOpt inside opts' = Field
         opts <- opts'
         return $ selectParser opts x
     , fieldView = \theId name attrs val isReq -> do
-        opts <- fmap olOptions $ handlerToWidget opts'
+        opts <- olOptions <$> handlerToWidget opts'
         outside theId name attrs $ do
-            unless isReq $ onOpt theId name $ not $ render opts val `elem` map optionExternalValue opts
+            unless isReq $ onOpt theId name $ render opts val `notElem` map optionExternalValue opts
             flip mapM_ opts $ \opt -> inside
                 theId
                 name
                 ((if isReq then (("required", "required"):) else id) attrs)
                 (optionExternalValue opt)
-                ((render opts val) == optionExternalValue opt)
+                (render opts val == optionExternalValue opt)
                 (optionDisplay opt)
     , fieldEnctype = UrlEncoded
     }

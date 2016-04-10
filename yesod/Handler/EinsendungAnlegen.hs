@@ -19,8 +19,6 @@ import Util.Xml.Output (xmlStringToOutput)
 
 import Autolib.Output (render)
 import Autolib.Multilingual (specialize)
-import qualified Control.Student.DB as StudentDB (get_snr)
-import qualified Control.Student.Type as Student
 import qualified Control.Types as T
 import Operate.Bank (bank)
 import Operate.Click (Click (Example))
@@ -61,7 +59,7 @@ postEinsendungAnlegenR aufgabeId = do
       konfiguration = aufgabeKonfiguration aufgabe
       mhinweis = aufgabeHinweis aufgabe
   studentId <- requireAuthId
-  mstudent <- lift $ liftM listToMaybe $ StudentDB.get_snr $ T.SNr studentId
+  mstudent <- fmap listToMaybe $ runDB $ selectList [StudentId ==. studentId] []
   student <- case mstudent of
     Nothing ->
       -- Benutzer nicht in DB gefunden (passiert nie)
@@ -70,7 +68,7 @@ postEinsendungAnlegenR aufgabeId = do
   case zeitStatus (aufgabeVon aufgabe) (aufgabeBis aufgabe) aktuelleZeit of
     T.Late -> do
       setMessageI MsgAufgabeVorbei
-      redirect $ AufgabeTestenR server typ konfiguration $ pack . T.toString . Student.mnr $ student
+      redirect $ AufgabeTestenR server typ konfiguration $ studentMatrikelNummer $ entityVal student
     T.Early -> return ()
     T.Current -> return ()
   esigned <- checkKonfiguration server typ konfiguration
@@ -88,7 +86,7 @@ postEinsendungAnlegenR aufgabeId = do
     let vorher = do
           mvorherigeEinsendung' <- lift $ getVorherigeEinsendung mstudent aufgabe aufgabeId
           maktuelleEinsendung <- lift $ getMaybeEinsendung mfile
-          MaybeT . return $ maybe mvorherigeEinsendung' Just maktuelleEinsendung
+          MaybeT . return $ mplus maktuelleEinsendung mvorherigeEinsendung'
     case maktion of
       Nothing -> vorher
       Just aktion' ->
@@ -96,15 +94,15 @@ postEinsendungAnlegenR aufgabeId = do
           VorherigeEinsendungLaden -> vorher
           BeispielLaden -> MaybeT . return $ Nothing
   (signed', beispiel, atyp, aufgabenstellung) <-
-    getAufgabeInstanz server signed $ getCrc (T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe) (Just $ T.ANr $ keyToInt aufgabeId) (Student.mnr student)
+    getAufgabeInstanz server signed $ getCrc (T.VNr $ keyToInt $ aufgabeVorlesungId aufgabe) (Just $ T.ANr $ keyToInt aufgabeId) (T.MNr $ unpack $ studentMatrikelNummer $ entityVal student)
   (formWidget, formEnctype) <- generateFormPost $ identifyForm "senden" $ renderBootstrap3 BootstrapBasicForm $ aufgabeEinsendenForm (checkEinsendung server signed') atyp $ Just $ fromMaybe beispiel mvorherigeEinsendung
   let hochladenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just hochladen
       eingebenForm = formToWidget (EinsendungAnlegenR aufgabeId) $ Just eingeben
   mbewertung' <- getBewertung server signed' mfile
   let mbewertung = fmap snd mbewertung'
-  mvorlageForm <- liftM Just $ generateFormPost $ identifyForm (pack $ show aktion) $ renderBootstrap3 BootstrapBasicForm vorlageForm
+  mvorlageForm <- fmap Just $ generateFormPost $ identifyForm (pack $ show aktion) $ renderBootstrap3 BootstrapBasicForm vorlageForm
   mlog <- logSchreiben mstudent aufgabe aufgabeId aufgabenstellung mbewertung' mfile
-  defaultLayout $ do
+  defaultLayout $
     $(widgetFile "einsendungAnlegen")
 
 einsendungHochladenForm :: AForm Handler FileInfo
@@ -159,7 +157,7 @@ getAufgabeInstanz server signed crc = do
 getMaybeEinsendung :: Maybe FileInfo -> Handler (Maybe Text)
 getMaybeEinsendung mfile = runMaybeT $ do
   meinsendung <- case mfile of
-    Just r -> lift $ liftM (Just . toStrict . decodeUtf8) $ fileSource r $$ sinkLbs
+    Just r -> lift $ fmap (Just . toStrict . decodeUtf8) $ fileSource r $$ sinkLbs
     Nothing -> lookupPostParam einsendenId
   MaybeT . return $ meinsendung
 
@@ -171,36 +169,36 @@ getBewertung server signed mfile = runMaybeT $ do
   bewertung <- lift $ checkEinsendung server signed einsendung
   let DString beschreibung = either id documentation bewertung
       hinweis' = specialize sprache $ render $ xmlStringToOutput beschreibung
-      hinweis'' = hinweis' ! (class_ $ either (const "alert-danger") (const "alert-success") bewertung)
+      hinweis'' = hinweis' ! class_ ( either (const "alert-danger") (const "alert-success") bewertung)
       mwert = either (const Nothing) (Just . round . contents) bewertung
   return (mwert, hinweis'')
 
-getVorherigeEinsendung :: Maybe Student.Student -> Aufgabe -> AufgabeId -> Handler (Maybe Text)
+getVorherigeEinsendung :: Maybe (Entity Student) -> Aufgabe -> AufgabeId -> Handler (Maybe Text)
 getVorherigeEinsendung mstudent aufgabe aufgabeId = runMaybeT $ do
   let stringToMaybeText t = if null t then Nothing else Just $ pack t
   student <- MaybeT . return $ mstudent
-  mvorherigeEinsendung <- lift $ lift $ Store.latest Store.Input (getDefaultParam student aufgabe aufgabeId)
+  mvorherigeEinsendung <- lift $ lift $ Store.latest Store.Input (getDefaultParam (entityVal student) (entityKey student) aufgabe aufgabeId)
     `Exception.catch` \ (Exception.SomeException _) -> return []
   MaybeT . return $ stringToMaybeText mvorherigeEinsendung
 
-logSchreiben :: Maybe Student.Student -> Aufgabe -> AufgabeId -> Html -> Maybe (Maybe Integer, Html) -> Maybe FileInfo -> Handler (Maybe Text)
+logSchreiben :: Maybe (Entity Student) -> Aufgabe -> AufgabeId -> Html -> Maybe (Maybe Integer, Html) -> Maybe FileInfo -> Handler (Maybe Text)
 logSchreiben mstudent aufgabe aufgabeId aufgabenstellung mbewertung mfile = runMaybeT $ do
   bewertung <- MaybeT . return $ mbewertung
   student <- MaybeT . return $ mstudent
   meinsendung <- lift $ getMaybeEinsendung mfile
   einsendung <- MaybeT . return $ meinsendung
-  lift $ lift $ liftM pack $ bank (getDefaultParam student aufgabe aufgabeId) {
+  lift $ lift $ pack <$> bank (getDefaultParam (entityVal student) (entityKey student) aufgabe aufgabeId) {
       P.minstant = Just aufgabenstellung,
       P.input = Just $ unpack einsendung,
       P.report = Just $ snd bewertung,
       P.mresult = Just $ maybe T.No T.ok $ fst bewertung
     }
 
-getDefaultParam :: Student.Student -> Aufgabe -> AufgabeId -> P.Type
-getDefaultParam student aufgabe aufgabeId =
+getDefaultParam :: Student -> StudentId -> Aufgabe -> AufgabeId -> P.Type
+getDefaultParam student studentId aufgabe aufgabeId =
   P.Param { P.makers = [],
-    P.mmatrikel = Just $ Student.mnr student,
-    P.ident = Student.snr student,
+    P.mmatrikel = Just $ T.MNr $ unpack $ studentMatrikelNummer student,
+    P.ident = T.SNr $ keyToInt studentId,
     P.mpasswort = Nothing,
 
     P.aufgabe = T.Name $ unpack $ aufgabeName aufgabe,

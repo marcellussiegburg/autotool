@@ -13,11 +13,11 @@ $else
     <tbody>
       $forall (student, form) <- studentenForms
         <tr>
-          <td>#{toString $ Student.snr student}
-          <td>#{toString $ Student.mnr student}
-          <td>#{toString $ Student.vorname student}
-          <td>#{toString $ Student.name student}
-          <td>#{toString $ Student.email student}
+          <td>#{show $ entityKey student}
+          <td>#{studentMatrikelNummer $ entityVal student}
+          <td>#{studentVorname $ entityVal student}
+          <td>#{studentName $ entityVal student}
+          <td>#{studentEmail $ entityVal student}
           <td>
             <form .form-inline role="form" action=@{formRoute eigenschaften} method="post" enctype=#{snd form}>
               ^{fst form}

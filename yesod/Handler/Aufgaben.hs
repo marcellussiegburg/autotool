@@ -3,8 +3,6 @@ module Handler.Aufgaben where
 import Import
 import Data.Set (Set, fromList, member)
 import Data.Time.Clock (getCurrentTime)
-import qualified Control.Student.DB as StudentDB
-import qualified Control.Student.Type as Student
 import qualified Control.Stud_Aufg.DB as EinsendungDB
 import qualified Control.Stud_Aufg.Typ as Einsendung
 import qualified Control.Vorlesung.DB as VorlesungDB
@@ -17,18 +15,18 @@ aufgabenListe :: Set TimeStatus -> VorlesungId -> Handler Html
 aufgabenListe disp vorlesung = do
   aktuelleZeit <- lift getCurrentTime
   stud <- requireAuthId
-  Just (MNr mnr) <- liftM (fmap Student.mnr . listToMaybe) $ lift $ StudentDB.get_snr $ SNr stud
-  istTutor <- runDB $ return . not . null =<< selectList [TutorStudentId ==. stud, TutorVorlesungId ==. vorlesung] []
+  student <- runDB $ get404 stud
+  istTutor <- runDB $ not . null <$> selectList [TutorStudentId ==. stud, TutorVorlesungId ==. vorlesung] []
   istEingeschrieben <- do
     einschreibungen <- lift $ VorlesungDB.snr_teilnehmer $ VNr $ keyToInt vorlesung
-    return $ SNr stud `elem` einschreibungen
+    return $ SNr (keyToInt stud) `elem` einschreibungen
   aufgaben <- runDB $ selectList [AufgabeVorlesungId ==. vorlesung] []
   ergebnisse <- sequence $ do
     aufgabe' <- aufgaben
     let aufgabeId = entityKey aufgabe'
         aufgabe = entityVal aufgabe'
     return $ do
-      einsendungen <- lift $ EinsendungDB.get_snr_anr (SNr stud) $ ANr $ keyToInt aufgabeId
+      einsendungen <- lift $ EinsendungDB.get_snr_anr (SNr $ keyToInt stud) $ ANr $ keyToInt aufgabeId
       let okno = case einsendungen of
             [eins] ->  (Einsendung.ok eins, Einsendung.no eins, Einsendung.result eins)
             _ ->  (Oks 0, Nos 0 , Nothing)

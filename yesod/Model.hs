@@ -27,22 +27,37 @@ import Derive()
 import Autolib.Multilingual (Language (..))
 import qualified Control.Aufgabe.Typ as Aufgabe
 import qualified Control.Schule.Typ as Schule
+import qualified Control.Student.Type as Student
 import qualified Control.Vorlesung.Typ as Vorlesung
-import Control.Types
+import Control.Types hiding (Email)
+import qualified Control.Types
 import Control.Time.Typ (Time (Time))
+import Operate.Crypt (Crypt (Crypt))
 import Types.TaskTree (TaskTree (Category, Task))
 
 type AufgabeKonfiguration = Text
 type AufgabeTyp = Text
 type VorlageName = Text
 type ServerUrl = Text
-type StudentId = Int
+type Email = Text
+type Passwort = Text
 
 keyToInt = fromInteger . toInteger . fromSqlKey
 intToKey = toSqlKey . fromInteger . toInteger
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"]
   $(persistFileWith lowerCaseSettings "config/models")
+
+entityToStudent key entity = Student.Student {
+    Student.snr           = SNr $ keyToInt key,
+    Student.unr           = UNr $ keyToInt $ studentSchuleId entity,
+    Student.mnr           = MNr $ unpack $ studentMatrikelNummer entity,
+    Student.name          = Name $ unpack $ studentName entity,
+    Student.vorname       = Name $ unpack $ studentVorname entity,
+    Student.email         = Control.Types.Email $ unpack $ studentEmail entity,
+    Student.passwort      = studentPasswort entity,
+    Student.next_passwort = studentNextPasswort entity
+  }
 
 entityToAufgabe key entity = Aufgabe.Aufgabe {
     Aufgabe.anr       = ANr $ keyToInt key,
